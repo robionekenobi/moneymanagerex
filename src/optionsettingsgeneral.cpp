@@ -221,6 +221,11 @@ void OptionSettingsGeneral::Create()
     mmToolTip(m_use_org_date_duplicate, _("Select whether to use the original transaction date or current date when duplicating transactions"));
     generalPanelSizer->Add(m_use_org_date_duplicate, g_flagsV);
 
+    m_dont_ask_for_share_acccount = new wxCheckBox(general_panel, wxID_STATIC, _("Don't ask for share account"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
+    m_dont_ask_for_share_acccount->SetValue(GetIniDatabaseCheckboxValue(INIDB_DONT_ASK_FOR_SHARE_ACCOUNT, false));
+    mmToolTip(m_dont_ask_for_share_acccount, _("Select whether not to ask for a Share Account if one does not exist with the same name as the share"));
+    generalPanelSizer->Add(m_dont_ask_for_share_acccount, g_flagsV);
+
     m_use_sound = new wxCheckBox(general_panel, wxID_STATIC, _("Use Transaction Sound"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
     m_use_sound->SetValue(GetIniDatabaseCheckboxValue(INIDB_USE_TRANSACTION_SOUND, true));
     mmToolTip(m_use_sound, _("Select whether to use sounds when entering transactions"));
@@ -315,6 +320,8 @@ bool OptionSettingsGeneral::SaveSettings()
 
     Model_Setting::instance().Set(INIDB_USE_ORG_DATE_COPYPASTE, m_use_org_date_copy_paste->GetValue());
     Model_Setting::instance().Set(INIDB_USE_ORG_DATE_DUPLICATE, m_use_org_date_duplicate->GetValue());
+    Model_Setting::instance().Set(INIDB_DONT_ASK_FOR_SHARE_ACCOUNT, m_dont_ask_for_share_acccount->GetValue());
+    
     Model_Setting::instance().Set(INIDB_USE_TRANSACTION_SOUND, m_use_sound->GetValue());
 
     return true;

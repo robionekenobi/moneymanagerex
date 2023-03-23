@@ -46,6 +46,7 @@ const wxString getPathShared(ESharedFile f);
 enum EUserFile { SETTINGS = 0, DIRECTORY, USERTHEMEDIR, USER_FILES_MAX };
 const wxString getPathUser(EUserFile f);
 
+const wxString getPathImport(const wxString& importFolder);
 const wxString getPathAttachment(const wxString &AttachmentsFolder);
 bool isPortableMode();
 const wxString getTempFolder();

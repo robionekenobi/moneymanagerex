@@ -473,6 +473,14 @@ struct SorterByDATE
         return (x.DATE) < (y.DATE);
     }
 };
+struct SorterByDATE_DESC
+{
+    template<class DATA>
+    bool operator()(const DATA& x, const DATA& y)
+    {
+        return (x.DATE) > (y.DATE);
+    }
+};
 
 struct SorterByDECIMAL_POINT
 { 

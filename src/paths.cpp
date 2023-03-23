@@ -243,6 +243,37 @@ const wxString mmex::getPathUser(EUserFile f)
 This function transforms mnemonic pathes to real one
 For example %USERPROFILE%\MyBudget will be transformed to C:\Users\James\MyBudget
 */
+const wxString mmex::getPathImport(const wxString& importFolder)
+{
+    if (importFolder == wxEmptyString)
+        return wxEmptyString;
+
+    wxString ImportFolder = importFolder;
+    const wxString sep = wxFileName::GetPathSeparator();
+    const wxString LastDBPath = Model_Setting::instance().getLastDbPath();
+    const wxString& LastDBFolder = wxFileName::FileName(LastDBPath).GetPath() + sep;
+    const wxString& UserFolder = mmex::GetUserDir(false).GetPath() + sep;
+
+    if (importFolder.StartsWith(FOLDER_USERPROFILE, &ImportFolder))
+        ImportFolder.Prepend(wxGetHomeDir() + sep);
+    else if (importFolder.StartsWith(FOLDER_DOCUMENTS, &ImportFolder))
+        ImportFolder.Prepend(wxStandardPaths::Get().GetDocumentsDir() + sep);
+    else if (importFolder.StartsWith(FOLDER_DATABASE, &ImportFolder))
+        ImportFolder.Prepend(LastDBFolder);
+    else if (importFolder.StartsWith(FOLDER_APPDATA, &ImportFolder))
+        ImportFolder.Prepend(UserFolder);
+
+    if (ImportFolder.Last() != sep)
+        ImportFolder.Append(sep);
+
+    return ImportFolder;
+}
+
+
+/*
+This function transforms mnemonic pathes to real one
+For example %USERPROFILE%\MyBudget will be transformed to C:\Users\James\MyBudget
+*/
 const wxString mmex::getPathAttachment(const wxString &attachmentsFolder)
 {
     if (attachmentsFolder == wxEmptyString)
@@ -254,13 +285,13 @@ const wxString mmex::getPathAttachment(const wxString &attachmentsFolder)
     const wxString& LastDBFolder = wxFileName::FileName(LastDBPath).GetPath() + sep;
     const wxString& UserFolder = mmex::GetUserDir(false).GetPath() + sep;
 
-    if (attachmentsFolder.StartsWith(ATTACHMENTS_FOLDER_USERPROFILE, &AttachmentsFolder))
+    if (attachmentsFolder.StartsWith(FOLDER_USERPROFILE, &AttachmentsFolder))
         AttachmentsFolder.Prepend(wxGetHomeDir() + sep);
-    else if (attachmentsFolder.StartsWith(ATTACHMENTS_FOLDER_DOCUMENTS, &AttachmentsFolder))
+    else if (attachmentsFolder.StartsWith(FOLDER_DOCUMENTS, &AttachmentsFolder))
         AttachmentsFolder.Prepend(wxStandardPaths::Get().GetDocumentsDir() + sep);
-    else if (attachmentsFolder.StartsWith(ATTACHMENTS_FOLDER_DATABASE, &AttachmentsFolder))
+    else if (attachmentsFolder.StartsWith(FOLDER_DATABASE, &AttachmentsFolder))
         AttachmentsFolder.Prepend(LastDBFolder);
-    else if (attachmentsFolder.StartsWith(ATTACHMENTS_FOLDER_APPDATA, &AttachmentsFolder))
+    else if (attachmentsFolder.StartsWith(FOLDER_APPDATA, &AttachmentsFolder))
         AttachmentsFolder.Prepend(UserFolder);
 
     if (AttachmentsFolder.Last() != sep)

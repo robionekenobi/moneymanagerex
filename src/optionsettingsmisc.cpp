@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "optionsettingsmisc.h"
 #include "option.h"
+#include "paths.h"
 #include "util.h"
 
 #include "model/Model_Checking.h"
@@ -27,6 +28,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 /*******************************************************/
 wxBEGIN_EVENT_TABLE(OptionSettingsMisc, wxPanel)
+    EVT_BUTTON(ID_DIALOG_OPTIONS_BUTTON_IMPORTFOLDER, OptionSettingsMisc::OnImportButton)
+    EVT_TEXT(ID_DIALOG_OPTIONS_TEXTCTRL_IMPORT, OptionSettingsMisc::OnImportPathChanged)
     EVT_CHECKBOX(ID_DIALOG_OPTIONS_CHK_BACKUP, OptionSettingsMisc::OnBackupChanged)
     EVT_CHECKBOX(ID_DIALOG_OPTIONS_CHK_BACKUP_UPDATE, OptionSettingsMisc::OnBackupChanged)
 wxEND_EVENT_TABLE()
@@ -229,6 +232,62 @@ void OptionSettingsMisc::Create()
     textDelimiter4->SetMaxLength(1);
     csvStaticBoxSizerGrid->Add(textDelimiter4, g_flagsH);
 
+    //imports
+    wxStaticBox* importStaticBox = new wxStaticBox(misc_panel, wxID_ANY, _("imports Settings"));
+    SetBoldFont(importStaticBox);
+    wxStaticBoxSizer* importStaticBoxSizer = new wxStaticBoxSizer(importStaticBox, wxVERTICAL);
+
+    othersPanelSizer->Add(importStaticBoxSizer, wxSizerFlags(g_flagsExpand).Proportion(0));
+
+    wxString OSType = wxPlatformInfo::Get().GetOperatingSystemFamilyName();
+    wxString importStaticText_desc = wxString::Format(_("import archive folder for %s only:"), OSType);
+
+    wxStaticText* importStaticText = new wxStaticText(misc_panel, wxID_STATIC, importStaticText_desc);
+    importStaticBoxSizer->Add(importStaticText, g_flagsV);
+    mmToolTip(importStaticText, _("Every OS type (Win,Mac,Unix) has its import folder"));
+
+    wxBoxSizer* importDefinedSizer = new wxBoxSizer(wxHORIZONTAL);
+    importStaticBoxSizer->Add(importDefinedSizer, wxSizerFlags(g_flagsExpand).Proportion(0));
+
+    const wxString importFolder = Model_Infotable::instance().GetStringInfo("IMPORTFOLDER:" + mmPlatformType(), ".");
+    m_old_path = mmex::getPathImport(importFolder);
+
+    wxArrayString list2;
+    list2.Add(FOLDER_DOCUMENTS);
+    list2.Add(FOLDER_USERPROFILE);
+    list2.Add(FOLDER_DATABASE);
+    list2.Add(FOLDER_APPDATA);
+
+    m_import_path = new wxComboBox(misc_panel, ID_DIALOG_OPTIONS_TEXTCTRL_IMPORT, "", wxDefaultPosition, wxDefaultSize, list2);
+    m_import_path->SetMinSize(wxSize(225, -1));
+    m_import_path->ChangeValue(importFolder);
+
+    wxButton* importsFolderButton = new wxButton(misc_panel, ID_DIALOG_OPTIONS_BUTTON_IMPORTFOLDER, "..."
+        , wxDefaultPosition, wxSize(Option::instance().getIconSize(), -1), 0);
+    mmToolTip(importsFolderButton, _("Browse for folder"));
+
+    importDefinedSizer->Add(m_import_path, g_flagsExpand);
+    importDefinedSizer->Add(importsFolderButton, g_flagsH);
+
+    m_import_preview = new wxStaticText(misc_panel, wxID_STATIC
+        , _("Real path:") + "\n" + mmex::getPathImport(importFolder));
+    m_import_preview->SetFont(this->GetFont().Smaller());
+    importStaticBoxSizer->Add(m_import_preview, g_flagsV);
+
+    // Legend
+    wxStaticBox* importStaticBoxLegend = new wxStaticBox(misc_panel, wxID_ANY, _("Legend (can be used as variables at the beginning of above path)"));
+    importStaticBoxLegend->SetFont(this->GetFont().Italic());
+    wxStaticBoxSizer* importStaticBoxSizerLegend = new wxStaticBoxSizer(importStaticBoxLegend, wxVERTICAL);
+    importStaticBoxSizer->Add(importStaticBoxSizerLegend, wxSizerFlags(g_flagsExpand).Proportion(0));
+
+    wxString legend = wxString::Format(_("%s -> User document directory"), FOLDER_DOCUMENTS);
+    legend += "\n" + wxString::Format(_("%s -> User profile folder"), FOLDER_USERPROFILE);
+    legend += "\n" + wxString::Format(_("%s -> Folder of .MMB database file"), FOLDER_DATABASE);
+    legend += "\n" + wxString::Format(_("%s -> MMEX Application data folder"), FOLDER_APPDATA);
+    wxStaticText* legendStaticText = new wxStaticText(misc_panel, wxID_STATIC, legend);
+    importStaticBoxSizerLegend->Add(legendStaticText);
+    //End legend
+
     wxCommandEvent evt;
     OptionSettingsMisc::OnBackupChanged(evt);
 
@@ -236,6 +295,31 @@ void OptionSettingsMisc::Create()
     misc_panel->SetMinSize(misc_panel->GetBestVirtualSize());
     misc_panel->SetScrollRate(6, 6);
 }
+
+void OptionSettingsMisc::OnImportButton(wxCommandEvent& WXUNUSED(event))
+{
+    wxString ImportFolder = mmex::getPathImport(m_import_path->GetValue());
+
+    wxDirDialog dlg(this
+        , _("Choose folder to set as import")
+        , ImportFolder
+        , wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST
+    );
+
+    if (dlg.ShowModal() != wxID_OK)
+        return;
+
+    ImportFolder = dlg.GetPath();
+    m_import_path->SetValue(ImportFolder);
+}
+
+void OptionSettingsMisc::OnImportPathChanged(wxCommandEvent& WXUNUSED(event))
+{
+    wxString ImportFolder = mmex::getPathImport(m_import_path->GetValue().Trim());
+    m_import_preview->SetLabelText(_("Real path:") + "\n" + ImportFolder);
+    Fit();
+}
+
 
 void OptionSettingsMisc::OnBackupChanged(wxCommandEvent& WXUNUSED(event))
 {
@@ -297,5 +381,7 @@ bool OptionSettingsMisc::SaveSettings()
     const wxString& delim = st->GetValue();
     if (!delim.IsEmpty()) Model_Infotable::instance().Set("DELIMITER", delim);
 
+    Model_Infotable::instance().Set("IMPORTFOLDER:" + mmPlatformType(), m_import_path->GetValue().Trim());
+    
     return true;
 }

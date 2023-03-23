@@ -105,6 +105,7 @@ wxString mmReportSummaryStocks::getHTMLText()
     {
         hb.startTable();
         {
+            double _tot_purchase_tot = 0;
             hb.startThead();
             {
                 hb.startTableRow();
@@ -141,6 +142,8 @@ wxString mmReportSummaryStocks::getHTMLText()
 
                 hb.startTbody();
                 {
+                    double _tot_purchase = 0;
+                    double _tot_purchase_rate = 0;
                     for (const auto& entry : acct.data)
                     {
                         hb.startTableRow();
@@ -155,17 +158,22 @@ wxString mmReportSummaryStocks::getHTMLText()
                             hb.addCurrencyCell(entry.realgainloss, currency);
                             hb.addCurrencyCell(entry.unrealgainloss, currency);
                             hb.addCurrencyCell(entry.value, currency);
+                            _tot_purchase += entry.purchase;
+                            _tot_purchase_rate += entry.purchase * Model_CurrencyHistory::getDayRate(currency->CURRENCYID, entry.date);
                         }
                         hb.endTableRow();
                     }
                     hb.startTotalTableRow();
                     {
                         hb.addTableCell(_("Total:"));
-                        hb.addEmptyTableCell(6);
+                        hb.addEmptyTableCell(3);
+                        hb.addCurrencyCell(_tot_purchase, currency, 4);
+                        hb.addEmptyTableCell(2);
                         hb.addCurrencyCell(acct.realgainloss, currency);
                         hb.addCurrencyCell(acct.unrealgainloss, currency);
                         hb.addCurrencyCell(acct.total, currency);
                     }
+                    _tot_purchase_tot += _tot_purchase_rate;
                     hb.endTableRow();
                     hb.addEmptyTableRow(9);
                 }
@@ -174,7 +182,10 @@ wxString mmReportSummaryStocks::getHTMLText()
 
             hb.startTfoot();
             {
-                const std::vector<wxString> v{ Model_Currency::toCurrency(m_real_gain_loss_sum_total),
+                const std::vector<wxString> v{ Model_Currency::toCurrency(_tot_purchase_tot, Model_Currency::GetBaseCurrency(), 4),
+                                               "",
+                                               "",
+                                               Model_Currency::toCurrency(m_real_gain_loss_sum_total),
                                                Model_Currency::toCurrency(m_unreal_gain_loss_sum_total),
                                                Model_Currency::toCurrency(m_stock_balance) };
                 hb.addTotalRow(_("Grand Total:"), 10, v);
