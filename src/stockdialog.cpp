@@ -969,6 +969,11 @@ void mmStockDialog::OnHistoryDeleteButton(wxCommandEvent& /*event*/)
     }
     Model_StockHistory::instance().ReleaseSavepoint();
     ShowStockHistory();
+    Model_Stock::UpdateCurrentPrice(m_stock->SYMBOL);
+    //refresh m_stock to get updated attributes
+    m_stock = Model_Stock::instance().get(m_stock->STOCKID);
+    m_current_price_ctrl->SetValue(m_stock->CURRENTPRICE, Option::instance().SharePrecision());
+    m_value_investment->SetLabelText(Model_Account::toCurrency(Model_Stock::instance().CurrentValue(m_stock), Model_Account::instance().get(m_stock->HELDAT)));
 }
 
 void mmStockDialog::ShowStockHistory()

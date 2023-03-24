@@ -43,6 +43,8 @@ public:
 private:
     void Create();
 
+    void OnImportButton(wxCommandEvent& WXUNUSED(event));
+    void OnImportPathChanged(wxCommandEvent& WXUNUSED(event));
     void OnBackupChanged(wxCommandEvent& event);
     void SaveStocksUrl();
 
@@ -51,6 +53,9 @@ private:
     wxSpinCtrl* m_deleted_trans_retain_days;
     wxSpinCtrl* m_share_precision;
     wxCheckBox* m_refresh_quotes_on_open;
+    wxComboBox* m_import_path;
+    wxStaticText* m_import_preview;
+    wxString m_old_path;
 
     enum
     {
@@ -64,5 +69,7 @@ private:
         ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_TRANSFER,
         ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_STATUS,
         ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_DATE,
+        ID_DIALOG_OPTIONS_TEXTCTRL_IMPORT,
+        ID_DIALOG_OPTIONS_BUTTON_IMPORTFOLDER
     };
 };
