@@ -158,7 +158,7 @@ private:
     wxNotebook* m_preview_notebook = nullptr;
     wxListCtrl* m_list_ctrl_ = nullptr; //preview
     wxTextCtrl* m_text_ctrl_ = nullptr;
-    wxTextCtrl* m_setting_name_ctrl_ = nullptr;
+    wxChoice* m_choice_preset_name = nullptr;
     wxTextCtrl* log_field_ = nullptr;
     wxTextCtrl* m_textDelimiter = nullptr;
     wxSpinCtrl* m_spinIgnoreFirstRows_ = nullptr;
@@ -171,6 +171,7 @@ private:
     wxString date_format_;
     mmColorButton* colorButton_ = nullptr;
     wxCheckBox* colorCheckBox_ = nullptr;
+    wxCheckBox* m_checkbox_preset_default = nullptr;
 
     wxChoice* m_choiceAmountFieldSign;
     mmChoiceAmountMask* m_choiceDecimalSeparator;
@@ -192,6 +193,8 @@ private:
     wxCheckBox* payeeMatchAddNotes_ = nullptr;
     wxDataViewListCtrl* payeeListBox_ = nullptr;
     wxDataViewListCtrl* categoryListBox_ = nullptr;
+    std::map<wxString, wxString> m_preset_id;
+    std::map<int, wxString> m_acct_default_preset;
 
     /// Creation
     bool Create(wxWindow* parent,
@@ -230,6 +233,7 @@ private:
     void OnMenuSelected(wxCommandEvent& event);
     void OnShowPayeeDialog(wxMouseEvent& event);
     void OnShowCategDialog(wxMouseEvent& event);
+    void saveAccountPresets();
 private:
     void OnLoad();
     void UpdateListItemBackground();
