@@ -164,6 +164,9 @@ public:
     void CurrencyHistoryEnabled(bool value);
     bool getCurrencyHistoryEnabled() const;
 
+    void CurrencyHistoryDays(int value);
+    int getCurrencyHistoryDays() const;
+
     // Homepage income vs expenses graph range
     void setHomePageIncExpRange(int value);
     int getHomePageIncExpRange() const;
@@ -177,6 +180,7 @@ private:
     wxString m_financialYearStartMonthString;
     int m_baseCurrency = -1;
     bool m_currencyHistoryEnabled = false;
+    int  m_currencyHistoryDays = 90;
     bool m_bulk_enter = false;
 
     bool m_databaseUpdated = false;
@@ -237,6 +241,11 @@ inline bool Option::getSendUsageStatistics() const
 #else
     return m_usageStatistics;
 #endif
+}
+
+inline int Option::getCurrencyHistoryDays() const
+{
+    return m_currencyHistoryDays;
 }
 
 inline bool Option::getCurrencyHistoryEnabled() const

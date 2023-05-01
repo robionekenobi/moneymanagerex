@@ -170,12 +170,25 @@ void OptionSettingsGeneral::Create()
     }
 
     m_currencyStaticBoxSizer->AddSpacer(15);
+    { // Currency History Details
+        wxBoxSizer* currencyBaseSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_currencyStaticBoxSizer->Add(currencyBaseSizer, wxSizerFlags(g_flagsV).Border(wxLEFT, 0));
 
-    m_currency_history = new wxCheckBox(general_panel, wxID_STATIC, _("Use currency history"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    m_currency_history->SetValue(Option::instance().getCurrencyHistoryEnabled());
-    mmToolTip(m_currency_history, _("Select to use currency history (one rate for each day), deselect to use a fixed rate"));
-    m_currencyStaticBoxSizer->Add(m_currency_history, g_flagsV);
+        m_currency_history = new wxCheckBox(general_panel, wxID_STATIC, _("Use currency history"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
+        m_currency_history->SetValue(Option::instance().getCurrencyHistoryEnabled());
+        mmToolTip(m_currency_history, _("Select to use currency history (one rate for each day), deselect to use a fixed rate"));
+        currencyBaseSizer->Add(m_currency_history, g_flagsH);
 
+        currencyBaseSizer->Add(new wxStaticText(general_panel, wxID_STATIC, _("Days")), g_flagsH);
+
+        int days = Option::instance().getCurrencyHistoryDays();
+        wxSpinCtrl* textHistDay = new wxSpinCtrl(general_panel, ID_DIALOG_OPTIONS_CURRENCY_HIST_DAYS,
+            wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 90, 99999, days);
+        textHistDay->SetValue(days);
+        mmToolTip(textHistDay, _("Specify number of Days for historic currency data"));
+
+        currencyBaseSizer->Add(textHistDay, g_flagsH);
+    }
     // Financial Year Settings
     wxStaticBox* financialYearStaticBox = new wxStaticBox(general_panel, wxID_ANY, _("Financial Year"));
     SetBoldFont(financialYearStaticBox);
@@ -314,6 +327,13 @@ bool OptionSettingsGeneral::SaveSettings()
     }
 
     Option::instance().CurrencyHistoryEnabled(m_currency_history->GetValue());
+
+    //Save History Days
+    wxSpinCtrl* hisDay = static_cast<wxSpinCtrl*>(FindWindow(ID_DIALOG_OPTIONS_CURRENCY_HIST_DAYS));
+    int day = hisDay->GetValue();
+    if (day < 90)
+        day = 90;
+    Option::instance().CurrencyHistoryDays(day);
 
     Option::instance().setDateFormat(m_date_format);
     SaveFinancialYearStart();

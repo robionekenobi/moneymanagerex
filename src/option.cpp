@@ -53,6 +53,7 @@ void Option::LoadOptions(bool include_infotable)
         m_sharePrecision = Model_Infotable::instance().GetIntInfo("SHARE_PRECISION", 4);
         m_baseCurrency = Model_Infotable::instance().GetIntInfo("BASECURRENCYID", -1);
         m_currencyHistoryEnabled = Model_Infotable::instance().GetBoolInfo(INIDB_USE_CURRENCY_HISTORY, true);
+        m_currencyHistoryDays = Model_Infotable::instance().GetIntInfo(INIDB_USE_CURRENCY_HISTORY_DAYS, true);
         m_budget_days_offset = Model_Infotable::instance().GetIntInfo("BUDGET_DAYS_OFFSET", 0);
         m_reporting_firstday = Model_Infotable::instance().GetIntInfo("REPORTING_FIRSTDAY", 1);
         if (m_reporting_firstday > 28) m_reporting_firstday = 28;
@@ -177,6 +178,12 @@ void Option::setBaseCurrency(int base_currency_id)
 int Option::getBaseCurrencyID()
 {
     return m_baseCurrency;
+}
+
+void Option::CurrencyHistoryDays(int value)
+{
+    Model_Infotable::instance().Set(INIDB_USE_CURRENCY_HISTORY_DAYS, value);
+    m_currencyHistoryDays = value;
 }
 
 void Option::CurrencyHistoryEnabled(bool value)
