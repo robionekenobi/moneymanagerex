@@ -19,7 +19,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 set(MMEX_VERSION 1.6.4)
 SET(MMEX_VERSION_ALPHA -1)
-SET(MMEX_VERSION_BETA 7)
+SET(MMEX_VERSION_BETA 8)
 SET(MMEX_VERSION_RC -1)
 
 # ---------------------------------------------------------------------------
@@ -625,13 +625,13 @@ install(FILES ${GRMFILES} DESTINATION ${MMEX_RES_DIR_REPORTS})
 if(LINUX)
     # .desktop File
     install(FILES
-        resources/dist/linux/share/applications/org.moneymanager.MMEX.desktop
+        resources/dist/linux/share/applications/org.moneymanagerex.MMEX.desktop
         DESTINATION share/applications)
     install(FILES
-        resources/dist/linux/share/metainfo/org.moneymanager.MMEX.metainfo.xml
+        resources/dist/linux/share/metainfo/org.moneymanagerex.MMEX.metainfo.xml
         DESTINATION share/metainfo)
     install(FILES
-        resources/dist/linux/share/mime/packages/org.moneymanager.MMEX.mime.xml
+        resources/dist/linux/share/mime/packages/org.moneymanagerex.MMEX.mime.xml
         DESTINATION share/mime/packages)
 endif()
 
@@ -639,7 +639,7 @@ endif()
 if(LINUX)
     install(FILES
         resources/mmex.svg
-        DESTINATION share/icons/hicolor/scalable/apps)
+        DESTINATION share/icons/hicolor/scalable/apps RENAME org.moneymanagerex.MMEX.svg)
 elseif(APPLE)
     install(FILES
         "${MACOSX_APP_ICON_FILE}"
