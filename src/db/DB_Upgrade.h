@@ -18,7 +18,7 @@
 #include <vector>
 #include <wx/string.h>
 
-const int dbLatestVersion = 18;
+const int dbLatestVersion = 19;
 
 const std::vector<wxString> dbUpgradeQuery =
 {
