@@ -54,8 +54,10 @@
 #include "payeedialog.h"
 #include "relocatecategorydialog.h"
 #include "relocatepayeedialog.h"
+#include "relocatetagdialog.h"
 #include "recentfiles.h"
 #include "stockspanel.h"
+#include "tagdialog.h"
 #include "themes.h"
 #include "transdialog.h"
 #include "util.h"
@@ -104,6 +106,7 @@ EVT_MENU(MENU_ACCTDELETE, mmGUIFrame::OnDeleteAccount)
 EVT_MENU(MENU_ACCOUNT_REALLOCATE, mmGUIFrame::OnReallocateAccount)
 EVT_MENU(MENU_ORGCATEGS, mmGUIFrame::OnOrgCategories)
 EVT_MENU(MENU_ORGPAYEE, mmGUIFrame::OnOrgPayees)
+EVT_MENU(MENU_ORGTAGS, mmGUIFrame::OnOrgTags)
 EVT_MENU(wxID_PREFERENCES, mmGUIFrame::OnOptions)
 EVT_MENU(wxID_NEW, mmGUIFrame::OnNewTransaction)
 EVT_MENU(wxID_REFRESH, mmGUIFrame::refreshPanelData)
@@ -147,6 +150,7 @@ EVT_MENU(MENU_VIEW_SHOW_MONEYTIPS, mmGUIFrame::OnViewShowMoneyTips)
 
 EVT_MENU(MENU_CATEGORY_RELOCATION, mmGUIFrame::OnCategoryRelocation)
 EVT_MENU(MENU_PAYEE_RELOCATION, mmGUIFrame::OnPayeeRelocation)
+EVT_MENU(MENU_TAG_RELOCATION, mmGUIFrame::OnTagRelocation)
 
 EVT_UPDATE_UI(MENU_VIEW_TOOLBAR, mmGUIFrame::OnViewToolbarUpdateUI)
 EVT_UPDATE_UI(MENU_VIEW_LINKS, mmGUIFrame::OnViewLinksUpdateUI)
@@ -627,6 +631,7 @@ void mmGUIFrame::menuEnableItems(bool enable)
     menuBar_->FindItem(MENU_ORGPAYEE)->Enable(enable);
     menuBar_->FindItem(MENU_CATEGORY_RELOCATION)->Enable(enable);
     menuBar_->FindItem(MENU_PAYEE_RELOCATION)->Enable(enable);
+    menuBar_->FindItem(MENU_TAG_RELOCATION)->Enable(enable);
     menuBar_->FindItem(wxID_VIEW_LIST)->Enable(enable);
     menuBar_->FindItem(wxID_BROWSE)->Enable(enable);
     menuBar_->FindItem(MENU_CONVERT_ENC_DB)->Enable(enable);
@@ -1676,13 +1681,17 @@ void mmGUIFrame::createMenu()
 
     menuTools->AppendSeparator();
 
+    wxMenuItem* menuItemPayee = new wxMenuItem(menuTools
+        , MENU_ORGPAYEE, _("Organize &Payees..."), _("Organize Payees"));
+    menuTools->Append(menuItemPayee);
+
     wxMenuItem* menuItemCateg = new wxMenuItem(menuTools
         , MENU_ORGCATEGS, _("Organize &Categories..."), _("Organize Categories"));
     menuTools->Append(menuItemCateg);
 
-    wxMenuItem* menuItemPayee = new wxMenuItem(menuTools
-        , MENU_ORGPAYEE, _("Organize &Payees..."), _("Organize Payees"));
-    menuTools->Append(menuItemPayee);
+    wxMenuItem* menuItemTags = new wxMenuItem(menuTools
+        , MENU_ORGTAGS, _("Organize &Tags..."), _("Organize Tags"));
+    menuTools->Append(menuItemTags);
 
     wxMenuItem* menuItemCurrency = new wxMenuItem(menuTools, MENU_CURRENCY
         , _("Organize Curre&ncies..."), _("Organize Currencies"));
@@ -1694,12 +1703,16 @@ void mmGUIFrame::createMenu()
     wxMenuItem* menuItemPayeeRelocation = new wxMenuItem(menuTools
         , MENU_PAYEE_RELOCATION, _("&Payees...")
         , _("Reassign all payees to another payee"));
+    wxMenuItem* menuItemTagRelocation = new wxMenuItem(menuTools
+        , MENU_TAG_RELOCATION, _("&Tags...")
+        , _("Reassign all tags to another tag"));
     wxMenuItem* menuItemRelocation = new wxMenuItem(menuTools
         , MENU_RELOCATION, _("Re&location of")
-        , _("Relocate Categories && Payees"));
+        , _("Relocate Categories, Payees, and Tags"));
     wxMenu* menuRelocation = new wxMenu;
-    menuRelocation->Append(menuItemCategoryRelocation);
     menuRelocation->Append(menuItemPayeeRelocation);
+    menuRelocation->Append(menuItemCategoryRelocation);
+    menuRelocation->Append(menuItemTagRelocation);
     menuItemRelocation->SetSubMenu(menuRelocation);
     menuTools->Append(menuItemRelocation);
 
@@ -1898,9 +1911,10 @@ void mmGUIFrame::CreateToolBar()
     toolBar_->AddSeparator();
     toolBar_->AddTool(wxID_NEW, _("New"), mmBitmapBundle(png::NEW_TRX, toolbar_icon_size), _("New Transaction"));
     toolBar_->AddSeparator();
-    toolBar_->AddTool(MENU_ORGCATEGS, _("Organize Categories"), mmBitmapBundle(png::CATEGORY, toolbar_icon_size), _("Organize Categories Dialog"));
-    toolBar_->AddTool(MENU_ORGPAYEE, _("Organize Payees"), mmBitmapBundle(png::PAYEE, toolbar_icon_size), _("Organize Payees Dialog"));
-    toolBar_->AddTool(MENU_CURRENCY, _("Organize Currency"), mmBitmapBundle(png::CURR, toolbar_icon_size), _("Organize Currency Dialog"));
+    toolBar_->AddTool(MENU_ORGPAYEE, _("Organize Payees"), mmBitmapBundle(png::PAYEE, toolbar_icon_size), _("Organize Payees"));
+    toolBar_->AddTool(MENU_ORGCATEGS, _("Organize Categories"), mmBitmapBundle(png::CATEGORY, toolbar_icon_size), _("Organize Categories"));
+    toolBar_->AddTool(MENU_ORGTAGS, _("Organize Tags"), mmBitmapBundle(png::TAG, toolbar_icon_size), _("Organize Tags"));
+    toolBar_->AddTool(MENU_CURRENCY, _("Organize Currencies"), mmBitmapBundle(png::CURR, toolbar_icon_size), _("Organize Currencies"));
     toolBar_->AddSeparator();
     toolBar_->AddTool(MENU_TRANSACTIONREPORT, _("Transaction Report Filter"), mmBitmapBundle(png::FILTER, toolbar_icon_size), _("Transaction Report Filter"));
     toolBar_->AddSeparator();
@@ -1959,6 +1973,8 @@ void mmGUIFrame::InitializeModelTables()
     m_all_models.push_back(&Model_Attachment::instance(m_db.get()));
     m_all_models.push_back(&Model_CustomFieldData::instance(m_db.get()));
     m_all_models.push_back(&Model_CustomField::instance(m_db.get()));
+    m_all_models.push_back(&Model_Tag::instance(m_db.get()));
+    m_all_models.push_back(&Model_Taglink::instance(m_db.get()));
     m_all_models.push_back(&Model_Translink::instance(m_db.get()));
     m_all_models.push_back(&Model_Shareinfo::instance(m_db.get()));
 }
@@ -2389,7 +2405,7 @@ void mmGUIFrame::OnDebugDB(wxCommandEvent& /*event*/)
     if (!resultMessage.IsEmpty())
     {
         wxTextEntryDialog checkDlg(this, _("Result of database integrity check:"), _("Database Check"), resultMessage.Trim(), wxOK | wxTE_MULTILINE);
-        wxTextCtrl* textCtrl = dynamic_cast<wxTextCtrl*>(checkDlg.GetWindowChild(3000));
+        wxTextCtrl* textCtrl = dynamic_cast<wxTextCtrl*>(checkDlg.FindWindow(3000));
         if (textCtrl)
         {
             textCtrl->SetEditable(false);
@@ -2665,6 +2681,7 @@ void mmGUIFrame::refreshPanelData()
         wxDynamicCast(panelCurrent_, mmStocksPanel)->RefreshList();
         break;
     case mmID_ASSETS:
+        wxDynamicCast(panelCurrent_, mmAssetsPanel)->RefreshList();
         break;
     case mmID_BILLS:
         wxDynamicCast(panelCurrent_, mmBillsDepositsPanel)->RefreshList();
@@ -2710,6 +2727,20 @@ void mmGUIFrame::OnOrgPayees(wxCommandEvent& /*event*/)
         refreshPanelData();
         RefreshNavigationTree();
     }
+}
+//----------------------------------------------------------------------------
+
+void mmGUIFrame::OnOrgTags(wxCommandEvent& /*event*/)
+{
+    mmTagDialog dlg(this);
+    dlg.ShowModal();
+    if (dlg.getRefreshRequested())
+    {
+        activeReport_ = false;
+        refreshPanelData();
+        RefreshNavigationTree();
+    }
+    
 }
 //----------------------------------------------------------------------------
 
@@ -3355,14 +3386,19 @@ void mmGUIFrame::OnAssets(wxCommandEvent& /*event*/)
 
     const auto time = wxDateTime::UNow();
 
-    DoWindowsFreezeThaw(homePanel_);
-    wxSizer *sizer = cleanupHomePanel();
-    panelCurrent_ = new mmAssetsPanel(this, homePanel_, mmID_ASSETS);
-    sizer->Add(panelCurrent_, 1, wxGROW | wxALL, 1);
-    homePanel_->Layout();
-    DoWindowsFreezeThaw(homePanel_);
-    menuPrintingEnable(true);
-    setNavTreeSection(_("Assets"));
+    if (panelCurrent_->GetId() == mmID_ASSETS)
+        refreshPanelData();
+    else
+    {
+        DoWindowsFreezeThaw(homePanel_);
+        wxSizer* sizer = cleanupHomePanel();
+        panelCurrent_ = new mmAssetsPanel(this, homePanel_, mmID_ASSETS);
+        sizer->Add(panelCurrent_, 1, wxGROW | wxALL, 1);
+        homePanel_->Layout();
+        DoWindowsFreezeThaw(homePanel_);
+        menuPrintingEnable(true);
+        setNavTreeSection(_("Assets"));
+    }
 
     json_writer.Key("seconds");
     json_writer.Double((wxDateTime::UNow() - time).GetMilliseconds().ToDouble() / 1000);
@@ -3694,6 +3730,22 @@ void mmGUIFrame::OnPayeeRelocation(wxCommandEvent& /*event*/)
                 dlg.updatedPayeesCount())
             << "\n\n";
         wxMessageBox(msgStr, _("Payee Relocation Result"));
+        refreshPanelData();
+    }
+}
+//----------------------------------------------------------------------------
+
+void mmGUIFrame::OnTagRelocation(wxCommandEvent& /*event*/)
+{
+    relocateTagDialog dlg(this);
+    if (dlg.ShowModal() == wxID_OK)
+    {
+        wxString msgStr;
+        msgStr << _("Tag Relocation Completed.") << "\n\n"
+            << wxString::Format(_("Records have been updated in the database: %i"),
+                dlg.updatedTagsCount())
+            << "\n\n";
+        wxMessageBox(msgStr, _("Tag Relocation Result"));
         refreshPanelData();
     }
 }
