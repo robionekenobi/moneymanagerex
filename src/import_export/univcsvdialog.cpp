@@ -1639,9 +1639,9 @@ void mmUnivCSVDialog::OnExport(wxCommandEvent& WXUNUSED(event))
                     if (category)
                     {
                         if (isIndexPresent(UNIV_CSV_SUBCATEGORY) && category->PARENTID != -1)
-                            entry = wxGetTranslation(Model_Category::full_name(category->PARENTID), ":");
+                            entry = wxGetTranslation(Model_Category::full_name(category->PARENTID, ":"));
                         else
-                            entry = wxGetTranslation(Model_Category::full_name(category->CATEGID), ":");
+                            entry = wxGetTranslation(Model_Category::full_name(category->CATEGID, ":"));
                     }
                     break;
                 case UNIV_CSV_SUBCATEGORY:
@@ -1760,7 +1760,7 @@ void mmUnivCSVDialog::update_preview()
         unsigned int lastRow = totalLines - m_spinIgnoreLastRows_->GetValue();
 
         std::unique_ptr<mmDates> dParser(new mmDates);
-
+        wxRegEx categDelimiterRegex(" ?: ?");
         // Import- Add rows to preview
         for (unsigned int row = 0; row < totalLines; row++)
         {
@@ -1782,8 +1782,8 @@ void mmUnivCSVDialog::update_preview()
                     colCount++;
                 }
 
-                const auto content = pImporter->GetItem(row, col);
-
+                auto content = pImporter->GetItem(row, col);
+                
                 // add payee names to list
                 if (row >= firstRow
                     && row < lastRow
@@ -1807,6 +1807,8 @@ void mmUnivCSVDialog::update_preview()
                 {
                     if (!content.IsEmpty())
                     {
+                        // Use the ":" category delimiter to put all imported names in a consistent format.
+                        categDelimiterRegex.Replace(&content, ":");
                         m_CSVcategoryNames[content] = -1;
                         categ_name = content;
                     } else
@@ -2034,13 +2036,12 @@ void mmUnivCSVDialog::refreshTabs(int tabs) {
     {
         validateCategories();
         num = 0;
-        const auto& c(Model_Category::all_categories());
         categoryListBox_->DeleteAllItems();
         for (const auto& categ : m_CSVcategoryNames)
         {
             wxVector<wxVariant> data;
             data.push_back(wxVariant(categ.first));
-            if (c.find(categ.first) == c.end())
+            if (categ.second == -1)
                 data.push_back(wxVariant(_("Missing")));
             else
                 data.push_back(wxVariant(_("OK")));
@@ -2343,10 +2344,11 @@ void mmUnivCSVDialog::parseToken(int index, const wxString& orig_token, tran_hol
     Model_Payee::Data* payee = nullptr;
     Model_Category::Data* category = nullptr;
     int parentID = -1;
-    wxStringTokenizer* categs;
+    wxStringTokenizer categs;
     wxString categname;
     wxDateTime dtdt;
     double amount;
+    wxRegEx categDelimiterRegex;
 
     switch (index)
     {
@@ -2383,14 +2385,17 @@ void mmUnivCSVDialog::parseToken(int index, const wxString& orig_token, tran_hol
         break;
 
     case UNIV_CSV_CATEGORY:
-        // check if we already have this category
+        // Convert to standard delimiter for consistency
+        categDelimiterRegex.Compile(" ?: ?");
+        categDelimiterRegex.Replace(&token, ":");
+        // check if we already have this category 
         if (m_CSVcategoryNames.find(token) != m_CSVcategoryNames.end() && m_CSVcategoryNames[token] != -1)
             holder.CategoryID = m_CSVcategoryNames[token];
         else // create category and any missing parent categories
         {
-            categs = new wxStringTokenizer(token, ":");
-            while (categs->HasMoreTokens()) {
-                categname = categs->GetNextToken();
+            categs = wxStringTokenizer(token, ":");
+            while (categs.HasMoreTokens()) {
+                categname = categs.GetNextToken();
                 category = Model_Category::instance().get(categname, parentID);
                 if (!category)
                 {
