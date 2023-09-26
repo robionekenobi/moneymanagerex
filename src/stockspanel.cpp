@@ -484,7 +484,9 @@ wxString StocksListCtrl::getStockInfo(int selectedIndex) const
         stocktotalnumShares += s.NUMSHARES;
         stockavgPurchasePrice += s.VALUE;
     }
-    stockavgPurchasePrice /= stocktotalnumShares;
+    // If we do not have any shares, do not divide by 0
+    if (stocktotalnumShares != 0.0)
+        stockavgPurchasePrice /= stocktotalnumShares;
 
     double numShares = m_stocks[selectedIndex].NUMSHARES;
     wxString sNumShares = wxString::Format("%i", static_cast<int>(numShares));
@@ -499,6 +501,10 @@ wxString StocksListCtrl::getStockInfo(int selectedIndex) const
     double stockCurrentPrice = m_stocks[selectedIndex].CURRENTPRICE;
     double stockDifference = stockCurrentPrice - stockPurchasePrice;
 
+    // If we do not have any Global Purchase Price, take purchaseprice of the current share
+    if (stockavgPurchasePrice == 0.0)
+        stockavgPurchasePrice = stockPurchasePrice;
+
     double stocktotalDifference = stockCurrentPrice - stockavgPurchasePrice;
     //Commision don't calculates here
     const wxString& stockPercentage = (stockPurchasePrice != 0.0)
@@ -512,7 +518,7 @@ wxString StocksListCtrl::getStockInfo(int selectedIndex) const
     const wxString& sAvgPurchasePrice = Model_Currency::toCurrency(stockavgPurchasePrice, m_stock_panel->m_currency, 4);
     const wxString& sCurrentPrice = Model_Currency::toCurrency(stockCurrentPrice, m_stock_panel->m_currency, 4);
     const wxString& sDifference = Model_Currency::toCurrency(stockDifference, m_stock_panel->m_currency, 4);
-    const wxString& sTotalDifference = Model_Currency::toCurrency(stocktotalDifference);
+    const wxString& sTotalDifference = Model_Currency::toCurrency(stocktotalDifference, m_stock_panel->m_currency, 4);
 
     wxString miniInfo = "";
     if (m_stocks[selectedIndex].SYMBOL != "")
