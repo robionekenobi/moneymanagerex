@@ -46,7 +46,7 @@ Model_Usage& Model_Usage::instance(wxSQLite3Database* db)
     ins.db_ = db;
     ins.destroy_cache();
     ins.ensure(db);
-    ins.m_start = wxDateTime::Now();
+    ins.m_start = wxDateTime::UNow();
 
     return ins;
 }
@@ -210,6 +210,9 @@ void Model_Usage::pageview(const wxString& documentPath, const wxString& documen
     Value platform(wxPlatformInfo::Get().GetPortIdShortName().utf8_str(), document.GetAllocator());
     event.AddMember("platform", platform, document.GetAllocator());
 
+    Value os_name(wxGetOsDescription().utf8_str(), document.GetAllocator());
+    event.AddMember("os_name", os_name, document.GetAllocator());
+
     Value language(Option::instance().getLanguageCode().utf8_str(), document.GetAllocator());
     event.AddMember("language", language, document.GetAllocator());
 
@@ -228,6 +231,8 @@ void Model_Usage::pageview(const wxString& documentPath, const wxString& documen
 
     Value page_location(documentPath.utf8_str(), document.GetAllocator());
     event_properties.AddMember("page_location", page_location, document.GetAllocator());
+
+    event_properties.AddMember("plt", Value(static_cast<int>(plt)), document.GetAllocator());
 
     event.AddMember("event_properties", event_properties, document.GetAllocator());
 
