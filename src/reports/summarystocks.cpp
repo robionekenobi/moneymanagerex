@@ -1,6 +1,6 @@
 /*******************************************************
  Copyright (C) 2006 Madhan Kanagavel
- Copyright (C) 2021 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2021,2024 Mark Whalley (mark@ipx.co.uk)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -17,22 +17,23 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "reports/htmlbuilder.h"
 #include "summarystocks.h"
+#include "reports/htmlbuilder.h"
 
-#include "budget.h"
 #include "constants.h"
+#include "stockspanel.h"
+#include "budget.h"
+#include "util.h"
+#include "reports/mmDateRange.h"
 #include "model/Model_Account.h"
 #include "model/Model_Currency.h"
 #include "model/Model_CurrencyHistory.h"
 #include "model/Model_StockHistory.h"
-#include "reports/mmDateRange.h"
-#include "stockspanel.h"
-#include "util.h"
 
 #include <algorithm>
 
-mmReportSummaryStocks::mmReportSummaryStocks() : mmPrintableBase(wxTRANSLATE("Summary of Stocks"))
+mmReportSummaryStocks::mmReportSummaryStocks()
+    : mmPrintableBase(wxTRANSLATE("Summary of Stocks"))
 {
     setReportParameters(Reports::StocksReportSummary);
 }
@@ -52,10 +53,8 @@ void mmReportSummaryStocks::RefreshData()
 
     for (const auto& a : Model_Account::instance().all(Model_Account::COL_ACCOUNTNAME))
     {
-        if (Model_Account::type(a) != Model_Account::INVESTMENT)
-            continue;
-        if (Model_Account::status(a) != Model_Account::OPEN)
-            continue;
+        if (Model_Account::type(a) != Model_Account::INVESTMENT) continue;
+        if (Model_Account::status(a) != Model_Account::OPEN) continue;
 
         account.id = a.id();
         account.name = a.ACCOUNTNAME;
@@ -135,7 +134,7 @@ wxString mmReportSummaryStocks::getHTMLText()
                 {
                     hb.startTableRow();
                     {
-                        hb.addTableHeaderCell(acct.name, "text-left", 9);
+                        hb.addTableHeaderCell(acct.name, "text-left", 10);
                     }
                     hb.endTableRow();
                 }
@@ -195,42 +194,40 @@ wxString mmReportSummaryStocks::getHTMLText()
                 hb.addEmptyTableCell(2);
 
                 hb.startTableCell(" style='text-align:right;' nowrap");
-                if (forex_real_gain_loss != 0)
-                {
-                    hb.startSpan(Model_Currency::toCurrency(m_real_gain_loss_excl_forex),
-                                 wxString::Format(" style='text-align:right;%s' nowrap", m_real_gain_loss_excl_forex < 0 ? "color:red;" : ""));
+                if (forex_real_gain_loss != 0) {
+                    hb.startSpan(Model_Currency::toCurrency(m_real_gain_loss_excl_forex), wxString::Format(" style='text-align:right;%s' nowrap"
+                        , m_real_gain_loss_excl_forex < 0 ? "color:red;" : ""));
                     hb.endSpan();
                     hb.startSpan(" + ", "");
                     hb.endSpan();
-                    hb.startSpan(Model_Currency::toCurrency(forex_real_gain_loss),
-                                 wxString::Format(" style='text-align:right;%s' nowrap", forex_real_gain_loss < 0 ? "color:red;" : ""));
+                    hb.startSpan(Model_Currency::toCurrency(forex_real_gain_loss), wxString::Format(" style='text-align:right;%s' nowrap"
+                        , forex_real_gain_loss < 0 ? "color:red;" : ""));
                     hb.startSpan(" FX", "");
                     hb.endSpan();
                     hb.addLineBreak();
                 }
-                hb.startSpan(Model_Currency::toCurrency(m_real_gain_loss_sum_total),
-                             wxString::Format(" style='text-align:right;%s' nowrap", m_real_gain_loss_sum_total < 0 ? "color:red;" : ""));
+                hb.startSpan(Model_Currency::toCurrency(m_real_gain_loss_sum_total), wxString::Format(" style='text-align:right;%s' nowrap"
+                    , m_real_gain_loss_sum_total < 0 ? "color:red;" : ""));
                 hb.endSpan();
 
                 hb.endTableCell();
 
                 hb.startTableCell(" style='text-align:right;' nowrap");
-                if (forex_unreal_gain_loss != 0)
-                {
-                    hb.startSpan(Model_Currency::toCurrency(m_unreal_gain_loss_excl_forex),
-                                 wxString::Format(" style='text-align:right;%s' nowrap", m_unreal_gain_loss_excl_forex < 0 ? "color:red;" : ""));
+                if (forex_unreal_gain_loss != 0) {
+                    hb.startSpan(Model_Currency::toCurrency(m_unreal_gain_loss_excl_forex), wxString::Format(" style='text-align:right;%s' nowrap"
+                        , m_unreal_gain_loss_excl_forex < 0 ? "color:red;" : ""));
                     hb.endSpan();
                     hb.startSpan(" + ", "");
                     hb.endSpan();
-                    hb.startSpan(Model_Currency::toCurrency(forex_unreal_gain_loss),
-                                 wxString::Format(" style='text-align:right;%s' nowrap", forex_unreal_gain_loss < 0 ? "color:red;" : ""));
+                    hb.startSpan(Model_Currency::toCurrency(forex_unreal_gain_loss), wxString::Format(" style='text-align:right;%s' nowrap"
+                        , forex_unreal_gain_loss < 0 ? "color:red;" : ""));
                     hb.endSpan();
                     hb.startSpan(" FX", "");
                     hb.endSpan();
                     hb.addLineBreak();
                 }
-                hb.startSpan(Model_Currency::toCurrency(m_unreal_gain_loss_sum_total),
-                             wxString::Format(" style='text-align:right;%s' nowrap", m_unreal_gain_loss_sum_total < 0 ? "color:red;" : ""));
+                hb.startSpan(Model_Currency::toCurrency(m_unreal_gain_loss_sum_total), wxString::Format(" style='text-align:right;%s' nowrap"
+                    , m_unreal_gain_loss_sum_total < 0 ? "color:red;" : ""));
                 hb.endSpan();
 
                 hb.endTableCell();
@@ -252,7 +249,8 @@ wxString mmReportSummaryStocks::getHTMLText()
     return hb.getHTMLText();
 }
 
-mmReportChartStocks::mmReportChartStocks() : mmPrintableBase(wxTRANSLATE("Stocks Performance Charts"))
+mmReportChartStocks::mmReportChartStocks()
+    : mmPrintableBase(wxTRANSLATE("Stocks Performance Charts"))
 {
     setReportParameters(Reports::StocksReportPerformance);
 }
@@ -276,10 +274,9 @@ wxString mmReportChartStocks::getHTMLText()
     wxArrayString symbols;
     for (const auto& stock : Model_Stock::instance().all(Model_Stock::COL_SYMBOL))
     {
-        if (symbols.Index(stock.SYMBOL) != wxNOT_FOUND)
-        {
-            continue;
-        }
+        Model_Account::Data* account = Model_Account::instance().get(stock.HELDAT);
+        if (Model_Account::status(account) != Model_Account::OPEN) continue;
+        if (symbols.Index(stock.SYMBOL) != wxNOT_FOUND) continue;
 
         symbols.Add(stock.SYMBOL);
         int dataCount = 0, freq = 1;
@@ -288,10 +285,9 @@ wxString mmReportChartStocks::getHTMLText()
                                                             Model_StockHistory::DATE(m_date_range->end_date(), LESS_OR_EQUAL));
         std::stable_sort(histData.begin(), histData.end(), SorterByDATE());
 
-        // bool showGridLines = (histData.size() <= 366);
-        // bool pointDot = (histData.size() <= 30);
-        if (histData.size() > 366)
-        {
+        //bool showGridLines = (histData.size() <= 366);
+        //bool pointDot = (histData.size() <= 30);
+        if (histData.size() > 366) {
             freq = histData.size() / 366;
         }
 
@@ -312,8 +308,6 @@ wxString mmReportChartStocks::getHTMLText()
 
         if (!gd.series.empty())
         {
-
-            Model_Account::Data* account = Model_Account::instance().get(stock.HELDAT);
             hb.addHeader(1, wxString::Format("%s / %s - (%s)", stock.SYMBOL, stock.STOCKNAME, account->ACCOUNTNAME));
             gd.type = GraphData::LINE_DATETIME;
             hb.addChart(gd);
