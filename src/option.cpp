@@ -187,6 +187,12 @@ void Option::CurrencyHistoryEnabled(const bool value)
     m_currencyHistoryEnabled = value;
 }
 
+void Option::CurrencyHistoryDays(const int value)
+{
+    Model_Infotable::instance().Set(INIDB_USE_CURRENCY_HISTORY_DAYS, value);
+    m_currencyHistoryDays = value;
+}
+
 void Option::DatabaseUpdated(const bool value)
 {
     m_databaseUpdated = value;
