@@ -27,6 +27,7 @@
 #include "images_list.h"
 #include "mmSimpleDialogs.h"
 #include "mmTextCtrl.h"
+#include "optionsettingsview.h"
 #include "paths.h"
 #include "payeedialog.h"
 #include "splittransactionsdialog.h"
@@ -59,7 +60,7 @@ EVT_CHOICE(ID_DIALOG_TRANS_TYPE, mmTransDialog::OnTransTypeChanged)
 EVT_CHECKBOX(ID_DIALOG_TRANS_ADVANCED_CHECKBOX, mmTransDialog::OnAdvanceChecked)
 EVT_BUTTON(wxID_FILE, mmTransDialog::OnAttachments)
 EVT_BUTTON(ID_DIALOG_TRANS_CUSTOMFIELDS, mmTransDialog::OnMoreFields)
-EVT_MENU_RANGE(wxID_LOWEST, wxID_LOWEST + 20, mmTransDialog::OnNoteSelected)
+EVT_MENU_RANGE(wxID_HIGHEST, wxID_HIGHEST + 20, mmTransDialog::OnNoteSelected)
 EVT_BUTTON(wxID_OK, mmTransDialog::OnOk)
 EVT_BUTTON(wxID_CANCEL, mmTransDialog::OnCancel)
 EVT_CLOSE(mmTransDialog::OnQuit)
@@ -202,8 +203,11 @@ void mmTransDialog::dataToControls()
 
     if (!skip_date_init_) //Date
     {
+        bool is_time_used = Option::instance().UseTransDateTime();
         wxDateTime trx_date;
-        trx_date.ParseDateTime(m_trx_data.TRANSDATE) || trx_date.ParseDate(m_trx_data.TRANSDATE);
+        const wxString mask = is_time_used ? "%Y-%m-%dT%H:%M:%S" : "%Y-%m-%d";
+        if (!trx_date.ParseFormat(m_trx_data.TRANSDATE, mask))
+            trx_date.ParseDate(m_trx_data.TRANSDATE);
         dpc_->SetValue(trx_date);
         dpc_->SetFocus();
         skip_date_init_ = true;
@@ -1133,7 +1137,7 @@ void mmTransDialog::OnFrequentUsedNotes(wxCommandEvent& WXUNUSED(event))
     if (!frequentNotes_.empty())
     {
         wxMenu menu;
-        int id = wxID_LOWEST;
+        int id = wxID_HIGHEST;
 
         for (const auto& entry : frequentNotes_) {
             wxString label = entry.Mid(0, 36) + (entry.size() > 36 ? "..." : "");
@@ -1146,7 +1150,7 @@ void mmTransDialog::OnFrequentUsedNotes(wxCommandEvent& WXUNUSED(event))
 
 void mmTransDialog::OnNoteSelected(wxCommandEvent& event)
 {
-    int i = event.GetId() - wxID_LOWEST;
+    int i = event.GetId() - wxID_HIGHEST;
 
     if (i > 0 && static_cast<size_t>(i) <= frequentNotes_.size()) {
         if (!textNotes_->GetValue().EndsWith("\n") && !textNotes_->GetValue().empty())
