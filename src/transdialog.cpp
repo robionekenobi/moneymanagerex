@@ -1163,7 +1163,7 @@ void mmTransDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 {
     m_trx_data.NOTES = textNotes_->GetValue();
     m_trx_data.TRANSACTIONNUMBER = textNumber_->GetValue();
-    m_trx_data.TRANSDATE = dpc_->GetValue().FormatISOCombined();
+    m_trx_data.TRANSDATE = Option::instance().UseTransDateTime() ? dpc_->GetValue().FormatISOCombined() : dpc_->GetValue().FormatISODate();
     wxStringClientData* status_obj = static_cast<wxStringClientData*>(choiceStatus_->GetClientObject(choiceStatus_->GetSelection()));
     if (status_obj)
     {
