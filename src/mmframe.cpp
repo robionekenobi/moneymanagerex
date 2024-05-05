@@ -1472,9 +1472,9 @@ void mmGUIFrame::showTreePopupMenu(const wxTreeItemId& id, const wxPoint& pt)
     {
         const wxString data = iData->getString();
         wxLogDebug("MENU FILTER: %s", data);
-        menu.Append(MENU_TREEPOPUP_FILTER_EDIT, _("&Edit Filter..."));
-        menu.Append(MENU_TREEPOPUP_FILTER_RENAME, _("&Rename Filter..."));
-        menu.Append(MENU_TREEPOPUP_FILTER_DELETE, _("&Delete Filter..."));
+        menu.Append(MENU_TREEPOPUP_FILTER_EDIT, _("&Customize Report..."));
+        menu.Append(MENU_TREEPOPUP_FILTER_RENAME, _("&Rename Report..."));
+        menu.Append(MENU_TREEPOPUP_FILTER_DELETE, _("&Delete Report..."));
         PopupMenu(&menu, pt);
         break;
     }
@@ -1792,7 +1792,7 @@ wxMenuItem* menuItemResetView = new wxMenuItem(menuView, MENU_VIEW_RESET
     menuTools->AppendSeparator();
 
     wxMenuItem* menuItemTransactions = new wxMenuItem(menuTools, MENU_TRANSACTIONREPORT
-        , _("Transaction Report &Filter..."), _("Transaction Report Filter"));
+        , _("Tra&nsaction Report..."), _("Transaction Report"));
     menuTools->Append(menuItemTransactions);
 
     menuTools->AppendSeparator();
@@ -1969,7 +1969,7 @@ void mmGUIFrame::CreateToolBar()
     toolBar_->AddTool(MENU_ORGTAGS, _("Tag Manager"), mmBitmapBundle(png::TAG, toolbar_icon_size), _("Tag Manager"));
     toolBar_->AddTool(MENU_CURRENCY, _("Currency Manager"), mmBitmapBundle(png::CURR, toolbar_icon_size), _("Currency Manager"));
     toolBar_->AddSeparator();
-    toolBar_->AddTool(MENU_TRANSACTIONREPORT, _("Transaction Report Filter"), mmBitmapBundle(png::FILTER, toolbar_icon_size), _("Transaction Report Filter"));
+    toolBar_->AddTool(MENU_TRANSACTIONREPORT, _("Transaction Report"), mmBitmapBundle(png::FILTER, toolbar_icon_size), _("Transaction Report"));
     toolBar_->AddSeparator();
     toolBar_->AddTool(wxID_VIEW_LIST, _("General Report Manager"), mmBitmapBundle(png::GRM, toolbar_icon_size), _("General Report Manager"));
     toolBar_->AddSeparator();
@@ -2368,8 +2368,12 @@ void mmGUIFrame::OnConvertEncryptedDB(wxCommandEvent& /*event*/)
     wxCopyFile(encFileName, fileName);
 
     wxSQLite3Database db;
-    db.Open(fileName, password);
-    db.ReKey(wxEmptyString);
+    wxSQLite3CipherSQLCipher cipher;
+    cipher.InitializeVersionDefault(4);
+    cipher.SetLegacy(true);
+
+    db.Open(fileName, cipher, password);
+    db.ReKey(cipher, wxEmptyString);
     db.Close();
 
     mmErrorDialogs::MessageError(this, _("Converted database!"), _("MMEX message"));
@@ -2397,7 +2401,11 @@ void mmGUIFrame::OnChangeEncryptPassword(wxCommandEvent& /*event*/)
                 wxString confirm_password = confirm_dlg.GetValue();
                 if (!confirm_password.IsEmpty() && (new_password == confirm_password))
                 {
-                    m_db->ReKey(confirm_password);
+                    wxSQLite3CipherSQLCipher cipher;
+                    cipher.InitializeVersionDefault(4);
+                    cipher.SetLegacy(true);
+
+                    m_db->ReKey(cipher, confirm_password);
                     wxMessageBox(_("Password change completed"), password_change_heading);
                 }
                 else
@@ -2478,7 +2486,7 @@ void mmGUIFrame::OnDebugDB(wxCommandEvent& /*event*/)
         , wxString::Format("%s\n\n%s", _("Please use this function only if requested by MMEX support and you have been supplied with a .mmdbg debug file"), _("Do you want to proceed?"))
         , _("Database Debug"), wxYES_NO | wxNO_DEFAULT | wxICON_WARNING);
 
-    msgDlg.SetYesNoLabels(_("Yes"), _("No"));
+    msgDlg.SetYesNoLabels(_("&Yes"), _("&No"));
 
     if (msgDlg.ShowModal() == wxID_YES)
     {
@@ -2551,8 +2559,13 @@ void mmGUIFrame::OnSaveAs(wxCommandEvent& /*event*/)
     if (rekey) // encrypt or reset encryption
     {
         wxSQLite3Database dbx;
-        dbx.Open(newFileName.GetFullPath(), m_password);
-        dbx.ReKey(new_password); // empty password resets encryption
+
+        wxSQLite3CipherSQLCipher cipher;
+        cipher.InitializeVersionDefault(4);
+        cipher.SetLegacy(true);
+
+        dbx.Open(newFileName.GetFullPath(), cipher, m_password);
+        dbx.ReKey(cipher, new_password); // empty password resets encryption
         dbx.Close();
     }
 
