@@ -442,17 +442,17 @@ void billsDepositsListCtrl::OnItemRightClick(wxMouseEvent& event)
     m_bdp->updateBottomPanelData(m_selected_row);
     bool item_active = (m_selected_row >= 0);
     wxMenu menu;
-    menu.Append(MENU_POPUP_BD_ENTER_OCCUR, _("Enter next Occurrence…"));
+    menu.Append(MENU_POPUP_BD_ENTER_OCCUR, wxGetTranslation(wxString::FromUTF8(wxTRANSLATE("Enter next Occurrence…"))));
     menu.AppendSeparator();
     menu.Append(MENU_POPUP_BD_SKIP_OCCUR, _("Skip next Occurrence"));
     menu.AppendSeparator();
-    menu.Append(MENU_TREEPOPUP_NEW, _("&New Scheduled Transaction…"));
-    menu.Append(MENU_TREEPOPUP_EDIT, _("&Edit Scheduled Transaction…"));
-    menu.Append(MENU_TREEPOPUP_DUPLICATE, _("D&uplicate Scheduled Transaction…"));
+    menu.Append(MENU_TREEPOPUP_NEW, wxGetTranslation(wxString::FromUTF8(wxTRANSLATE("&New Scheduled Transaction…"))));
+    menu.Append(MENU_TREEPOPUP_EDIT, wxGetTranslation(wxString::FromUTF8(wxTRANSLATE("&Edit Scheduled Transaction…"))));
+    menu.Append(MENU_TREEPOPUP_DUPLICATE, wxGetTranslation(wxString::FromUTF8(wxTRANSLATE("D&uplicate Scheduled Transaction…"))));
     menu.AppendSeparator();
-    menu.Append(MENU_TREEPOPUP_DELETE, _("&Delete Scheduled Transaction…"));
+    menu.Append(MENU_TREEPOPUP_DELETE, wxGetTranslation(wxString::FromUTF8(wxTRANSLATE("&Delete Scheduled Transaction…"))));
     menu.AppendSeparator();
-    menu.Append(MENU_TREEPOPUP_ORGANIZE_ATTACHMENTS, _("&Organize Attachments…"));
+    menu.Append(MENU_TREEPOPUP_ORGANIZE_ATTACHMENTS, wxGetTranslation(wxString::FromUTF8(wxTRANSLATE("&Organize Attachments…"))));
 
     menu.Enable(MENU_POPUP_BD_ENTER_OCCUR, item_active);
     menu.Enable(MENU_POPUP_BD_SKIP_OCCUR, item_active);
@@ -519,7 +519,7 @@ wxString mmBillsDepositsPanel::getItem(long item, long column)
     {
         wxString value = bill.NOTES;
         value.Replace("\n", " ");
-        if (Model_Attachment::NrAttachments(Model_Attachment::reftype_desc(Model_Attachment::BILLSDEPOSIT), bill.BDID))
+        if (Model_Attachment::NrAttachments(Model_Attachment::REFTYPE_STR_BILLSDEPOSIT, bill.BDID))
             value.Prepend(mmAttachmentManage::GetAttachmentNoteSign());
         return value;
     }
@@ -680,7 +680,7 @@ void billsDepositsListCtrl::OnDeleteBDSeries(wxCommandEvent& WXUNUSED(event))
     {
         int64 BdId = m_bdp->bills_[m_selected_row].BDID;
         Model_Billsdeposits::instance().remove(BdId);
-        mmAttachmentManage::DeleteAllAttachments(Model_Attachment::reftype_desc(Model_Attachment::BILLSDEPOSIT), BdId);
+        mmAttachmentManage::DeleteAllAttachments(Model_Attachment::REFTYPE_STR_BILLSDEPOSIT, BdId);
         m_bdp->do_delete_custom_values(-BdId);
         m_bdp->initVirtualListControl();
         refreshVisualList(m_selected_row);
@@ -717,7 +717,7 @@ void billsDepositsListCtrl::OnOrganizeAttachments(wxCommandEvent& /*event*/)
     if (m_selected_row == -1) return;
 
     int64 RefId = m_bdp->bills_[m_selected_row].BDID;
-    const wxString& RefType = Model_Attachment::reftype_desc(Model_Attachment::BILLSDEPOSIT);
+    const wxString& RefType = Model_Attachment::REFTYPE_STR_BILLSDEPOSIT;
 
     mmAttachmentDialog dlg(this, RefType, RefId);
     dlg.ShowModal();
@@ -729,7 +729,7 @@ void billsDepositsListCtrl::OnOpenAttachment(wxCommandEvent& WXUNUSED(event))
 {
     if (m_selected_row == -1) return;
     int64 RefId = m_bdp->bills_[m_selected_row].BDID;
-    const wxString& RefType = Model_Attachment::reftype_desc(Model_Attachment::BILLSDEPOSIT);
+    const wxString& RefType = Model_Attachment::REFTYPE_STR_BILLSDEPOSIT;
 
     mmAttachmentManage::OpenAttachmentFromPanelIcon(this, RefType, RefId);
     refreshVisualList(m_bdp->initVirtualListControl(RefId));
@@ -988,6 +988,6 @@ wxString  mmBillsDepositsPanel::BuildPage() const
 
 void mmBillsDepositsPanel::do_delete_custom_values(int64 id)
 {
-    const wxString& RefType = Model_Attachment::reftype_desc(Model_Attachment::TRANSACTION);
+    const wxString& RefType = Model_Attachment::REFTYPE_STR_TRANSACTION;
     Model_CustomFieldData::DeleteAllData(RefType, id);
 }

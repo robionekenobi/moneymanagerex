@@ -360,7 +360,7 @@ void mmReportsPanel::CreateControls()
             itemBoxSizerHeader->AddSpacer(5);
             m_accounts = new wxChoice(itemPanel3, ID_CHOICE_ACCOUNTS);
             m_accounts->Append(_("All Accounts"));
-            m_accounts->Append(_("Specific Accounts…"));
+            m_accounts->Append(wxGetTranslation(wxString::FromUTF8(wxTRANSLATE("Specific Accounts…"))));
             for (const auto& e : Model_Account::TYPE_CHOICES)
             {
                 if (e.first != Model_Account::TYPE_ID_INVESTMENT) {
@@ -617,7 +617,7 @@ void mmReportsPanel::OnNewWindow(wxWebViewEvent& evt)
             {
                 const Model_Account::Data* account = Model_Account::instance().get(transaction->ACCOUNTID);
                 if (account) {
-                    m_frame->setAccountNavTreeSection(account->ACCOUNTNAME);
+                    m_frame->setNavTreeAccount(account->ACCOUNTNAME);
                     m_frame->setGotoAccountID(transaction->ACCOUNTID, { transID, 0 });
                     wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED, MENU_GOTOACCOUNT);
                     m_frame->GetEventHandler()->AddPendingEvent(event);
@@ -636,7 +636,7 @@ void mmReportsPanel::OnNewWindow(wxWebViewEvent& evt)
                 if (Model_Checking::foreignTransaction(*transaction))
                 {
                     Model_Translink::Data translink = Model_Translink::TranslinkRecord(transId);
-                    if (translink.LINKTYPE == Model_Attachment::reftype_desc(Model_Attachment::STOCK))
+                    if (translink.LINKTYPE == Model_Attachment::REFTYPE_STR_STOCK)
                     {
                         ShareTransactionDialog dlg(m_frame, &translink, transaction);
                         if (dlg.ShowModal() == wxID_OK)
@@ -674,7 +674,7 @@ void mmReportsPanel::OnNewWindow(wxWebViewEvent& evt)
         const wxString RefType = sData.BeforeFirst('|');
         int RefId = wxAtoi(sData.AfterFirst('|'));
 
-        if (Model_Attachment::instance().all_type().Index(RefType) != wxNOT_FOUND && RefId > 0)
+        if (Model_Attachment::REFTYPE_STR.Index(RefType) != wxNOT_FOUND && RefId > 0)
         {
             mmAttachmentManage::OpenAttachmentFromPanelIcon(m_frame, RefType, RefId);
             const auto name = getVFname4print("rep", getPrintableBase()->getHTMLText());

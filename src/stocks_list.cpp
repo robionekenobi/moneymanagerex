@@ -143,16 +143,16 @@ void StocksListCtrl::OnMouseRightClick(wxMouseEvent& event)
     bool hide_menu_item = (m_selected_row < 0);
 
     wxMenu menu;
-    menu.Append(MENU_TREEPOPUP_NEW, _("&New Stock Investment…"));
+    menu.Append(MENU_TREEPOPUP_NEW, wxGetTranslation(wxString::FromUTF8(wxTRANSLATE("&New Stock Investment…"))));
     menu.AppendSeparator();
-    menu.Append(MENU_TREEPOPUP_ADDTRANS, _("&Add Stock Transactions…"));
+    menu.Append(MENU_TREEPOPUP_ADDTRANS, wxGetTranslation(wxString::FromUTF8(wxTRANSLATE("&Add Stock Transactions…"))));
     menu.Append(MENU_TREEPOPUP_VIEWTRANS, _("&View Stock Transactions"));
     menu.AppendSeparator();
-    menu.Append(MENU_TREEPOPUP_EDIT, _("&Edit Stock Investment…"));
+    menu.Append(MENU_TREEPOPUP_EDIT, wxGetTranslation(wxString::FromUTF8(wxTRANSLATE("&Edit Stock Investment…"))));
     menu.AppendSeparator();
-    menu.Append(MENU_TREEPOPUP_DELETE, _("&Delete Stock Investment…"));
+    menu.Append(MENU_TREEPOPUP_DELETE, wxGetTranslation(wxString::FromUTF8(wxTRANSLATE("&Delete Stock Investment…"))));
     menu.AppendSeparator();
-    menu.Append(MENU_TREEPOPUP_ORGANIZE_ATTACHMENTS, _("&Organize Attachments…"));
+    menu.Append(MENU_TREEPOPUP_ORGANIZE_ATTACHMENTS, wxGetTranslation(wxString::FromUTF8(wxTRANSLATE("&Organize Attachments…"))));
     menu.Append(wxID_INDEX, _("Stock &Web Page"));
 
     menu.Enable(MENU_TREEPOPUP_EDIT, !hide_menu_item);
@@ -192,7 +192,7 @@ wxString StocksListCtrl::OnGetItemText(long item, long column) const
     {
         wxString full_notes = m_stocks[item].NOTES;
         full_notes.Replace("\n", " ");
-        if (Model_Attachment::NrAttachments(Model_Attachment::reftype_desc(Model_Attachment::STOCK), m_stocks[item].STOCKID))
+        if (Model_Attachment::NrAttachments(Model_Attachment::REFTYPE_STR_STOCK, m_stocks[item].STOCKID))
             full_notes.Prepend(mmAttachmentManage::GetAttachmentNoteSign());
         return full_notes;
     }
@@ -291,8 +291,8 @@ void StocksListCtrl::OnDeleteStocks(wxCommandEvent& /*event*/)
     if (msgDlg.ShowModal() == wxID_YES)
     {
         Model_Stock::instance().remove(m_stocks[m_selected_row].STOCKID);
-        mmAttachmentManage::DeleteAllAttachments(Model_Attachment::reftype_desc(Model_Attachment::STOCK), m_stocks[m_selected_row].STOCKID);
-        Model_Translink::RemoveTransLinkRecords(Model_Attachment::STOCK, m_stocks[m_selected_row].STOCKID);
+        mmAttachmentManage::DeleteAllAttachments(Model_Attachment::REFTYPE_STR_STOCK, m_stocks[m_selected_row].STOCKID);
+        Model_Translink::RemoveTransLinkRecords(Model_Attachment::REFTYPE_ID_STOCK, m_stocks[m_selected_row].STOCKID);
         DeleteItem(m_selected_row);
         doRefreshItems(-1);
         m_stock_panel->m_frame->RefreshNavigationTree();
@@ -346,7 +346,7 @@ void StocksListCtrl::OnOrganizeAttachments(wxCommandEvent& /*event*/)
 {
     if (m_selected_row < 0) return;
 
-    wxString RefType = Model_Attachment::reftype_desc(Model_Attachment::STOCK);
+    wxString RefType = Model_Attachment::REFTYPE_STR_STOCK;
     int64 RefId = m_stocks[m_selected_row].STOCKID;
 
     mmAttachmentDialog dlg(this, RefType, RefId);
@@ -372,7 +372,7 @@ void StocksListCtrl::OnOpenAttachment(wxCommandEvent& /*event*/)
 {
     if (m_selected_row < 0) return;
 
-    wxString RefType = Model_Attachment::reftype_desc(Model_Attachment::STOCK);
+    wxString RefType = Model_Attachment::REFTYPE_STR_STOCK;
     int64 RefId = m_stocks[m_selected_row].STOCKID;
 
     mmAttachmentManage::OpenAttachmentFromPanelIcon(this, RefType, RefId);
