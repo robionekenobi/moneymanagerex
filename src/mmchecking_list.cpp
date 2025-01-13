@@ -236,6 +236,12 @@ void TransactionListCtrl::sortTable()
 {
     if (m_trans.empty()) return;
 
+    if (std::find(m_real_columns.begin(), m_real_columns.end(), g_sortcol) == m_real_columns.end())
+        g_sortcol = COL_def_sort;
+
+    if (std::find(m_real_columns.begin(), m_real_columns.end(), prev_g_sortcol) == m_real_columns.end())
+        prev_g_sortcol = COL_def_sort2;
+
     SortTransactions(prev_g_sortcol, prev_g_asc);
     SortTransactions(g_sortcol, g_asc);
 
@@ -245,7 +251,12 @@ void TransactionListCtrl::sortTable()
         m_columns[prev_g_sortcol].HEADER, prev_g_asc ? L"\u25B2" : L"\u25BC"
     );
     m_cp->m_header_sortOrder->SetLabelText(sortText);
-    
+
+    if (m_real_columns[g_sortcol] == COL_SN)
+        m_cp->showTips(_("SN (Sequence Number) has the same order as Date/ID."));
+    else if (m_real_columns[g_sortcol] == COL_ID)
+        m_cp->showTips(_("ID (identification number) is increasing with the time of creation in the database."));
+
     RefreshItems(0, m_trans.size() - 1);
 }
 
@@ -605,13 +616,11 @@ void TransactionListCtrl::OnMouseRightClick(wxMouseEvent& event)
     unsigned long column = getColumnFromPosition(event.GetX());
     int flags;
     unsigned long row = HitTest(event.GetPosition(), flags);
-    if ((flags & wxLIST_HITTEST_ONITEM) && column < m_columns.size()) {
+    if (row < m_trans.size() && (flags & wxLIST_HITTEST_ONITEM) && column < m_columns.size()) {
         wxString menuItemText;
         wxString refType = Model_Attachment::REFTYPE_STR_TRANSACTION;
         wxDateTime datetime;
         wxString dateFormat = Option::instance().getDateFormat();
-        bool is_transfer = Model_Checking::is_transfer(m_trans[row].TRANSCODE)
-            && m_cp->m_account_id != m_trans[row].ACCOUNTID;
 
         switch (m_real_columns[column]) {
         case COL_SN:
@@ -708,23 +717,23 @@ void TransactionListCtrl::OnMouseRightClick(wxMouseEvent& event)
                 copyText_ = mmGetDateForDisplay(datetime.FromUTC().FormatISOCombined(), dateFormat + " %H:%M:%S");
             break;
         case COL_UDFC01:
-            copyText_ = menuItemText = m_trans[row].UDFC01;
+            copyText_ = menuItemText = m_trans[row].UDFC_content[0];
             rightClickFilter_ = wxString::Format("{\n\"CUSTOM%lld\": \"" + menuItemText + "\"\n}", Model_CustomField::getUDFCID(refType, "UDFC01"));
             break;
         case COL_UDFC02:
-            copyText_ = menuItemText = m_trans[row].UDFC02;
+            copyText_ = menuItemText = m_trans[row].UDFC_content[1];
             rightClickFilter_ = wxString::Format("{\n\"CUSTOM%lld\": \"" + menuItemText + "\"\n}", Model_CustomField::getUDFCID(refType, "UDFC02"));
             break;
         case COL_UDFC03:
-            copyText_ = menuItemText = m_trans[row].UDFC03;
+            copyText_ = menuItemText = m_trans[row].UDFC_content[2];
             rightClickFilter_ = wxString::Format("{\n\"CUSTOM%lld\": \"" + menuItemText + "\"\n}", Model_CustomField::getUDFCID(refType, "UDFC03"));
             break;
         case COL_UDFC04:
-            copyText_ = menuItemText = m_trans[row].UDFC04;
+            copyText_ = menuItemText = m_trans[row].UDFC_content[3];
             rightClickFilter_ = wxString::Format("{\n\"CUSTOM%lld\": \"" + menuItemText + "\"\n}", Model_CustomField::getUDFCID(refType, "UDFC04"));
             break;
         case COL_UDFC05:
-            copyText_ = menuItemText = m_trans[row].UDFC05;
+            copyText_ = menuItemText = m_trans[row].UDFC_content[4];
             rightClickFilter_ = wxString::Format("{\n\"CUSTOM%lld\": \"" + menuItemText + "\"\n}", Model_CustomField::getUDFCID(refType, "UDFC05"));
             break;
         default:
@@ -2115,15 +2124,15 @@ const wxString TransactionListCtrl::getItem(long item, long column, bool realenu
             return wxString("");
         return mmGetDateForDisplay(datetime.FromUTC().FormatISOCombined(), dateFormat + " %H:%M:%S");
     case TransactionListCtrl::COL_UDFC01:
-        return UDFCFormatHelper(fused.UDFC01_Type, fused.UDFC01);
+        return UDFCFormatHelper(fused.UDFC_type[0], fused.UDFC_content[0]);
     case TransactionListCtrl::COL_UDFC02:
-        return UDFCFormatHelper(fused.UDFC02_Type, fused.UDFC02);
+        return UDFCFormatHelper(fused.UDFC_type[1], fused.UDFC_content[1]);
     case TransactionListCtrl::COL_UDFC03:
-        return UDFCFormatHelper(fused.UDFC03_Type, fused.UDFC03);
+        return UDFCFormatHelper(fused.UDFC_type[2], fused.UDFC_content[2]);
     case TransactionListCtrl::COL_UDFC04:
-        return UDFCFormatHelper(fused.UDFC04_Type, fused.UDFC04);
+        return UDFCFormatHelper(fused.UDFC_type[3], fused.UDFC_content[3]);
     case TransactionListCtrl::COL_UDFC05:
-        return UDFCFormatHelper(fused.UDFC05_Type, fused.UDFC05);
+        return UDFCFormatHelper(fused.UDFC_type[4], fused.UDFC_content[4]);
     case TransactionListCtrl::COL_UPDATEDTIME:
         datetime.ParseISOCombined(fused.LASTUPDATEDTIME);
         if (!datetime.IsValid())
