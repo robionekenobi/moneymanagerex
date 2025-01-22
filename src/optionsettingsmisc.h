@@ -49,10 +49,11 @@ private:
     void SaveStocksUrl();
 
 private:
-    wxSpinCtrl* m_max_files;
-    wxSpinCtrl* m_deleted_trans_retain_days;
-    wxSpinCtrl* m_share_precision;
-    wxCheckBox* m_refresh_quotes_on_open;
+    wxSpinCtrl* m_max_files = nullptr;
+    wxSpinCtrl* m_deleted_trans_retain_days = nullptr;
+    wxSpinCtrl* m_share_precision = nullptr;
+    wxCheckBox* m_refresh_quotes_on_open = nullptr;
+    wxChoice* m_asset_compounding = nullptr;
     wxComboBox* m_import_path;
     wxStaticText* m_import_preview;
     wxString m_old_path;
@@ -63,6 +64,7 @@ private:
         ID_DIALOG_OPTIONS_CHK_BACKUP,
         ID_DIALOG_OPTIONS_CHK_BACKUP_UPDATE,
         ID_DIALOG_OPTIONS_TEXTCTRL_STOCKURL,
+		ID_DIALOG_OPTIONS_ASSET_COMPOUNDING,
         ID_DIALOG_OPTIONS_BULK_ENTER,
         ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_PAYEE,
         ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_NONTRANSFER,
