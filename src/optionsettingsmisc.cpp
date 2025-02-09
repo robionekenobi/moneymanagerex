@@ -75,7 +75,7 @@ void OptionSettingsMisc::Create()
     //list.Add("https://www.marketwatch.com/investing/stock/%s");
     //list.Add("https://www.ifcmarkets.co.in/en/market-data/stocks-prices/%s");
 
-    wxString stockURL = Model_Infotable::instance().GetStringInfo("STOCKURL", mmex::weblink::DefStockUrl);
+    wxString stockURL = Model_Infotable::instance().getString("STOCKURL", mmex::weblink::DefStockUrl);
     wxComboBox* itemListOfURL = new wxComboBox(misc_panel, ID_DIALOG_OPTIONS_TEXTCTRL_STOCKURL, ""
         , wxDefaultPosition, wxDefaultSize, list);
     itemListOfURL->SetValue(stockURL);
@@ -88,13 +88,13 @@ void OptionSettingsMisc::Create()
     share_precision_sizer->Add(new wxStaticText(misc_panel, wxID_STATIC, _("Share Precision")), g_flagsH);
 
     m_share_precision = new wxSpinCtrl(misc_panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize
-        , wxSP_ARROW_KEYS, 2, 10, Option::instance().SharePrecision());
-    m_share_precision->SetValue(Option::instance().SharePrecision());
+        , wxSP_ARROW_KEYS, 2, 10, Option::instance().getSharePrecision());
+    m_share_precision->SetValue(Option::instance().getSharePrecision());
     mmToolTip(m_share_precision, _("Set the precision for Share prices"));
     share_precision_sizer->Add(m_share_precision, wxSizerFlags(g_flagsExpand).Proportion(0));
 
     m_refresh_quotes_on_open = new wxCheckBox(misc_panel, wxID_REFRESH, _("Refresh at Startup"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    m_refresh_quotes_on_open->SetValue(Model_Setting::instance().GetBoolSetting("REFRESH_STOCK_QUOTES_ON_OPEN", false));
+    m_refresh_quotes_on_open->SetValue(Model_Setting::instance().getBool("REFRESH_STOCK_QUOTES_ON_OPEN", false));
     share_precision_sizer->Add(m_refresh_quotes_on_open, wxSizerFlags(g_flagsH).Border(wxLEFT, 20));
     othersPanelSizer->Add(share_precision_sizer, g_flagsBorder1V);
 
@@ -104,7 +104,7 @@ void OptionSettingsMisc::Create()
     m_asset_compounding = new wxChoice(misc_panel, ID_DIALOG_OPTIONS_ASSET_COMPOUNDING);
     for (const auto& a : Option::COMPOUNDING_NAME)
         m_asset_compounding->Append(wxGetTranslation(a.second));
-    m_asset_compounding->SetSelection(Option::instance().AssetCompounding());
+    m_asset_compounding->SetSelection(Option::instance().getAssetCompounding());
     mmToolTip(m_asset_compounding,
         _("Select the compounding period for the appreciation/depreciation rate of assets")
     );
@@ -125,31 +125,31 @@ void OptionSettingsMisc::Create()
     wxChoice* defaultCategoryTransferChoice = new wxChoice(misc_panel
         , ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_TRANSFER
         , wxDefaultPosition, wxDefaultSize, default_values);
-    defaultCategoryTransferChoice->SetSelection(Option::instance().TransCategorySelectionTransfer());
+    defaultCategoryTransferChoice->SetSelection(Option::instance().getTransCategoryTransferNone());
 
     wxChoice* defaultDateChoice = new wxChoice(misc_panel
         , ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_DATE
         , wxDefaultPosition, wxDefaultSize, default_values);
-    defaultDateChoice->SetSelection(Option::instance().TransDateDefault());
+    defaultDateChoice->SetSelection(Option::instance().getTransDateDefault());
 
     default_values.Add(_("Unused"));
     wxChoice* defaultPayeeChoice = new wxChoice(misc_panel
         , ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_PAYEE
         , wxDefaultPosition, wxDefaultSize, default_values);
-    defaultPayeeChoice->SetSelection(Option::instance().TransPayeeSelection());
+    defaultPayeeChoice->SetSelection(Option::instance().getTransPayeeNone());
 
     default_values[1] = (_("Last used for payee"));
     default_values.Add(_("Use default for payee"));
     wxChoice* defaultCategoryNonTransferChoice = new wxChoice(misc_panel
         , ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_NONTRANSFER
         , wxDefaultPosition, wxDefaultSize, default_values);
-    defaultCategoryNonTransferChoice->SetSelection(Option::instance().TransCategorySelectionNonTransfer());
+    defaultCategoryNonTransferChoice->SetSelection(Option::instance().getTransCategoryNone());
 
     wxChoice* default_status = new wxChoice(misc_panel
         , ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_STATUS);
     for (const auto& i : Model_Checking::STATUS_STR)
         default_status->Append(wxGetTranslation(i), new wxStringClientData(i));
-    default_status->SetSelection(Option::instance().TransStatusReconciled());
+    default_status->SetSelection(Option::instance().getTransStatusReconciled());
 
     wxArrayString true_false;
     true_false.Add(wxTRANSLATE("Yes"));
@@ -157,7 +157,7 @@ void OptionSettingsMisc::Create()
     wxChoice* bulk_enter = new wxChoice(misc_panel, ID_DIALOG_OPTIONS_BULK_ENTER);
     for (const auto& i : true_false)
         bulk_enter->Append(wxGetTranslation(i), new wxStringClientData(i));
-    bulk_enter->SetSelection(Option::instance().get_bulk_transactions() ? 0 : 1);
+    bulk_enter->SetSelection(Option::instance().getBulkTransactions() ? 0 : 1);
 
     wxFlexGridSizer* newTransflexGridSizer = new wxFlexGridSizer(0, 2, 0, 0);
     newTransflexGridSizer->AddGrowableCol(1, 0);
@@ -203,7 +203,7 @@ void OptionSettingsMisc::Create()
         "create or update the backup database: dbFile_update_YYYY-MM-DD.bak"));
     databaseStaticBoxSizer->Add(databaseUpdateCheckBox, g_flagsV);
 
-    int max = Model_Setting::instance().GetIntSetting("MAX_BACKUP_FILES", 4);
+    int max = Model_Setting::instance().getInt("MAX_BACKUP_FILES", 4);
     m_max_files = new wxSpinCtrl(misc_panel, wxID_ANY
         , wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 999, max);
     m_max_files->SetValue(max);
@@ -214,7 +214,7 @@ void OptionSettingsMisc::Create()
     flex_sizer2->Add(m_max_files, g_flagsH);
     databaseStaticBoxSizer->Add(flex_sizer2);
 
-    int days = Model_Setting::instance().GetIntSetting("DELETED_TRANS_RETAIN_DAYS", 30);
+    int days = Model_Setting::instance().getInt("DELETED_TRANS_RETAIN_DAYS", 30);
     m_deleted_trans_retain_days = new wxSpinCtrl(misc_panel, wxID_ANY
         , wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 999, days);
     m_deleted_trans_retain_days->SetValue(days);
@@ -225,7 +225,7 @@ void OptionSettingsMisc::Create()
     databaseStaticBoxSizer->Add(flex_sizer3);
 
     //CSV Import
-    const wxString delimiter = Model_Infotable::instance().GetStringInfo("DELIMITER", mmex::DEFDELIMTER);
+    const wxString delimiter = Model_Infotable::instance().getString("DELIMITER", mmex::DEFDELIMTER);
 
     wxStaticBox* csvStaticBox = new wxStaticBox(misc_panel, wxID_ANY, _("CSV"));
     SetBoldFont(csvStaticBox);
@@ -344,7 +344,7 @@ void OptionSettingsMisc::SaveStocksUrl()
     wxString stockURL = url->GetValue().Trim(false).Trim();
     if (!stockURL.IsEmpty())
     {
-        Model_Infotable::instance().Set("STOCKURL", stockURL);
+        Model_Infotable::instance().setString("STOCKURL", stockURL);
     }
     else
     {
@@ -357,40 +357,40 @@ void OptionSettingsMisc::SaveStocksUrl()
 bool OptionSettingsMisc::SaveSettings()
 {
     wxChoice* itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_PAYEE));
-    Option::instance().TransPayeeSelection(itemChoice->GetSelection());
+    Option::instance().setTransPayeeNone(itemChoice->GetSelection());
 
     itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_NONTRANSFER));
-    Option::instance().TransCategorySelectionNonTransfer(itemChoice->GetSelection());
+    Option::instance().setTransCategoryNone(itemChoice->GetSelection());
 
     itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_TRANSFER));
-    Option::instance().TransCategorySelectionTransfer(itemChoice->GetSelection());
+    Option::instance().setTransCategoryTransferNone(itemChoice->GetSelection());
 
     itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_STATUS));
-    Option::instance().TransStatusReconciled(itemChoice->GetSelection());
+    Option::instance().setTransStatusReconciled(itemChoice->GetSelection());
 
     itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_DATE));
-    Option::instance().TransDateDefault(itemChoice->GetSelection());
+    Option::instance().setTransDateDefault(itemChoice->GetSelection());
 
     itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_BULK_ENTER));
-    Option::instance().set_bulk_transactions(itemChoice->GetSelection() == 0);
+    Option::instance().setBulkTransactions(itemChoice->GetSelection() == 0);
 
     SaveStocksUrl();
-    Option::instance().SharePrecision(m_share_precision->GetValue());
-    Option::instance().AssetCompounding(m_asset_compounding->GetSelection());
+    Option::instance().setSharePrecision(m_share_precision->GetValue());
+    Option::instance().setAssetCompounding(m_asset_compounding->GetSelection());
 
     wxCheckBox* itemCheckBox = static_cast<wxCheckBox*>(FindWindow(ID_DIALOG_OPTIONS_CHK_BACKUP));
-    Model_Setting::instance().Set("BACKUPDB", itemCheckBox->GetValue());
+    Model_Setting::instance().setBool("BACKUPDB", itemCheckBox->GetValue());
 
     wxCheckBox* itemCheckBoxUpdate = static_cast<wxCheckBox*>(FindWindow(ID_DIALOG_OPTIONS_CHK_BACKUP_UPDATE));
-    Model_Setting::instance().Set("BACKUPDB_UPDATE", itemCheckBoxUpdate->GetValue());
+    Model_Setting::instance().setBool("BACKUPDB_UPDATE", itemCheckBoxUpdate->GetValue());
 
-    Model_Setting::instance().Set("MAX_BACKUP_FILES", m_max_files->GetValue());
-    Model_Setting::instance().Set("DELETED_TRANS_RETAIN_DAYS", m_deleted_trans_retain_days->GetValue());
-    Model_Setting::instance().Set("REFRESH_STOCK_QUOTES_ON_OPEN", m_refresh_quotes_on_open->IsChecked());
+    Model_Setting::instance().setInt("MAX_BACKUP_FILES", m_max_files->GetValue());
+    Model_Setting::instance().setInt("DELETED_TRANS_RETAIN_DAYS", m_deleted_trans_retain_days->GetValue());
+    Model_Setting::instance().setBool("REFRESH_STOCK_QUOTES_ON_OPEN", m_refresh_quotes_on_open->IsChecked());
 
     wxTextCtrl* st = static_cast<wxTextCtrl*>(FindWindow(ID_DIALOG_OPTIONS_TEXTCTRL_DELIMITER4));
     const wxString& delim = st->GetValue();
-    if (!delim.IsEmpty()) Model_Infotable::instance().Set("DELIMITER", delim);
+    if (!delim.IsEmpty()) Model_Infotable::instance().setString("DELIMITER", delim);
 
     Model_Infotable::instance().Set("IMPORTFOLDER:" + mmPlatformType(), m_import_path->GetValue().Trim());
     
