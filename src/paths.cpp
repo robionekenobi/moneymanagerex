@@ -254,13 +254,13 @@ const wxString mmex::getPathImport(const wxString& importFolder)
     const wxString& LastDBFolder = wxFileName::FileName(LastDBPath).GetPath() + sep;
     const wxString& UserFolder = mmex::GetUserDir(false).GetPath() + sep;
 
-    if (importFolder.StartsWith(FOLDER_USERPROFILE, &ImportFolder))
+    if (importFolder.StartsWith(ATTACHMENTS_FOLDER_USERPROFILE, &ImportFolder))
         ImportFolder.Prepend(wxGetHomeDir() + sep);
-    else if (importFolder.StartsWith(FOLDER_DOCUMENTS, &ImportFolder))
+    else if (importFolder.StartsWith(ATTACHMENTS_FOLDER_DOCUMENTS, &ImportFolder))
         ImportFolder.Prepend(wxStandardPaths::Get().GetDocumentsDir() + sep);
-    else if (importFolder.StartsWith(FOLDER_DATABASE, &ImportFolder))
+    else if (importFolder.StartsWith(ATTACHMENTS_FOLDER_DATABASE, &ImportFolder))
         ImportFolder.Prepend(LastDBFolder);
-    else if (importFolder.StartsWith(FOLDER_APPDATA, &ImportFolder))
+    else if (importFolder.StartsWith(ATTACHMENTS_FOLDER_APPDATA, &ImportFolder))
         ImportFolder.Prepend(UserFolder);
 
     if (ImportFolder.Last() != sep)
@@ -285,13 +285,13 @@ const wxString mmex::getPathAttachment(const wxString &attachmentsFolder)
     const wxString& LastDBFolder = wxFileName::FileName(LastDBPath).GetPath() + sep;
     const wxString& UserFolder = mmex::GetUserDir(false).GetPath() + sep;
 
-    if (attachmentsFolder.StartsWith(FOLDER_USERPROFILE, &AttachmentsFolder))
+    if (attachmentsFolder.StartsWith(ATTACHMENTS_FOLDER_USERPROFILE, &AttachmentsFolder))
         AttachmentsFolder.Prepend(wxGetHomeDir() + sep);
-    else if (attachmentsFolder.StartsWith(FOLDER_DOCUMENTS, &AttachmentsFolder))
+    else if (attachmentsFolder.StartsWith(ATTACHMENTS_FOLDER_DOCUMENTS, &AttachmentsFolder))
         AttachmentsFolder.Prepend(wxStandardPaths::Get().GetDocumentsDir() + sep);
-    else if (attachmentsFolder.StartsWith(FOLDER_DATABASE, &AttachmentsFolder))
+    else if (attachmentsFolder.StartsWith(ATTACHMENTS_FOLDER_DATABASE, &AttachmentsFolder))
         AttachmentsFolder.Prepend(LastDBFolder);
-    else if (attachmentsFolder.StartsWith(FOLDER_APPDATA, &AttachmentsFolder))
+    else if (attachmentsFolder.StartsWith(ATTACHMENTS_FOLDER_APPDATA, &AttachmentsFolder))
         AttachmentsFolder.Prepend(UserFolder);
 
     if (AttachmentsFolder.Last() != sep)

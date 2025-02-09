@@ -97,6 +97,7 @@ void Option::load(bool include_infotable)
         loadUserName();
         loadBaseCurrencyID();
         loadUseCurrencyHistory();
+        loadCurrencyHistoryDays();
         loadSharePrecision();
         loadAssetCompounding();
         loadReportingFirstDay();
@@ -219,6 +220,16 @@ void Option::setUseCurrencyHistory(const bool value)
 {
     Model_Infotable::instance().setBool("USECURRENCYHISTORY", value);
     m_use_currency_history = value;
+}
+
+void Option::loadCurrencyHistoryDays()
+{
+    m_currency_history_days = Model_Infotable::instance().getInt("CURRENCY_HISTORY_DAYS", 4);
+}
+void Option::setCurrencyHistoryDays(const int value)
+{
+    Model_Infotable::instance().setInt("CURRENCY_HISTORY_DAYS", value);
+    m_currency_history_days = value;
 }
 
 void Option::loadSharePrecision()

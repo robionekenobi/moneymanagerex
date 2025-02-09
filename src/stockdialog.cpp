@@ -484,19 +484,19 @@ void mmStockDialog::OnSave(wxCommandEvent & /*event*/)
         }
         else if (!share_account)
         {
-            if (!Model_Setting::instance().GetBoolSetting(INIDB_DONT_ASK_FOR_SHARE_ACCOUNT, false))
+            if (!Model_Setting::instance().getBool(INIDB_DONT_ASK_FOR_SHARE_ACCOUNT, false))
             {
-            if (wxMessageBox(_(
-                "The Company name does not have an associated Share Account.\n\n"
-                "You may want to readjust the Company Name to an existing Share Account with the same name. "
-                "If this is an existing Stock without a Share Account, it is recommended that a Share Account is created.\n\n"
-                "Do you want to create a new Share Acccount?\n")
-                , _("Edit Stock Investment"), wxYES_NO | wxICON_WARNING) == wxYES)
-            {
-                CreateShareAccount(account, stockName, m_stock->PURCHASEDATE);
-            }
-        }
-    }
+	            if (wxMessageBox(_(
+	                "The Company name does not have an associated Share Account.\n\n"
+	                "You may want to readjust the Company Name to an existing Share Account with the same name. "
+	                "If this is an existing Stock without a Share Account, it is recommended that a Share Account is created.\n\n"
+	                "Do you want to create a new Share Acccount?\n")
+	                , _("Edit Stock Investment"), wxYES_NO | wxICON_WARNING) == wxYES)
+	            {
+	                CreateShareAccount(account, stockName, m_stock->PURCHASEDATE);
+	            }
+	        }
+	    }
     }
     m_edit = true;
     UpdateControls();
@@ -547,7 +547,7 @@ void mmStockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
     wxString fileName = stockSymbol;
     if (!stockSymbol.IsEmpty())
     {
-        const wxString& importPath = Model_Infotable::instance().GetStringInfo("IMPORTFOLDER:" + mmPlatformType(), ".");
+        const wxString& importPath = Model_Infotable::instance().getString("IMPORTFOLDER:" + mmPlatformType(), ".");
         fileName = wxString::Format("%s\\%s.csv", importPath, stockSymbol);
 
         wxFileName csv_file(fileName);
@@ -629,25 +629,25 @@ void mmStockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
 
             data = Model_StockHistory::instance().get(m_stock->SYMBOL, dt);
             if (!data)
-            data = Model_StockHistory::instance().create();
+            	data = Model_StockHistory::instance().create();
             {
-                wxString cp = wxString::FromDouble(data->VALUE, Option::instance().SharePrecision());
-                wxString lp = wxString::FromDouble(price, Option::instance().SharePrecision());
+                wxString cp = wxString::FromDouble(data->VALUE, Option::instance().getSharePrecision());
+                wxString lp = wxString::FromDouble(price, Option::instance().getSharePrecision());
                 if (data->VALUE != price && ((data->DATE == "" && dateStr > m_stock->PURCHASEDATE) || data->DATE > m_stock->PURCHASEDATE))
                 {
-            data->SYMBOL = m_stock->SYMBOL;
-            data->DATE = dateStr;
-            data->VALUE = price;
-            data->UPDTYPE = 2;
-            stockData.push_back(data);
-
-                    if (rows.size() < 10)
-            {
-                        dateStr << wxT("  ") << priceStr;
-                rows.push_back(dateStr);
-            }
-            countImported++;
-        }
+		            data->SYMBOL = m_stock->SYMBOL;
+		            data->DATE = dateStr;
+		            data->VALUE = price;
+		            data->UPDTYPE = 2;
+		            stockData.push_back(data);
+		
+		                    if (rows.size() < 10)
+		            {
+		                        dateStr << wxT("  ") << priceStr;
+		                rows.push_back(dateStr);
+		            }
+		            countImported++;
+		        }
             }
         }
 
@@ -679,13 +679,13 @@ void mmStockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
 
             Model_StockHistory::Data_Set histData = Model_StockHistory::instance().find(Model_StockHistory::SYMBOL(m_stock->SYMBOL));
             std::stable_sort(histData.begin(), histData.end(), SorterByDATE_DESC());
-            wxString lp = wxString::FromDouble(histData.at(0).VALUE, Option::instance().SharePrecision());
-            wxString cp = wxString::FromDouble(m_stock->CURRENTPRICE, Option::instance().SharePrecision());
+            wxString lp = wxString::FromDouble(histData.at(0).VALUE, Option::instance().getSharePrecision());
+            wxString cp = wxString::FromDouble(m_stock->CURRENTPRICE, Option::instance().getSharePrecision());
             //std::reverse(histData.begin(), histData.end());
             if (lp != cp)
             {
                 m_stock->CURRENTPRICE = histData.at(0).VALUE;
-                m_current_price_ctrl->SetValue(m_stock->CURRENTPRICE, Option::instance().SharePrecision());
+                m_current_price_ctrl->SetValue(m_stock->CURRENTPRICE, Option::instance().getSharePrecision());
                 Model_Stock::instance().save(m_stock);
                 m_value_investment->SetLabelText(Model_Account::toCurrency(Model_Stock::instance().CurrentValue(m_stock), account));
                 Model_Stock::UpdateCurrentPrice(m_stock->SYMBOL, m_stock->CURRENTPRICE);
@@ -958,7 +958,7 @@ void mmStockDialog::OnHistoryDeleteButton(wxCommandEvent& /*event*/)
     Model_Stock::UpdateCurrentPrice(m_stock->SYMBOL);
     //refresh m_stock to get updated attributes
     m_stock = Model_Stock::instance().get(m_stock->STOCKID);
-    m_current_price_ctrl->SetValue(m_stock->CURRENTPRICE, Option::instance().SharePrecision());
+    m_current_price_ctrl->SetValue(m_stock->CURRENTPRICE, Option::instance().getSharePrecision());
     m_value_investment->SetLabelText(Model_Account::toCurrency(Model_Stock::instance().CurrentValue(m_stock), Model_Account::instance().get(m_stock->HELDAT)));
 }
 

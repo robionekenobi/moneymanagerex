@@ -170,12 +170,25 @@ void OptionSettingsGeneral::Create()
     }
 
     m_currencyStaticBoxSizer->AddSpacer(15);
+    { // Currency History Details
+        wxBoxSizer* currencyBaseSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_currencyStaticBoxSizer->Add(currencyBaseSizer, wxSizerFlags(g_flagsV).Border(wxLEFT, 0));
 
-    m_currency_history = new wxCheckBox(general_panel, wxID_STATIC, _("Use historical currency"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    m_currency_history->SetValue(Option::instance().getUseCurrencyHistory());
-    mmToolTip(m_currency_history, _("Select to use historical currency (one rate for each day), deselect to use a fixed rate"));
-    m_currencyStaticBoxSizer->Add(m_currency_history, g_flagsV);
+	    m_currency_history = new wxCheckBox(general_panel, wxID_STATIC, _("Use historical currency"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
+	    m_currency_history->SetValue(Option::instance().getUseCurrencyHistory());
+	    mmToolTip(m_currency_history, _("Select to use historical currency (one rate for each day), deselect to use a fixed rate"));
+	    m_currencyStaticBoxSizer->Add(m_currency_history, g_flagsV);
 
+        currencyBaseSizer->Add(new wxStaticText(general_panel, wxID_STATIC, _("Days")), g_flagsH);
+
+        int days = Option::instance().getCurrencyHistoryDays();
+        wxSpinCtrl* textHistDay = new wxSpinCtrl(general_panel, ID_DIALOG_OPTIONS_CURRENCY_HIST_DAYS,
+            wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 90, 99999, days);
+        textHistDay->SetValue(days);
+        mmToolTip(textHistDay, _("Specify number of Days for historic currency data"));
+
+        currencyBaseSizer->Add(textHistDay, g_flagsH);
+    }
     // Financial Year Settings
     wxStaticBox* financialYearStaticBox = new wxStaticBox(general_panel, wxID_ANY, _("Financial Year"));
     SetBoldFont(financialYearStaticBox);
@@ -221,6 +234,10 @@ void OptionSettingsGeneral::Create()
     mmToolTip(m_use_org_date_duplicate, _("Select whether to use the original transaction date or current date when duplicating transactions"));
     generalPanelSizer->Add(m_use_org_date_duplicate, g_flagsV);
 
+    m_dont_ask_for_share_acccount = new wxCheckBox(general_panel, wxID_STATIC, _("Don't ask for share account"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
+    m_dont_ask_for_share_acccount->SetValue(GetIniDatabaseCheckboxValue(INIDB_DONT_ASK_FOR_SHARE_ACCOUNT, false));
+    mmToolTip(m_dont_ask_for_share_acccount, _("Select whether not to ask for a Share Account if one does not exist with the same name as the share"));
+    generalPanelSizer->Add(m_dont_ask_for_share_acccount, g_flagsV);
 
     wxArrayString sounds;
     sounds.Add(_("None"));
@@ -319,13 +336,20 @@ bool OptionSettingsGeneral::SaveSettings()
     }
 
     Option::instance().setUseCurrencyHistory(m_currency_history->GetValue());
+    //Save History Days
+    wxSpinCtrl* hisDay = static_cast<wxSpinCtrl*>(FindWindow(ID_DIALOG_OPTIONS_CURRENCY_HIST_DAYS));
+    int day = hisDay->GetValue();
+    if (day < 90)
+        day = 90;
+    Option::instance().setCurrencyHistoryDays(day);
 
     Option::instance().setDateFormat(m_date_format);
     SaveFinancialYearStart();
 
     Model_Setting::instance().setBool(INIDB_USE_ORG_DATE_COPYPASTE, m_use_org_date_copy_paste->GetValue());
     Model_Setting::instance().setBool(INIDB_USE_ORG_DATE_DUPLICATE, m_use_org_date_duplicate->GetValue());
-    Model_Setting::instance().setInt(INIDB_USE_TRANSACTION_SOUND, m_use_sound->GetSelection());
+    Model_Setting::instance().setBool(INIDB_DONT_ASK_FOR_SHARE_ACCOUNT, m_dont_ask_for_share_acccount->GetValue());
+    Model_Setting::instance().setBool(INIDB_USE_TRANSACTION_SOUND, m_use_sound->GetSelection());
 
     return true;
 }

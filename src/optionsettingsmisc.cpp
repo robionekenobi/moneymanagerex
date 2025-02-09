@@ -259,14 +259,14 @@ void OptionSettingsMisc::Create()
     wxBoxSizer* importDefinedSizer = new wxBoxSizer(wxHORIZONTAL);
     importStaticBoxSizer->Add(importDefinedSizer, wxSizerFlags(g_flagsExpand).Proportion(0));
 
-    const wxString importFolder = Model_Infotable::instance().GetStringInfo("IMPORTFOLDER:" + mmPlatformType(), ".");
+    const wxString importFolder = Model_Infotable::instance().getString("IMPORTFOLDER:" + mmPlatformType(), ".");
     m_old_path = mmex::getPathImport(importFolder);
 
     wxArrayString list2;
-    list2.Add(FOLDER_DOCUMENTS);
-    list2.Add(FOLDER_USERPROFILE);
-    list2.Add(FOLDER_DATABASE);
-    list2.Add(FOLDER_APPDATA);
+    list2.Add(ATTACHMENTS_FOLDER_DOCUMENTS);
+    list2.Add(ATTACHMENTS_FOLDER_USERPROFILE);
+    list2.Add(ATTACHMENTS_FOLDER_DATABASE);
+    list2.Add(ATTACHMENTS_FOLDER_APPDATA);
 
     m_import_path = new wxComboBox(misc_panel, ID_DIALOG_OPTIONS_TEXTCTRL_IMPORT, "", wxDefaultPosition, wxDefaultSize, list2);
     m_import_path->SetMinSize(wxSize(225, -1));
@@ -290,10 +290,10 @@ void OptionSettingsMisc::Create()
     wxStaticBoxSizer* importStaticBoxSizerLegend = new wxStaticBoxSizer(importStaticBoxLegend, wxVERTICAL);
     importStaticBoxSizer->Add(importStaticBoxSizerLegend, wxSizerFlags(g_flagsExpand).Proportion(0));
 
-    wxString legend = wxString::Format(_("%s -> User document directory"), FOLDER_DOCUMENTS);
-    legend += "\n" + wxString::Format(_("%s -> User profile folder"), FOLDER_USERPROFILE);
-    legend += "\n" + wxString::Format(_("%s -> Folder of .MMB database file"), FOLDER_DATABASE);
-    legend += "\n" + wxString::Format(_("%s -> MMEX Application data folder"), FOLDER_APPDATA);
+    wxString legend = wxString::Format(_("%s -> User document directory"), ATTACHMENTS_FOLDER_DOCUMENTS);
+    legend += "\n" + wxString::Format(_("%s -> User profile folder"), ATTACHMENTS_FOLDER_USERPROFILE);
+    legend += "\n" + wxString::Format(_("%s -> Folder of .MMB database file"), ATTACHMENTS_FOLDER_DATABASE);
+    legend += "\n" + wxString::Format(_("%s -> MMEX Application data folder"), ATTACHMENTS_FOLDER_APPDATA);
     wxStaticText* legendStaticText = new wxStaticText(misc_panel, wxID_STATIC, legend);
     importStaticBoxSizerLegend->Add(legendStaticText);
     //End legend
@@ -392,7 +392,7 @@ bool OptionSettingsMisc::SaveSettings()
     const wxString& delim = st->GetValue();
     if (!delim.IsEmpty()) Model_Infotable::instance().setString("DELIMITER", delim);
 
-    Model_Infotable::instance().Set("IMPORTFOLDER:" + mmPlatformType(), m_import_path->GetValue().Trim());
+    Model_Infotable::instance().setString("IMPORTFOLDER:" + mmPlatformType(), m_import_path->GetValue().Trim());
     
     return true;
 }

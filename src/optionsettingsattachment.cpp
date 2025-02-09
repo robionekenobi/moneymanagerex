@@ -84,10 +84,10 @@ void OptionSettingsAttachment::Create()
     m_old_path = mmex::getPathAttachment(attachmentFolder);
 
     wxArrayString list;
-    list.Add(FOLDER_DOCUMENTS);
-    list.Add(FOLDER_USERPROFILE);
-    list.Add(FOLDER_DATABASE);
-    list.Add(FOLDER_APPDATA);
+    list.Add(ATTACHMENTS_FOLDER_DOCUMENTS);
+    list.Add(ATTACHMENTS_FOLDER_USERPROFILE);
+    list.Add(ATTACHMENTS_FOLDER_DATABASE);
+    list.Add(ATTACHMENTS_FOLDER_APPDATA);
 
     m_attachments_path = new wxComboBox(attachment_panel, ID_DIALOG_OPTIONS_TEXTCTRL_ATTACHMENT, "", wxDefaultPosition, wxDefaultSize, list);
     m_attachments_path->SetMinSize(wxSize(225, -1));
@@ -111,10 +111,10 @@ void OptionSettingsAttachment::Create()
     wxStaticBoxSizer* attachmentStaticBoxSizerLegend = new wxStaticBoxSizer(attachmentStaticBoxLegend, wxVERTICAL);
     attachmentStaticBoxSizer->Add(attachmentStaticBoxSizerLegend, wxSizerFlags(g_flagsExpand).Proportion(0));
 
-    wxString legend = wxString::Format(_("%s : User document directory"), FOLDER_DOCUMENTS);
-    legend += "\n" + wxString::Format(_("%s : User profile folder"), FOLDER_USERPROFILE);
-    legend += "\n" + wxString::Format(_("%s : Folder of .MMB database file"), FOLDER_DATABASE);
-    legend += "\n" + wxString::Format(_("%s : MMEX Application data folder"), FOLDER_APPDATA);
+    wxString legend = wxString::Format(_("%s : User document directory"), ATTACHMENTS_FOLDER_DOCUMENTS);
+    legend += "\n" + wxString::Format(_("%s : User profile folder"), ATTACHMENTS_FOLDER_USERPROFILE);
+    legend += "\n" + wxString::Format(_("%s : Folder of .MMB database file"), ATTACHMENTS_FOLDER_DATABASE);
+    legend += "\n" + wxString::Format(_("%s : MMEX Application data folder"), ATTACHMENTS_FOLDER_APPDATA);
     wxStaticText* legendStaticText = new wxStaticText(attachment_panel, wxID_STATIC, legend);
     attachmentStaticBoxSizerLegend->Add(legendStaticText);
     //End legend
