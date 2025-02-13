@@ -454,7 +454,7 @@ void mmBDDialog::CreateControls()
 
     wxIntegerValidator<int> intValidator(nullptr, wxNUM_VAL_ZERO_AS_BLANK);
     intValidator.SetMin(0);
-    textNumRepeats_ = new wxTextCtrl(this, ID_DIALOG_BD_TEXTCTRL_NUM_TIMES, "", wxDefaultPosition, m_date_due->GetSize(), 0, intValidator);
+    textNumRepeats_ = new wxTextCtrl(this, ID_DIALOG_BD_TEXTCTRL_NUM_TIMES, "", wxDefaultPosition, wxDefaultSize, 0, intValidator);
     repeatTimesBoxSizer->Add(textNumRepeats_, g_flagsH);
     textNumRepeats_->SetMaxLength(12);
     setRepeatDetails();
@@ -893,7 +893,7 @@ void mmBDDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 {
     // Ideally 'paid date' should be on or before the 'due date'
     if (m_date_paid->GetValue().GetDateOnly() > m_date_due->GetValue())
-        if (wxMessageBox(_("The payment date is after the due date, is this what you intended?"),
+        if (wxMessageBox(_("The payment date is after the due date. Is this intended?"),
             _("Looks like a late payment"),
             wxYES_NO | wxNO_DEFAULT | wxICON_WARNING) != wxYES)
             return;
@@ -938,7 +938,7 @@ void mmBDDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         if (!payee)
         {
             wxMessageDialog msgDlg( this
-                , wxString::Format(_("You have not used this payee name before. Is the name correct?\n%s"), payee_name)
+                , wxString::Format(_("Payee name has not been used before. Is the name correct?\n%s"), payee_name)
                 , _("Confirm payee name")
                 , wxYES_NO | wxYES_DEFAULT | wxICON_WARNING);
             if (msgDlg.ShowModal() == wxID_YES)
