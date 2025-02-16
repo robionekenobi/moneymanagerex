@@ -744,10 +744,9 @@ bool mmTransDialog::ValidateData()
     {
         if (dpc_->GetValue() <= Model_Account::DateOf(account->STATEMENTDATE))
         {
-            if (wxMessageBox(_(wxString::Format(
-                "Locked transaction to date: %s\n\n"
-                "Do you want to continue?"
-                , mmGetDateTimeForDisplay(account->STATEMENTDATE)))
+            if (wxMessageBox(wxString::Format(
+                _("Lock transaction to date: %s") + "\n\n" + _("Do you want to continue?")
+                , mmGetDateTimeForDisplay(account->STATEMENTDATE))
                 , _("MMEX Transaction Check"), wxYES_NO | wxICON_WARNING) == wxNO)
             {
                 return false;
@@ -770,9 +769,8 @@ bool mmTransDialog::ValidateData()
                 (account->MINIMUMBALANCE != 0 && new_value < account->MINIMUMBALANCE) ||
                 (account->CREDITLIMIT != 0 && new_value < -(account->CREDITLIMIT));
 
-            if (abort_transaction && wxMessageBox(_(
-                "This transaction will exceed your account limit.\n\n"
-                "Do you wish to continue?")
+            if (abort_transaction && wxMessageBox(
+                _("The transaction will exceed the account limit.") + "\n\n" + _("Do you want to continue?")
                 , _("MMEX Transaction Check"), wxYES_NO | wxICON_WARNING) == wxNO)
             {
                 return false;
