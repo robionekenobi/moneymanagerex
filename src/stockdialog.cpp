@@ -562,7 +562,7 @@ void mmStockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
         {
         }
     }
-    const wxString fileName = _filename;
+    const wxString fileName = _fileName;
     Model_Account::Data *account = Model_Account::instance().get(m_stock->HELDAT);
     Model_Currency::Data *currency = Model_Account::currency(account);
 
