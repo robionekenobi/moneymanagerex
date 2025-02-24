@@ -42,7 +42,7 @@ public:
     }
     mmQIFImportDialog(wxWindow* parent, int64 account_id, const wxString& file_path = wxEmptyString);
 
-    bool Create(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = _("Import from QIF file"), const wxPoint& pos = wxDefaultPosition,
+    bool Create(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = _t("Import from QIF file"), const wxPoint& pos = wxDefaultPosition,
                 const wxSize& size = wxDefaultSize, long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCLOSE_BOX);
 
     wxString OnGetItemText(long item, long column) const;
@@ -127,19 +127,19 @@ private:
     std::map<std::pair <int64, wxString>, std::map<int, std::pair<wxString, wxRegEx>> > payeeMatchPatterns_;
     bool payeeRegExInitialized_ = false;
 
-    enum LIST_COL
+    enum LIST_ID
     {
-        LIST_COL_ID = 0,
-        LIST_COL_ACCOUNT,
-        LIST_COL_DATE,
-        LIST_COL_NUMBER,
-        LIST_COL_PAYEE,
-        LIST_COL_TYPE,
-        LIST_COL_CATEGORY,
-        LIST_COL_TAGS,
-        LIST_COL_VALUE,
-        LIST_COL_NOTES,
-        LIST_COL_size, // number of columns
+        LIST_ID_ID = 0,
+        LIST_ID_ACCOUNT,
+        LIST_ID_DATE,
+        LIST_ID_NUMBER,
+        LIST_ID_PAYEE,
+        LIST_ID_TYPE,
+        LIST_ID_CATEGORY,
+        LIST_ID_TAGS,
+        LIST_ID_VALUE,
+        LIST_ID_NOTES,
+        LIST_ID_size, // number of columns
     };
     enum {
         ID_ACCOUNT = wxID_HIGHEST + 1

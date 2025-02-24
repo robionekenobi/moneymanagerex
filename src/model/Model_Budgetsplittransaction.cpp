@@ -61,7 +61,7 @@ double Model_Budgetsplittransaction::get_total(const Data_Set& rows)
 bool Model_Budgetsplittransaction::remove(int64 id)
 {
     // Delete all tags for the split before removing it
-    Model_Taglink::instance().DeleteAllTags(Model_Attachment::REFTYPE_STR_BILLSDEPOSITSPLIT, id);
+    Model_Taglink::instance().DeleteAllTags(Model_Attachment::REFTYPE_NAME_BILLSDEPOSITSPLIT, id);
     return this->remove(id, db_);
 }
 
@@ -100,7 +100,7 @@ int Model_Budgetsplittransaction::update(Data_Set& rows, int64 transactionID)
         instance().save(split_items);
 
         // Send back the new SPLITTRANSID which is needed to update taglinks
-        for (int i = 0; i < rows.size(); i++)
+        for (int i = 0; i < static_cast<int>(rows.size()); i++)
             rows.at(i).SPLITTRANSID = split_items.at(i).SPLITTRANSID;
     }
     return rows.size();

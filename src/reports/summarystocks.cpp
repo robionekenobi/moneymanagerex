@@ -33,7 +33,7 @@
 #include <algorithm>
 
 mmReportSummaryStocks::mmReportSummaryStocks()
-    : mmPrintableBase(wxTRANSLATE("Summary of Stocks"))
+    : mmPrintableBase(_n("Summary of Stocks"))
 {
     setReportParameters(Reports::StocksReportSummary);
 }
@@ -110,16 +110,16 @@ wxString mmReportSummaryStocks::getHTMLText()
             {
                 hb.startTableRow();
                 {
-                    hb.addTableHeaderCell(_("Name"));
-                    hb.addTableHeaderCell(_("Symbol"));
-                    hb.addTableHeaderCell(_("Purchase Date"));
-                    hb.addTableHeaderCell(_("Quantity"), "text-right");
-                    hb.addTableHeaderCell(_("Initial Value"), "text-right");
-                    hb.addTableHeaderCell(_("Current Price"), "text-right");
-                    hb.addTableHeaderCell(_("Commission"), "text-right");
-                    hb.addTableHeaderCell(_("Realized Gain/Loss"), "text-right");
-                    hb.addTableHeaderCell(_("Unrealized Gain/Loss"), "text-right");
-                    hb.addTableHeaderCell(_("Current Value"), "text-right");
+                    hb.addTableHeaderCell(_t("Name"));
+                    hb.addTableHeaderCell(_t("Symbol"));
+                    hb.addTableHeaderCell(_t("Purchase Date"));
+                    hb.addTableHeaderCell(_t("Quantity"), "text-right");
+                    hb.addTableHeaderCell(_t("Initial Value"), "text-right");
+                    hb.addTableHeaderCell(_t("Current Price"), "text-right");
+                    hb.addTableHeaderCell(_t("Commission"), "text-right");
+                    hb.addTableHeaderCell(_t("Realized Gain/Loss"), "text-right");
+                    hb.addTableHeaderCell(_t("Unrealized Gain/Loss"), "text-right");
+                    hb.addTableHeaderCell(_t("Current Value"), "text-right");
                 }
                 hb.endTableRow();
             }
@@ -251,7 +251,7 @@ wxString mmReportSummaryStocks::getHTMLText()
 }
 
 mmReportChartStocks::mmReportChartStocks()
-    : mmPrintableBase(wxTRANSLATE("Stocks Performance Charts"))
+    : mmPrintableBase(_n("Stocks Performance Charts"))
 {
     setReportParameters(Reports::StocksReportPerformance);
 }
@@ -271,7 +271,6 @@ wxString mmReportChartStocks::getHTMLText()
         hb.DisplayDateHeading(m_date_range->start_date(), m_date_range->end_date(), true);
 
     wxTimeSpan dist;
-    wxDate precDateDt = wxInvalidDateTime;
     wxArrayString symbols;
     for (const auto& stock : Model_Stock::instance().all(Model_Stock::COL_SYMBOL))
     {

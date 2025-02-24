@@ -38,9 +38,8 @@ class sqlListCtrl : public mmListCtrl
     wxDECLARE_NO_COPY_CLASS(sqlListCtrl);
 public:
 
-    sqlListCtrl(mmGeneralReportManager *grm, wxWindow *parent
-        , const wxWindowID id);
-    virtual wxString OnGetItemText(long item, long column) const;
+    sqlListCtrl(mmGeneralReportManager *grm, wxWindow *parent, const wxWindowID id);
+    virtual wxString OnGetItemText(long item, long col_nr) const;
 private:
     mmGeneralReportManager* m_grm;
 };
@@ -56,12 +55,13 @@ public:
     ~mmGeneralReportManager();
 
     mmGeneralReportManager(wxWindow* parent, wxSQLite3Database* db);
-    wxString OnGetItemText(long item, long column) const;
+    wxString OnGetItemText(long item, long col_nr) const;
 
+    bool syncReport(int64 id);
 private:
     bool Create(wxWindow* parent
         , wxWindowID id = wxID_ANY
-        , const wxString& caption = _("General Report Manager")
+        , const wxString& caption = _t("General Report Manager")
         , const wxString& name = "General Reports Manager"
         , const wxPoint& pos = wxDefaultPosition
         , const wxSize& size = wxDefaultSize
@@ -82,10 +82,11 @@ private:
     void OnItemRightClick(wxTreeEvent& event);
     void OnRightClick(wxMouseEvent& event);
     void OnSelChanged(wxTreeEvent& event);
+    void OnSyncReportComplete(wxCommandEvent&);
     //void OnLabelChanged(wxTreeEvent& event);
     void viewControls(bool enable);
     void renameReport(int64 id);
-    bool DeleteReport(int64 id);
+    bool deleteReport(int64 id);
     bool changeReportGroup(int64 id, bool ungroup);
     void changeReportState(int64 id);
     bool renameReportGroup(const wxString& GroupName);
@@ -101,12 +102,16 @@ private:
     const wxString getTemplate(wxString& sql);
     void OnNewWindow(wxWebViewEvent& evt);
 
+    void OnSyncFromGitHub(wxCommandEvent& WXUNUSED(event));
+    void DownloadAndStoreReport(const wxString& groupName, const wxString& reportName, const wxString& reportPath);
+
     std::vector <std::vector <wxString> > m_sqlQueryData;
 
     wxSQLite3Database* m_db = nullptr;
     wxWebView* browser_ = nullptr;
 
     wxButton* m_buttonOpen = nullptr;
+    //wxButton* m_buttonSync = nullptr;
     wxButton* m_buttonSave = nullptr;
     wxButton* m_buttonSaveAs = nullptr;
     wxButton* m_buttonRun = nullptr;
@@ -134,6 +139,7 @@ private:
         ID_NEW_SAMPLE_STOCKS,
         ID_NEW_SAMPLE_STATS,
         ID_DELETE,
+        ID_SYNC,
         ID_RENAME,
         ID_GROUP,
         ID_UNGROUP,
@@ -145,6 +151,7 @@ private:
         ID_TEMPLATE,
         ID_DESCRIPTION,
         ID_REPORT_LIST,
+        ID_GITHUB_SYNC,
         ID_ACTIVE
     };
 
