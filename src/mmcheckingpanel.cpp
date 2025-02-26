@@ -240,7 +240,6 @@ void mmCheckingPanel::createControls()
     m_lc = new TransactionListCtrl(this, splitterListFooter);
     m_lc->SetSmallImages(m_images);
     m_lc->SetNormalImages(m_images);
-    m_lc->setColumnImage(m_lc->getSortColNr(0), (m_lc->getSortAsc(0) ? ICON_ASC : ICON_DESC));
 
     wxPanel* panelFooter = new wxPanel(
         splitterListFooter, wxID_ANY, wxDefaultPosition, wxDefaultSize,
@@ -1029,14 +1028,14 @@ void mmCheckingPanel::onFilterPopup(wxCommandEvent& event)
     menu.AppendSeparator();
     if (i < static_cast<int>(m_date_range_a.size())) {
         wxMenu* menu_more(new wxMenu);
-        menu.AppendSubMenu(menu_more, _t("More date ranges…"));
+        menu.AppendSubMenu(menu_more, _tu("More date ranges…"));
         while (i < static_cast<int>(m_date_range_a.size())) {
             menu_more->Append(mmID_FILTER_DATE_MIN + i, m_date_range_a[i].getName());
             i++;
         }
     }
-    // TODO: menu.Append(mmID_EDIT_DATE_RANGES, _t("Edit date ranges…"));
-    menu.Append(mmID_FILTER_ADVANCED, _t("Advanced filter…"));
+    // TODO: menu.Append(mmID_EDIT_DATE_RANGES, _tu("Edit date ranges…"));
+    menu.Append(mmID_FILTER_ADVANCED, _tu("Advanced filter…"));
 
     PopupMenu(&menu);
     m_bitmapTransFilter->Layout();
