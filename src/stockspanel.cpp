@@ -133,7 +133,7 @@ void mmStocksPanel::CreateControls()
     mmToolTip(itemButton6, _t("New Stock Investment"));
     BoxSizerHBottom->Add(itemButton6, 0, wxRIGHT, 5);
 
-    wxButton* add_trans_btn = new wxButton(BottomPanel, wxID_ADD, _t("&Add Trans "));
+    wxButton* add_trans_btn = new wxButton(BottomPanel, wxID_ADD, _t("&Adjust Trade "));
     mmToolTip(add_trans_btn, _t("Add Stock Transactions"));
     BoxSizerHBottom->Add(add_trans_btn, 0, wxRIGHT, 5);
     add_trans_btn->Enable(false);
@@ -212,17 +212,16 @@ void mmStocksPanel::ViewStockTransactions(int selectedIndex)
     stockTxnListCtrl->AppendColumn(_t("Date"));
     stockTxnListCtrl->AppendColumn(_t("Lot"));
     stockTxnListCtrl->AppendColumn(_t("Shares"), wxLIST_FORMAT_RIGHT);
+    stockTxnListCtrl->AppendColumn(_t("Change"));
     stockTxnListCtrl->AppendColumn(_t("Price"), wxLIST_FORMAT_RIGHT);
     stockTxnListCtrl->AppendColumn(_t("Commission"), wxLIST_FORMAT_RIGHT);
     topsizer->Add(stockTxnListCtrl, wxSizerFlags(g_flagsExpand).TripleBorder());
 
-    const Model_Translink::Data_Set stock_list = Model_Translink::TranslinkList(Model_Attachment::REFTYPE_ID_STOCK, stock->STOCKID);
     Model_Checking::Data_Set checking_list;
-    for (const auto &trans : stock_list)
-    {
-        Model_Checking::Data* checking_entry = Model_Checking::instance().get(trans.CHECKINGACCOUNTID);
-        if (checking_entry && checking_entry->DELETEDTIME.IsEmpty()) checking_list.push_back(*checking_entry);
-    }
+
+    const Model_Account::Data* share_account = Model_Account::instance().get(stock->STOCKNAME);
+    if (share_account)
+        checking_list = Model_Checking::instance().find(Model_Checking::ACCOUNTID(share_account->ACCOUNTID), Model_Checking::TRANSCODE(Model_Checking::TYPE_ID_TRANSFER, NOT_EQUAL));
     std::stable_sort(checking_list.begin(), checking_list.end(), SorterByTRANSDATE());
 
     int row = 0;
@@ -238,8 +237,9 @@ void mmStocksPanel::ViewStockTransactions(int selectedIndex)
 
             int precision = share_entry->SHARENUMBER == floor(share_entry->SHARENUMBER) ? 0 : Option::instance().getSharePrecision();
             stockTxnListCtrl->SetItem(index, 2, wxString::FromDouble(share_entry->SHARENUMBER, precision));
-            stockTxnListCtrl->SetItem(index, 3, wxString::FromDouble(share_entry->SHAREPRICE, Option::instance().getSharePrecision()));
-            stockTxnListCtrl->SetItem(index, 4, wxString::FromDouble(share_entry->SHARECOMMISSION, 2));
+            stockTxnListCtrl->SetItem(index, 3, stock_trans.TRANSCODE);
+            stockTxnListCtrl->SetItem(index, 4, wxString::FromDouble(share_entry->SHAREPRICE, Option::instance().getSharePrecision()));
+            stockTxnListCtrl->SetItem(index, 5, wxString::FromDouble(share_entry->SHARECOMMISSION, 2));
         }
     }
 
@@ -259,8 +259,9 @@ void mmStocksPanel::ViewStockTransactions(int selectedIndex)
 
         int precision = share_entry->SHARENUMBER == floor(share_entry->SHARENUMBER) ? 0 : Option::instance().getSharePrecision();
         stockTxnListCtrl->SetItem(index, 2, wxString::FromDouble(share_entry->SHARENUMBER, precision));
-        stockTxnListCtrl->SetItem(index, 3, wxString::FromDouble(share_entry->SHAREPRICE, Option::instance().getSharePrecision()));
-        stockTxnListCtrl->SetItem(index, 4, wxString::FromDouble(share_entry->SHARECOMMISSION, 2));
+        stockTxnListCtrl->SetItem(index, 3, txn->TRANSCODE);
+        stockTxnListCtrl->SetItem(index, 4, wxString::FromDouble(share_entry->SHAREPRICE, Option::instance().getSharePrecision()));
+        stockTxnListCtrl->SetItem(index, 5, wxString::FromDouble(share_entry->SHARECOMMISSION, 2));
 
         // Sort by date 
         stockTxnListCtrl->SortItems(
@@ -346,7 +347,7 @@ const wxString mmStocksPanel::Total_Shares()
 void mmStocksPanel::updateHeader()
 {
     const Model_Account::Data* account = Model_Account::instance().get(m_account_id);
-    double initVal = 0;
+    double cashBalance = 0;
     // + Transfered from other accounts - Transfered to other accounts
 
     //Get Stock Investment Account Balance as Init Amount + sum (Value) - sum (Purchase Price)
@@ -354,10 +355,11 @@ void mmStocksPanel::updateHeader()
     if (account)
     {
         header_text_->SetLabelText(GetPanelTitle(*account));
-        //Get Init Value of the account
-        initVal = account->INITIALBAL;
+        cashBalance = Model_Account::balance(account);
         investment_balance = Model_Account::investment_balance(account);
     }
+
+    // TODO get its Shares Accounts' balance
     double originalVal = investment_balance.second;
     double total = investment_balance.first; 
 
@@ -365,9 +367,10 @@ void mmStocksPanel::updateHeader()
     double diffPercents = originalVal != 0.0
         ? (total > originalVal ? total / originalVal*100.0 - 100.0 : -(total / originalVal*100.0 - 100.0))
         : 0.0;
-    const wxString lbl = wxString::Format("%s     %s     %s     %s (%s %%)"
+    const wxString lbl = wxString::Format("%s     %s     %s     %s     %s (%s %%)"
+        , wxString::Format(_t("Total: %s"), Model_Currency::toCurrency(total + cashBalance, m_currency))
         , wxString::Format(_t("Total Shares: %s"), Total_Shares())
-        , wxString::Format(_t("Total: %s"), Model_Currency::toCurrency(total + initVal, m_currency))
+        , wxString::Format(_t("Market Value: %s"), Model_Currency::toCurrency(total, m_currency))
         , wxString::Format(_t("Invested: %s"), Model_Currency::toCurrency(originalVal, m_currency))
         , wxString::Format(total > originalVal ? _t("Gain: %s") : _t("Loss: %s"), diffStr)
         , Model_Currency::toString(diffPercents, m_currency, 2));

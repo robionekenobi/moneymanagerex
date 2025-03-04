@@ -402,6 +402,7 @@ void mmStockDialog::OnSave(wxCommandEvent & /*event*/)
         return;
     }
     
+    // TODO unique
     const wxString stockSymbol = m_stock_symbol_ctrl->GetValue();
     if (stockSymbol.empty())
     {
@@ -497,7 +498,10 @@ void mmStockDialog::OnSave(wxCommandEvent & /*event*/)
 	                CreateShareAccount(account, stockName, m_stock->PURCHASEDATE);
 	            }
 	        }
-	    }
+	    } else {
+            ShareTransactionDialog share_dialog(this, m_stock);
+            share_dialog.ShowModal();
+        }
     }
     m_edit = true;
     UpdateControls();
@@ -510,7 +514,7 @@ void mmStockDialog::CreateShareAccount(Model_Account::Data* stock_account, const
     share_account->ACCOUNTNAME = name;
     share_account->ACCOUNTTYPE = Model_Account::TYPE_NAME_SHARES;
 
-    share_account->FAVORITEACCT = "TRUE";
+    share_account->FAVORITEACCT = "FALSE";
     share_account->STATUS = Model_Account::STATUS_NAME_OPEN;
     share_account->INITIALBAL = 0;
     share_account->INITIALDATE = openingDate;
