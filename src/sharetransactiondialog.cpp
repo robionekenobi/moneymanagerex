@@ -299,12 +299,14 @@ void ShareTransactionDialog::CreateControls()
     m_transaction_panel = new UserTransactionPanel(this, m_checking_entry, wxID_STATIC);
     m_transaction_panel->Bind(wxEVT_CHOICE, &ShareTransactionDialog::CalculateAmount, this, wxID_VIEW_DETAILS);
     transaction_frame_sizer->Add(m_transaction_panel, g_flagsV);
-    if (m_translink_entry && m_checking_entry) {
+    if (m_translink_entry && m_checking_entry)
+    {
         m_transaction_panel->CheckingType(Model_Translink::type_checking(m_checking_entry->TOACCOUNTID));
     }
     else {
         wxString acc_held = Model_Account::get_account_name(m_stock->HELDAT);
-        m_transaction_panel->SetTransactionNumber(acc_held);
+        m_transaction_panel->SetTransactionNumber(m_stock->SYMBOL);
+        m_transaction_panel->SetTransactionAccount(acc_held);
     }
 
     /********************************************************************
@@ -404,7 +406,7 @@ void ShareTransactionDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         }
         Model_Shareinfo::ShareEntry(checking_id, num_shares, share_price, commission, m_share_lot_ctrl->GetValue());
 
-        Model_Translink::UpdateStockValue(m_stock);
+        Model_Stock::UpdatePosition(m_stock);
         if (!loyalty_shares)
         {
             Model_StockHistory::instance().addUpdate(m_stock->SYMBOL, m_transaction_panel->TransactionDate(), share_price, Model_StockHistory::MANUAL);
