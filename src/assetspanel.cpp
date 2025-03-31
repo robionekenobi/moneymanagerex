@@ -117,7 +117,7 @@ void mmAssetsListCtrl::OnMouseRightClick(wxMouseEvent& event)
     else
     {
         auto asset_account = Model_Account::instance().get(m_panel->m_assets[m_selected_row].ASSETNAME);  // ASSETNAME <=> ACCOUNTNAME
-        if (asset_account) asset_account = Model_Account::instance().get(m_panel->m_assets[m_selected_row].ASSETTYPE);  // ASSETTYPE <=> ACCOUNTNAME
+        if (!asset_account) asset_account = Model_Account::instance().get(m_panel->m_assets[m_selected_row].ASSETTYPE);  // ASSETTYPE <=> ACCOUNTNAME
         menu.Enable(MENU_TREEPOPUP_GOTOACCOUNT, asset_account);
         menu.Enable(MENU_TREEPOPUP_VIEWTRANS, asset_account);
     }
@@ -571,7 +571,7 @@ int mmAssetsPanel::initVirtualListControl(int64 id)
         initial += bal.first;
         balance += bal.second;
     }
-    header_text_->SetLabelText(wxString::Format(_t("Total: %s, Initial: %s"), Model_Currency::toCurrency(balance), Model_Currency::toCurrency(initial))); // balance
+    header_text_->SetLabelText(wxString::Format("%s, %s", wxString::Format(_t("Total: %s"), Model_Currency::toCurrency(balance)),  wxString::Format(_t("Initial: %s"), Model_Currency::toCurrency(initial)))); // balance
 
     int selected_item = 0;
     for (const auto& asset: this->m_assets)
