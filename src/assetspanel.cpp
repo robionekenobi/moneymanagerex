@@ -352,7 +352,6 @@ BEGIN_EVENT_TABLE(mmAssetsPanel, wxPanel)
     EVT_BUTTON(wxID_FILE2, mmAssetsPanel::OnMouseLeftDown)
     EVT_MENU(wxID_ANY, mmAssetsPanel::OnViewPopupSelected)
     EVT_SEARCHCTRL_SEARCH_BTN(wxID_FIND, mmAssetsPanel::OnSearchTxtEntered)
-    EVT_TEXT_ENTER(wxID_FIND, mmAssetsPanel::OnSearchTxtEntered)
 END_EVENT_TABLE()
 
 mmAssetsPanel::mmAssetsPanel(mmGUIFrame* frame, wxWindow *parent, wxWindowID winid, const wxString& name)
@@ -734,27 +733,37 @@ void mmAssetsPanel::OnSearchTxtEntered(wxCommandEvent& event)
     if (search_string.IsEmpty()) return;
 
     long last = m_lc->GetItemCount();
-    long selectedItem = m_lc->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-    if (selectedItem < 0) //nothing selected
-        selectedItem = m_lc->getSortAsc() ? last - 1 : 0;
+    if (last == 0) return;
 
-    while (selectedItem > 0 && selectedItem <= last)
-    {
-        m_lc->getSortAsc() ? selectedItem-- : selectedItem++;
+    long selectedItem = m_lc->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+    if (selectedItem == wxNOT_FOUND)
+        selectedItem = 0;
+    else
+        selectedItem = (selectedItem + 1) % last;
+
+    long startItem = selectedItem;
+
+    SetEvtHandlerEnabled(false);
+
+    do {
         const wxString t = getItem(selectedItem, mmAssetsListCtrl::LIST_ID_NOTES).Lower();
-        if (t.Matches(search_string + "*"))
+        if (t.Contains(search_string))
         {
-            //First of all any items should be unselected
             long cursel = m_lc->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
             if (cursel != wxNOT_FOUND)
                 m_lc->SetItemState(cursel, 0, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED);
 
-            //Then finded item will be selected
-            m_lc->SetItemState(selectedItem, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+            m_lc->SetItemState(selectedItem, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED,
+                                              wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED);
             m_lc->EnsureVisible(selectedItem);
             break;
         }
-    }
+
+        selectedItem = (selectedItem + 1) % last;
+
+    } while (selectedItem != startItem);
+
+    SetEvtHandlerEnabled(true);
 }
 
 void mmAssetsPanel::AddAssetTrans(const int selected_index)

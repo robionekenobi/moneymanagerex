@@ -213,6 +213,7 @@ void mmReportsPanel::CreateControls()
             m_all_date_ranges.push_back(wxSharedPtr<mmDateRange>(new mmCurrentYear()));
             m_all_date_ranges.push_back(wxSharedPtr<mmDateRange>(new mmCurrentYearToDate()));
             m_all_date_ranges.push_back(wxSharedPtr<mmDateRange>(new mmLastYear()));
+            m_all_date_ranges.push_back(wxSharedPtr<mmDateRange>(new mmLastYearBefore()));
             m_all_date_ranges.push_back(wxSharedPtr<mmDateRange>(new mmCurrentFinancialYear()));
             m_all_date_ranges.push_back(wxSharedPtr<mmDateRange>(new mmCurrentFinancialYearToDate()));
             m_all_date_ranges.push_back(wxSharedPtr<mmDateRange>(new mmLastFinancialYear()));
@@ -362,10 +363,8 @@ void mmReportsPanel::CreateControls()
             m_accounts->Append(_t("All Accounts"));
             m_accounts->Append(_tu("Specific Accounts…"));
             for (int i = 0; i < Model_Account::TYPE_ID_size; ++i) {
-                if (i != Model_Account::TYPE_ID_INVESTMENT) {
-                    wxString type = Model_Account::type_name(i);
-                    m_accounts->Append(wxGetTranslation(type), new wxStringClientData(type));
-                }
+                wxString type = Model_Account::type_name(i);
+                m_accounts->Append(wxGetTranslation(type), new wxStringClientData(type));
             }
             m_accounts->SetSelection(rb_->getAccountSelection());
 
