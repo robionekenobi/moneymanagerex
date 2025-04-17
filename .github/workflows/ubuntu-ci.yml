@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-22.04, ubuntu-24.04]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -25,9 +25,10 @@ jobs:
           sudo apt update
           sudo apt install -y --no-install-recommends \
           cmake build-essential libssl-dev gettext git pkg-config lsb-release file ccache \
-          libgtk-3-dev liblua5.3-dev libcurl4-openssl-dev libwebkit2gtk-4.0-dev wget appstream fuse
+          libgtk-3-dev liblua5.3-dev libcurl4-openssl-dev libwebkit2gtk-4.1-dev wget appstream fuse
           
       - name: Restore wxWidgets Cache
+       # if: false
         id: restore-cache-wxWidgets
         uses: actions/cache/restore@v4
         with:
@@ -42,7 +43,7 @@ jobs:
           tar -xjf wxWidgets-${{steps.init.outputs.wxVer}}.tar.bz2
           mv wxWidgets-${{steps.init.outputs.wxVer}} wxWidgets
           cd wxWidgets
-          mkdir build-linux && cd build-linux
+          mkdir -p build-linux && cd build-linux
           ../configure --disable-shared --enable-cxx11 --with-cxx=11 --enable-webview --with-gtk=3 --enable-unicode --enable-intl
           make -j$(nproc)
 
@@ -69,12 +70,12 @@ jobs:
         id: mmex-build
         run: |
           cd $GITHUB_WORKSPACE
-          mkdir build
+          mkdir -p build
           cd build
           cmake ..
           export MAKEFLAGS=-j$(nproc)
           cmake --build . --target package
-          mkdir /home/runner/work/moneymanagerex/moneymanagerex/build/AppDir
+          mkdir -p /home/runner/work/moneymanagerex/moneymanagerex/build/AppDir
           make install DESTDIR=/home/runner/work/moneymanagerex/moneymanagerex/build/AppDir
           echo "artifact_name=$(ls mmex*.deb)" >> $GITHUB_OUTPUT
           
@@ -97,7 +98,7 @@ jobs:
       #    upload-signing-artifacts: true
 
       - name: Generate AppImage
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         id: appimage-build
         run: |
           cd /home/runner/work/moneymanagerex/moneymanagerex/build
@@ -109,14 +110,14 @@ jobs:
           echo "artifact_name=$(ls MMEX*.AppImage)" >> $GITHUB_OUTPUT
 
       - name: Upload AppImage
-        if: ${{ matrix.os == 'ubuntu-20.04' && github.event_name == 'pull_request'}}
+        if: ${{ matrix.os == 'ubuntu-22.04' && github.event_name == 'pull_request'}}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.appimage-build.outputs.artifact_name }}
           path: ${{ github.workspace }}/build/MMEX*.AppImage
       
       #- name: Sign and Upload AppImage
-      #  if: ${{ matrix.os == 'ubuntu-20.04' && github.event_name == 'push' && github.repository == 'moneymanagerex/moneymanagerex'}}
+      #  if: ${{ matrix.os == 'ubuntu-22.04' && github.event_name == 'push' && github.repository == 'moneymanagerex/moneymanagerex'}}
       #  uses: sigstore/gh-action-sigstore-python@v2.1.1
       #  with:
       #    inputs: ${{ github.workspace }}/build/MMEX*.AppImage
