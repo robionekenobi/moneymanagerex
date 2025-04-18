@@ -212,7 +212,7 @@ wxDateTime Model_Checking::TRANSDATE(const Data& r)
 
 double Model_Checking::account_flow(const Data* r, int64 account_id)
 {
-    if (r->ACCOUNTID == r->TOACCOUNTID)
+    if (r->ACCOUNTID == r->TOACCOUNTID && type_id(r->TRANSCODE) == TYPE_ID_TRANSFER)
         return 0.0;  // Self Transfer as Revaluation
     if (Model_Checking::status_id(r->STATUS) == Model_Checking::STATUS_ID_VOID || !r->DELETEDTIME.IsEmpty())
         return 0.0;
@@ -639,7 +639,7 @@ bool Model_Checking::foreignTransaction(const Data& data)
 
 bool Model_Checking::foreignTransactionAsTransfer(const Data& data)
 {
-    return foreignTransaction(data) && (data.TOACCOUNTID == Model_Translink::AS_TRANSFER);
+    return foreignTransaction(data) && (data.TOACCOUNTID == Model_Translink::AS_TRANSFER || data.TOACCOUNTID == data.ACCOUNTID);
 }
 
 void Model_Checking::updateTimestamp(int64 id)
