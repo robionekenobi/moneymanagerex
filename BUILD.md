@@ -227,8 +227,8 @@ Current stable version that has been tested with MMEX is v3.2.7
         mkdir build-cocoa
         cd build-cocoa
         export MAKEFLAGS=-j4
-        ../configure --disable-shared --enable-cxx11 --with-cxx=11 \
-        --with-macosx-version-min=10.14 \
+        ../configure --disable-shared --with-cxx=17 \
+        --with-macosx-version-min=11.0 \
         --without-libtiff \
         --enable-universal-binary=arm64,x86_64
         make
@@ -250,7 +250,7 @@ Current stable version that has been tested with MMEX is v3.2.7
     cd moneymanagerex/build
     export MAKEFLAGS=-j4
     cmake -DCMAKE_CXX_FLAGS="-w" \
-    -DwxWidgets_CONFIG_EXECUTABLE={PATH-TO-wxWidgets}/wxWidgets-7/build-cocoa/wx-config \
+    -DwxWidgets_CONFIG_EXECUTABLE={PATH-TO-wxWidgets}/wxWidgets-3.2.7/build-cocoa/wx-config \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
     -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10 ..
