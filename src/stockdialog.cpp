@@ -687,10 +687,10 @@ void mmStockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
             ShowStockHistory();
 
             Model_StockHistory::Data_Set histData = Model_StockHistory::instance().find(Model_StockHistory::SYMBOL(m_stock->SYMBOL));
-            std::stable_sort(histData.begin(), histData.end(), SorterByDATE_DESC());
+            std::stable_sort(histData.begin(), histData.end(), SorterByDATE());
             wxString lp = wxString::FromDouble(histData.at(0).VALUE, Option::instance().getSharePrecision());
             wxString cp = wxString::FromDouble(m_stock->CURRENTPRICE, Option::instance().getSharePrecision());
-            //std::reverse(histData.begin(), histData.end());
+            std::reverse(histData.begin(), histData.end());
             if (lp != cp)
             {
                 m_stock->CURRENTPRICE = histData.at(0).VALUE;
