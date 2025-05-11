@@ -214,25 +214,25 @@ void mmWebAppDialog::fillControls()
     for (const auto& WebTran : WebAppTransactions_)
     {
         wxVector<wxVariant> data;
-        data.emplace_back(wxString::Format(wxT("%lld"), WebTran.ID)); //WEBTRAN_ID
-        data.emplace_back(mmGetDateTimeForDisplay(WebTran.Date.FormatISODate())); //WEBTRAN_DATE
-        data.emplace_back(WebTran.Account); //WEBTRAN_ACCOUNT
-        data.emplace_back(WebTran.Status); //WEBTRAN_STATUS
-        data.emplace_back(wxGetTranslation(WebTran.Type)); //WEBTRAN_TYPE
+        data.push_back(wxString::Format(wxT("%lld"), WebTran.ID)); //WEBTRAN_ID
+        data.push_back(mmGetDateTimeForDisplay(WebTran.Date.FormatISODate())); //WEBTRAN_DATE
+        data.push_back(WebTran.Account); //WEBTRAN_ACCOUNT
+        data.push_back(WebTran.Status); //WEBTRAN_STATUS
+        data.push_back(wxGetTranslation(WebTran.Type)); //WEBTRAN_TYPE
 
         wxString Payee = WebTran.Type != "Transfer" ? WebTran.Payee : "> " + WebTran.ToAccount;
-        data.emplace_back(Payee); //WEBTRAN_PAYEE
+        data.push_back(Payee); //WEBTRAN_PAYEE
 
         wxString Category = WebTran.Category;
         if (WebTran.SubCategory != wxEmptyString) Category += ":" + WebTran.SubCategory;
-        data.emplace_back(Category); //WEBTRAN_CATEGORY
+        data.push_back(Category); //WEBTRAN_CATEGORY
 
         Model_Currency::Data *currency = Model_Currency::GetBaseCurrency();
         wxString Amount = Model_Currency::toStringNoFormatting(WebTran.Amount, currency, Model_Currency::precision(currency));
-        data.emplace_back(Amount); //WEBTRAN_AMOUNT
+        data.push_back(Amount); //WEBTRAN_AMOUNT
 
-        data.emplace_back(WebTran.Notes); //WEBTRAN_NOTES
-        data.emplace_back(WebTran.Attachments); //WEBTRAN_ATTACHMENTS
+        data.push_back(WebTran.Notes); //WEBTRAN_NOTES
+        data.push_back(WebTran.Attachments); //WEBTRAN_ATTACHMENTS
         webtranListBox_->AppendItem(data, static_cast<wxUIntPtr>(WebTran.ID.GetValue()));
     }
 
