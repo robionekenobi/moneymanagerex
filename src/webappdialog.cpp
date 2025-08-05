@@ -214,13 +214,6 @@ void mmWebAppDialog::fillControls()
     for (const auto& WebTran : WebAppTransactions_)
     {
         //wxVector<wxVariant> data;
-        //data.push_back(wxString::Format(wxT("%lld"), WebTran.ID)); //WEBTRAN_ID
-        //data.push_back(mmGetDateTimeForDisplay(WebTran.Date.FormatISODate())); //WEBTRAN_DATE
-        //data.push_back(WebTran.Account); //WEBTRAN_ACCOUNT
-        //data.push_back(WebTran.Status); //WEBTRAN_STATUS
-        //data.push_back(wxGetTranslation(WebTran.Type)); //WEBTRAN_TYPE
-
-        //wxVector<wxVariant> data;
         std::vector<wxVariant> data;
         data.emplace_back(wxString::Format(wxT("%lld"), WebTran.ID)); //WEBTRAN_ID
         data.emplace_back(mmGetDateTimeForDisplay(WebTran.Date.FormatISODate())); //WEBTRAN_DATE
@@ -238,10 +231,6 @@ void mmWebAppDialog::fillControls()
         Model_Currency::Data *currency = Model_Currency::GetBaseCurrency();
         wxString Amount = Model_Currency::toStringNoFormatting(WebTran.Amount, currency, Model_Currency::precision(currency));
         data.push_back(Amount); //WEBTRAN_AMOUNT
-
-        //data.push_back(WebTran.Notes); //WEBTRAN_NOTES
-        //data.push_back(WebTran.Attachments); //WEBTRAN_ATTACHMENTS
-        //webtranListBox_->AppendItem(data, static_cast<wxUIntPtr>(WebTran.ID.GetValue()));
 
         data.emplace_back(WebTran.Notes); //WEBTRAN_NOTES
         data.emplace_back(WebTran.Attachments); //WEBTRAN_ATTACHMENTS
