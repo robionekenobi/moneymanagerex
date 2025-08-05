@@ -1,6 +1,7 @@
 /*******************************************************
 Copyright (C) 2009 VaDiM
 Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+Copyright (C) 2025 Klaus Wich
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -134,7 +135,7 @@ const wxString mmex::weblink::addReferralToURL(const wxString& BaseURL, const wx
     to divide direct access from access through desktop app links
     https://support.google.com/analytics/answer/1033867?hl=en
     */
-    
+
     const wxString url = wxString::Format("%s?utm_campaign=Application_Desktop&utm_source=%s&utm_medium=MMEX_v%s"
         , BaseURL, CampSource, mmex::version::string);
 
@@ -174,7 +175,7 @@ const wxString mmex::weblink::YahooQuotes = "https://query1.finance.yahoo.com/v7
    Valid intervals: [1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]*/
 const wxString mmex::weblink::YahooQuotesHistory = "https://query1.finance.yahoo.com/v8/finance/chart/%s?%s&fields=currency";
 
-// coincap asset search by symbol and id 
+// coincap asset search by symbol and id
 const wxString mmex::weblink::CoinCapSearch = "http://api.coincap.io/v2/assets?search=%s";
 
 // coincap asset price history, all values in USD
@@ -191,6 +192,7 @@ const wxString INIDB_USE_TRANSACTION_SOUND = "USETRANSSOUND";
 const wxString INIDB_USE_ORG_DATE_COPYPASTE = "USEORIGDATEONCOPYPASTE";
 const wxString INIDB_USE_ORG_DATE_DUPLICATE = "USEORIGDATEONDUPLICATE";
 const wxString INIDB_DONT_ASK_FOR_SHARE_ACCOUNT = "DONTASKFORSHAREACCOUNT";
+const wxString INIDB_USE_ORG_STATE_DUPLICATE_PASTE = "USEORIGSTATEONDUPLICATEPASTE";
 const wxString INIDB_SEND_USAGE_STATS = "SENDUSAGESTATS";
 
 const wxString VIEW_ACCOUNTS_ALL_STR       = _n("ALL");

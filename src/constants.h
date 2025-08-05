@@ -1,6 +1,7 @@
 /*******************************************************
 Copyright (C) 2009 VaDiM
 Copyright (C) 2021-2022 Mark Whalley (mark@ipx.co.uk)
+Copyright (C) 2025 Klaus Wich
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,6 +20,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #pragma once
 
 #include "defs.h"
+#include "paths.h"
 #include "versions.h"
 //----------------------------------------------------------------------------
 
@@ -106,6 +108,7 @@ extern const wxString INIDB_USE_TRANSACTION_SOUND;
 extern const wxString INIDB_USE_ORG_DATE_COPYPASTE;
 extern const wxString INIDB_USE_ORG_DATE_DUPLICATE;
 extern const wxString INIDB_DONT_ASK_FOR_SHARE_ACCOUNT;
+extern const wxString INIDB_USE_ORG_STATE_DUPLICATE_PASTE;
 extern const wxString INIDB_SEND_USAGE_STATS;
 
 extern const wxString ATTACHMENTS_FOLDER_DOCUMENTS;
@@ -148,6 +151,4 @@ enum id
     MENU_VIEW_SHOW_MONEYTIPS,
     MENU_VIEW_TOGGLE_FULLSCREEN,
     mmID_MAX,
-
 };
-
