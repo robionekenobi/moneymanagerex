@@ -281,7 +281,6 @@ void OptionSettingsGeneral::OnDateFormatChanged(wxCommandEvent& /*event*/)
 
 }
 
-
 void OptionSettingsGeneral::OnLocaleChanged(wxCommandEvent& /*event*/)
 {
     wxComboBox* cbln = static_cast<wxComboBox*>(FindWindow(ID_DIALOG_OPTIONS_LOCALE));
@@ -390,6 +389,7 @@ bool OptionSettingsGeneral::doFormatDoubleValue(const wxString& locale, wxString
 
     return true;
 }
+
 void OptionSettingsGeneral::OnChangeGUILanguage(wxCommandEvent& event)
 {
     wxLanguage lang = static_cast<wxLanguage>(event.GetId() - wxID_LAST - 1);
