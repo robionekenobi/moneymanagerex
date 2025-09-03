@@ -55,6 +55,7 @@ private:
     wxSpinCtrl* m_share_precision = nullptr;
     wxCheckBox* m_refresh_quotes_on_open = nullptr;
     wxChoice* m_asset_compounding = nullptr;
+    wxCheckBox* m_store_account_specific_filter = nullptr;
     wxComboBox* m_import_path;
     wxStaticText* m_import_preview;
     wxString m_old_path;
