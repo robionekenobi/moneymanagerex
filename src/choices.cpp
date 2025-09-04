@@ -30,8 +30,6 @@ ChoicesName::~ChoicesName()
 
 const wxString ChoicesName::getName(int id) const
 {
-    if (id < 0)
-        return "Unknown";
     wxASSERT(id >= 0 && id < static_cast<int>(array.size()));
     wxASSERT(array[id].id == id);
     return array[id].name;
