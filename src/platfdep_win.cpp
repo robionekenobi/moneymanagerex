@@ -74,4 +74,4 @@ const wxFileName mmex::GetResourceDir()
 }
 //-----------------------------------------------------------------------------
 
-bool mmex::isDarkMode() { return wxSystemSettings::GetAppearance().AreAppsDark(); }
+bool mmex::isDarkMode() { return wxSystemSettings::GetAppearance().IsUsingDarkBackground(); }
