@@ -187,6 +187,7 @@ const wxString mmex::weblink::GeneralReport = "https://moneymanagerex.org/genera
 /* End namespace weblink */
 
 const wxString LANGUAGE_PARAMETER = "LANGUAGE";
+const wxString INIDB_USE_CURRENCY_HISTORY_DAYS = "USECURRENCYHISTORYDAYS";
 const wxString INIDB_USE_TRANSACTION_SOUND = "USETRANSSOUND";
 const wxString INIDB_USE_ORG_DATE_COPYPASTE = "USEORIGDATEONCOPYPASTE";
 const wxString INIDB_USE_ORG_DATE_DUPLICATE = "USEORIGDATEONDUPLICATE";
