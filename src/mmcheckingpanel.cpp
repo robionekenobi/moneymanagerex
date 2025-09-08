@@ -221,12 +221,12 @@ void mmCheckingPanel::createControls()
     tmprange.setSpec(m_date_range_a[0]);  // set to all
 
     fromDateCtrl = new wxDatePickerCtrl(this, mmID_DATE_PICK_LOW, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN|wxDP_ALLOWNONE);
-    fromDateCtrl->SetValue(tmprange.checking_start());
+    fromDateCtrl->SetValue(tmprange.checking_start().IsValid() ? tmprange.checking_start() : DATE_MIN);
     fromDateCtrl->SetRange(wxInvalidDateTime, wxDateTime::Now());
     sizerHCtrl->Add(fromDateCtrl, g_flagsH);
 
     toDateCtrl = new wxDatePickerCtrl(this, mmID_DATE_PICK_HIGH, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN|wxDP_ALLOWNONE);
-    toDateCtrl->SetValue(tmprange.checking_end());
+    toDateCtrl->SetValue(tmprange.checking_end().IsValid() ? tmprange.checking_end() : wxDateTime::Now());
     sizerHCtrl->Add(toDateCtrl, g_flagsH);
 
     m_btnTransDetailFilter = new wxButton(this, mmID_FILTER_TRANSACTION_DETAIL, _tu("Filter…"));  // Filter for transaction details
@@ -434,8 +434,8 @@ void mmCheckingPanel::updateFilter(bool firstinit)
     if (m_filter_id == FILTER_ID_DATE_RANGE) {
         m_bitmapTransFilter->SetLabel(m_current_date_range.getName());
         m_bitmapTransFilter->SetBitmap(mmBitmapBundle(png::TRANSFILTER_ACTIVE, mmBitmapButtonSize));
-        fromDateCtrl->SetValue(m_current_date_range.checking_start());
-        toDateCtrl->SetValue(m_current_date_range.checking_end());
+        fromDateCtrl->SetValue(m_current_date_range.checking_start().IsValid() ? m_current_date_range.checking_start() : DATE_MIN);
+        toDateCtrl->SetValue(m_current_date_range.checking_end().IsValid() ? m_current_date_range.checking_end() : wxDateTime::Now());
     }
     else if (m_filter_id == FILTER_ID_DATE_PICKER) {
         m_bitmapTransFilter->SetLabel(_t("Date range"));
@@ -525,6 +525,7 @@ void mmCheckingPanel::loadFilterSettings()
                 m_current_date_range.setSpec(m_date_range_a[0]); // init with 'all'
             }
         }
+        if (isAccount()) m_current_date_range.setDateS(Model_Account::DateOf(m_account->STATEMENTDATE));
     }
     else if (m_filter_id == FILTER_ID_DATE_PICKER) {
         wxString p_filter;
@@ -591,16 +592,6 @@ void mmCheckingPanel::filterList()
 {
     m_lc->m_trans.clear();
 
-    wxString date_start_str, date_end_str;
-    if (m_filter_id == FILTER_ID_DATE_PICKER) {
-        date_start_str = (fromDateCtrl->GetValue().IsValid() ? fromDateCtrl->GetValue() : wxDateTime(static_cast<time_t>(0))).FormatISODate();
-        date_end_str = (toDateCtrl->GetValue().IsValid() ? toDateCtrl->GetValue() : (wxDateTime::Now() + wxTimeSpan::Days(30))).FormatISODate() + "~";
-    }
-    else {
-        date_start_str = m_current_date_range.checking_start_str();
-        date_end_str = m_current_date_range.checking_end().IsValid() ? m_current_date_range.checking_end_str() : (wxDateTime::Now() + wxTimeSpan::Days(30)).FormatISODate() + "~";
-    }
-
     int sn = 0; // sequence number
     m_flow = 0.0;
     m_balance = m_account ? m_account->INITIALBAL : 0.0;
@@ -640,6 +631,26 @@ void mmCheckingPanel::filterList()
     const auto trans_tags = Model_Taglink::instance().get_all(tranRefType);
     const auto trans_attachments = Model_Attachment::instance().get_all(Model_Checking::refTypeName);
 
+    wxString date_start_str, date_end_str;
+    wxDateTime date_end = wxDateTime::Now() + wxTimeSpan::Days(30);
+    if (m_filter_id == FILTER_ID_DATE_PICKER) {
+        date_start_str = (fromDateCtrl->GetValue().IsValid() ? fromDateCtrl->GetValue() : wxDateTime(static_cast<time_t>(0))).FormatISODate();
+        date_end_str = (toDateCtrl->GetValue().IsValid() ? toDateCtrl->GetValue() : date_end).FormatISODate() + "~";
+    } else {
+        date_start_str = m_current_date_range.checking_start_str();
+        // find last un-deleted transaction and use that if later than current date + 30 days
+        for (auto it = trans.rbegin(); it != trans.rend(); ++it)
+        {
+            const Model_Checking::Data* tran = &(*it);
+            if (tran && ( isDeletedTrans() || tran->DELETEDTIME.IsEmpty()))
+            {
+                date_end = (Model_Checking::TRANSDATE(tran) > date_end) ? Model_Checking::TRANSDATE(tran) : date_end;
+                break;
+            }
+        }
+        date_end_str = m_current_date_range.checking_end().IsValid() ? m_current_date_range.checking_end_str() : 
+            date_end.FormatISODate() + "~";
+    }
     std::map<int64, Model_Budgetsplittransaction::Data_Set> bills_splits;
     std::map<int64, Model_Taglink::Data_Set> bills_tags;
     std::map<int64, Model_Attachment::Data_Set> bills_attachments;
@@ -1104,8 +1115,8 @@ void mmCheckingPanel::onFilterDate(wxCommandEvent& event)
     m_bitmapTransFilter->SetLabel(m_current_date_range.getName());
     m_bitmapTransFilter->SetBitmap(mmBitmapBundle((i > 0 ? png::TRANSFILTER_ACTIVE : png::TRANSFILTER), mmBitmapButtonSize));
 
-    fromDateCtrl->SetValue(m_current_date_range.checking_start());
-    toDateCtrl->SetValue(m_current_date_range.checking_end());
+    fromDateCtrl->SetValue(m_current_date_range.checking_start().IsValid() ? m_current_date_range.checking_start() : DATE_MIN);
+    toDateCtrl->SetValue(m_current_date_range.checking_end().IsValid() ? m_current_date_range.checking_end() : wxDateTime::Now());
 
     refreshList();
 }

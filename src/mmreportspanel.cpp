@@ -41,12 +41,15 @@
 #include <iomanip>
 
 wxBEGIN_EVENT_TABLE(mmReportsPanel, wxPanel)
-    EVT_CHOICE(ID_CHOICE_DATE_RANGE, mmReportsPanel::OnDateRangeChanged)
     EVT_CHOICE(ID_CHOICE_YEAR, mmReportsPanel::OnYearChanged)
     EVT_CHOICE(ID_CHOICE_BUDGET, mmReportsPanel::OnBudgetChanged)
     EVT_CHOICE(ID_CHOICE_ACCOUNTS, mmReportsPanel::OnAccountChanged)
-    EVT_DATE_CHANGED(wxID_ANY, mmReportsPanel::OnStartEndDateChanged)
-    EVT_TIME_CHANGED(wxID_ANY, mmReportsPanel::OnStartEndDateChanged)
+    EVT_DATE_CHANGED(ID_CHOICE_START_DATE, mmReportsPanel::OnStartEndDateChanged)
+    EVT_TIME_CHANGED(ID_CHOICE_START_DATE, mmReportsPanel::OnStartEndDateChanged)
+    EVT_DATE_CHANGED(ID_CHOICE_END_DATE, mmReportsPanel::OnStartEndDateChanged)
+    EVT_TIME_CHANGED(ID_CHOICE_END_DATE, mmReportsPanel::OnStartEndDateChanged)
+    EVT_DATE_CHANGED(ID_CHOICE_SINGLE_DATE, mmReportsPanel::OnSingleDateChanged)
+    EVT_TIME_CHANGED(ID_CHOICE_SINGLE_DATE, mmReportsPanel::OnSingleDateChanged)
     EVT_CHOICE(ID_CHOICE_CHART, mmReportsPanel::OnChartChanged)
     EVT_SPINCTRL(ID_CHOICE_FORWARD_MONTHS, mmReportsPanel::OnForwardMonthsChangedSpin)
     EVT_TEXT_ENTER(ID_CHOICE_FORWARD_MONTHS, mmReportsPanel::OnForwardMonthsChangedText)
@@ -129,6 +132,17 @@ bool mmReportsPanel::saveReportText(bool initial)
         date_range->end_date(td);
     }
     rb_->date_range(date_range, 0);
+
+    if (rb_->report_parameters() & (mmPrintableBase::RepParams::BUDGET_DATES | mmPrintableBase::RepParams::ONLY_YEARS))
+    {
+        int selectedItem = m_date_ranges->GetSelection();
+        wxString id_str = "0";
+        wxStringClientData* obj =
+            static_cast<wxStringClientData*>(m_date_ranges->GetClientObject(selectedItem));
+        if (obj) id_str = obj->GetData();
+        int64 id = std::stoll(id_str.ToStdString());
+        rb_->setSelection(id);
+    }
 
     StringBuffer json_buffer;
     Writer<StringBuffer> json_writer(json_buffer);
@@ -298,12 +312,12 @@ void mmReportsPanel::CreateControls()
             itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
             itemBoxSizerHeader->AddSpacer(5);
             long date_style = wxDP_DROPDOWN | wxDP_SHOWCENTURY;
-            m_start_date = new mmDatePickerCtrl(itemPanel3, ID_CHOICE_START_DATE
+            m_single_date = new mmDatePickerCtrl(itemPanel3, ID_CHOICE_SINGLE_DATE
                 , wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, date_style);
-            m_start_date->SetValue(wxDateTime::Today());
-            m_start_date->Enable(true);
+            m_single_date->SetValue(wxDateTime::Today());
+            m_single_date->Enable(true);
 
-            itemBoxSizerHeader->Add(m_start_date, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->Add(m_single_date, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
             itemBoxSizerHeader->AddSpacer(30);
         }
         else if (rp & rb_->RepParams::MONTHES)
@@ -478,23 +492,6 @@ void mmReportsPanel::OnBudgetChanged(wxCommandEvent& event)
     rb_->setReportSettings();
 }
 
-
-void mmReportsPanel::OnDateRangeChanged(wxCommandEvent& WXUNUSED(event))
-{
-    auto i = this->m_date_ranges->GetSelection();
-    const mmDateRange* date_range = static_cast<mmDateRange*>(this->m_date_ranges->GetClientData(i));
-    if (date_range)
-    {
-        m_start_date->Enable(false);
-        this->m_start_date->SetValue(date_range->start_date());
-        m_end_date->Enable(false);
-        this->m_end_date->SetValue(date_range->end_date());
-        rb_->setSelection(i);
-        rb_->setReportSettings();
-    }
-    saveReportText(false);
-}
-
 void mmReportsPanel::OnAccountChanged(wxCommandEvent& WXUNUSED(event))
 {
     if (rb_)
@@ -512,6 +509,14 @@ void mmReportsPanel::OnAccountChanged(wxCommandEvent& WXUNUSED(event))
             saveReportText(false);
             rb_->setReportSettings();
         }
+    }
+}
+
+void mmReportsPanel::OnSingleDateChanged(wxDateEvent& event)
+{
+    if (rb_) {
+        saveReportText(false);
+        rb_->setReportSettings();
     }
 }
 
@@ -594,19 +599,6 @@ void mmReportsPanel::OnNewWindow(wxWebViewEvent& evt)
     const wxString uri = escapedURI.BuildUnescapedURI();
     wxString sData;
 
-    if (rb_->report_parameters() & rb_->RepParams::DATE_RANGE)
-    {
-        auto idx = this->m_date_ranges->GetSelection();
-        const mmDateRange* date_range = static_cast<mmDateRange*>(this->m_date_ranges->GetClientData(idx));
-        if (date_range)
-        {
-            this->m_start_date->SetValue(date_range->start_date());
-            this->m_end_date->SetValue(date_range->end_date());
-            rb_->setSelection(idx);
-            rb_->setReportSettings();
-            rb_->m_filter.setDateRange(date_range->start_date(), date_range->end_date());
-        }
-    }
     wxRegEx pattern(R"(^(https?:)|(file:)\/\/)");
     if (pattern.Matches(uri))
     {
@@ -850,8 +842,8 @@ void mmReportsPanel::updateFilter()
         m_bitmapDataPeriodFilterBtn->SetLabel(m_current_date_range.getName());
         m_bitmapDataPeriodFilterBtn->SetBitmap(mmBitmapBundle((m_current_date_range.getName() != m_date_range_a[0].getName() ? png::TRANSFILTER_ACTIVE : png::TRANSFILTER), mmBitmapButtonSize));
 
-        m_start_date->SetValue(m_current_date_range.checking_start().IsValid() ? m_current_date_range.checking_start() : wxDateTime(static_cast <time_t>(0)));
-        m_end_date->SetValue(m_current_date_range.checking_end().IsValid() ? m_current_date_range.checking_end() : wxDateTime::Today());
+        m_start_date->SetValue(m_current_date_range.reporting_start().IsValid() ? m_current_date_range.reporting_start() : DATE_MIN);
+        m_end_date->SetValue(m_current_date_range.reporting_end().IsValid() ? m_current_date_range.reporting_end() : DATE_MAX);
     }
     else if (m_filter_id == mmCheckingPanel::FILTER_ID_DATE_PICKER) {
         m_bitmapDataPeriodFilterBtn->SetLabel(_t("Date range"));
