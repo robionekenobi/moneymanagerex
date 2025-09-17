@@ -123,15 +123,17 @@ bool mmReportsPanel::saveReportText(bool initial)
 
     rb_->initial_report(initial);
 
-    mmDateRange* date_range = new mmDateRange();
+
     if (rb_->report_parameters() & mmPrintableBase::RepParams::DATE_RANGE)
     {
+        mmDateRange* date_range = new mmDateRange();
         wxDateTime td = m_start_date->GetValue();
         date_range->start_date(td);
         td = m_end_date->GetValue();
         date_range->end_date(td);
+        rb_->date_range(date_range, 0);
     }
-    rb_->date_range(date_range, 0);
+
 
     if (rb_->report_parameters() & (mmPrintableBase::RepParams::BUDGET_DATES | mmPrintableBase::RepParams::ONLY_YEARS))
     {
@@ -203,7 +205,7 @@ void mmReportsPanel::loadFilterSettings() {
         m_date_range_m = m_date_range_a.size();
     }
 
-    wxString key = m_use_account_specific_filter ? wxString::Format("REPORT_FILTER_DEDICATED_%lld", rb_->getReportId()) : "CHECK_FILTER_ALL";
+    wxString key = m_use_account_specific_filter ? wxString::Format("REPORT_FILTER_DEDICATED_%d", rb_->getReportId()) : "CHECK_FILTER_ALL";
     Document j_doc = Model_Infotable::instance().getJdoc(key, "{}");
 
     int fid = 0;
@@ -245,7 +247,7 @@ void mmReportsPanel::loadFilterSettings() {
 }
 
 void mmReportsPanel::saveFilterSettings() {
-    wxString key = m_use_account_specific_filter ? wxString::Format("REPORT_FILTER_DEDICATED_%lld", rb_->getReportId()) : "CHECK_FILTER_ALL";
+    wxString key = m_use_account_specific_filter ? wxString::Format("REPORT_FILTER_DEDICATED_%d", rb_->getReportId()) : "CHECK_FILTER_ALL";
     Document j_doc = Model_Infotable::instance().getJdoc(key, "{}");
     Model_Infotable::saveFilterInt(j_doc, "FILTER_ID", m_filter_id);
     Model_Infotable::saveFilterString(j_doc, "FILTER_NAME", mmCheckingPanel::getFilterName(m_filter_id));
