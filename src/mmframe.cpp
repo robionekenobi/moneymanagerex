@@ -1641,7 +1641,7 @@ void mmGUIFrame::showTreePopupMenu(const wxTreeItemId& id, const wxPoint& pt)
         break;
     } }
     if (acct_id == -1 || acct_id <= -3) // isAllTrans/Stock Portfolios, isGroup
-    { 
+    {
         menu.Append(
             MENU_TREEPOPUP_ACCOUNT_NEW,
             _tu("&New Account…")
@@ -1742,7 +1742,7 @@ void mmGUIFrame::createMenu()
     importMenu->AppendSeparator();
     importMenu->Append(MENU_IMPORT_QIF, _tu("&QIF File…"), _t("Import from QIF file"));
     importMenu->AppendSeparator();
-    importMenu->Append(MENU_IMPORT_OFX, _("&OFX File..."));
+    importMenu->Append(MENU_IMPORT_OFX, _tu("&OFX File…"), _t("Import from OFX file"));
     importMenu->AppendSeparator();
     importMenu->Append(MENU_IMPORT_WEBAPP, _tu("&WebApp…"), _t("Import from the WebApp"));
 
@@ -3111,7 +3111,7 @@ void mmGUIFrame::OnTransactionReport(wxCommandEvent& WXUNUSED(event))
     }
 }
 
-void mmGUIFrame::OnBudgetSetupDialog(wxCommandEvent& /*event*/)
+void mmGUIFrame::OnBudgetSetupDialog(wxCommandEvent& WXUNUSED(event))
 {
     if (!m_db)
         return;
@@ -3124,14 +3124,14 @@ void mmGUIFrame::OnBudgetSetupDialog(wxCommandEvent& /*event*/)
     setNavTreeSection(_t("Budget Planner"));
 }
 
-void mmGUIFrame::OnGeneralReportManager(wxCommandEvent& /*event*/)
+void mmGUIFrame::OnGeneralReportManager(wxCommandEvent& WXUNUSED(event))
 {
-    if (!m_db)
-        return;
-
-    mmGeneralReportManager dlg(this, m_db.get());
-    dlg.ShowModal();
-    RefreshNavigationTree();
+    if (m_db) {
+        wxTreeItemId selectedItem = m_nav_tree_ctrl->GetSelection();
+        mmGeneralReportManager dlg(this, m_db.get(), selectedItem.IsOk() ? m_nav_tree_ctrl->GetItemText(selectedItem) : "");
+        dlg.ShowModal();
+        RefreshNavigationTree();
+    }
 }
 
 void mmGUIFrame::OnOptions(wxCommandEvent& /*event*/)
@@ -3342,7 +3342,7 @@ void mmGUIFrame::OnShowAppStartDialog(wxCommandEvent& WXUNUSED(event))
 void mmGUIFrame::OnExportToHtml(wxCommandEvent& WXUNUSED(event))
 {
     wxString fileName = wxFileSelector(
-        _t("Choose HTML file to Export"),
+        _t("Choose HTML file to export"),
         wxEmptyString, wxEmptyString, wxEmptyString,
         "*.html",
         wxFD_SAVE | wxFD_OVERWRITE_PROMPT
