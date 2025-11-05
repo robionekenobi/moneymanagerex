@@ -187,7 +187,7 @@ void OptionSettingsMisc::Create()
 
     //imports
     wxStaticBox* importStaticBox = new wxStaticBox(misc_panel, wxID_ANY, _("imports Settings"));
-    SetBoldFont(importStaticBox);
+    //SetBoldFont(importStaticBox);
     wxStaticBoxSizer* importStaticBoxSizer = new wxStaticBoxSizer(importStaticBox, wxVERTICAL);
 
     othersPanelSizer->Add(importStaticBoxSizer, wxSizerFlags(g_flagsExpand).Proportion(0));

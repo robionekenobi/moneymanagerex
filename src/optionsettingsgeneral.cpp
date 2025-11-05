@@ -226,7 +226,7 @@ void OptionSettingsGeneral::Create()
     generalPanelSizer->AddSpacer(15);
 
     wxStaticBox* transactioCopyStaticBox = new wxStaticBox(general_panel, wxID_ANY, _t("Transaction"));
-    SetBoldFont(transactioCopyStaticBox);
+    //SetBoldFont(transactioCopyStaticBox);
     wxStaticBoxSizer* transactioCopyStaticBoxSizer = new wxStaticBoxSizer(transactioCopyStaticBox, wxVERTICAL);
     generalPanelSizer->Add(transactioCopyStaticBoxSizer, wxSizerFlags(g_flagsExpand).Proportion(0));
 
