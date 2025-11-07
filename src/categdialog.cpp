@@ -316,17 +316,17 @@ void mmCategDialog::CreateControls()
     wxStdDialogButtonSizer* itemBoxSizer66 = new wxStdDialogButtonSizer;
     buttonsSizer->Add(itemBoxSizer66, wxSizerFlags(g_flagsV).Border(wxALL, 0).Center());
 
-    m_buttonAdd = new wxButton(buttonsPanel, wxID_ADD, _t("&Add "));
+    m_buttonAdd = new wxButton(buttonsPanel, wxID_ADD, _t("&New "));
     itemBoxSizer66->Add(m_buttonAdd, g_flagsH);
-    mmToolTip(m_buttonAdd, _t("Add a new category"));
+    mmToolTip(m_buttonAdd, _t("New category"));
 
     m_buttonEdit = new wxButton(buttonsPanel, wxID_EDIT, _t("&Edit "));
     itemBoxSizer66->Add(m_buttonEdit, g_flagsH);
-    mmToolTip(m_buttonEdit, _t("Edit the name of an existing category"));
+    mmToolTip(m_buttonEdit, _t("Edit category"));
 
     m_buttonDelete = new wxButton(buttonsPanel, wxID_REMOVE, _t("&Delete "));
     itemBoxSizer66->Add(m_buttonDelete, g_flagsH);
-    mmToolTip(m_buttonDelete, _t("Delete an existing category. The category is unable to be used by existing transactions."));
+    mmToolTip(m_buttonDelete, _t("Delete category. The category is unable to be used by existing transactions."));
 
     wxStdDialogButtonSizer* itemBoxSizer9 = new wxStdDialogButtonSizer;
     buttonsSizer->Add(itemBoxSizer9, wxSizerFlags(g_flagsV).Border(wxALL, 0).Center());
@@ -785,8 +785,8 @@ void mmCategDialog::OnMenuSelected(wxCommandEvent& event)
 
 void mmCategDialog::OnClearSettings(wxCommandEvent& /*event*/)
 {
-    wxMessageDialog msgDlg(this, _t("Do you want to unhide all categories?")
-            , _t("Unhide all categories")
+    wxMessageDialog msgDlg(this, _t("Do you want to show all categories?")
+            , _t("Show all categories")
             , wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION);
     if (msgDlg.ShowModal() == wxID_YES)
     {
@@ -805,14 +805,14 @@ void mmCategDialog::OnClearSettings(wxCommandEvent& /*event*/)
 void mmCategDialog::OnItemRightClick(wxTreeEvent& event)
 {
     wxMenu mainMenu;
-    mainMenu.Append(new wxMenuItem(&mainMenu, MENU_ITEM_EDIT, _t("Edit Category")));
+    mainMenu.Append(new wxMenuItem(&mainMenu, MENU_ITEM_EDIT, _tu("&Edit Category…")));
     mainMenu.AppendSeparator();
-    mainMenu.Append(new wxMenuItem(&mainMenu, MENU_ITEM_HIDE, _t("Hide Selected Category")));
-    mainMenu.Append(new wxMenuItem(&mainMenu, MENU_ITEM_UNHIDE, _t("Unhide Selected Category")));
+    mainMenu.Append(new wxMenuItem(&mainMenu, MENU_ITEM_HIDE, _t("&Hide Selected Category")));
+    mainMenu.Append(new wxMenuItem(&mainMenu, MENU_ITEM_UNHIDE, _t("&Show Selected Category")));
     mainMenu.AppendSeparator();
-    mainMenu.Append(new wxMenuItem(&mainMenu, MENU_ITEM_DELETE, _t("Remove Category")));
+    mainMenu.Append(new wxMenuItem(&mainMenu, MENU_ITEM_DELETE, _t("&Remove Category")));
     mainMenu.AppendSeparator();
-    mainMenu.Append(new wxMenuItem(&mainMenu, MENU_ITEM_ADD, _t("Add a new category")));
+    mainMenu.Append(new wxMenuItem(&mainMenu, MENU_ITEM_ADD, _tu("&New Category…")));
 
     bool bItemHidden = (m_treeCtrl->GetItemTextColour(m_selectedItemId) != NormalColor_);
     mainMenu.Enable(MENU_ITEM_EDIT, m_selectedItemId != root_);
