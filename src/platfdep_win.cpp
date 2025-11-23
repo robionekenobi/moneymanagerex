@@ -78,5 +78,5 @@ const wxFileName mmex::GetResourceDir()
 bool mmex::isDarkMode()
 {
     return (Option::instance().getThemeMode() == Option::THEME_MODE::DARK
-        || (Option::instance().getThemeMode() == Option::THEME_MODE::AUTO && wxSystemSettings::GetAppearance().AreAppsDark()));
+        || (Option::instance().getThemeMode() == Option::THEME_MODE::AUTO && wxSystemSettings::GetAppearance().IsUsingDarkBackground()));
 }   
