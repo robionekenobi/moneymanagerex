@@ -128,6 +128,7 @@ void Option::load(bool include_infotable)
     loadBudgetOverride();
     loadBudgetDeductMonthly();
     loadIgnoreFutureTransactions();
+    loadIgnoreFutureTransactionsHomePage();
     loadUseTransDateTime();
     loadTreatDateAsSN();
     loadDoNotColorFuture();
@@ -423,6 +424,16 @@ void Option::setIgnoreFutureTransactions(const bool value)
 {
     Model_Setting::instance().setBool("IGNORE_FUTURE_TRANSACTIONS", value);
     m_ignore_future_transactions = value;
+}
+
+void Option::loadIgnoreFutureTransactionsHomePage()
+{
+    m_ignore_future_transactions_home = Model_Setting::instance().getBool("IGNORE_FUTURE_TRANSACTIONS_HOMEPAGE", true);
+}
+void Option::setIgnoreFutureTransactionsHomePage(const bool value)
+{
+    Model_Setting::instance().setBool("IGNORE_FUTURE_TRANSACTIONS_HOMEPAGE", value);
+    m_ignore_future_transactions_home = value;
 }
 
 void Option::loadUseTransDateTime()
