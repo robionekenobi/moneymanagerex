@@ -61,6 +61,7 @@ wxEND_EVENT_TABLE()
 wxBEGIN_EVENT_TABLE(budgetingListCtrl, mmListCtrl)
     EVT_LIST_ITEM_SELECTED(wxID_ANY,  budgetingListCtrl::OnListItemSelected)
     EVT_LIST_ITEM_ACTIVATED(wxID_ANY, budgetingListCtrl::OnListItemActivated)
+    EVT_MOTION(budgetingListCtrl::OnMouseMove)
 wxEND_EVENT_TABLE()
 
 const std::vector<ListColumnInfo> budgetingListCtrl::LIST_INFO = {
@@ -723,3 +724,39 @@ void mmBudgetingPanel::OnListItemActivated(int selectedIndex)
         m_lc->EnsureVisible(selectedIndex);
     }
 }
+/* ===================== Tooltip logic ===================== */
+
+void budgetingListCtrl::OnMouseMove(wxMouseEvent& event)
+{
+    long row = -1;
+    long column = -1;
+    int flags = 0;
+
+    row = HitTest(event.GetPosition(), flags, &column);
+
+    if (LIST_ID_ICON == column && row >= 0)
+    {
+        wxString tooltip;
+        int icon = cp_->GetItemImage(row);
+
+        if (-1 == icon)
+            tooltip = _("No budget defined");
+        else if (mmBudgetingPanel::ICON_VOID == icon)
+            tooltip = _("Critical: budget exceeded! Stop spending");
+        else if (mmBudgetingPanel::ICON_RECONCILLED == icon)
+            tooltip = _("Within budget limits");
+        else if (mmBudgetingPanel::ICON_FOLLOWUP == icon)
+            tooltip = _("Alert: budget close to or over limit");
+
+        mmToolTip(this, tooltip);
+    }
+    else
+    {
+        UnsetToolTip();
+    }
+
+    event.Skip();
+}
+
+
+

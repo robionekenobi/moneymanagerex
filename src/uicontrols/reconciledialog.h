@@ -22,8 +22,6 @@
 #include "mmcheckingpanel.h"
 #include "model/Model_Account.h"
 #include "model/Model_Checking.h"
-#include "generic/genericFocusButton.h"
-#include "generic/genericFocusBitmapButton.h"
 
 
 class mmReconcileDialog: public wxDialog
@@ -36,6 +34,25 @@ public:
     mmReconcileDialog(wxWindow* parent, Model_Account::Data* account, mmCheckingPanel* cp);
 
 private:
+
+    enum
+    {
+        ID_CHECK_SHOW_STATE_COL = wxID_HIGHEST + 1,
+        ID_CHECK_SHOW_NUMBER_COL,
+        ID_CHECK_INCLUDE_VOID,
+        ID_CHECK_INCLUDE_DUPLICATED,
+        ID_BUTTON
+    };
+
+    enum
+    {
+        SETTING_SHOW_STATE_COL,
+        SETTING_SHOW_NUMBER_COL,
+        SETTING_INCLUDE_VOID,
+        SETTING_INCLUDE_DUPLICATED,
+        SETTING_size
+    };
+
     mmTextCtrl*           m_amountCtrl;
     wxStaticText*         m_previousCtrl;
     wxStaticText*         m_clearedBalanceCtrl;
@@ -44,11 +61,11 @@ private:
     wxStaticText*         m_differenceCtrl;
     wxListCtrl*           m_listLeft;
     wxListCtrl*           m_listRight;
-    genFocusButton*       m_btnCancel;
-    genFocusButton*       m_btnReconcile;
-    genFocusButton*       m_btnReconcileLater;
-    genFocusBitmapButton* m_btnCalc;
-    genFocusButton*       m_btnEdit;
+    wxButton*             m_btnCancel;
+    wxButton*             m_btnReconcile;
+    wxButton*             m_btnReconcileLater;
+    wxBitmapButton*       m_btnCalc;
+    wxButton*             m_btnEdit;
     std::vector<int64>    m_itemDataMap;
     wxVector<wxBitmapBundle> m_images;
 
@@ -56,11 +73,14 @@ private:
     Model_Account::Data*  m_account;
     mmCheckingPanel*      m_checkingPanel;
     double                m_reconciledBalance;
+    double                m_hiddenDuplicatedBalance;
     bool                  m_ignore;
+    bool                  m_settings[SETTING_size];
+    int                   m_colwidth[2]; // Store width for hidable columns
 
     void CreateControls();
     void UpdateAll();
-    void FillControls();
+    void FillControls(bool init = false);
 
     void OnCalculator(wxCommandEvent& event);
     void OnAmountChanged(wxCommandEvent& event);
@@ -69,6 +89,10 @@ private:
     void OnClose(wxCommandEvent& event);
     void OnEdit(wxCommandEvent& event);
     void OnNew(wxCommandEvent& event);
+    void OnSettings(wxCommandEvent& event);
+
+    void OnMenuSelected(wxCommandEvent& event);
+    void OnMenuItemChecked(wxCommandEvent& event);
 
     void OnLeftItemLeftClick(wxMouseEvent& event);
     void OnLeftItemRightClick(wxMouseEvent& event);
@@ -96,5 +120,9 @@ private:
     void editTransaction(wxListCtrl* list, long item);
 
     void OnSize(wxSizeEvent& event);
+    void resizeColumns();
     bool isListItemChecked(wxListCtrl* list, long item);
+
+    void applyColumnSettings();
+    void showHideColumn(bool show, int col, int cs);
 };

@@ -203,6 +203,12 @@ kolmo7
 ---------------------------------------
 ## Sponsors
 
+### 2026
+Renato
+Michael Ellis
+Glenn Howe
+Francesco Orabona
+
 ### 2025
 Renato
 Michael Ellis
@@ -260,6 +266,8 @@ Lajos Pásztor
 Samantha Priyadarshana
 Timur Yilmaz
 Jay Saka
+Andreas Löwenhagen
+John David Bowman
 
 ### 2024
 Renato

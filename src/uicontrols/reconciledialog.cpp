@@ -39,6 +39,10 @@ mmReconcileDialog::~mmReconcileDialog()
 {
     wxSize size = GetSize();
     Model_Infotable::instance().setSize("RECONCILE_DIALOG_SIZE", size);
+    Model_Infotable::instance().setBool("RECONCILE_DIALOG_SHOW_STATE_COL", m_settings[SETTING_SHOW_STATE_COL]);
+    Model_Infotable::instance().setBool("RECONCILE_DIALOG_SHOW_NUMBER_COL", m_settings[SETTING_SHOW_NUMBER_COL]);
+    Model_Infotable::instance().setBool("RECONCILE_DIALOG_INCLUDE_VOID", m_settings[SETTING_INCLUDE_VOID]);
+    Model_Infotable::instance().setBool("RECONCILE_DIALOG_INCLUDE_DUPLICATED", m_settings[SETTING_INCLUDE_DUPLICATED]);
 }
 
 mmReconcileDialog::mmReconcileDialog(wxWindow* parent, Model_Account::Data* account, mmCheckingPanel* cp)
@@ -52,10 +56,15 @@ mmReconcileDialog::mmReconcileDialog(wxWindow* parent, Model_Account::Data* acco
 
     Create(parent, -1, _t("Reconcile account") + " '" + m_account->ACCOUNTNAME + "'", wxDefaultPosition, wxDefaultSize, wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCLOSE_BOX, "");
     CreateControls();
-    FillControls();
+
+    m_settings[SETTING_INCLUDE_VOID] = Model_Infotable::instance().getBool("RECONCILE_DIALOG_INCLUDE_VOID", false);
+    m_settings[SETTING_INCLUDE_DUPLICATED] =  Model_Infotable::instance().getBool("RECONCILE_DIALOG_INCLUDE_DUPLICATED", true);
+
+    FillControls(true);
     UpdateAll();
 
     SetIcon(mmex::getProgramIcon());
+    applyColumnSettings();
     Fit();
     SetSize(Model_Infotable::instance().getSize("RECONCILE_DIALOG_SIZE"));
 }
@@ -73,29 +82,37 @@ void mmReconcileDialog::CreateControls()
 
     topSizer->Add(m_amountCtrl, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 
-    m_btnCalc = new genFocusBitmapButton(topPanel, wxID_ANY, mmBitmapBundle(png::CALCULATOR, mmBitmapButtonSize));
+#ifndef __WXOSX__   // Issue https://github.com/moneymanagerex/moneymanagerex/issues/8000
+    m_btnCalc = new wxBitmapButton(topPanel, wxID_ANY, mmBitmapBundle(png::CALCULATOR, mmBitmapButtonSize));
     m_btnCalc->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &mmReconcileDialog::OnCalculator, this);
     m_btnCalc->SetCanFocus(false);
     mmToolTip(m_btnCalc, _t("Open Calculator"));
     topSizer->Add(m_btnCalc, 0, wxRIGHT, 20);
     m_calculaterPopup = new mmCalculatorPopup(m_btnCalc, m_amountCtrl, true);
     m_calculaterPopup->SetCanFocus(false);
+#endif
 
     topSizer->AddStretchSpacer();
-    m_btnEdit = new genFocusButton(topPanel, wxID_ANY, _t("&Edit"));
+    m_btnEdit = new wxButton(topPanel, wxID_ANY, _t("&Edit"));
     m_btnEdit->Bind(wxEVT_BUTTON, &mmReconcileDialog::OnEdit, this);
     m_btnEdit->SetCanFocus(false);
     topSizer->Add(m_btnEdit, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 
-    genFocusButton* btn = new genFocusButton(topPanel, wxID_ANY, _t("&New"));
+    wxButton* btn = new wxButton(topPanel, wxID_ANY, _t("&New"));
     btn->Bind(wxEVT_BUTTON, &mmReconcileDialog::OnNew, this);
     btn->SetCanFocus(false);
     topSizer->Add(btn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 20);
 
-    btn = new genFocusButton(topPanel, wxID_ANY, _t("&Toggle all"));
+    btn = new wxButton(topPanel, wxID_ANY, _t("&Toggle all"));
     btn->Bind(wxEVT_BUTTON, &mmReconcileDialog::OnToggle, this);
     btn->SetCanFocus(false);
     topSizer->Add(btn, 0, wxRIGHT, 20);
+
+    wxBitmapButton* bbtn = new wxBitmapButton(topPanel, ID_BUTTON, mmBitmapBundle(png::OPTIONS, mmBitmapButtonSize));
+    bbtn->Bind(wxEVT_BUTTON, &mmReconcileDialog::OnSettings, this);
+    bbtn->SetCanFocus(false);
+    mmToolTip(bbtn, _t("Settings"));
+    topSizer->Add(bbtn, 0, wxRIGHT, 20);
 
     topPanel->SetSizer(topSizer);
 
@@ -109,6 +126,7 @@ void mmReconcileDialog::CreateControls()
         list->InsertColumn(2, _t("Number"),  wxLIST_FORMAT_RIGHT);
         list->InsertColumn(3, _t("Payee"),   wxLIST_FORMAT_LEFT);
         list->InsertColumn(4, _t("Amount"),  wxLIST_FORMAT_RIGHT);
+        list->InsertColumn(5, _t("State"),   wxLIST_FORMAT_CENTRE, 50);
     };
 
     wxPanel* leftlistPanel = new wxPanel(midPanel);
@@ -205,12 +223,12 @@ void mmReconcileDialog::CreateControls()
     wxPanel* bottomPanel = new wxPanel(this);
     wxBoxSizer* bottomSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    m_btnCancel          = new genFocusButton(bottomPanel, wxID_CANCEL, _t("&Cancel "));
+    m_btnCancel          = new wxButton(bottomPanel, wxID_CANCEL, _t("&Cancel "));
 
-    m_btnReconcileLater  = new genFocusButton(bottomPanel, wxID_ANY, _t("Reconcile &later"));
+    m_btnReconcileLater  = new wxButton(bottomPanel, wxID_ANY, _t("Reconcile &later"));
     m_btnReconcileLater->Bind(wxEVT_BUTTON, &mmReconcileDialog::OnClose, this);
 
-    m_btnReconcile       = new genFocusButton(bottomPanel, wxID_OK, _t("&Reconcile"));
+    m_btnReconcile       = new wxButton(bottomPanel, wxID_OK, _t("&Reconcile"));
     m_btnReconcile->Bind(wxEVT_BUTTON, &mmReconcileDialog::OnClose, this);
 
     bottomSizer->AddStretchSpacer();
@@ -221,6 +239,12 @@ void mmReconcileDialog::CreateControls()
     bottomSizer->AddStretchSpacer();
     bottomPanel->SetSizer(bottomSizer);
 
+    // -- settings menu ---
+    Bind(wxEVT_MENU, &mmReconcileDialog::OnMenuItemChecked, this, ID_CHECK_SHOW_STATE_COL);
+    Bind(wxEVT_MENU, &mmReconcileDialog::OnMenuItemChecked, this, ID_CHECK_SHOW_NUMBER_COL);
+    Bind(wxEVT_MENU, &mmReconcileDialog::OnMenuItemChecked, this, ID_CHECK_INCLUDE_VOID);
+    Bind(wxEVT_MENU, &mmReconcileDialog::OnMenuItemChecked, this, ID_CHECK_INCLUDE_DUPLICATED);
+
     // --- Main layout ---
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
     mainSizer->Add(topPanel,    0, wxEXPAND | wxALL, 10);
@@ -230,14 +254,16 @@ void mmReconcileDialog::CreateControls()
     SetSizerAndFit(mainSizer);
 }
 
-void mmReconcileDialog::FillControls()
+void mmReconcileDialog::FillControls(bool init)
 {
-    double endval;
-    wxString endvalue = Model_Infotable::instance().getString(wxString::Format("RECONCILE_ACCOUNT_%lld_END_BALANCE", m_account->ACCOUNTID), "0.00");
-    if (!endvalue.ToDouble(&endval)) {
-        endval = 0;
+    if (init) {
+        double endval;
+        wxString endvalue = Model_Infotable::instance().getString(wxString::Format("RECONCILE_ACCOUNT_%lld_END_BALANCE", m_account->ACCOUNTID), "0.00");
+        if (!endvalue.ToDouble(&endval)) {
+            endval = 0;
+        }
+        m_amountCtrl->SetValue(endval);
     }
-    m_amountCtrl->SetValue(endval);
 
     // get not reconciled transactions
     wxSharedPtr<mmDateRange> date_range;
@@ -264,8 +290,18 @@ void mmReconcileDialog::FillControls()
     long mapidx = 0;
 
     wxListCtrl* list;
+    m_listLeft->DeleteAllItems();
+    m_listRight->DeleteAllItems();
     long item;
+    m_hiddenDuplicatedBalance = 0.0;
     for (const auto& trx : all_trans) {
+        if (!m_settings[SETTING_INCLUDE_VOID] && trx.STATUS == "V") {
+            continue;
+        }
+        if (!m_settings[SETTING_INCLUDE_DUPLICATED] && trx.STATUS == "D") {
+            m_hiddenDuplicatedBalance += trx.TRANSAMOUNT;
+            continue;
+        }
         if (trx.TRANSCODE == "Deposit" || (trx.TRANSCODE == "Transfer" && trx.TOACCOUNTID == m_account->ACCOUNTID)) {
             list = m_listRight;
             item = m_listRight->InsertItem(++ritemIndex, "");
@@ -313,7 +349,7 @@ void mmReconcileDialog::UpdateAll()
     m_endingCtrl->SetMinSize(m_endingCtrl->GetBestSize());
     m_endingCtrl->GetParent()->Layout();
 
-    double diff = clearedbalance - endbalance;
+    double diff = clearedbalance - endbalance - m_hiddenDuplicatedBalance;
     m_differenceCtrl->SetLabel(wxString::Format("%.2f", diff));
 
     wxFont font = m_differenceCtrl->GetFont();
@@ -450,7 +486,6 @@ void mmReconcileDialog::OnRightFocus(wxFocusEvent& event)
 
 void mmReconcileDialog::handleListFocus(wxListCtrl* list)
 {
-    wxLogDebug("OnFocus for %s", list == m_listLeft ? "Left" : list == m_listRight ? "Right" :  "None");
     if (list->GetItemCount() > 0) {
         long idx = list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
         list->SetItemState(idx > -1 ? idx : 0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
@@ -471,13 +506,65 @@ void mmReconcileDialog::OnRightFocusKill(wxFocusEvent& event)
 
 void mmReconcileDialog::handleListFocusKill(wxListCtrl* list)
 {
-    wxLogDebug("OnFocusKill for %s", list == m_listLeft ? "Left" : list == m_listRight ? "Right" :  "None");
     resetListSelections(list);
 }
 
 void mmReconcileDialog::OnNew(wxCommandEvent& WXUNUSED(event))
 {
     newTransaction();
+}
+
+void mmReconcileDialog::OnSettings(wxCommandEvent& WXUNUSED(event))
+{
+    wxMenu menu;
+    menu.AppendCheckItem(ID_CHECK_SHOW_STATE_COL, _tu("Show state column"));
+    menu.AppendCheckItem(ID_CHECK_SHOW_NUMBER_COL, _tu("Show number column"));
+    menu.AppendSeparator();
+    menu.AppendCheckItem(ID_CHECK_INCLUDE_VOID, _tu("Include void transactions"));
+    menu.AppendCheckItem(ID_CHECK_INCLUDE_DUPLICATED, _tu("Include duplicated transactions"));
+
+    menu.FindItem(ID_CHECK_SHOW_STATE_COL)->Check(m_settings[SETTING_SHOW_STATE_COL]);
+    menu.FindItem(ID_CHECK_SHOW_NUMBER_COL)->Check(m_settings[SETTING_SHOW_NUMBER_COL]);
+    menu.FindItem(ID_CHECK_INCLUDE_VOID)->Check(m_settings[SETTING_INCLUDE_VOID]);
+    menu.FindItem(ID_CHECK_INCLUDE_DUPLICATED)->Check(m_settings[SETTING_INCLUDE_DUPLICATED]);
+    PopupMenu(&menu);
+    //event.Skip();
+}
+
+void mmReconcileDialog::OnMenuSelected(wxCommandEvent& WXUNUSED(event))
+{
+    wxLogDebug("Menu selected");
+}
+
+void mmReconcileDialog::OnMenuItemChecked(wxCommandEvent& event)
+{
+    m_settings[event.GetId() - wxID_HIGHEST - 1] = event.IsChecked();
+    switch (event.GetId()) {
+        case ID_CHECK_SHOW_NUMBER_COL:
+            showHideColumn(event.IsChecked(), 2, 0);
+            resizeColumns();
+            break;
+        case ID_CHECK_SHOW_STATE_COL:
+            showHideColumn(event.IsChecked(), 5, 1);
+            resizeColumns();
+            break;
+        case ID_CHECK_INCLUDE_VOID:
+            FillControls();
+            UpdateAll();
+            break;
+        case ID_CHECK_INCLUDE_DUPLICATED:
+            FillControls();
+            UpdateAll();
+            break;
+    }
+}
+
+void mmReconcileDialog::showHideColumn(bool show, int col, int cs) {
+    if (!show) {
+        m_colwidth[cs] = m_listLeft->GetColumnWidth(col);
+    }
+    m_listLeft->SetColumnWidth(col, show ? m_colwidth[cs] : 0);
+    m_listRight->SetColumnWidth(col, show ? m_colwidth[cs] : 0);
 }
 
 void mmReconcileDialog::newTransaction()
@@ -586,6 +673,7 @@ void mmReconcileDialog::setListItemData(const Model_Checking::Data* trx, wxListC
     list->SetItem(item, 2, trx->TRANSACTIONNUMBER);
     list->SetItem(item, 3, prefix + payeeName);
     list->SetItem(item, 4, wxString::Format("%.2f", trx->TRANSAMOUNT));
+    list->SetItem(item, 5, trx->STATUS);
     list->SetItemImage(item, trx->STATUS == "F" ? 1 : 0);
 }
 
@@ -642,6 +730,12 @@ bool mmReconcileDialog::isListItemChecked(wxListCtrl* list, long item)
 
 void mmReconcileDialog::OnSize(wxSizeEvent& event)
 {
+    resizeColumns();
+    event.Skip();
+}
+
+void mmReconcileDialog::resizeColumns()
+{
     auto setColWidth = [] (wxListCtrl* list) {
         int w = 0;
         for (int i = 0; i < list->GetColumnCount(); i++) {
@@ -656,15 +750,37 @@ void mmReconcileDialog::OnSize(wxSizeEvent& event)
 
     setColWidth(m_listLeft);
     setColWidth(m_listRight);
+}
 
-    event.Skip();
+void mmReconcileDialog::applyColumnSettings()
+{
+    m_colwidth[0] = m_listLeft->GetColumnWidth(2);
+    m_colwidth[1] = m_listLeft->GetColumnWidth(5);
+
+    m_settings[SETTING_SHOW_STATE_COL] = Model_Infotable::instance().getBool("RECONCILE_DIALOG_SHOW_STATE_COL", true);
+    if (!m_settings[SETTING_SHOW_STATE_COL]) {
+        showHideColumn(false, 5, 1);
+    }
+
+    m_settings[SETTING_SHOW_NUMBER_COL] = Model_Infotable::instance().getBool("RECONCILE_DIALOG_SHOW_NUMBER_COL", true);
+    if (!m_settings[SETTING_SHOW_NUMBER_COL]) {
+        showHideColumn(false, 2, 0);
+    }
+    resizeColumns();
 }
 
 void mmReconcileDialog::OnClose(wxCommandEvent& event)
 {
     auto saveItem = [](int64 id, bool state, bool final) {
         Model_Checking::Data* trx = Model_Checking::instance().get(id);
-        trx->STATUS = state ? (final ? "R" : "F") : "";
+        if (state) {
+            trx->STATUS = final ? "R" : "F";
+        }
+        else {
+            if (trx->STATUS == "F") {
+                trx->STATUS = "";
+            }
+        }
         Model_Checking::instance().save(trx);
     };
 
