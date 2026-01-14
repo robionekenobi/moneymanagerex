@@ -1306,7 +1306,7 @@ void mmTagTextCtrl::createDropButton(wxSize btnSize)
 
     wxRect2DDouble rect(0, 0, btnSize.GetWidth(), btnSize.GetHeight());
     gc->SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX)));
-    gc->DrawRectangle(rect);
+    gc->DrawRectangle(rect.m_x, rect.m_y, rect.m_width, rect.m_height);
     delete gc;
 
     int arrowX = (btnSize.GetWidth() - 8) / 2;
