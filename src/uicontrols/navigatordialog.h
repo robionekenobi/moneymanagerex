@@ -23,7 +23,7 @@
 #include "generic/generictreelistdialog.h"
 
 
-typedef std::vector<wxTreeListItem> wxTreeListItems;
+//typedef std::vector<wxTreeListItem> wxTreeListItems;
 
 
 class mmNavigatorDialog: public genericTreeListDialog

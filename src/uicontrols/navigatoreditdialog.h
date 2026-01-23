@@ -21,7 +21,7 @@
 #include "defs.h"
 #include "navigatortypes.h"
 
-typedef std::vector<wxTreeListItem> wxTreeListItems;
+//typedef std::vector<wxTreeListItem> wxTreeListItems;
 
 
 class mmNavigatorEditDialog: public wxDialog
