@@ -29,6 +29,8 @@
 #include "maincurrencydialog.h"
 #include "model/Model_Currency.h"
 #include "model/Model_CurrencyHistory.h"
+#include "uicontrols/navigatortypes.h"
+
 
 const std::vector<std::pair<Option::COMPOUNDING_ID, wxString> > Option::COMPOUNDING_NAME =
 {
@@ -154,6 +156,8 @@ void Option::load(bool include_infotable)
     loadNavigationIconSize();
     loadFontSize();
     loadCheckingRange();
+
+    loadShowNavigatorCashLedger();
 }
 
 wxLanguage Option::getLanguageID(const bool get_db)
@@ -661,7 +665,7 @@ void Option::setCheckingRange(const wxArrayString &a)
 }
 void Option::parseCheckingRange()
 {
-    wxLogDebug("{{{ Option::parseCheckingRange()");
+    //wxLogDebug("{{{ Option::parseCheckingRange()");
 
     m_checking_range_a.clear();
     m_checking_range_m = 0;
@@ -699,11 +703,11 @@ void Option::parseCheckingRange()
     if (m_checking_range_m == 0)
         m_checking_range_m = m_checking_range_a.size();
 
-    wxLogDebug("m=[%d], n=[%zu]", m_checking_range_m, m_checking_range_a.size());
+    /*wxLogDebug("m=[%d], n=[%zu]", m_checking_range_m, m_checking_range_a.size());
     for ([[maybe_unused]] DateRange2::Spec &spec : m_checking_range_a) {
         wxLogDebug("label=[%s], name=[%s]", spec.getLabel(), spec.getName());
     }
-    wxLogDebug("}}}");
+    wxLogDebug("}}}");*/
 }
 
 int Option::getHtmlScale() const noexcept
@@ -714,7 +718,7 @@ int Option::getHtmlScale() const noexcept
 int Option::AccountImageId(const int64 account_id, const bool def, const bool ignoreClosure)
 {
     wxString acctStatus = VIEW_ACCOUNTS_OPEN_STR;
-    Model_Account::TYPE_ID acctType = Model_Account::TYPE_ID_CHECKING;
+    NavigatorTypes::TYPE_ID acctType = NavigatorTypes::TYPE_ID_CHECKING;
     int selectedImage = img::SAVINGS_ACC_NORMAL_PNG; //Default value
 
     Model_Account::Data* account = Model_Account::instance().get(account_id);
@@ -734,34 +738,9 @@ int Option::AccountImageId(const int64 account_id, const bool def, const bool ig
     if (!def && (custom_img_id >= min && custom_img_id <= max))
         return custom_img_id + img::LAST_NAVTREE_PNG - 1;
 
-    switch (acctType)
-    {
-    case (Model_Account::TYPE_ID_CHECKING) :
-        selectedImage = img::SAVINGS_ACC_NORMAL_PNG;
-        break;
-    case (Model_Account::TYPE_ID_TERM) :
-        selectedImage = img::TERMACCOUNT_NORMAL_PNG;
-        break;
-    case (Model_Account::TYPE_ID_INVESTMENT) :
-        selectedImage = img::STOCK_ACC_NORMAL_PNG;
-        break;
-    case (Model_Account::TYPE_ID_CREDIT_CARD) :
-        selectedImage = img::CARD_ACC_NORMAL_PNG;
-        break;
-    case (Model_Account::TYPE_ID_CASH) :
-        selectedImage = img::CASH_ACC_NORMAL_PNG;
-        break;
-    case (Model_Account::TYPE_ID_LOAN) :
-        selectedImage = img::LOAN_ACC_NORMAL_PNG;
-        break;
-    case (Model_Account::TYPE_ID_ASSET) :
-        selectedImage = img::ASSET_NORMAL_PNG;
-        break;
-    case (Model_Account::TYPE_ID_SHARES) :
-        selectedImage = img::LOAN_ACC_NORMAL_PNG;
-        break;
-    default:
-        wxASSERT(false);
+    NavigatorTypesInfo* info = NavigatorTypes::instance().FindEntry(acctType);
+    if (info) {
+        selectedImage = info->imageId;
     }
     return selectedImage;
 }
@@ -785,4 +764,14 @@ void Option::setLanguage(const wxLanguage& language)
         LANGUAGE_PARAMETER,
         wxLocale::GetLanguageCanonicalName(language)
     );
+}
+
+void Option::loadShowNavigatorCashLedger()
+{
+    m_show_navigator_cashLedger = Model_Setting::instance().getBool("NAVIGATOR_SHOW_CASHLEDGER", true);
+}
+void Option::setShowNavigatorCashLedger(const bool value)
+{
+    Model_Setting::instance().setBool("NAVIGATOR_SHOW_CASHLEDGER", value);
+    m_show_navigator_cashLedger = value;
 }

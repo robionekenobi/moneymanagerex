@@ -1,6 +1,10 @@
-Version 1.9.2 RC 4
+Version 1.9.3 Beta 1
 ~~~~~~~~~~~~~~~~~~~~
-Released: 2026-01-14
+Released: 2026-01-20
+
+Version 1.9.2
+~~~~~~~~~~~~~~~~~~~~
+Released: 2026-01-20
 
 Features:
 * #7980 Refine scheduled transactions panel
