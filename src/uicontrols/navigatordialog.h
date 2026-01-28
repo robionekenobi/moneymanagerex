@@ -25,7 +25,6 @@
 
 //typedef std::vector<wxTreeListItem> wxTreeListItems;
 
-
 class mmNavigatorDialog: public genericTreeListDialog
 {
     wxDECLARE_DYNAMIC_CLASS(mmNavigatorDialog);
