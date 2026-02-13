@@ -16,15 +16,16 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ********************************************************/
 
-#include "navigatordialog.h"
-
-#include "daterangeeditdialog.h"
 #include "constants.h"
-#include "images_list.h"
-#include "option.h"
-#include "navigatoreditdialog.h"
-#include "Model_Account.h"
+
+#include "model/AccountModel.h"
+#include "model/PreferencesModel.h"
+
 #include "mmframe.h"
+#include "dialog/DateRangeEditDialog.h"
+#include "navigatordialog.h"
+#include "navigatoreditdialog.h"
+#include "images_list.h"
 
 struct NavData : public wxClientData
 {
@@ -40,13 +41,13 @@ mmNavigatorDialog::mmNavigatorDialog()
 
 mmNavigatorDialog::~mmNavigatorDialog()
 {
-    Model_Infotable::instance().setSize(DIALOG_SIZE, GetSize());
+    InfotableModel::instance().setSize(DIALOG_SIZE, GetSize());
 }
 
 mmNavigatorDialog::mmNavigatorDialog(wxWindow* parent):genericTreeListDialog(parent, _t("Navigator and account type configuration"))
 {
     init();  // must be called first!!
-    SetSize(Model_Infotable::instance().getSize(DIALOG_SIZE));
+    SetSize(InfotableModel::instance().getSize(DIALOG_SIZE));
     m_treeList->Bind(wxEVT_TREELIST_ITEM_CHECKED, &mmNavigatorDialog::OnTreeItemChecked, this);
 }
 
@@ -55,7 +56,7 @@ void mmNavigatorDialog::createColumns() {
     m_treeList->AppendColumn(_t("Selection name"));
 
     // Add imagelist
-    const auto navIconSize = Option::instance().getNavigationIconSize();
+    const auto navIconSize = PreferencesModel::instance().getNavigationIconSize();
     wxImageList* imageList = new wxImageList(navIconSize, navIconSize);
     for (const auto& bundle : navtree_images_list(navIconSize)) {
         wxBitmap bitmap = bundle.GetBitmap(wxSize(navIconSize, navIconSize));
@@ -71,7 +72,7 @@ void mmNavigatorDialog::createColumns() {
 }
 
 void mmNavigatorDialog::createMiddleElements(wxBoxSizer* itemBox) {
-    m_edit = new wxButton(this, BTN_EDIT, _t("Edit"));
+    m_edit = new wxButton(this, BTN_EDIT, _t("&Edit"));
     Bind(wxEVT_BUTTON, &mmNavigatorDialog::OnEdit, this, BTN_EDIT);
     m_edit->Enable(false);
     itemBox->Add(m_edit, g_flagsV);
@@ -79,22 +80,22 @@ void mmNavigatorDialog::createMiddleElements(wxBoxSizer* itemBox) {
 
 void mmNavigatorDialog::createBottomElements(wxBoxSizer* itemBox) {
     itemBox->AddSpacer(15);
-    itemBox->Add(new wxButton(this, BTN_NEW, _t("New")), g_flagsV);
+    itemBox->Add(new wxButton(this, BTN_NEW, _t("&New")), g_flagsV);
     Bind(wxEVT_BUTTON, &mmNavigatorDialog::OnNew, this, BTN_NEW);
 
     itemBox->AddSpacer(15);
-    m_delete = new wxButton(this, BTN_DELETE, _t("Delete"));
+    m_delete = new wxButton(this, BTN_DELETE, _t("&Delete"));
     Bind(wxEVT_BUTTON, &mmNavigatorDialog::OnDelete, this, BTN_DELETE);
 
     m_delete->Enable(false);
     itemBox->Add(m_delete, g_flagsV);
 
     itemBox->AddSpacer(70);
-    wxButton* btn = new wxButton(this, BTN_RESET_NAMES, _t("Reset names"));
+    wxButton* btn = new wxButton(this, BTN_RESET_NAMES, _t("Re&store default names"));
     Bind(wxEVT_BUTTON, &mmNavigatorDialog::OnNameReset, this, BTN_RESET_NAMES);
 
     itemBox->Add(btn, 0, wxALL, 5);
-    mmToolTip(btn, _t("Reset the standard names to default values"));
+    mmToolTip(btn, _t("Restore default names"));
 }
 
 void mmNavigatorDialog::fillControls(wxTreeListItem root)
@@ -120,7 +121,7 @@ wxTreeListItem mmNavigatorDialog::appendAccountItem(wxTreeListItem parent, Navig
     m_treeList->SetItemImage(item, ainfo->imageId);
     m_treeList->SetItemData(item, new NavData(ainfo));
     if (ainfo->type == NavigatorTypes::TYPE_ID_SHARES) {
-        m_treeList->CheckItem(item, Option::instance().getHideShareAccounts() ? wxCHK_UNCHECKED : wxCHK_CHECKED);
+        m_treeList->CheckItem(item, PreferencesModel::instance().getHideShareAccounts() ? wxCHK_UNCHECKED : wxCHK_CHECKED);
     }
     else {
         m_treeList->CheckItem(item, ainfo->navTyp != NavigatorTypes::NAV_TYP_PANEL ? wxCHK_UNDETERMINED : (ainfo->active ? wxCHK_CHECKED : wxCHK_UNCHECKED));
@@ -185,13 +186,13 @@ void mmNavigatorDialog::closeAction()
 void mmNavigatorDialog::setDefault()
 {
     NavigatorTypes::instance().SetToDefault();
-    Model_Account::instance().resetUnknownAccountTypes();
+    AccountModel::instance().resetUnknownAccountTypes();
 }
 
 void mmNavigatorDialog::OnNameReset(wxCommandEvent&)
 {
-    if (wxMessageBox(_t("Do you really want to reset the configured names?")
-        , _t("Reset names")
+    if (wxMessageBox(_t("Do you really want to restore the default names?")
+        , _t("Restore default names")
         , wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION) == wxYES)
     {
         NavigatorTypes::instance().SetToDefault();
@@ -242,7 +243,7 @@ void mmNavigatorDialog::updateItemsRecursive(wxTreeListItem item)
             child = m_treeList->GetNextSibling(child);
             // Special for Trash:
             if (data->ref->type == NavigatorTypes::NAV_ENTRY_DELETED_TRANSACTIONS) {
-                Option::instance().setHideDeletedTransactions(!data->ref->active);
+                PreferencesModel::instance().setHideDeletedTransactions(!data->ref->active);
                 mmGUIFrame* mainFrame = wxDynamicCast(this->GetParent(), mmGUIFrame);
                 if (mainFrame) {
                     mainFrame->SetTrashState(data->ref->active);
@@ -250,7 +251,7 @@ void mmNavigatorDialog::updateItemsRecursive(wxTreeListItem item)
             }
             // Special for Share Accounts:
             if (data->ref->type == NavigatorTypes::TYPE_ID_SHARES) {
-                Option::instance().setHideShareAccounts(!data->ref->active);
+                PreferencesModel::instance().setHideShareAccounts(!data->ref->active);
                 mmGUIFrame* mainFrame = wxDynamicCast(this->GetParent(), mmGUIFrame);
                 if (mainFrame) {
                     mainFrame->SetShareAccountState(data->ref->active);

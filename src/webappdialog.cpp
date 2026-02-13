@@ -16,15 +16,18 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "webappdialog.h"
-#include "images_list.h"
+#include "defs.h"
+#include <wx/timer.h>
+
 #include "constants.h"
 #include "paths.h"
-#include "transdialog.h"
-#include "util.h"
-#include "webapp.h"
+#include "util/util.h"
+
+#include "dialog/TransactionDialog.h"
+#include "webappdialog.h"
 #include "mmSimpleDialogs.h"
-#include <wx/timer.h>
+#include "images_list.h"
+#include "webapp.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(mmWebAppDialog, wxDialog);
 
@@ -155,7 +158,7 @@ void mmWebAppDialog::CreateControls()
     tools_sizer->Add(buttons_sizer, wxSizerFlags(g_flagsV).Center());
     wxButton* buttonOK = new wxButton(buttons_panel, wxID_OK, _t("&Import all "));
     buttonOK->Enable(false);
-    wxButton* buttonApply = new wxButton(buttons_panel, wxID_APPLY, _t("Import and open all "));
+    wxButton* buttonApply = new wxButton(buttons_panel, wxID_APPLY, _t("Im&port and open all "));
     buttonApply->Enable(false);
     wxButton* btnCancel = new wxButton(buttons_panel, wxID_CANCEL, wxGetTranslation(g_CancelLabel));
 
@@ -227,8 +230,8 @@ void mmWebAppDialog::fillControls()
         if (WebTran.SubCategory != wxEmptyString) Category += ":" + WebTran.SubCategory;
         data.push_back(Category); //WEBTRAN_CATEGORY
 
-        Model_Currency::Data *currency = Model_Currency::GetBaseCurrency();
-        wxString Amount = Model_Currency::toStringNoFormatting(WebTran.Amount, currency, Model_Currency::precision(currency));
+        CurrencyModel::Data *currency = CurrencyModel::GetBaseCurrency();
+        wxString Amount = CurrencyModel::toStringNoFormatting(WebTran.Amount, currency, CurrencyModel::precision(currency));
         data.push_back(Amount); //WEBTRAN_AMOUNT
 
         data.emplace_back(WebTran.Notes); //WEBTRAN_NOTES
@@ -301,7 +304,7 @@ bool mmWebAppDialog::ImportWebTr(int64 WebTrID, bool open)
                 if (open)
                 {
                     //fillControls(); //TODO: Delete transaction from view
-                    mmTransDialog EditTransactionDialog(this, 1, {InsertedTransactionID, false});
+                    TransactionDialog EditTransactionDialog(this, 1, {InsertedTransactionID, false});
                     EditTransactionDialog.ShowModal();
                 }
                 refreshRequested_ = true;
@@ -411,10 +414,10 @@ void mmWebAppDialog::OnItemRightClick(wxDataViewEvent& event)
     evt.SetEventObject(this);
 
     wxSharedPtr<wxMenu> mainMenu(new wxMenu);
-    mainMenu->Append(new wxMenuItem(mainMenu.get(), MENU_OPEN_ATTACHMENT, _t("Open Attachment")));
-    mainMenu->Append(new wxMenuItem(mainMenu.get(), MENU_IMPORT_WEBTRAN, _t("Import")));
-    mainMenu->Append(new wxMenuItem(mainMenu.get(), MENU_IMPORTOPEN_WEBTRAN, _t("Import and open")));
-    mainMenu->Append(new wxMenuItem(mainMenu.get(), MENU_DELETE_WEBTRAN, _t("Delete")));
+    mainMenu->Append(new wxMenuItem(mainMenu.get(), MENU_OPEN_ATTACHMENT, _t("&Open Attachment")));
+    mainMenu->Append(new wxMenuItem(mainMenu.get(), MENU_IMPORT_WEBTRAN, _t("&Import")));
+    mainMenu->Append(new wxMenuItem(mainMenu.get(), MENU_IMPORTOPEN_WEBTRAN, _t("Im&port and open")));
+    mainMenu->Append(new wxMenuItem(mainMenu.get(), MENU_DELETE_WEBTRAN, _t("&Delete")));
     if (Selected.size() != 1) mainMenu->Enable(MENU_OPEN_ATTACHMENT, false);
 
     PopupMenu(mainMenu.get());
