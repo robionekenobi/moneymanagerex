@@ -398,13 +398,12 @@ inline bool PreferencesModel::getUseCurrencyHistory() const noexcept
     return m_use_currency_history;
 }
 
-inline int PreferencesModel::getSharePrecision() const noexcept
-inline int Option::getCurrencyHistoryDays() const noexcept
+inline int PreferencesModel::getCurrencyHistoryDays() const noexcept
 {
     return m_currency_history_days;
 }
 
-inline int Option::getSharePrecision() const noexcept
+inline int PreferencesModel::getSharePrecision() const noexcept
 {
     return m_share_precision;
 }

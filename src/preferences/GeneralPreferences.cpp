@@ -184,7 +184,7 @@ void GeneralPreferences::Create()
 
         currencyBaseSizer->Add(new wxStaticText(currencyStaticBox, wxID_STATIC, _("Days")), g_flagsH);
 
-        int days = Option::instance().getCurrencyHistoryDays();
+        int days = PreferencesModel::instance().getCurrencyHistoryDays();
         wxSpinCtrl* textHistDay = new wxSpinCtrl(currencyStaticBox, ID_DIALOG_OPTIONS_CURRENCY_HIST_DAYS,
             wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 90, 99999, days);
         textHistDay->SetValue(days);
@@ -262,7 +262,7 @@ void GeneralPreferences::Create()
     m_use_sound = new wxChoice(general_panel, wxID_STATIC
         , wxDefaultPosition, wxSize(100, -1)
         , sounds);
-    m_use_sound->SetSelection(Model_Setting::instance().getInt(INIDB_USE_TRANSACTION_SOUND, 0));
+    m_use_sound->SetSelection(SettingModel::instance().getInt(INIDB_USE_TRANSACTION_SOUND, 0));
     mmToolTip(m_use_sound, _t("Select whether to use sounds when entering transactions"));
     soundBaseSizer->Add(m_use_sound, g_flagsV);
 
@@ -352,16 +352,16 @@ bool GeneralPreferences::SaveSettings()
     int day = hisDay->GetValue();
     if (day < 90)
         day = 90;
-    Option::instance().setCurrencyHistoryDays(day);
+    PreferencesModel::instance().setCurrencyHistoryDays(day);
 
     PreferencesModel::instance().setDateFormat(m_date_format);
     SaveFinancialYearStart();
 
-    Model_Setting::instance().setBool(INIDB_USE_ORG_DATE_COPYPASTE, m_use_org_date_copy_paste->GetValue());
-    Model_Setting::instance().setBool(INIDB_USE_ORG_DATE_DUPLICATE, m_use_org_date_duplicate->GetValue());
-    Model_Setting::instance().setBool(INIDB_DONT_ASK_FOR_SHARE_ACCOUNT, m_dont_ask_for_share_acccount->GetValue());
-    Model_Setting::instance().setBool(INIDB_USE_TRANSACTION_SOUND, m_use_sound->GetSelection());
-    Model_Setting::instance().setBool(INIDB_USE_ORG_STATE_DUPLICATE_PASTE, m_use_org_state_duplicate_paste->GetValue());
+    SettingModel::instance().setBool(INIDB_USE_ORG_DATE_COPYPASTE, m_use_org_date_copy_paste->GetValue());
+    SettingModel::instance().setBool(INIDB_USE_ORG_DATE_DUPLICATE, m_use_org_date_duplicate->GetValue());
+    SettingModel::instance().setBool(INIDB_DONT_ASK_FOR_SHARE_ACCOUNT, m_dont_ask_for_share_acccount->GetValue());
+    SettingModel::instance().setBool(INIDB_USE_TRANSACTION_SOUND, m_use_sound->GetSelection());
+    SettingModel::instance().setBool(INIDB_USE_ORG_STATE_DUPLICATE_PASTE, m_use_org_state_duplicate_paste->GetValue());
 
     return true;
 }

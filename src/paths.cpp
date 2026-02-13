@@ -249,7 +249,7 @@ const wxString mmex::getPathImport(const wxString& importFolder)
 
     wxString ImportFolder = importFolder;
     const wxString sep = wxFileName::GetPathSeparator();
-    const wxString LastDBPath = Model_Setting::instance().getLastDbPath();
+    const wxString LastDBPath = SettingModel::instance().getLastDbPath();
     const wxString& LastDBFolder = wxFileName::FileName(LastDBPath).GetPath() + sep;
     const wxString& UserFolder = mmex::GetUserDir(false).GetPath() + sep;
 

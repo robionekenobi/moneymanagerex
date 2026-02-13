@@ -495,7 +495,7 @@ void StockDialog::OnSave(wxCommandEvent & /*event*/)
     if (!stockName.empty())
     {
 
-        Model_Account::Data* share_account = Model_Account::instance().get(m_stock_name_ctrl->GetValue());
+        AccountModel::Data* share_account = AccountModel::instance().get(m_stock_name_ctrl->GetValue());
         if (!share_account && !m_edit)
         {
             if (wxMessageBox(_t("Share Account not found.") + "\n\n" + _t("Do you want to create one?")
@@ -506,7 +506,7 @@ void StockDialog::OnSave(wxCommandEvent & /*event*/)
         }
         else if (!share_account)
         {
-            if (!Model_Setting::instance().getBool(INIDB_DONT_ASK_FOR_SHARE_ACCOUNT, false))
+            if (!SettingModel::instance().getBool(INIDB_DONT_ASK_FOR_SHARE_ACCOUNT, false))
             {
 				if (wxMessageBox(
 					_t("The company name does not have an associated share account.") +
@@ -543,7 +543,7 @@ void StockDialog::CreateShareAccount(AccountModel::Data* stock_account, const wx
     share_account->CURRENCYID = stock_account->CURRENCYID;
     AccountModel::instance().save(share_account);
 
-    mmNewAcctDialog account_dialog(share_account, this);
+    AccountDialog account_dialog(share_account, this);
     account_dialog.ShowModal();
 
     ShareTransactionDialog share_dialog(this, m_stock);
@@ -574,7 +574,7 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
     if (!stockSymbol.IsEmpty())
     {
 	    _fileName = stockSymbol;
-        const wxString& importPath = Model_Infotable::instance().getString("IMPORTFOLDER:" + mmPlatformType(), ".");
+        const wxString& importPath = InfotableModel::instance().getString("IMPORTFOLDER:" + mmPlatformType(), ".");
         _fileName = wxString::Format("%s\\%s.csv", importPath, stockSymbol);
 
         wxFileName csv_file(_fileName);
@@ -666,8 +666,8 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
 
             if (rows.size()<10)
             {
-                wxString cp = wxString::FromDouble(data->VALUE, Option::instance().getSharePrecision());
-                wxString lp = wxString::FromDouble(price, Option::instance().getSharePrecision());
+                wxString cp = wxString::FromDouble(data->VALUE, PreferencesModel::instance().getSharePrecision());
+                wxString lp = wxString::FromDouble(price, PreferencesModel::instance().getSharePrecision());
                 if (data->VALUE != price && ((data->DATE == "" && dateStr > m_stock->PURCHASEDATE) || data->DATE > m_stock->PURCHASEDATE))
                 {
 		            data->SYMBOL = m_stock->SYMBOL;
@@ -712,18 +712,18 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
             // show the data
             ShowStockHistory();
 
-            Model_StockHistory::Data_Set histData = Model_StockHistory::instance().find(Model_StockHistory::SYMBOL(m_stock->SYMBOL));
+            StockHistoryModel::Data_Set histData = StockHistoryModel::instance().find(StockHistoryModel::SYMBOL(m_stock->SYMBOL));
             std::stable_sort(histData.begin(), histData.end(), SorterByDATE());
-            wxString lp = wxString::FromDouble(histData.at(0).VALUE, Option::instance().getSharePrecision());
-            wxString cp = wxString::FromDouble(m_stock->CURRENTPRICE, Option::instance().getSharePrecision());
+            wxString lp = wxString::FromDouble(histData.at(0).VALUE, PreferencesModel::instance().getSharePrecision());
+            wxString cp = wxString::FromDouble(m_stock->CURRENTPRICE, PreferencesModel::instance().getSharePrecision());
             std::reverse(histData.begin(), histData.end());
             if (lp != cp)
             {
                 m_stock->CURRENTPRICE = histData.at(0).VALUE;
-                m_current_price_ctrl->SetValue(m_stock->CURRENTPRICE, Option::instance().getSharePrecision());
-                Model_Stock::instance().save(m_stock);
-                m_value_investment->SetLabelText(Model_Account::toCurrency(Model_Stock::instance().CurrentValue(m_stock), account));
-                Model_Stock::UpdateCurrentPrice(m_stock->SYMBOL, m_stock->CURRENTPRICE);
+                m_current_price_ctrl->SetValue(m_stock->CURRENTPRICE, PreferencesModel::instance().getSharePrecision());
+                StockModel::instance().save(m_stock);
+                m_value_investment->SetLabelText(AccountModel::toCurrency(StockModel::instance().CurrentValue(m_stock), account));
+                StockModel::UpdateCurrentPrice(m_stock->SYMBOL, m_stock->CURRENTPRICE);
             }
         }
         else
@@ -998,11 +998,11 @@ void StockDialog::OnHistoryDeleteButton(wxCommandEvent& /*event*/)
     }
     StockHistoryModel::instance().ReleaseSavepoint();
     ShowStockHistory();
-    Model_Stock::UpdateCurrentPrice(m_stock->SYMBOL);
+    StockModel::UpdateCurrentPrice(m_stock->SYMBOL);
     //refresh m_stock to get updated attributes
-    m_stock = Model_Stock::instance().get(m_stock->STOCKID);
-    m_current_price_ctrl->SetValue(m_stock->CURRENTPRICE, Option::instance().getSharePrecision());
-    m_value_investment->SetLabelText(Model_Account::toCurrency(Model_Stock::instance().CurrentValue(m_stock), Model_Account::instance().get(m_stock->HELDAT)));
+    m_stock = StockModel::instance().get(m_stock->STOCKID);
+    m_current_price_ctrl->SetValue(m_stock->CURRENTPRICE, PreferencesModel::instance().getSharePrecision());
+    m_value_investment->SetLabelText(AccountModel::toCurrency(StockModel::instance().CurrentValue(m_stock), AccountModel::instance().get(m_stock->HELDAT)));
 }
 
 void StockDialog::ShowStockHistory()

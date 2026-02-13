@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "defs.h"
 #include <wx/spinctrl.h>
 #include "paths.h"
-#include "model/Model_Checking.h"
+//#include "model/CheckingModel.h"
 #include "util/util.h"
 
 #include "model/PreferencesModel.h"
@@ -207,7 +207,7 @@ void OtherPreferences::Create()
     wxBoxSizer* importDefinedSizer = new wxBoxSizer(wxHORIZONTAL);
     importStaticBoxSizer->Add(importDefinedSizer, wxSizerFlags(g_flagsExpand).Proportion(0));
 
-    const wxString importFolder = Model_Infotable::instance().getString("IMPORTFOLDER:" + mmPlatformType(), ".");
+    const wxString importFolder = InfotableModel::instance().getString("IMPORTFOLDER:" + mmPlatformType(), ".");
     m_old_path = mmex::getPathImport(importFolder);
 
     wxArrayString list2;
@@ -221,7 +221,7 @@ void OtherPreferences::Create()
     m_import_path->ChangeValue(importFolder);
 
     wxButton* importsFolderButton = new wxButton(misc_panel, ID_DIALOG_OPTIONS_BUTTON_IMPORTFOLDER, "..."
-        , wxDefaultPosition, wxSize(Option::instance().getIconSize(), -1), 0);
+        , wxDefaultPosition, wxSize(PreferencesModel::instance().getIconSize(), -1), 0);
     mmToolTip(importsFolderButton, _("Browse for folder"));
 
     importDefinedSizer->Add(m_import_path, g_flagsExpand);
@@ -343,7 +343,7 @@ bool OtherPreferences::SaveSettings()
     const wxString& delim = st->GetValue();
     if (!delim.IsEmpty()) InfotableModel::instance().setString("DELIMITER", delim);
 
-    Model_Infotable::instance().setString("IMPORTFOLDER:" + mmPlatformType(), m_import_path->GetValue().Trim());
+    InfotableModel::instance().setString("IMPORTFOLDER:" + mmPlatformType(), m_import_path->GetValue().Trim());
     
     return true;
 }

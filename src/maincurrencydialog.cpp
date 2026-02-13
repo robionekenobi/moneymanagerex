@@ -611,7 +611,7 @@ void mmMainCurrencyDialog::ShowCurrencyHistory()
             const wxString& priceAmount = "* M"[d.CURRUPDTYPE.GetValue()];
             valueListBox_->SetItem(idx, 2, priceAmount);
             idx++;
-            if (idx > Option::instance().getCurrencyHistoryDays())
+            if (idx > PreferencesModel::instance().getCurrencyHistoryDays())
                 break;
         }
         valueListBox_->RefreshItems(0, --idx);
