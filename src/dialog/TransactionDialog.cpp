@@ -1220,9 +1220,9 @@ void TransactionDialog::OnNoteSelected(wxCommandEvent& event)
 
 void TransactionDialog::OnOk(wxCommandEvent& event)
 {
-    m_fused_data.NOTES = textNotes_->GetValue();
-    m_fused_data.TRANSACTIONNUMBER = textNumber_->GetValue();
-    m_fused_data.TRANSDATE = PreferencesModel::instance().UseTransDateTime() ? dpc_->GetValue().FormatISOCombined() : dpc_->GetValue().FormatISODate();
+    m_journal_data.NOTES = textNotes_->GetValue();
+    m_journal_data.TRANSACTIONNUMBER = textNumber_->GetValue();
+    m_journal_data.TRANSDATE = PreferencesModel::instance().UseTransDateTime() ? dpc_->GetValue().FormatISOCombined() : dpc_->GetValue().FormatISODate();
     wxStringClientData* status_obj = static_cast<wxStringClientData*>(choiceStatus_->GetClientObject(choiceStatus_->GetSelection()));
     if (status_obj)
     {
