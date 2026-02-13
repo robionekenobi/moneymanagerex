@@ -21,7 +21,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "defs.h"
 #include <wx/spinctrl.h>
 #include "paths.h"
-//#include "model/CheckingModel.h"
 #include "util/util.h"
 
 #include "model/PreferencesModel.h"
@@ -33,11 +32,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 wxBEGIN_EVENT_TABLE(OtherPreferences, wxPanel)
     EVT_CHECKBOX(ID_DIALOG_OPTIONS_CHK_BACKUP, OtherPreferences::OnBackupChanged)
     EVT_CHECKBOX(ID_DIALOG_OPTIONS_CHK_BACKUP_UPDATE, OtherPreferences::OnBackupChanged)
-wxBEGIN_EVENT_TABLE(OptionSettingsMisc, wxPanel)
     EVT_BUTTON(ID_DIALOG_OPTIONS_BUTTON_IMPORTFOLDER, OtherPreferences::OnImportButton)
     EVT_TEXT(ID_DIALOG_OPTIONS_TEXTCTRL_IMPORT, OtherPreferences::OnImportPathChanged)
-    EVT_CHECKBOX(ID_DIALOG_OPTIONS_CHK_BACKUP, OtherPreferences::OnBackupChanged)
-    EVT_CHECKBOX(ID_DIALOG_OPTIONS_CHK_BACKUP_UPDATE, OtherPreferences::OnBackupChanged)
 wxEND_EVENT_TABLE()
 /*******************************************************/
 
