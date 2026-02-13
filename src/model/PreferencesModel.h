@@ -311,7 +311,7 @@ private:
     wxString m_user_name;                               // USERNAME
     int64 m_base_currency_id = -1;                      // BASECURRENCYID
     bool m_use_currency_history = false;                // USECURRENCYHISTORY
-    int m_currency_history_days = 90;                   // CURRENCY_HISTORY_DAYS
+    int m_currency_history_days = 90;                   // USECURRENCYHISTORYDAYS
     int m_share_precision = 4;                          // SHARE_PRECISION
     int m_asset_compounding = 0;                        // ASSET_COMPOUNDING
     int m_reporting_first_day = 1;                      // REPORTING_FIRSTDAY

@@ -267,11 +267,11 @@ void PreferencesModel::setUseCurrencyHistory(const bool value)
 }
 void PreferencesModel::loadCurrencyHistoryDays()
 {
-    m_currency_history_days = InfotableModel::instance().getInt("CURRENCYHISTORYDAYS", true);
+    m_currency_history_days = InfotableModel::instance().getInt("USECURRENCYHISTORYDAYS", true);
 }
 void PreferencesModel::setCurrencyHistoryDays(const int value)
 {
-    InfotableModel::instance().setInt("CURRENCYHISTORYDAYS", value);
+    InfotableModel::instance().setInt("USECURRENCYHISTORYDAYS", value);
     m_currency_history_days = value;
 }
 
