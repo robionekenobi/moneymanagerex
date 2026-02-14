@@ -512,16 +512,16 @@ void StockDialog::OnSave(wxCommandEvent & /*event*/)
                     _t("The company name does not have an associated share account.") +
                     "\n\n" +
                     _t("You may want to rename the company name to an existing share account with the same name. "
-                    If this is an existing stock without a share account, it is recommended that a share account be created.") +
+                    "If this is an existing stock without a share account, it is recommended that a share account be created.") +
                     "\n\n" +
                     _t("Do you want to create a new share account?")
-                    _t("Edit Stock Investment"), wxYES_NO | wxICON_WARNING) == wxYES)
+                    , _t("Edit Stock Investment"), wxYES_NO | wxICON_WARNING) == wxYES)
                 {
                     CreateShareAccount(account, stockName, m_stock->PURCHASEDATE);
 	            }
             }
         } else {
-            ShareTransactionDialog share_dialog(this, m_stock);
+            TransactionShareDialog share_dialog(this, m_stock);
             share_dialog.ShowModal();
         }
     }
