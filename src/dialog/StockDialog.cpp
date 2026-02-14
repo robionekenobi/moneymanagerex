@@ -19,14 +19,18 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "defs.h"
+#include "base/defs.h"
 #include <wx/numdlg.h>
 #include <wx/textdlg.h>
 #include <wx/valnum.h>
 
-#include "constants.h"
-#include "paths.h"
-#include "util/util.h"
+#include "base/constants.h"
+#include "base/paths.h"
+#include "base/images_list.h"
+#include "util/_util.h"
+#include "util/_simple.h"
+#include "util/mmTextCtrl.h"
+#include "util/mmCalcValidator.h"
 
 #include "model/_all.h"
 
@@ -34,11 +38,7 @@
 #include "AttachmentDialog.h"
 #include "AccountDialog.h"
 #include "StockDialog.h"
-#include "sharetransactiondialog.h"
-#include "mmSimpleDialogs.h"
-#include "mmTextCtrl.h"
-#include "images_list.h"
-#include "validators.h"
+#include "TransactionShareDialog.h"
 
 using namespace rapidjson;
 
@@ -485,7 +485,7 @@ void StockDialog::OnSave(wxCommandEvent & /*event*/)
     {
         const wxString RefType = StockModel::refTypeName;
         mmAttachmentManage::RelocateAllAttachments(RefType, 0, RefType, m_stock->STOCKID);
-        ShareTransactionDialog share_dialog(this, m_stock);
+        TransactionShareDialog share_dialog(this, m_stock);
         share_dialog.ShowModal();
     }
 
@@ -508,19 +508,19 @@ void StockDialog::OnSave(wxCommandEvent & /*event*/)
         {
             if (!SettingModel::instance().getBool(INIDB_DONT_ASK_FOR_SHARE_ACCOUNT, false))
             {
-				if (wxMessageBox(
-					_t("The company name does not have an associated share account.") +
-					"\n\n" +
-					_t("You may want to rename the company name to an existing share account with the same name. "
-					"If this is an existing stock without a share account, it is recommended that a share account be created.") +
-					"\n\n" +
-					_t("Do you want to create a new share account?")
-					, _t("Edit Stock Investment"), wxYES_NO | wxICON_WARNING) == wxYES)
-	            {
-	                CreateShareAccount(account, stockName, m_stock->PURCHASEDATE);
+                if (wxMessageBox(
+                    _t("The company name does not have an associated share account.") +
+                    "\n\n" +
+                    _t("You may want to rename the company name to an existing share account with the same name. "
+                    If this is an existing stock without a share account, it is recommended that a share account be created.") +
+                    "\n\n" +
+                    _t("Do you want to create a new share account?")
+                    _t("Edit Stock Investment"), wxYES_NO | wxICON_WARNING) == wxYES)
+                {
+                    CreateShareAccount(account, stockName, m_stock->PURCHASEDATE);
 	            }
-	        }
-	    } else {
+            }
+        } else {
             ShareTransactionDialog share_dialog(this, m_stock);
             share_dialog.ShowModal();
         }
@@ -543,10 +543,7 @@ void StockDialog::CreateShareAccount(AccountModel::Data* stock_account, const wx
     share_account->CURRENCYID = stock_account->CURRENCYID;
     AccountModel::instance().save(share_account);
 
-    AccountDialog account_dialog(share_account, this);
-    account_dialog.ShowModal();
-
-    ShareTransactionDialog share_dialog(this, m_stock);
+    TransactionShareDialog share_dialog(this, m_stock);
     share_dialog.ShowModal();
 }
 
@@ -569,11 +566,11 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
     if (m_stock->SYMBOL.IsEmpty())
         return;
 
-	wxString _fileName = "";
+    wxString _fileName = "";
     const wxString stockSymbol = m_stock_symbol_ctrl->GetValue().Trim();
     if (!stockSymbol.IsEmpty())
     {
-	    _fileName = stockSymbol;
+        _fileName = stockSymbol;
         const wxString& importPath = InfotableModel::instance().getString("IMPORTFOLDER:" + mmPlatformType(), ".");
         _fileName = wxString::Format("%s\\%s.csv", importPath, stockSymbol);
 
@@ -581,7 +578,7 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
         if (_fileName.IsEmpty() || !csv_file.FileExists())
         {
             _fileName = wxFileSelector(_t("Choose CSV data file to import")
-        		, wxEmptyString, wxEmptyString, wxEmptyString, "*.csv", wxFD_FILE_MUST_EXIST);
+                , wxEmptyString, wxEmptyString, wxEmptyString, "*.csv", wxFD_FILE_MUST_EXIST);
         }
         else
         {
@@ -655,9 +652,9 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
             if (!CurrencyModel::fromString(priceStr, price, currency) || price <= 0.0)
                 continue;
 
-            	data = StockHistoryModel::instance().get(m_stock->SYMBOL, dt);
+                data = StockHistoryModel::instance().get(m_stock->SYMBOL, dt);
             if (!data)
-            	data = StockHistoryModel::instance().create();
+                data = StockHistoryModel::instance().create();
             data->SYMBOL = m_stock->SYMBOL;
             data->DATE = dateStr;
             data->VALUE = price;
