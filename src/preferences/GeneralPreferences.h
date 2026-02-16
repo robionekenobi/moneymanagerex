@@ -70,7 +70,6 @@ private:
 
     wxCheckBox* m_use_org_date_copy_paste = nullptr;
     wxCheckBox* m_use_org_date_duplicate = nullptr;
-    wxCheckBox* m_dont_ask_for_share_acccount= nullptr;
     wxCheckBox* m_use_org_state_duplicate_paste = nullptr;
     wxChoice* m_use_sound = nullptr;
 

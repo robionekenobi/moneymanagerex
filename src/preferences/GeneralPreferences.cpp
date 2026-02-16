@@ -241,11 +241,6 @@ void GeneralPreferences::Create()
     mmToolTip(m_use_org_date_duplicate, _t("Select whether to use the original transaction date or current date when duplicating transactions"));
     transactioCopyStaticBoxSizer->Add(m_use_org_date_duplicate, g_flagsV);
 
-    m_dont_ask_for_share_acccount = new wxCheckBox(general_panel, wxID_STATIC, _("Don't ask for share account"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    m_dont_ask_for_share_acccount->SetValue(GetIniDatabaseCheckboxValue(INIDB_DONT_ASK_FOR_SHARE_ACCOUNT, false));
-    mmToolTip(m_dont_ask_for_share_acccount, _("Select whether not to ask for a Share Account if one does not exist with the same name as the share"));
-    generalPanelSizer->Add(m_dont_ask_for_share_acccount, g_flagsV);
-
     m_use_org_state_duplicate_paste = new wxCheckBox(general_panel, wxID_STATIC, _t("Use Original State when Duplicating or Pasting Transactions"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
     m_use_org_state_duplicate_paste->SetValue(GetIniDatabaseCheckboxValue(INIDB_USE_ORG_STATE_DUPLICATE_PASTE, true));
     mmToolTip(m_use_org_state_duplicate_paste, _t("Select whether to use the original state or default state when duplicating or copy and paste transactions"));
@@ -359,7 +354,6 @@ bool GeneralPreferences::SaveSettings()
 
     SettingModel::instance().setBool(INIDB_USE_ORG_DATE_COPYPASTE, m_use_org_date_copy_paste->GetValue());
     SettingModel::instance().setBool(INIDB_USE_ORG_DATE_DUPLICATE, m_use_org_date_duplicate->GetValue());
-    SettingModel::instance().setBool(INIDB_DONT_ASK_FOR_SHARE_ACCOUNT, m_dont_ask_for_share_acccount->GetValue());
     SettingModel::instance().setBool(INIDB_USE_TRANSACTION_SOUND, m_use_sound->GetSelection());
     SettingModel::instance().setBool(INIDB_USE_ORG_STATE_DUPLICATE_PASTE, m_use_org_state_duplicate_paste->GetValue());
 

@@ -492,39 +492,6 @@ void StockDialog::OnSave(wxCommandEvent & /*event*/)
     StockHistoryModel::instance().addUpdate(m_stock->SYMBOL, wxDate::Today(), m_stock->CURRENTPRICE, StockHistoryModel::MANUAL);
     ShowStockHistory();
 
-    if (!stockName.empty())
-    {
-
-        AccountModel::Data* share_account = AccountModel::instance().get(m_stock_name_ctrl->GetValue());
-        if (!share_account && !m_edit)
-        {
-            if (wxMessageBox(_t("Share Account not found.") + "\n\n" + _t("Do you want to create one?")
-                , _t("New Stock Investment"), wxOK | wxCANCEL | wxICON_INFORMATION) == wxOK)
-            {
-                CreateShareAccount(account, stockName, m_stock->PURCHASEDATE);
-            }
-        }
-        else if (!share_account)
-        {
-            if (!SettingModel::instance().getBool(INIDB_DONT_ASK_FOR_SHARE_ACCOUNT, false))
-            {
-                if (wxMessageBox(
-                    _t("The company name does not have an associated share account.") +
-                    "\n\n" +
-                    _t("You may want to rename the company name to an existing share account with the same name. "
-                    "If this is an existing stock without a share account, it is recommended that a share account be created.") +
-                    "\n\n" +
-                    _t("Do you want to create a new share account?")
-                    , _t("Edit Stock Investment"), wxYES_NO | wxICON_WARNING) == wxYES)
-                {
-                    CreateShareAccount(account, stockName, m_stock->PURCHASEDATE);
-	            }
-            }
-        } else {
-            TransactionShareDialog share_dialog(this, m_stock);
-            share_dialog.ShowModal();
-        }
-    }
     m_edit = true;
     UpdateControls();
 }
@@ -652,7 +619,7 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
             if (!CurrencyModel::fromString(priceStr, price, currency) || price <= 0.0)
                 continue;
 
-                data = StockHistoryModel::instance().get(m_stock->SYMBOL, dt);
+            data = StockHistoryModel::instance().get(m_stock->SYMBOL, dt);
             if (!data)
                 data = StockHistoryModel::instance().create();
             data->SYMBOL = m_stock->SYMBOL;
@@ -667,19 +634,19 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
                 wxString lp = wxString::FromDouble(price, PreferencesModel::instance().getSharePrecision());
                 if (data->VALUE != price && ((data->DATE == "" && dateStr > m_stock->PURCHASEDATE) || data->DATE > m_stock->PURCHASEDATE))
                 {
-		            data->SYMBOL = m_stock->SYMBOL;
-		            data->DATE = dateStr;
-		            data->VALUE = price;
-		            data->UPDTYPE = 2;
-		            stockData.push_back(data);
-		
-		                    if (rows.size() < 10)
-		            {
-		                        dateStr << wxT("  ") << priceStr;
-		                rows.push_back(dateStr);
-		            }
-		            countImported++;
-		        }
+                    data->SYMBOL = m_stock->SYMBOL;
+                    data->DATE = dateStr;
+                    data->VALUE = price;
+                    data->UPDTYPE = 2;
+                    stockData.push_back(data);
+
+                    if (rows.size() < 10)
+                    {
+                        dateStr << wxT("  ") << priceStr;
+                        rows.push_back(dateStr);
+                    }
+                    countImported++;
+                }
             }
         }
 

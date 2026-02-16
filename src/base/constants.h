@@ -105,7 +105,6 @@ extern const wxString LANGUAGE_PARAMETER;
 extern const wxString INIDB_USE_TRANSACTION_SOUND;
 extern const wxString INIDB_USE_ORG_DATE_COPYPASTE;
 extern const wxString INIDB_USE_ORG_DATE_DUPLICATE;
-extern const wxString INIDB_DONT_ASK_FOR_SHARE_ACCOUNT;
 extern const wxString INIDB_USE_ORG_STATE_DUPLICATE_PASTE;
 extern const wxString INIDB_SEND_USAGE_STATS;
 
