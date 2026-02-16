@@ -175,7 +175,7 @@ void GeneralPreferences::Create()
     m_currencyStaticBoxSizer->AddSpacer(15);
     { // Currency History Details
         wxBoxSizer* currencyBaseSizer2 = new wxBoxSizer(wxHORIZONTAL);
-        m_currencyStaticBoxSizer->Add(currencyBaseSizer, wxSizerFlags(g_flagsV).Border(wxLEFT, 0));
+        m_currencyStaticBoxSizer->Add(currencyBaseSizer2, wxSizerFlags(g_flagsV).Border(wxLEFT, 0));
 
         m_currency_history = new wxCheckBox(currencyStaticBox, wxID_ANY, _t("Use historical currency"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
         m_currency_history->SetValue(PreferencesModel::instance().getUseCurrencyHistory());
