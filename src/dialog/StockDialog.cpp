@@ -632,14 +632,8 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
             {
                 wxString cp = wxString::FromDouble(data->VALUE, PreferencesModel::instance().getSharePrecision());
                 wxString lp = wxString::FromDouble(price, PreferencesModel::instance().getSharePrecision());
-                if (data->VALUE != price && ((data->DATE == "" && dateStr > m_stock->PURCHASEDATE) || data->DATE > m_stock->PURCHASEDATE))
+                if (data->HISTID == -1 || (data->VALUE != price && ((data->DATE == "" && dateStr > m_stock->PURCHASEDATE) || data->DATE > m_stock->PURCHASEDATE)))
                 {
-                    data->SYMBOL = m_stock->SYMBOL;
-                    data->DATE = dateStr;
-                    data->VALUE = price;
-                    data->UPDTYPE = 2;
-                    stockData.push_back(data);
-
                     if (rows.size() < 10)
                     {
                         dateStr << wxT("  ") << priceStr;
