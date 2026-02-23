@@ -203,7 +203,7 @@ void OtherPreferences::Create()
     wxBoxSizer* importDefinedSizer = new wxBoxSizer(wxHORIZONTAL);
     importStaticBoxSizer->Add(importDefinedSizer, wxSizerFlags(g_flagsExpand).Proportion(0));
 
-    const wxString importFolder = InfotableModel::instance().getString("IMPORTFOLDER:" + mmPlatformType(), ".");
+    const wxString importFolder = InfoModel::instance().getString("IMPORTFOLDER:" + mmPlatformType(), ".");
     m_old_path = mmex::getPathImport(importFolder);
 
     wxArrayString list2;
@@ -339,7 +339,7 @@ bool OtherPreferences::SaveSettings()
     const wxString& delim = st->GetValue();
     if (!delim.IsEmpty()) InfoModel::instance().setString("DELIMITER", delim);
 
-    InfotableModel::instance().setString("IMPORTFOLDER:" + mmPlatformType(), m_import_path->GetValue().Trim());
+    InfoModel::instance().setString("IMPORTFOLDER:" + mmPlatformType(), m_import_path->GetValue().Trim());
     
     return true;
 }

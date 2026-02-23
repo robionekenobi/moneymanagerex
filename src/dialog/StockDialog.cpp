@@ -538,7 +538,7 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
     if (!stockSymbol.IsEmpty())
     {
         _fileName = stockSymbol;
-        const wxString& importPath = InfotableModel::instance().getString("IMPORTFOLDER:" + mmPlatformType(), ".");
+        const wxString& importPath = InfoModel::instance().getString("IMPORTFOLDER:" + mmPlatformType(), ".");
         _fileName = wxString::Format("%s\\%s.csv", importPath, stockSymbol);
 
         wxFileName csv_file(_fileName);
@@ -619,7 +619,7 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
             if (!CurrencyModel::fromString(priceStr, price, currency) || price <= 0.0)
                 continue;
 
-            data = StockHistoryModel::instance().get(m_stock->SYMBOL, dt);
+            data = StockHistoryModel::instance().get_key(m_stock->SYMBOL, dt);
             if (!data)
                 data = StockHistoryModel::instance().create();
             data->SYMBOL = m_stock->SYMBOL;
@@ -671,7 +671,7 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
             ShowStockHistory();
 
             StockHistoryModel::Data_Set histData = StockHistoryModel::instance().find(StockHistoryModel::SYMBOL(m_stock->SYMBOL));
-            std::stable_sort(histData.begin(), histData.end(), SorterByDATE());
+            std::stable_sort(histData.begin(), histData.end(), StockHistoryRow::SorterByDATE());
             wxString lp = wxString::FromDouble(histData.at(0).VALUE, PreferencesModel::instance().getSharePrecision());
             wxString cp = wxString::FromDouble(m_stock->CURRENTPRICE, PreferencesModel::instance().getSharePrecision());
             std::reverse(histData.begin(), histData.end());
@@ -958,9 +958,10 @@ void StockDialog::OnHistoryDeleteButton(wxCommandEvent& /*event*/)
     ShowStockHistory();
     StockModel::UpdateCurrentPrice(m_stock->SYMBOL);
     //refresh m_stock to get updated attributes
-    m_stock = StockModel::instance().get(m_stock->STOCKID);
+    m_stock = StockModel::instance().get_id(m_stock->STOCKID);
     m_current_price_ctrl->SetValue(m_stock->CURRENTPRICE, PreferencesModel::instance().getSharePrecision());
-    m_value_investment->SetLabelText(AccountModel::toCurrency(StockModel::instance().CurrentValue(m_stock), AccountModel::instance().get(m_stock->HELDAT)));
+    m_value_investment->SetLabelText(
+        AccountModel::toCurrency(StockModel::instance().CurrentValue(m_stock), AccountModel::instance().get_id(m_stock->HELDAT)));
 }
 
 void StockDialog::ShowStockHistory()
