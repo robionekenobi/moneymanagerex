@@ -113,21 +113,21 @@ void TransactionPreferences::Create()
     newTransflexGridSizer->Add(default_status, g_flagsExpand);
 
     // transaction
-    wxStaticBox* transactionCopyStaticBox = new wxStaticBox(home_panel, wxID_ANY, _t("Transaction"));
+    wxStaticBox* transactionCopyStaticBox = new wxStaticBox(home_panel, wxID_STATIC, _t("Transaction"));
     wxStaticBoxSizer* transactionCopyStaticBoxSizer = new wxStaticBoxSizer(transactionCopyStaticBox, wxVERTICAL);
     homePanelSizer->Add(transactionCopyStaticBoxSizer, wxSizerFlags(g_flagsExpand).Proportion(0));
 
-    m_use_org_date_copy_paste = new wxCheckBox(transactionCopyStaticBox, wxID_STATIC, _t("Use Original Date when Pasting Transactions"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
+    m_use_org_date_copy_paste = new wxCheckBox(transactionCopyStaticBox, wxID_ANY, _t("Use Original Date when Pasting Transactions"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
     m_use_org_date_copy_paste->SetValue(GetIniDatabaseCheckboxValue(INIDB_USE_ORG_DATE_COPYPASTE, false));
     mmToolTip(m_use_org_date_copy_paste, _t("Select whether to use the original transaction date or current date when copying/pasting transactions"));
     transactionCopyStaticBoxSizer->Add(m_use_org_date_copy_paste, g_flagsV);
 
-    m_use_org_date_duplicate = new wxCheckBox(transactionCopyStaticBox, wxID_STATIC, _t("Use Original Date when Duplicating Transactions"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
+    m_use_org_date_duplicate = new wxCheckBox(transactionCopyStaticBox, wxID_ANY, _t("Use Original Date when Duplicating Transactions"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
     m_use_org_date_duplicate->SetValue(GetIniDatabaseCheckboxValue(INIDB_USE_ORG_DATE_DUPLICATE, false));
     mmToolTip(m_use_org_date_duplicate, _t("Select whether to use the original transaction date or current date when duplicating transactions"));
     transactionCopyStaticBoxSizer->Add(m_use_org_date_duplicate, g_flagsV);
 
-    m_use_org_state_duplicate_paste = new wxCheckBox(transactionCopyStaticBox, wxID_STATIC, _t("Use Original State when Duplicating or Pasting Transactions"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
+    m_use_org_state_duplicate_paste = new wxCheckBox(transactionCopyStaticBox, wxID_ANY, _t("Use Original State when Duplicating or Pasting Transactions"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
     m_use_org_state_duplicate_paste->SetValue(GetIniDatabaseCheckboxValue(INIDB_USE_ORG_STATE_DUPLICATE_PASTE, true));
     mmToolTip(m_use_org_state_duplicate_paste, _t("Select whether to use the original state or default state when duplicating or copy and paste transactions"));
     transactionCopyStaticBoxSizer->Add(m_use_org_state_duplicate_paste, g_flagsV);
@@ -325,13 +325,13 @@ bool TransactionPreferences::SaveSettings()
     mmColors::userDefColor6 = m_UDFCB6->GetBackgroundColour();
     mmColors::userDefColor7 = m_UDFCB7->GetBackgroundColour();
 
-    InfotableModel::instance().setColour("USER_COLOR1", mmColors::userDefColor1);
-    InfotableModel::instance().setColour("USER_COLOR2", mmColors::userDefColor2);
-    InfotableModel::instance().setColour("USER_COLOR3", mmColors::userDefColor3);
-    InfotableModel::instance().setColour("USER_COLOR4", mmColors::userDefColor4);
-    InfotableModel::instance().setColour("USER_COLOR5", mmColors::userDefColor5);
-    InfotableModel::instance().setColour("USER_COLOR6", mmColors::userDefColor6);
-    InfotableModel::instance().setColour("USER_COLOR7", mmColors::userDefColor7);
+    InfoModel::instance().setColour("USER_COLOR1", mmColors::userDefColor1);
+    InfoModel::instance().setColour("USER_COLOR2", mmColors::userDefColor2);
+    InfoModel::instance().setColour("USER_COLOR3", mmColors::userDefColor3);
+    InfoModel::instance().setColour("USER_COLOR4", mmColors::userDefColor4);
+    InfoModel::instance().setColour("USER_COLOR5", mmColors::userDefColor5);
+    InfoModel::instance().setColour("USER_COLOR6", mmColors::userDefColor6);
+    InfoModel::instance().setColour("USER_COLOR7", mmColors::userDefColor7);
 
     wxChoice* itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_PAYEE));
     PreferencesModel::instance().setTransPayeeNone(itemChoice->GetSelection());

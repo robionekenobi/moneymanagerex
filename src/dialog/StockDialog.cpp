@@ -108,7 +108,7 @@ void StockDialog::DataToControls()
 
     int precision = m_stock->NUMSHARES == floor(m_stock->NUMSHARES) ? 0 : PreferencesModel::instance().getSharePrecision();
     m_num_shares_ctrl->SetValue(m_stock->NUMSHARES, precision);
-    AccountModel::Data* account = AccountModel::instance().get(m_stock->HELDAT);
+    AccountModel::Data* account = AccountModel::instance().get_id(m_stock->HELDAT);
     CurrencyModel::Data *currency = CurrencyModel::GetBaseCurrency();
     if (account) currency = AccountModel::currency(account);
     int currency_precision = CurrencyModel::precision(currency);
@@ -126,7 +126,7 @@ void StockDialog::UpdateControls()
 {
     this->SetTitle(m_edit ? _t("Edit Stock Investment") : _t("New Stock Investment"));
     if (m_account_id > -1) {  // do not use for overview
-        AccountModel::Data* account = AccountModel::instance().get(m_account_id);
+        AccountModel::Data* account = AccountModel::instance().get_id(m_account_id);
         if (m_stock) {
             m_value_investment->SetLabelText(AccountModel::toCurrency(StockModel::instance().CurrentValue(m_stock), account));
         }
@@ -396,7 +396,7 @@ void StockDialog::OnStockPriceButton(wxCommandEvent& /*event*/)
 
     if (!stockSymbol.IsEmpty())
     {
-        const wxString& stockURL = InfotableModel::instance().getString("STOCKURL", mmex::weblink::DefStockUrl);
+        const wxString& stockURL = InfoModel::instance().getString("STOCKURL", mmex::weblink::DefStockUrl);
         const wxString& httpString = wxString::Format(stockURL, stockSymbol);
         wxLaunchDefaultBrowser(httpString);
     }
@@ -415,7 +415,7 @@ void StockDialog::OnSave(wxCommandEvent & /*event*/)
         }
     }
 
-    AccountModel::Data* account = AccountModel::instance().get(m_account_id);
+    AccountModel::Data* account = AccountModel::instance().get_id(m_account_id);
     if (!account)
     {
         mmErrorDialogs::MessageInvalid(this, _t("Held At"));
@@ -518,8 +518,8 @@ void StockDialog::OnListItemSelected(wxListEvent& event)
 {
     long selectedIndex = event.GetIndex();
     int64 histId = m_price_listbox->GetItemData(selectedIndex);
-    AccountModel::Data* account = AccountModel::instance().get(m_stock->HELDAT);
-    StockHistoryModel::Data *histData = StockHistoryModel::instance().get(histId);
+    AccountModel::Data* account = AccountModel::instance().get_id(m_stock->HELDAT);
+    StockHistoryModel::Data *histData = StockHistoryModel::instance().get_id(histId);
 
     if (histData->HISTID > 0)
     {
@@ -552,7 +552,7 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
         }
     }
     const wxString fileName = _fileName;
-    AccountModel::Data *account = AccountModel::instance().get(m_stock->HELDAT);
+    AccountModel::Data *account = AccountModel::instance().get_id(m_stock->HELDAT);
     CurrencyModel::Data *currency = AccountModel::currency(account);
 
     if (!fileName.IsEmpty())
@@ -595,7 +595,7 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
             dateStr.clear();
             priceStr.clear();
 
-            const wxString& delimiter = InfotableModel::instance().getString("DELIMITER", mmex::DEFDELIMTER);
+            const wxString& delimiter = InfoModel::instance().getString("DELIMITER", mmex::DEFDELIMTER);
             csv2tab_separated_values(line, delimiter);
             wxStringTokenizer tkz(line, "\t", wxTOKEN_RET_EMPTY_ALL);
             if (static_cast<int>(tkz.CountTokens()) < 2)
@@ -860,7 +860,7 @@ void StockDialog::OnHistoryDownloadButton(wxCommandEvent& /*event*/)
             if (StockHistoryModel::instance()
                 .find(
                     StockHistoryModel::SYMBOL(m_stock->SYMBOL)
-                    , StockHistoryModel::DB_Table_STOCKHISTORY_V1::DATE(date_str)
+                    , StockHistoryModel::StockHistoryTable::DATE(date_str)
                 ).empty()
                 && dPrice > 0
                 )
@@ -894,7 +894,7 @@ void StockDialog::OnHistoryAddButton(wxCommandEvent& /*event*/)
     wxString listStr;
     wxDateTime dt;
     double dPrice = 0.0;
-    AccountModel::Data* account = AccountModel::instance().get(m_stock->HELDAT);
+    AccountModel::Data* account = AccountModel::instance().get_id(m_stock->HELDAT);
     CurrencyModel::Data* currency = AccountModel::currency(account);
     wxString currentPriceStr = m_history_price_ctrl->GetValue().Trim();
     if (!CurrencyModel::fromString(currentPriceStr, dPrice, currency) || (dPrice < 0.0))
@@ -933,7 +933,7 @@ void StockDialog::OnHistoryAddButton(wxCommandEvent& /*event*/)
     if (i == m_price_listbox->GetNextItem(-1)) // changed the current price/value
     {
         //refresh m_stock to get updated attributes
-        m_stock = StockModel::instance().get(m_stock->STOCKID);
+        m_stock = StockModel::instance().get_id(m_stock->STOCKID);
         m_current_price_ctrl->SetValue(AccountModel::toString(m_stock->CURRENTPRICE, account, PreferencesModel::instance().getSharePrecision()));
         m_value_investment->SetLabelText(AccountModel::toCurrency(StockModel::instance().CurrentValue(m_stock), account));
     }
@@ -969,9 +969,9 @@ void StockDialog::ShowStockHistory()
     if (m_stock->SYMBOL.IsEmpty())
         return;
 
-    AccountModel::Data* account = AccountModel::instance().get(m_stock->HELDAT);
+    AccountModel::Data* account = AccountModel::instance().get_id(m_stock->HELDAT);
     StockHistoryModel::Data_Set histData = StockHistoryModel::instance().find(StockHistoryModel::SYMBOL(m_stock->SYMBOL));
-    std::stable_sort(histData.begin(), histData.end(), SorterByDATE());
+    std::stable_sort(histData.begin(), histData.end(), StockHistoryRow::SorterByDATE());
     std::reverse(histData.begin(), histData.end());
     if (histData.size()>300)
         histData.resize(300);
@@ -997,8 +997,8 @@ void StockDialog::ShowStockHistory()
                 if (m_stock->CURRENTPRICE != histData.at(idx).VALUE)
                 {
                     StockModel::UpdateCurrentPrice(m_stock->SYMBOL, histData.at(idx).VALUE);
-                    m_stock = StockModel::instance().get(m_stock->STOCKID);
-                    m_value_investment->SetLabelText(AccountModel::toCurrency(StockModel::instance().CurrentValue(m_stock), AccountModel::instance().get(m_stock->HELDAT)));
+                    m_stock = StockModel::instance().get_id(m_stock->STOCKID);
+                    m_value_investment->SetLabelText(AccountModel::toCurrency(StockModel::instance().CurrentValue(m_stock), AccountModel::instance().get_id(m_stock->HELDAT)));
                 }
             }
         }

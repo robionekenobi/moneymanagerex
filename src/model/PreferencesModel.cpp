@@ -26,7 +26,7 @@
 #include "AccountModel.h"
 #include "CurrencyHistoryModel.h"
 #include "CurrencyModel.h"
-#include "InfotableModel.h"
+#include "InfoModel.h"
 #include "PreferencesModel.h"
 #include "SettingModel.h"
 
@@ -222,47 +222,47 @@ wxLanguage PreferencesModel::getLanguageID(const bool get_db)
 
 void PreferencesModel::setLocaleName(const wxString& locale)
 {
-    InfotableModel::instance().setString("LOCALE", locale);
+    InfoModel::instance().setString("LOCALE", locale);
     m_locale_name = locale;
 }
 
 void PreferencesModel::loadDateFormat()
 {
-    m_date_format = InfotableModel::instance().getString("DATEFORMAT", mmex::DEFDATEFORMAT);
+    m_date_format = InfoModel::instance().getString("DATEFORMAT", mmex::DEFDATEFORMAT);
 }
 void PreferencesModel::setDateFormat(const wxString& date_format)
 {
-    InfotableModel::instance().setString("DATEFORMAT", date_format);
+    InfoModel::instance().setString("DATEFORMAT", date_format);
     m_date_format = date_format;
 }
 
 void PreferencesModel::loadUserName()
 {
-    m_user_name = InfotableModel::instance().getString("USERNAME", "");
+    m_user_name = InfoModel::instance().getString("USERNAME", "");
 }
 void PreferencesModel::setUserName(const wxString& username)
 {
     m_user_name = username;
-    InfotableModel::instance().setString("USERNAME", username);
+    InfoModel::instance().setString("USERNAME", username);
 }
 
 void PreferencesModel::loadBaseCurrencyID()
 {
-    m_base_currency_id = InfotableModel::instance().getInt64("BASECURRENCYID", -1);
+    m_base_currency_id = InfoModel::instance().getInt64("BASECURRENCYID", -1);
 }
 void PreferencesModel::setBaseCurrencyID(const int64 base_currency_id)
 {
-    InfotableModel::instance().setInt64("BASECURRENCYID", base_currency_id);
+    InfoModel::instance().setInt64("BASECURRENCYID", base_currency_id);
     m_base_currency_id = base_currency_id;
 }
 
 void PreferencesModel::loadUseCurrencyHistory()
 {
-    m_use_currency_history = InfotableModel::instance().getBool("USECURRENCYHISTORY", true);
+    m_use_currency_history = InfoModel::instance().getBool("USECURRENCYHISTORY", true);
 }
 void PreferencesModel::setUseCurrencyHistory(const bool value)
 {
-    InfotableModel::instance().setBool("USECURRENCYHISTORY", value);
+    InfoModel::instance().setBool("USECURRENCYHISTORY", value);
     m_use_currency_history = value;
 }
 void PreferencesModel::loadCurrencyHistoryDays()
@@ -277,17 +277,17 @@ void PreferencesModel::setCurrencyHistoryDays(const int value)
 
 void PreferencesModel::loadSharePrecision()
 {
-    m_share_precision = InfotableModel::instance().getInt("SHARE_PRECISION", 4);
+    m_share_precision = InfoModel::instance().getInt("SHARE_PRECISION", 4);
 }
 void PreferencesModel::setSharePrecision(const int value)
 {
-    InfotableModel::instance().setInt("SHARE_PRECISION", value);
+    InfoModel::instance().setInt("SHARE_PRECISION", value);
     m_share_precision = value;
 }
 
 void PreferencesModel::loadAssetCompounding()
 {
-    wxString assetCompounding = InfotableModel::instance().getString("ASSET_COMPOUNDING", "Day");
+    wxString assetCompounding = InfoModel::instance().getString("ASSET_COMPOUNDING", "Day");
     m_asset_compounding = PreferencesModel::COMPOUNDING_ID_DAY;
     for (const auto& a : PreferencesModel::COMPOUNDING_NAME) if (assetCompounding == a.second) {
         m_asset_compounding = a.first;
@@ -296,13 +296,13 @@ void PreferencesModel::loadAssetCompounding()
 }
 void PreferencesModel::setAssetCompounding(const int value)
 {
-    InfotableModel::instance().setString("ASSET_COMPOUNDING", PreferencesModel::COMPOUNDING_NAME[value].second);
+    InfoModel::instance().setString("ASSET_COMPOUNDING", PreferencesModel::COMPOUNDING_NAME[value].second);
     m_asset_compounding = value;
 }
 
 void PreferencesModel::loadReportingFirstDay()
 {
-    int value = InfotableModel::instance().getInt("REPORTING_FIRSTDAY", 1);
+    int value = InfoModel::instance().getInt("REPORTING_FIRSTDAY", 1);
     if (value < 1) value = 1;
     if (value > 28) value = 28;
     m_reporting_first_day = value;
@@ -311,13 +311,13 @@ void PreferencesModel::setReportingFirstDay(int value)
 {
     if (value < 1) value = 1;
     if (value > 28) value = 28;
-    InfotableModel::instance().setInt("REPORTING_FIRSTDAY", value);
+    InfoModel::instance().setInt("REPORTING_FIRSTDAY", value);
     m_reporting_first_day = value;
 }
 
 void PreferencesModel::loadReportingFirstWeekday()
 {
-    wxString valueStr = InfotableModel::instance().getString("REPORTING_FIRST_WEEKDAY", "");
+    wxString valueStr = InfoModel::instance().getString("REPORTING_FIRST_WEEKDAY", "");
     m_reporting_first_weekday =
         (valueStr == "Mon") ? wxDateTime::WeekDay::Mon :
         wxDateTime::WeekDay::Sun;
@@ -326,13 +326,13 @@ void PreferencesModel::setReportingFirstWeekday(wxDateTime::WeekDay value)
 {
     if (value != wxDateTime::WeekDay::Mon)
         value = wxDateTime::WeekDay::Sun;
-    InfotableModel::instance().setString("REPORTING_FIRST_WEEKDAY", g_short_days_of_week[value]);
+    InfoModel::instance().setString("REPORTING_FIRST_WEEKDAY", g_short_days_of_week[value]);
     m_reporting_first_weekday = value;
 }
 
 void PreferencesModel::loadFinancialFirstDay()
 {
-    int value = InfotableModel::instance().getInt("FINANCIAL_YEAR_START_DAY", 1);
+    int value = InfoModel::instance().getInt("FINANCIAL_YEAR_START_DAY", 1);
     if (value < 1) value = 1;
     if (value > 28) value = 28;
     m_financial_first_day = value;
@@ -341,13 +341,13 @@ void PreferencesModel::setFinancialFirstDay(int value)
 {
     if (value < 1) value = 1;
     if (value > 28) value = 28;
-    InfotableModel::instance().setInt("FINANCIAL_YEAR_START_DAY", value);
+    InfoModel::instance().setInt("FINANCIAL_YEAR_START_DAY", value);
     m_financial_first_day = value;
 }
 
 void PreferencesModel::loadFinancialFirstMonth()
 {
-    int value = InfotableModel::instance().getInt("FINANCIAL_YEAR_START_MONTH", 7);
+    int value = InfoModel::instance().getInt("FINANCIAL_YEAR_START_MONTH", 7);
     if (value < 1) value = 1;
     if (value > 12) value = 12;
     m_financial_first_month = wxDateTime::Month(value - 1);
@@ -355,17 +355,17 @@ void PreferencesModel::loadFinancialFirstMonth()
 void PreferencesModel::setFinancialFirstMonth(const wxDateTime::Month value)
 {
     wxString valueStr = wxString::Format("%d", value + 1);
-    InfotableModel::instance().setString("FINANCIAL_YEAR_START_MONTH", valueStr);
+    InfoModel::instance().setString("FINANCIAL_YEAR_START_MONTH", valueStr);
     m_financial_first_month = value;
 }
 
 void PreferencesModel::loadBudgetDaysOffset()
 {
-    m_budget_days_offset = InfotableModel::instance().getInt("BUDGET_DAYS_OFFSET", 0);
+    m_budget_days_offset = InfoModel::instance().getInt("BUDGET_DAYS_OFFSET", 0);
 }
 void PreferencesModel::setBudgetDaysOffset(const int value)
 {
-    InfotableModel::instance().setInt("BUDGET_DAYS_OFFSET", value);
+    InfoModel::instance().setInt("BUDGET_DAYS_OFFSET", value);
     m_budget_days_offset = value;
 }
 void PreferencesModel::addBudgetDateOffset(wxDateTime& date) const
@@ -376,11 +376,11 @@ void PreferencesModel::addBudgetDateOffset(wxDateTime& date) const
 
 void PreferencesModel::loadHomePageIncExpRange()
 {
-    m_homepage_incexp_range = InfotableModel::instance().getInt("HOMEPAGE_INCEXP_RANGE", 0);
+    m_homepage_incexp_range = InfoModel::instance().getInt("HOMEPAGE_INCEXP_RANGE", 0);
 }
 void PreferencesModel::setHomePageIncExpRange(const int value)
 {
-    InfotableModel::instance().setInt("HOMEPAGE_INCEXP_RANGE", value);
+    InfoModel::instance().setInt("HOMEPAGE_INCEXP_RANGE", value);
     m_homepage_incexp_range = value;
 }
 
@@ -813,7 +813,7 @@ int PreferencesModel::AccountImageId(const int64 account_id, const bool def, con
     NavigatorTypes::TYPE_ID acctType = NavigatorTypes::TYPE_ID_CHECKING;
     int selectedImage = img::SAVINGS_ACC_NORMAL_PNG; //Default value
 
-    AccountModel::Data* account = AccountModel::instance().get(account_id);
+    AccountModel::Data* account = AccountModel::instance().get_id(account_id);
     if (account)
     {
         acctType = AccountModel::type_id(account);
@@ -825,7 +825,7 @@ int PreferencesModel::AccountImageId(const int64 account_id, const bool def, con
 
     int max = acc_img::MAX_ACC_ICON - static_cast<int>(img::LAST_NAVTREE_PNG);
     int min = 1;
-    int custom_img_id = InfotableModel::instance().getInt(wxString::Format("ACC_IMAGE_ID_%lld", account_id), 0);
+    int custom_img_id = InfoModel::instance().getInt(wxString::Format("ACC_IMAGE_ID_%lld", account_id), 0);
     if (custom_img_id > max) custom_img_id = custom_img_id - 20; //Bug #963 fix
     if (!def && (custom_img_id >= min && custom_img_id <= max))
         return custom_img_id + img::LAST_NAVTREE_PNG - 1;
