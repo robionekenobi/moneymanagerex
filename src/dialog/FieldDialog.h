@@ -32,38 +32,7 @@ class FieldDialog : public wxDialog
     wxDECLARE_DYNAMIC_CLASS(FieldDialog);
     wxDECLARE_EVENT_TABLE();
 
-public:
-    FieldDialog() {};
-    FieldDialog(wxWindow *parent, FieldModel::Data* field);
-
-    FieldModel::Data* m_field = nullptr;
 private:
-    bool Create(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , const wxString& caption = _t("New/Edit Custom Field")
-        , const wxPoint& pos = wxDefaultPosition
-        , const wxSize& size = wxDefaultSize
-        , long style = wxCAPTION | wxSYSTEM_MENU | wxRESIZE_BORDER | wxCLOSE_BOX);
-    void CreateControls();
-    void dataToControls();
-    void OnOk(wxCommandEvent& event);
-    void OnCancel(wxCommandEvent& event);
-    void OnQuit(wxCloseEvent& event);
-    void OnChangeType(wxCommandEvent& event);
-    void OnChangeType(wxCommandEvent& event, bool OnDataToControls);
-
-    wxString m_fieldRefType;
-    wxTextCtrl* m_itemDescription = nullptr;
-    wxChoice* m_itemType = nullptr;
-    wxChoice* m_itemReference = nullptr;
-    wxChoice* m_itemUDFC = nullptr;
-    wxTextCtrl* m_itemTooltip = nullptr;
-    wxTextCtrl* m_itemRegEx = nullptr;
-    wxCheckBox* m_itemAutocomplete = nullptr;
-    wxTextCtrl* m_itemDefault = nullptr;
-    wxTextCtrl* m_itemChoices = nullptr;
-    wxSpinCtrl* m_itemDigitScale = nullptr;
-
     enum
     {
         IDC_COMBO_TYPE = wxID_HIGHEST + 1100,
@@ -71,4 +40,41 @@ private:
         IDC_VALUE,
         IDC_RATE,
     };
+
+private:
+    FieldData* m_field_n = nullptr;
+    FieldData m_field_d;
+    wxString m_fieldRefType;
+
+    wxTextCtrl* m_itemDescription  = nullptr;
+    wxChoice*   m_itemType         = nullptr;
+    wxChoice*   m_itemReference    = nullptr;
+    wxChoice*   m_itemUDFC         = nullptr;
+    wxTextCtrl* m_itemTooltip      = nullptr;
+    wxTextCtrl* m_itemRegEx        = nullptr;
+    wxCheckBox* m_itemAutocomplete = nullptr;
+    wxTextCtrl* m_itemDefault      = nullptr;
+    wxTextCtrl* m_itemChoices      = nullptr;
+    wxSpinCtrl* m_itemDigitScale   = nullptr;
+
+public:
+    FieldDialog() {};
+    FieldDialog(wxWindow *parent, FieldData* field);
+
+private:
+    bool Create(
+        wxWindow* parent,
+        wxWindowID id = wxID_ANY,
+        const wxString& caption = _t("New/Edit Custom Field"),
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxCAPTION | wxSYSTEM_MENU | wxRESIZE_BORDER | wxCLOSE_BOX
+    );
+    void CreateControls();
+    void dataToControls();
+    void OnOk(wxCommandEvent& event);
+    void OnCancel(wxCommandEvent& event);
+    void OnQuit(wxCloseEvent& event);
+    void OnChangeType(wxCommandEvent& event);
+    void OnChangeType(wxCommandEvent& event, bool OnDataToControls);
 };

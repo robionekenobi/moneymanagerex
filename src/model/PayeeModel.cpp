@@ -19,11 +19,12 @@
  ********************************************************/
 
 #include "PayeeModel.h"
-#include "TransactionModel.h" // detect whether the payee is used or not
-#include "ScheduledModel.h"
+#include "AttachmentModel.h"
+#include "TrxModel.h"
+#include "SchedModel.h"
 
-PayeeModel::PayeeModel()
-: Model<PayeeTable>()
+PayeeModel::PayeeModel() :
+    TableFactory<PayeeTable, PayeeData>()
 {
 }
 
@@ -31,152 +32,121 @@ PayeeModel::~PayeeModel()
 {
 }
 
-/**
-* Initialize the global PayeeModel table.
-* Reset the PayeeModel table or create the table if it does not exist.
-*/
+// Initialize the global PayeeModel table.
+// Reset the PayeeModel table or create the table if it does not exist.
 PayeeModel& PayeeModel::instance(wxSQLite3Database* db)
 {
     PayeeModel& ins = Singleton<PayeeModel>::instance();
+    ins.reset_cache();
     ins.m_db = db;
-    ins.destroy_cache();
     ins.ensure_table();
-    ins.preload();
+    ins.preload_cache();
 
     return ins;
 }
 
-/** Return the static instance of PayeeModel table */
+// Return the static instance of PayeeModel table
 PayeeModel& PayeeModel::instance()
 {
     return Singleton<PayeeModel>::instance();
 }
 
-const PayeeModel::Data_Set PayeeModel::FilterPayees(const wxString& payee_pattern, bool includeInActive)
+int PayeeModel::find_id_aux_cnt(int64 payee_id)
 {
-    Data_Set payees;
-    for (auto &payee : this->get_all(PayeeCol::COL_ID_PAYEENAME))
-    {
-        if (payee.PAYEENAME.Lower().Matches(payee_pattern.Lower().Append("*")) &&
-            (includeInActive || payee.ACTIVE == 1)) {
-            payees.push_back(payee);
-            }
-    }
-    return payees;
+    return AttachmentModel::NrAttachments(PayeeModel::refTypeName, payee_id);
 }
 
-PayeeModel::Data* PayeeModel::get_key(const wxString& name)
+int PayeeModel::find_id_dep_cnt(int64 payee_id)
 {
-    Data* payee = this->search_cache(PAYEENAME(name));
-    if (payee)
-        return payee;
+    // FIX (2026-03-01): Do not exclude deleted transactions. Deleted transactions
+    // are shown in a panel and they can be restored; they must have a valid payee id.
+    int cnt_trx = TrxModel::instance().find(
+        TrxCol::PAYEEID(payee_id)
+    ).size();
 
-    Data_Set items = this->find(PAYEENAME(name));
-    if (!items.empty())
-        payee = this->get_id(items[0].PAYEEID);
-    return payee;
+    int cnt_sched = SchedModel::instance().find(
+        SchedCol::PAYEEID(payee_id)
+    ).size();
+
+    return cnt_trx + cnt_sched;
 }
 
-wxString PayeeModel::get_payee_name(int64 payee_id)
+bool PayeeModel::purge_id(int64 payee_id)
 {
-    Data* payee = instance().get_id(payee_id);
-    if (payee)
-        return payee->PAYEENAME;
+    if (PayeeModel::find_id_dep_cnt(payee_id) > 0)
+        return false;
+
+    // FIXME: remove AttachmentData owned by payee_id
+
+    return unsafe_remove_id(payee_id);
+}
+
+const wxString PayeeModel::get_id_name(int64 payee_id)
+{
+    const Data* payee_n = get_id_data_n(payee_id);
+    if (payee_n)
+        return payee_n->m_name;
     else
         return _t("Payee Error");
 }
 
-bool PayeeModel::remove(int64 id)
+const PayeeData* PayeeModel::get_name_data_n(const wxString& name)
 {
-    if (is_used(id)) return false;
-    return this->remove(id);
+    const Data* payee_n = search_cache_n(PayeeCol::PAYEENAME(name));
+    if (payee_n)
+        return payee_n;
+
+    DataA payee_a = find(PayeeCol::PAYEENAME(name));
+    if (!payee_a.empty())
+        payee_n = get_id_data_n(payee_a[0].m_id);
+    return payee_n;
 }
 
-const wxArrayString PayeeModel::all_payee_names()
+const wxArrayString PayeeModel::find_all_name_a()
 {
-    wxArrayString payees;
-    for (const auto &payee: this->get_all(Col::COL_ID_PAYEENAME))
-    {
-        payees.Add(payee.PAYEENAME);
+    wxArrayString name_a;
+    for (const auto& payee_d : find_all(Col::COL_ID_PAYEENAME)) {
+        name_a.Add(payee_d.m_name);
     }
-    return payees;
+    return name_a;
 }
 
-const std::map<wxString, int64> PayeeModel::all_payees(bool excludeHidden)
+const std::map<wxString, int64> PayeeModel::find_all_name_id_m(bool only_active)
 {
-    std::map<wxString, int64> payees;
-    for (const auto& payee : this->get_all())
-    {
-        if (!excludeHidden || (payee.ACTIVE == 1))
-            payees[payee.PAYEENAME] = payee.PAYEEID;
+    std::map<wxString, int64> name_id_m;
+    for (const auto& payee_d : find_all()) {
+        if (only_active && !payee_d.m_active)
+            continue;
+        name_id_m[payee_d.m_name] = payee_d.m_id;
     }
-    return payees;
+    return name_id_m;
 }
 
-const std::map<wxString, int64> PayeeModel::used_payee()
+const std::set<int64> PayeeModel::find_used_id_s()
 {
-    std::map<int64, wxString> cache;
-    for (const auto& p : get_all())
-        cache[p.PAYEEID] = p.PAYEENAME;
-
-    std::map<wxString, int64> payees;
-    for (const auto &t : TransactionModel::instance().get_all())
-    {
-        if (cache.count(t.PAYEEID) > 0)
-            payees[cache[t.PAYEEID]] = t.PAYEEID;
+    std::set<int64> used_id_s;
+    for (const auto& trx_d : TrxModel::instance().find_all()) {
+        used_id_s.insert(trx_d.PAYEEID);
     }
-    for (const auto& b : ScheduledModel::instance().get_all())
-    {
-        if (cache.count(b.PAYEEID) > 0)
-            payees[cache[b.PAYEEID]] = b.PAYEEID;
+    for (const auto& sched_d : SchedModel::instance().find_all()) {
+        used_id_s.insert(sched_d.PAYEEID);
     }
-    return payees;
+    return used_id_s;
 }
 
-// -- Check if Payee should be made available for use
-
-bool PayeeModel::is_hidden(int64 id)
-{
-    const auto payee = PayeeModel::instance().get_id(id);
-    if (payee && payee->ACTIVE == 0)
-        return true;
-
-    return false;
-}
-
-bool PayeeModel::is_hidden(const Data* record)
-{
-    return is_hidden(record->PAYEEID);
-}
-
-bool PayeeModel::is_hidden(const Data& record)
-{
-    return is_hidden(&record);
-}
-
-// -- Check if Payee if being used
-
-bool PayeeModel::is_used(int64 id)
-{
-    const auto &trans = TransactionModel::instance().find(TransactionModel::PAYEEID(id));
-    if (!trans.empty())
-    {
-        for (const auto& txn : trans)
-            if (txn.DELETEDTIME.IsEmpty())
-                return true;
+const PayeeModel::DataA PayeeModel::find_pattern_data_a(
+    const wxString& pattern,
+    bool only_active
+) {
+    const wxString pattern_lower = pattern.Lower().Append("*");
+    DataA payee_a;
+    for (const Data& payee_d : find_all(PayeeCol::COL_ID_PAYEENAME)) {
+        if (only_active && !payee_d.m_active)
+            continue;
+        if (payee_d.m_name.Lower().Matches(pattern_lower)) {
+            payee_a.push_back(payee_d);
+        }
     }
-    const auto &bills = ScheduledModel::instance().find(ScheduledModel::PAYEEID(id));
-    if (!bills.empty()) return true;
-
-    return false;
+    return payee_a;
 }
 
-bool PayeeModel::is_used(const Data* record)
-{
-    return is_used(record->PAYEEID);
-}
-
-bool PayeeModel::is_used(const Data& record)
-{
-    return is_used(&record);
-}

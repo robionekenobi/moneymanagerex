@@ -28,7 +28,7 @@
 
 #include "model/CurrencyModel.h"
 #include "model/InfoModel.h"
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 #include "htmlbuilder.h"
 
@@ -171,7 +171,7 @@ void mmHTMLBuilder::init(bool simple, const wxString& extra_style)
     {
         html_ = wxString::Format(tags::HTML
             , mmex::getProgramName()
-            , wxString::Format("%d", PreferencesModel::instance().getHtmlScale())
+            , wxString::Format("%d", PrefModel::instance().getHtmlScale())
             , extra_style);
     }
     formatHTML(html_);
@@ -180,8 +180,8 @@ void mmHTMLBuilder::init(bool simple, const wxString& extra_style)
 void mmHTMLBuilder::showUserName()
 {
     //Show user name if provided
-    if (PreferencesModel::instance().getUserName() != "")
-        addHeader(2, PreferencesModel::instance().getUserName());
+    if (PrefModel::instance().getUserName() != "")
+        addHeader(2, PrefModel::instance().getUserName());
 }
 
 void mmHTMLBuilder::addReportHeader(const wxString& name, int startDay, bool futureIgnored)
@@ -243,8 +243,8 @@ void mmHTMLBuilder::displayDateHeading(const mmDateRange* date_range)
 
 void mmHTMLBuilder::displayDateHeading(const mmDateRange2& date_range)
 {
-    mmDateDayN range_start = date_range.rangeStart();
-    mmDateDayN range_end = date_range.rangeEnd();
+    mmDateN range_start = date_range.rangeStart();
+    mmDateN range_end = date_range.rangeEnd();
     wxString header;
     if (range_start.has_value() || range_end.has_value()) {
         header << wxString::Format(_t("From %1$s till %2$s"),
@@ -379,7 +379,7 @@ void mmHTMLBuilder::addTableHeaderCell(const wxString& value, const wxString& cs
     html_ += tags::TABLE_HEADER_END;
 }
 
-void mmHTMLBuilder::addCurrencyCell(double amount, const CurrencyModel::Data* currency, int precision, bool isVoid)
+void mmHTMLBuilder::addCurrencyCell(double amount, const CurrencyData* currency, int precision, bool isVoid)
 {
     if (precision == -1)
         precision = CurrencyModel::precision(currency);

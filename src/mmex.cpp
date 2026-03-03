@@ -90,7 +90,7 @@ bool mmGUIApp::setGUILanguage(wxLanguage lang)
     {
         wxTranslations::Set(trans);
         this->m_lang = lang;
-        PreferencesModel::instance().setLanguage(lang);
+        PrefModel::instance().setLanguage(lang);
         return true;
     }
     else
@@ -136,7 +136,7 @@ bool mmGUIApp::setGUILanguage(wxLanguage lang)
                                     "View menu to select one of the following available languages:\n\n%s",
                                     languages_list);
             m_lang = wxLANGUAGE_DEFAULT;
-            PreferencesModel::instance().setLanguage(m_lang);
+            PrefModel::instance().setLanguage(m_lang);
         }
 
         wxDELETE(trans);
@@ -256,7 +256,7 @@ bool OnInitImpl(mmGUIApp* app)
     UsageModel::instance(app->GetSettingDB());
 
     /* Load general MMEX Custom Settings */
-    PreferencesModel::instance().load(false);
+    PrefModel::instance().load(false);
 
     // checks (only in Debug build)
 #ifndef NDEBUG
@@ -351,7 +351,7 @@ bool OnInitImpl(mmGUIApp* app)
     wxInitAllImageHandlers();
 
     /* set preffered GUI language */
-    app->setGUILanguage(PreferencesModel::instance().getLanguageID());
+    app->setGUILanguage(PrefModel::instance().getLanguageID());
 
     wxRect rect = GetDefaultMonitorRect();
     int defValX = rect.GetX() + 50;
@@ -471,14 +471,13 @@ int mmGUIApp::OnExit()
         m_frame->Destroy();
 #endif
 
-    UsageModel::Data* usage = UsageModel::instance().create();
-    usage->USAGEDATE = wxDate::Today().FormatISODate();
-
     wxString rj = UsageModel::instance().To_JSON_String();
     wxLogDebug("RapidJson\n%s", rj);
 
-    usage->JSONCONTENT = rj;
-    UsageModel::instance().save(usage);
+    UsageData new_usage_d = UsageData();
+    new_usage_d.m_date = wxDate::Today().FormatISODate();
+    new_usage_d.m_json_content = rj;
+    UsageModel::instance().add_data_n(new_usage_d);
 
     if (m_setting_db) {
         m_setting_db->Close();

@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "FieldTable.h"
+#include "data/FieldData.h"
 
-template class TableFactory<FieldRow>;
+template class TableFactory<FieldTable, FieldData>;
+template class mmCache<int64, FieldData>;
 
 // List of column names in database table CUSTOMFIELD_V1,
 // in the order of FieldCol::COL_ID.
@@ -41,24 +43,7 @@ FieldRow::FieldRow()
     FIELDID = -1;
 }
 
-FieldRow::FieldRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool FieldRow::equals(const FieldRow* r) const
-{
-    if ( FIELDID != r->FIELDID) return false;
-    if (!REFTYPE.IsSameAs(r->REFTYPE)) return false;
-    if (!DESCRIPTION.IsSameAs(r->DESCRIPTION)) return false;
-    if (!TYPE.IsSameAs(r->TYPE)) return false;
-    if (!PROPERTIES.IsSameAs(r->PROPERTIES)) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void FieldRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, REFTYPE);
@@ -68,13 +53,15 @@ void FieldRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(5, id);
 }
 
-void FieldRow::from_select_result(wxSQLite3ResultSet& q)
+FieldRow& FieldRow::from_select_result(wxSQLite3ResultSet& q)
 {
     FIELDID = q.GetInt64(0);
     REFTYPE = q.GetString(1);
     DESCRIPTION = q.GetString(2);
     TYPE = q.GetString(3);
     PROPERTIES = q.GetString(4);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -109,7 +96,7 @@ void FieldRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.String(PROPERTIES.utf8_str());
 }
 
-row_t FieldRow::to_row_t() const
+row_t FieldRow::to_html_row() const
 {
     row_t row;
 
@@ -122,7 +109,7 @@ row_t FieldRow::to_row_t() const
     return row;
 }
 
-void FieldRow::to_template(html_template& t) const
+void FieldRow::to_html_template(html_template& t) const
 {
     t(L"FIELDID") = FIELDID.GetValue();
     t(L"REFTYPE") = REFTYPE;
@@ -131,17 +118,15 @@ void FieldRow::to_template(html_template& t) const
     t(L"PROPERTIES") = PROPERTIES;
 }
 
-FieldRow& FieldRow::operator=(const FieldRow& other)
+bool FieldRow::equals(const FieldRow* other) const
 {
-    if (this == &other) return *this;
+    if ( FIELDID != other->FIELDID) return false;
+    if (!REFTYPE.IsSameAs(other->REFTYPE)) return false;
+    if (!DESCRIPTION.IsSameAs(other->DESCRIPTION)) return false;
+    if (!TYPE.IsSameAs(other->TYPE)) return false;
+    if (!PROPERTIES.IsSameAs(other->PROPERTIES)) return false;
 
-    FIELDID = other.FIELDID;
-    REFTYPE = other.REFTYPE;
-    DESCRIPTION = other.DESCRIPTION;
-    TYPE = other.TYPE;
-    PROPERTIES = other.PROPERTIES;
-
-    return *this;
+    return true;
 }
 
 FieldTable::FieldTable()
@@ -163,17 +148,4 @@ FieldTable::FieldTable()
     m_delete_query = "DELETE FROM CUSTOMFIELD_V1 WHERE FIELDID = ?";
 
     m_select_query = "SELECT FIELDID, REFTYPE, DESCRIPTION, TYPE, PROPERTIES FROM CUSTOMFIELD_V1";
-}
-
-// Destructor: clears any data records stored in memory
-FieldTable::~FieldTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void FieldTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

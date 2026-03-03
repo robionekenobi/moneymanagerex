@@ -33,7 +33,7 @@ Copyright (C) 2025 Klaus Wich
 #include "_PanelBase.h"
 
 class JournalPanel;
-class TransactionFilterDialog;
+class TrxFilterDialog;
 class mmGUIFrame;
 class JournalList;
 //----------------------------------------------------------------------------
@@ -116,8 +116,8 @@ private:
         // -(4+X) : accounts of type X
     int64 m_account_id = -1;                    // applicable if m_checking_id >= 1
     std::set<int64> m_group_ids = {};           // applicable if m_checking_id <= -3
-    AccountModel::Data* m_account = nullptr;   // non-null if m_checking_id >= 1
-    CurrencyModel::Data* m_currency = nullptr; // currency of m_account, or base currency
+    const AccountData* m_account_n = nullptr;   // non-null if m_checking_id >= 1
+    const CurrencyData* m_currency_n = nullptr; // currency of m_account, or base currency
     std::vector<mmDateRange2::Range> m_date_range_a = {};
     int m_date_range_m = -1;
 
@@ -163,7 +163,7 @@ private:
     wxString m_info_panel_selectedbal;
     wxVector<wxBitmapBundle> m_images;
     JournalList* m_lc = nullptr;
-    wxSharedPtr<TransactionFilterDialog> m_trans_filter_dlg;
+    wxSharedPtr<TrxFilterDialog> m_trans_filter_dlg;
 
 
 private:

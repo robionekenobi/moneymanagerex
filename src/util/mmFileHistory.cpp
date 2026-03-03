@@ -60,7 +60,7 @@ void mmFileHistory::LoadHistory()
 void mmFileHistory::SaveHistory()
 {
     wxLogDebug("{{{ mmFileHistory::SaveHistory()");
-    SettingModel::instance().Savepoint();
+    SettingModel::instance().db_savepoint();
     wxString buf, historyFile;
     for (int i = 0; i < GetMaxFiles(); i++) {
         buf = wxString::Format("RECENT_DB_%d", i + 1);
@@ -75,6 +75,6 @@ void mmFileHistory::SaveHistory()
             SettingModel::instance().setString(buf, wxString(""));
         }
     }
-    SettingModel::instance().ReleaseSavepoint();
+    SettingModel::instance().db_release_savepoint();
     wxLogDebug("}}}");
 }

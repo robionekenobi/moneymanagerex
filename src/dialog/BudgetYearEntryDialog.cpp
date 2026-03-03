@@ -116,9 +116,8 @@ void BudgetYearEntryDialog::CreateControls()
     mmToolTip(itemChoice_, _t("Specify year to base budget on"));
 
     unsigned int index = 1;
-    for (const auto& e : BudgetPeriodModel::instance().get_all())
-    {
-        const wxString& budgetYearString = e.BUDGETYEARNAME;
+    for (const auto& bp_d : BudgetPeriodModel::instance().find_all()) {
+        const wxString& budgetYearString = bp_d.m_name;
         itemChoice_->Insert(budgetYearString, index++);
     }
     
@@ -140,8 +139,7 @@ void BudgetYearEntryDialog::OnOk(wxCommandEvent& /*event*/)
     wxString currYearText = wxString() << textYear_->GetValue();
     wxString baseYear = itemChoice_->GetStringSelection();
 
-    if (withMonth_)
-    {
+    if (withMonth_) {
         wxString currMonthText = wxEmptyString;
         currMonthText << textMonth_->GetValue();
         if (currMonthText.length() != 2 )
@@ -150,20 +148,17 @@ void BudgetYearEntryDialog::OnOk(wxCommandEvent& /*event*/)
         currYearText << "-" << currMonthText;
     }
 
-    if (BudgetPeriodModel::instance().Get(currYearText) != -1)
-    {   
+    if (BudgetPeriodModel::instance().get_name_id(currYearText) != -1) {   
         wxMessageBox(_t("Budget Year already exists")
             , _t("Budget Entry Details"), wxICON_WARNING);
         return;
     }
-    else
-    {
-        BudgetPeriodModel::instance().Add(currYearText);
-        if (baseYear != "None" && !baseYear.empty())
-        {
-            int64 baseYearID = BudgetPeriodModel::instance().Get(baseYear);
-            int64 newYearID  = BudgetPeriodModel::instance().Get(currYearText);
-            BudgetModel::copyBudgetYear(newYearID, baseYearID);
+    else {
+        BudgetPeriodModel::instance().ensure_name(currYearText);
+        if (baseYear != "None" && !baseYear.empty()) {
+            int64 baseYearID = BudgetPeriodModel::instance().get_name_id(baseYear);
+            int64 newYearID  = BudgetPeriodModel::instance().get_name_id(currYearText);
+            BudgetModel::instance().copyBudgetYear(newYearID, baseYearID);
         }
     }
 

@@ -21,13 +21,13 @@
 
 #pragma once
 
-#include "model/TransactionShareModel.h"
+#include "model/TrxShareModel.h"
 #include "mmframe.h"
 #include "_PanelBase.h"
 #include "StockList.h"
 
 class wxListEvent;
-class TransactionShareModel;
+class TrxShareModel;
 
 class StockPanel : public PanelBase
 {
@@ -68,12 +68,12 @@ public:
     void ViewStockTransactions(int selectedIndex);
     wxListCtrl* InitStockTxnListCtrl(wxWindow* parent);
     void LoadStockTransactions(wxListCtrl* listCtrl, wxString symbol, int64 stockId);
-    void FillListRow(wxListCtrl* listCtrl, long index, const TransactionModel::Data& txn, const TransactionShareModel::Data& share_entry);
+    void FillListRow(wxListCtrl* listCtrl, long index, const TrxData& txn, const TrxShareData& share_entry);
     void BindListEvents(wxListCtrl* listCtrl);
     void CopySelectedRowsToClipboard(wxListCtrl* listCtrl);
 
     int64 m_account_id = -1;
-    CurrencyModel::Data * m_currency = nullptr;
+    const CurrencyData * m_currency = nullptr;
     void updateExtraStocksData(int selIndex);
     wxStaticText* stock_details_short_ = nullptr;
     void updateHeader();
@@ -98,7 +98,7 @@ private:
     wxBitmapButton* refresh_button_ = nullptr;
 
     bool onlineQuoteRefresh(wxString& sError);
-    wxString GetPanelTitle(const AccountModel::Data& account) const;
+    wxString GetPanelTitle(const AccountData& account) const;
 
     wxString strLastUpdate_;
     bool StocksRefreshStatus_;

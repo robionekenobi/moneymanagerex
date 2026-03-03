@@ -22,10 +22,9 @@
 #pragma once
 
 #include "base/defs.h"
+#include "base/types.h"
 
 //----------------------------------------------------------------------------
-
-typedef wxLongLong int64;
 
 //fast alternative for pow(10, y)
 int pow10(const int y);

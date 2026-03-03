@@ -81,14 +81,14 @@ public:
     mmGeneralGroupReport(const wxString& groupname) : ReportBase(_n("General Group Report"))
         , m_group_name(groupname)
     {
-        m_sub_reports = ReportModel::instance().find(ReportModel::GROUPNAME(groupname));
+        m_sub_reports = ReportModel::instance().find(ReportCol::GROUPNAME(groupname));
     }
 
     wxString getHTMLText()
     {
         loop_t contents;
         for (const auto & report : m_sub_reports)
-            contents += report.to_row_t();
+            contents += report.to_html_row();
         wxString report_template = group_report_template;
         mm_html_template report(formatHTML(report_template));
         report(L"REPORTNAME") = this->getTitle() + " For " + this->m_group_name;
@@ -112,7 +112,7 @@ public:
     }
 private:
     wxString m_group_name;
-    ReportModel::Data_Set m_sub_reports;
+    ReportModel::DataA m_sub_reports;
 };
 
 void mmGUIFrame::DoUpdateReportNavigation(wxTreeItemId& parent_item)
@@ -215,7 +215,7 @@ void mmGUIFrame::DoUpdateReportNavigation(wxTreeItemId& parent_item)
 
     //////////////////////////////////////////////////////////////////
 
-    size_t i = BudgetPeriodModel::instance().get_all().size();
+    size_t i = BudgetPeriodModel::instance().find_all().size();
     if (i > 0)
     {
         if (hidden_reports.Index("Budgets") == wxNOT_FOUND)
@@ -231,8 +231,8 @@ void mmGUIFrame::DoUpdateReportNavigation(wxTreeItemId& parent_item)
         }
     }
 
-    AccountModel::Data_Set investments_account = AccountModel::instance().find(
-        AccountModel::ACCOUNTTYPE(OP_EQ, NavigatorTypes::instance().getInvestmentAccountStr())
+    AccountModel::DataA investments_account = AccountModel::instance().find(
+        AccountCol::ACCOUNTTYPE(OP_EQ, NavigatorTypes::instance().getInvestmentAccountStr())
     );
     if (!investments_account.empty())
     {
@@ -251,26 +251,37 @@ void mmGUIFrame::DoUpdateReportNavigation(wxTreeItemId& parent_item)
 void mmGUIFrame::DoUpdateGRMNavigation(wxTreeItemId& parent_item)
 {
     /*GRM Reports*/
-    auto records = ReportModel::instance().find(ReportModel::ACTIVE(OP_EQ, 1));
+    auto report_a = ReportModel::instance().find(ReportCol::ACTIVE(OP_EQ, 1));
     //Sort by group name and report name
-    std::sort(records.begin(), records.end(), ReportRow::SorterByREPORTNAME());
-    std::stable_sort(records.begin(), records.end(), ReportRow::SorterByGROUPNAME());
+    std::sort(report_a.begin(), report_a.end(), ReportData::SorterByREPORTNAME());
+    std::stable_sort(report_a.begin(), report_a.end(), ReportData::SorterByGROUPNAME());
 
     wxTreeItemId group;
     wxString group_name;
-    for (const auto& record : records)
-    {
-        bool no_group = record.GROUPNAME.empty();
-        if (group_name != record.GROUPNAME && !no_group)
-        {
-            group = m_nav_tree_ctrl->AppendItem(parent_item, wxGetTranslation(record.GROUPNAME), img::CUSTOMSQL_GRP_PNG, img::CUSTOMSQL_GRP_PNG);
+    for (const auto& report_d : report_a) {
+        bool no_group = report_d.m_group_name.empty();
+        if (group_name != report_d.m_group_name && !no_group) {
+            group = m_nav_tree_ctrl->AppendItem(
+                parent_item,
+                wxGetTranslation(report_d.m_group_name),
+                img::CUSTOMSQL_GRP_PNG, img::CUSTOMSQL_GRP_PNG
+            );
             m_nav_tree_ctrl->SetItemBold(group, true);
-            m_nav_tree_ctrl->SetItemData(group, new mmTreeItemData(new mmGeneralGroupReport(record.GROUPNAME), record.GROUPNAME));
-            group_name = record.GROUPNAME;
+            m_nav_tree_ctrl->SetItemData(group, new mmTreeItemData(
+                new mmGeneralGroupReport(report_d.m_group_name),
+                report_d.m_group_name
+            ));
+            group_name = report_d.m_group_name;
         }
-        ReportModel::Data* r = ReportModel::instance().get_id(record.REPORTID);
-        wxTreeItemId item = m_nav_tree_ctrl->AppendItem(no_group ? parent_item : group, wxGetTranslation(record.REPORTNAME), img::CUSTOMSQL_PNG, img::CUSTOMSQL_PNG);
-        m_nav_tree_ctrl->SetItemData(item, new mmTreeItemData(new mmGeneralReport(r), r->REPORTNAME));
+        const ReportData* report_n = ReportModel::instance().get_id_data_n(report_d.m_id);
+        wxTreeItemId item = m_nav_tree_ctrl->AppendItem(
+            no_group ? parent_item : group,
+            wxGetTranslation(report_d.m_name),
+            img::CUSTOMSQL_PNG, img::CUSTOMSQL_PNG
+        );
+        m_nav_tree_ctrl->SetItemData(item, new mmTreeItemData(
+            new mmGeneralReport(report_n), report_n->m_name
+        ));
     }
 
 }

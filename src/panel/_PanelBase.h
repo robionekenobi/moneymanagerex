@@ -125,8 +125,8 @@ public:
     int getSortColId(int i = 0) const;
     int getSortColNr(int i = 0);
     bool getSortAsc(int i = 0) const;
-    void savePreferences();
-    void loadPreferences();
+    void savePref();
+    void loadPref();
 
 private:
     // backwards compatibility
@@ -134,8 +134,8 @@ private:
     const wxString getColWidthKey_v190(int col_id) const;
     const wxString getSortColKey_v190(int i = 0) const;
     const wxString getSortAscKey_v190(int i = 0) const;
-    void savePreferences_v190();
-    void loadPreferences_v190();
+    void savePref_v190();
+    void loadPref_v190();
     void saveBoolInt(const wxString& key, bool value, bool isInt);
     bool loadBoolInt(const wxString& key, bool default_value, bool isInt) const;
 

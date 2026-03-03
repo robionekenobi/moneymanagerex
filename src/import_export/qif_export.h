@@ -19,9 +19,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #pragma once
 
 #include "base/defs.h"
+#include "base/types.h"
 
 class mmDatePickerCtrl;
-typedef wxLongLong int64;
 typedef std::vector<int64> wxArrayInt64;
 
 class mmQIFExportDialog : public wxDialog

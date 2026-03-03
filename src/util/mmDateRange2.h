@@ -24,7 +24,7 @@
 #include <unordered_map>
 
 #include "_primitive.h"
-#include "mmDateDay.h"
+#include "mmDate.h"
 
 class mmDatePeriod
 {
@@ -170,19 +170,19 @@ protected:
     int firstDay[2];                  // first day in PERIOD::[YQM] (1..28)
     wxDateTime::Month firstMonth[2];  // first month in PERIOD::[YQ] (0..11)
     wxDateTime::WeekDay firstWeekday; // first weekday in PERIOD::W (0=Sun, 1=Mon)
-    mmDateDayN sDateN;                // the date of PERIOD::S (account statement date)
-    mmDateDay  tDate;                 // the date of PERIOD::T (today)
-    mmDateDayN defStartDateN;         // default start date (if range start is open)
-    mmDateDayN defEndDateN;           // default end date (if range end is open)
+    mmDateN sDateN;                   // the date of PERIOD::S (account statement date)
+    mmDate  tDate;                    // the date of PERIOD::T (today)
+    mmDateN defStartDateN;            // default start date (if range start is open)
+    mmDateN defEndDateN;              // default end date (if range end is open)
     Range range;                      // range specification
     Reporting reporting;              // reporting multiplier/period
 
 public:
     mmDateRange2(
-        mmDateDayN sDateN_new = mmDateDayN(),
-        mmDateDay  tDate_new = mmDateDay::today(),
-        mmDateDayN defStartDateN_new = mmDateDayN(),
-        mmDateDayN defEndDateN_new = mmDateDayN()
+        mmDateN sDateN_new = mmDateN(),
+        mmDate  tDate_new = mmDate::today(),
+        mmDateN defStartDateN_new = mmDateN(),
+        mmDateN defEndDateN_new = mmDateN()
     );
 
 #ifndef NDEBUG
@@ -191,27 +191,27 @@ private:
         int firstDay_new_0, int firstDay_new_1,
         wxDateTime::Month firstMonth_new_0, wxDateTime::Month firstMonth_new_1,
         wxDateTime::WeekDay firstWeekday_new,
-        mmDateDayN sDateN_new = mmDateDayN(),
-        mmDateDay  tDate_new = mmDateDay::today(),
-        mmDateDayN defStartDateN_new = mmDateDayN(),
-        mmDateDayN defEndDateN_new = mmDateDayN()
+        mmDateN sDateN_new = mmDateN(),
+        mmDate  tDate_new = mmDate::today(),
+        mmDateN defStartDateN_new = mmDateN(),
+        mmDateN defEndDateN_new = mmDateN()
     );
 #endif
 
 public:
-    void setSDateN(mmDateDayN sDateN_new = mmDateDayN());
-    void setTDate(mmDateDay tDate_new = mmDateDay::today());
-    void setDefStartDateN(mmDateDayN defStartDateN_new = mmDateDayN());
-    void setDefEndDateN(mmDateDayN defEndDateN_new = mmDateDayN());
+    void setSDateN(mmDateN sDateN_new = mmDateN());
+    void setTDate(mmDate tDate_new = mmDate::today());
+    void setDefStartDateN(mmDateN defStartDateN_new = mmDateN());
+    void setDefEndDateN(mmDateN defEndDateN_new = mmDateN());
     void setRange(const Range &range_new);
     void setReporting(const Reporting &reporting_new);
     int getFirstDay() const;
     wxDateTime::Month getFirstMonth() const;
     wxDateTime::WeekDay getFirstWeekday() const;
-    mmDateDayN getSDateN() const;
-    mmDateDay  getTDate() const;
-    mmDateDayN getDefStartDateN() const;
-    mmDateDayN getDefEndDateN() const;
+    mmDateN getSDateN() const;
+    mmDate  getTDate() const;
+    mmDateN getDefStartDateN() const;
+    mmDateN getDefEndDateN() const;
     Range getRange() const;
     Reporting getReporting() const;
     bool parseRange(const wxString &buffer, const wxString &name = "");
@@ -220,11 +220,11 @@ public:
     const wxString rangeName() const;
     const wxString rangeLabelName() const;
     const wxString reportingLabel() const;
-    mmDateDayN periodStart(mmDateDay date, mmDatePeriod period) const;
-    mmDateDayN periodEnd(mmDateDay date, mmDatePeriod period) const;
-    mmDateDayN rangeStart() const;
-    mmDateDayN rangeEnd() const;
-    mmDateDayN reportingNext() const;
+    mmDateN periodStart(mmDate date, mmDatePeriod period) const;
+    mmDateN periodEnd(mmDate date, mmDatePeriod period) const;
+    mmDateN rangeStart() const;
+    mmDateN rangeEnd() const;
+    mmDateN reportingNext() const;
     const wxString rangeStartIsoStartN() const;
     const wxString rangeEndIsoEndN() const;
     const wxString reportingNextIsoEndN() const;
@@ -236,7 +236,7 @@ public:
     {
         using iterator_category = std::input_iterator_tag;
         using difference_type = int;
-        using value_type = mmDateDayN;
+        using value_type = mmDateN;
         using pointer = const value_type*;
         using reference = const value_type&;
 
@@ -245,14 +245,14 @@ public:
     private:
         const mmDateRange2* a;
         int count;
-        mmDateDayN nextDateN, lastDateN;
+        mmDateN nextDateN, lastDateN;
 
     public:
         ReportingIterator(const mmDateRange2* a_new);
 
     public:
-        const mmDateDayN& operator*();
-        const mmDateDayN* operator->();
+        const mmDateN& operator*();
+        const mmDateN* operator->();
         ReportingIterator& operator++();
         ReportingIterator operator++(int);
         bool operator== (const ReportingIterator& other);
@@ -304,19 +304,19 @@ inline const wxString mmDateRange2::Reporting::multiplierStr(int m, bool show_on
     return (m != 1 || show_one) ? wxString::Format("%+d", m) : "";
 }
 
-inline void mmDateRange2::setSDateN(mmDateDayN sDateN_new)
+inline void mmDateRange2::setSDateN(mmDateN sDateN_new)
 {
     sDateN = sDateN_new;
 }
-inline void mmDateRange2::setTDate(mmDateDay tDate_new)
+inline void mmDateRange2::setTDate(mmDate tDate_new)
 {
     tDate = tDate_new;
 }
-inline void mmDateRange2::setDefStartDateN(mmDateDayN defStartDateN_new)
+inline void mmDateRange2::setDefStartDateN(mmDateN defStartDateN_new)
 {
     defStartDateN = defStartDateN_new;
 }
-inline void mmDateRange2::setDefEndDateN(mmDateDayN defEndDateN_new)
+inline void mmDateRange2::setDefEndDateN(mmDateN defEndDateN_new)
 {
     defEndDateN = defEndDateN_new;
 }
@@ -341,19 +341,19 @@ inline wxDateTime::WeekDay mmDateRange2::getFirstWeekday() const
 {
     return firstWeekday;
 }
-inline mmDateDayN mmDateRange2::getSDateN() const
+inline mmDateN mmDateRange2::getSDateN() const
 {
     return sDateN;
 }
-inline mmDateDay mmDateRange2::getTDate() const
+inline mmDate mmDateRange2::getTDate() const
 {
     return tDate;
 }
-inline mmDateDayN mmDateRange2::getDefStartDateN() const
+inline mmDateN mmDateRange2::getDefStartDateN() const
 {
     return defStartDateN;
 }
-inline mmDateDayN mmDateRange2::getDefEndDateN() const
+inline mmDateN mmDateRange2::getDefEndDateN() const
 {
     return defEndDateN;
 }
@@ -396,11 +396,11 @@ inline const wxString mmDateRange2::reportingNextIsoEndN() const
     return reportingNext().isoEndN();
 }
 
-inline const mmDateDayN& mmDateRange2::ReportingIterator::operator*()
+inline const mmDateN& mmDateRange2::ReportingIterator::operator*()
 {
     return nextDateN;
 }
-inline const mmDateDayN* mmDateRange2::ReportingIterator::operator->()
+inline const mmDateN* mmDateRange2::ReportingIterator::operator->()
 {
     return &nextDateN;
 }

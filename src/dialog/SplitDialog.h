@@ -26,7 +26,7 @@
 
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
-#include "model/TransactionModel.h"
+#include "model/TrxModel.h"
 
 class wxListCtrl;
 class wxStaticText;
@@ -45,14 +45,18 @@ class mmEditSplitOther : public wxDialog
 
 public:
     mmEditSplitOther();
-    mmEditSplitOther(wxWindow* parent, CurrencyModel::Data* currency, Split* split
-                        , const wxString &name = "mmEditSplitOther");
+    mmEditSplitOther(
+        wxWindow* parent,
+        const CurrencyData* currency,
+        Split* split,
+        const wxString &name = "mmEditSplitOther"
+    );
     ~mmEditSplitOther();
 
 private:
     Split* m_split = nullptr;
-    CurrencyModel::Data* m_currency = nullptr;
-    wxTextCtrl* m_Notes = nullptr;
+    const CurrencyData* m_currency_n = nullptr;
+    wxTextCtrl* w_notes = nullptr;
 
     void CreateControls();
     void fillControls();
@@ -112,7 +116,7 @@ private:
     std::vector<SplitWidget> m_splits_widgets;
     std::vector<Split> m_orig_splits, m_splits;
     int row_num_ = 0;
-    CurrencyModel::Data* m_currency = nullptr;
+    const CurrencyData* m_currency_n = nullptr;
     bool is_view_only_;
 
     wxButton* itemButtonOK_ = nullptr;

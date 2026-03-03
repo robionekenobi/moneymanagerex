@@ -27,7 +27,7 @@ Copyright (C) 2021 Mark Whalley (mark@ipx.co.uk)
 #include "base/images_list.h"
 #include "util/_util.h"
 
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 #include "model/SettingModel.h"
 
 #include "ThemeManager.h"

@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "UsageTable.h"
+#include "data/UsageData.h"
 
-template class TableFactory<UsageRow>;
+template class TableFactory<UsageTable, UsageData>;
+template class mmCache<int64, UsageData>;
 
 // List of column names in database table USAGE_V1,
 // in the order of UsageCol::COL_ID.
@@ -39,22 +41,7 @@ UsageRow::UsageRow()
     USAGEID = -1;
 }
 
-UsageRow::UsageRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool UsageRow::equals(const UsageRow* r) const
-{
-    if ( USAGEID != r->USAGEID) return false;
-    if (!USAGEDATE.IsSameAs(r->USAGEDATE)) return false;
-    if (!JSONCONTENT.IsSameAs(r->JSONCONTENT)) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void UsageRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, USAGEDATE);
@@ -62,11 +49,13 @@ void UsageRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(3, id);
 }
 
-void UsageRow::from_select_result(wxSQLite3ResultSet& q)
+UsageRow& UsageRow::from_select_result(wxSQLite3ResultSet& q)
 {
     USAGEID = q.GetInt64(0);
     USAGEDATE = q.GetString(1);
     JSONCONTENT = q.GetString(2);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -95,7 +84,7 @@ void UsageRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.String(JSONCONTENT.utf8_str());
 }
 
-row_t UsageRow::to_row_t() const
+row_t UsageRow::to_html_row() const
 {
     row_t row;
 
@@ -106,22 +95,20 @@ row_t UsageRow::to_row_t() const
     return row;
 }
 
-void UsageRow::to_template(html_template& t) const
+void UsageRow::to_html_template(html_template& t) const
 {
     t(L"USAGEID") = USAGEID.GetValue();
     t(L"USAGEDATE") = USAGEDATE;
     t(L"JSONCONTENT") = JSONCONTENT;
 }
 
-UsageRow& UsageRow::operator=(const UsageRow& other)
+bool UsageRow::equals(const UsageRow* other) const
 {
-    if (this == &other) return *this;
+    if ( USAGEID != other->USAGEID) return false;
+    if (!USAGEDATE.IsSameAs(other->USAGEDATE)) return false;
+    if (!JSONCONTENT.IsSameAs(other->JSONCONTENT)) return false;
 
-    USAGEID = other.USAGEID;
-    USAGEDATE = other.USAGEDATE;
-    JSONCONTENT = other.JSONCONTENT;
-
-    return *this;
+    return true;
 }
 
 UsageTable::UsageTable()
@@ -143,17 +130,4 @@ UsageTable::UsageTable()
     m_delete_query = "DELETE FROM USAGE_V1 WHERE USAGEID = ?";
 
     m_select_query = "SELECT USAGEID, USAGEDATE, JSONCONTENT FROM USAGE_V1";
-}
-
-// Destructor: clears any data records stored in memory
-UsageTable::~UsageTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void UsageTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

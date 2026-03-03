@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,14 +13,14 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #pragma once
 
-#include "_TableFactory.h"
+#include "_TableBase.h"
 
 // Columns in database table CURRENCYFORMATS_V1
 struct CurrencyCol
@@ -149,7 +149,6 @@ struct CurrencyCol
 struct CurrencyRow
 {
     using Col = CurrencyCol;
-    using COL_ID = Col::COL_ID;
 
     int64 CURRENCYID; // primary key
     wxString CURRENCYNAME;
@@ -170,17 +169,17 @@ struct CurrencyRow
 
     int64 id() const { return CURRENCYID; }
     void id(const int64 id) { CURRENCYID = id; }
-    void destroy() { delete this; }
-
-    bool equals(const CurrencyRow* r) const;
     void to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const;
-    void from_select_result(wxSQLite3ResultSet& q);
+    void to_update_stmt(wxSQLite3Statement& stmt) const;
+    CurrencyRow& from_select_result(wxSQLite3ResultSet& q);
     wxString to_json() const;
     void as_json(PrettyWriter<StringBuffer>& json_writer) const;
-    row_t to_row_t() const;
-    void to_template(html_template& t) const;
+    row_t to_html_row() const;
+    void to_html_template(html_template& t) const;
+    void destroy() { delete this; }
 
-    CurrencyRow& operator=(const CurrencyRow& other);
+    CurrencyRow& clone_from(const CurrencyRow& other);
+    bool equals(const CurrencyRow* other) const;
     bool operator< (const CurrencyRow& other) const { return id() < other.id(); }
     bool operator< (const CurrencyRow* other) const { return id() < other->id(); }
 
@@ -356,24 +355,30 @@ struct CurrencyRow
 };
 
 // Interface to database table CURRENCYFORMATS_V1
-struct CurrencyTable : public TableFactory<CurrencyRow>
+struct CurrencyTable : public TableBase
 {
-    // Use Col::(COLUMN_NAME) until model provides similar functionality based on Data.
-    using CURRENCYID = Col::CURRENCYID;
-    using CURRENCYNAME = Col::CURRENCYNAME;
-    using PFX_SYMBOL = Col::PFX_SYMBOL;
-    using SFX_SYMBOL = Col::SFX_SYMBOL;
-    using DECIMAL_POINT = Col::DECIMAL_POINT;
-    using GROUP_SEPARATOR = Col::GROUP_SEPARATOR;
-    using UNIT_NAME = Col::UNIT_NAME;
-    using CENT_NAME = Col::CENT_NAME;
-    using SCALE = Col::SCALE;
-    using BASECONVRATE = Col::BASECONVRATE;
-    using CURRENCY_SYMBOL = Col::CURRENCY_SYMBOL;
-    using CURRENCY_TYPE = Col::CURRENCY_TYPE;
+    using Row = CurrencyRow;
+    using Col = typename Row::Col;
 
     CurrencyTable();
-    ~CurrencyTable();
+    ~CurrencyTable() {}
 
     void ensure_data() override;
 };
+
+inline CurrencyRow::CurrencyRow(wxSQLite3ResultSet& q)
+{
+    from_select_result(q);
+}
+
+inline void CurrencyRow::to_update_stmt(wxSQLite3Statement& stmt) const
+{
+    to_insert_stmt(stmt, id());
+}
+
+inline CurrencyRow& CurrencyRow::clone_from(const CurrencyRow& other)
+{
+    *this = other;
+    id(-1);
+    return *this;
+}

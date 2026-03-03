@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "ReportTable.h"
+#include "data/ReportData.h"
 
-template class TableFactory<ReportRow>;
+template class TableFactory<ReportTable, ReportData>;
+template class mmCache<int64, ReportData>;
 
 // List of column names in database table REPORT_V1,
 // in the order of ReportCol::COL_ID.
@@ -45,27 +47,7 @@ ReportRow::ReportRow()
     ACTIVE = -1;
 }
 
-ReportRow::ReportRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool ReportRow::equals(const ReportRow* r) const
-{
-    if ( REPORTID != r->REPORTID) return false;
-    if (!REPORTNAME.IsSameAs(r->REPORTNAME)) return false;
-    if (!GROUPNAME.IsSameAs(r->GROUPNAME)) return false;
-    if ( ACTIVE != r->ACTIVE) return false;
-    if (!SQLCONTENT.IsSameAs(r->SQLCONTENT)) return false;
-    if (!LUACONTENT.IsSameAs(r->LUACONTENT)) return false;
-    if (!TEMPLATECONTENT.IsSameAs(r->TEMPLATECONTENT)) return false;
-    if (!DESCRIPTION.IsSameAs(r->DESCRIPTION)) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void ReportRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, REPORTNAME);
@@ -78,7 +60,7 @@ void ReportRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(8, id);
 }
 
-void ReportRow::from_select_result(wxSQLite3ResultSet& q)
+ReportRow& ReportRow::from_select_result(wxSQLite3ResultSet& q)
 {
     REPORTID = q.GetInt64(0);
     REPORTNAME = q.GetString(1);
@@ -88,6 +70,8 @@ void ReportRow::from_select_result(wxSQLite3ResultSet& q)
     LUACONTENT = q.GetString(5);
     TEMPLATECONTENT = q.GetString(6);
     DESCRIPTION = q.GetString(7);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -131,7 +115,7 @@ void ReportRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.String(DESCRIPTION.utf8_str());
 }
 
-row_t ReportRow::to_row_t() const
+row_t ReportRow::to_html_row() const
 {
     row_t row;
 
@@ -147,7 +131,7 @@ row_t ReportRow::to_row_t() const
     return row;
 }
 
-void ReportRow::to_template(html_template& t) const
+void ReportRow::to_html_template(html_template& t) const
 {
     t(L"REPORTID") = REPORTID.GetValue();
     t(L"REPORTNAME") = REPORTNAME;
@@ -159,20 +143,18 @@ void ReportRow::to_template(html_template& t) const
     t(L"DESCRIPTION") = DESCRIPTION;
 }
 
-ReportRow& ReportRow::operator=(const ReportRow& other)
+bool ReportRow::equals(const ReportRow* other) const
 {
-    if (this == &other) return *this;
+    if ( REPORTID != other->REPORTID) return false;
+    if (!REPORTNAME.IsSameAs(other->REPORTNAME)) return false;
+    if (!GROUPNAME.IsSameAs(other->GROUPNAME)) return false;
+    if ( ACTIVE != other->ACTIVE) return false;
+    if (!SQLCONTENT.IsSameAs(other->SQLCONTENT)) return false;
+    if (!LUACONTENT.IsSameAs(other->LUACONTENT)) return false;
+    if (!TEMPLATECONTENT.IsSameAs(other->TEMPLATECONTENT)) return false;
+    if (!DESCRIPTION.IsSameAs(other->DESCRIPTION)) return false;
 
-    REPORTID = other.REPORTID;
-    REPORTNAME = other.REPORTNAME;
-    GROUPNAME = other.GROUPNAME;
-    ACTIVE = other.ACTIVE;
-    SQLCONTENT = other.SQLCONTENT;
-    LUACONTENT = other.LUACONTENT;
-    TEMPLATECONTENT = other.TEMPLATECONTENT;
-    DESCRIPTION = other.DESCRIPTION;
-
-    return *this;
+    return true;
 }
 
 ReportTable::ReportTable()
@@ -194,17 +176,4 @@ ReportTable::ReportTable()
     m_delete_query = "DELETE FROM REPORT_V1 WHERE REPORTID = ?";
 
     m_select_query = "SELECT REPORTID, REPORTNAME, GROUPNAME, ACTIVE, SQLCONTENT, LUACONTENT, TEMPLATECONTENT, DESCRIPTION FROM REPORT_V1";
-}
-
-// Destructor: clears any data records stored in memory
-ReportTable::~ReportTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void ReportTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

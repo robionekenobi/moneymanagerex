@@ -33,10 +33,10 @@ protected:
     wxString getHTMLText_DayOrMonth(bool monthly = false);
     void getTransactions();
     double m_balance;
-    std::vector<TransactionModel::Data> m_forecastVector;
+    std::vector<TrxData> m_forecastVector;
 
 private:
-    double trueAmount(const TransactionModel::Data& trx);
+    double trueAmount(const TrxData& trx);
     wxArrayInt64 m_account_id;
     const wxDateTime m_today;
 

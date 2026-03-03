@@ -37,28 +37,28 @@ UsageReport::~UsageReport()
 wxString UsageReport::getHTMLText()
 {
     // Grab the data
-    UsageModel::Data_Set all_usage;
+    UsageModel::DataA xu_a;
     wxDateTime _start_date, _end_date;
 
     if (m_date_range && m_date_range->is_with_date()) {
-        all_usage = UsageModel::instance().find(
-            UsageModel::USAGEDATE(OP_GE, m_date_range->start_date().FormatISODate()),
-            UsageModel::USAGEDATE(OP_LE, m_date_range->end_date().FormatISOCombined())
+        xu_a = UsageModel::instance().find(
+            UsageCol::USAGEDATE(OP_GE, m_date_range->start_date().FormatISODate()),
+            UsageCol::USAGEDATE(OP_LE, m_date_range->end_date().FormatISOCombined())
         );
         _start_date = m_date_range->start_date();
         _end_date = m_date_range->end_date();
     }
     else {
-        all_usage = UsageModel::instance().get_all();
-        wxASSERT(_start_date.ParseISODate(all_usage.front().USAGEDATE));
-        wxASSERT(_end_date.ParseISODate(all_usage.back().USAGEDATE));
+        xu_a = UsageModel::instance().find_all();
+        wxASSERT(_start_date.ParseISODate(xu_a.front().m_date));
+        wxASSERT(_end_date.ParseISODate(xu_a.back().m_date));
     }
 
     std::map<wxString, int> usage_by_module;
 
-    for (const auto & usage : all_usage) {
+    for (const auto & xu_d : xu_a) {
          Document json_doc;
-         if (json_doc.Parse(usage.JSONCONTENT.utf8_str()).HasParseError())
+         if (json_doc.Parse(xu_d.m_json_content.utf8_str()).HasParseError())
              continue;
 
          //wxLogDebug("======= UsageReport::getHTMLText =======");

@@ -23,8 +23,8 @@
 
 #include "InfoModel.h"
 
-InfoModel::InfoModel()
-: Model<InfoTable>()
+InfoModel::InfoModel() :
+    TableFactory<InfoTable, InfoData>()
 {
 }
 
@@ -37,10 +37,11 @@ InfoModel::~InfoModel()
 InfoModel& InfoModel::instance(wxSQLite3Database* db)
 {
     InfoModel& ins = Singleton<InfoModel>::instance();
+    ins.reset_cache();
     ins.m_db = db;
-    ins.destroy_cache();
     ins.ensure_table();
-    ins.preload();
+    ins.preload_cache();
+
     if (!ins.contains("MMEXVERSION")) {
         ins.setString("MMEXVERSION", mmex::version::string);
         ins.setString("DATAVERSION", mmex::DATAVERSION);
@@ -59,38 +60,38 @@ InfoModel& InfoModel::instance()
 // Returns true if key setting found
 bool InfoModel::contains(const wxString& key)
 {
-    return !find(INFONAME(key)).empty();
+    return !find(InfoCol::INFONAME(key)).empty();
 }
 
 // Raw (the raw value stored in Infotable is always string)
 void InfoModel::setRaw(const wxString& key, const wxString& newValue)
 {
     // search in cache
-    Data* info = search_cache(INFONAME(key));
-    if (!info) {
+    const Data* info_n = search_cache_n(InfoCol::INFONAME(key));
+    if (!info_n) {
         // not found in cache; search in db
-        Data_Set items = find(INFONAME(key));
-        if (!items.empty())
-            info = get_id(items[0].INFOID);
-        if (!info) {
-            // not found; create
-            info = create();
-            info->INFONAME = key;
-        }
+        DataA info_a = find(InfoCol::INFONAME(key));
+        if (!info_a.empty())
+            info_n = get_id_data_n(info_a[0].m_id);
     }
-    info->INFOVALUE = newValue;
-    save(info);
+
+    Data info_d = info_n ? *info_n : Data();
+    if (!info_n)
+        info_d.m_name = key;
+    info_d.m_value = newValue;
+    save_data_n(info_d);
 }
+
 wxString InfoModel::getRaw(const wxString& key, const wxString& defaultValue)
 {
     // search in cache
-    Data* info = search_cache(INFONAME(key));
-    if (info)
-        return info->INFOVALUE;
+    const Data* info_n = search_cache_n(InfoCol::INFONAME(key));
+    if (info_n)
+        return info_n->m_value;
     // search in db
-    Data_Set items = find(INFONAME(key));
-    if (!items.empty())
-        return items[0].INFOVALUE;
+    DataA info_a = find(InfoCol::INFONAME(key));
+    if (!info_a.empty())
+        return info_a[0].m_value;
     // not found
     return defaultValue;
 }
@@ -309,22 +310,23 @@ void InfoModel::updateArrayItem(const wxString& key, int i, const wxString& newV
 
 void InfoModel::prependArrayItem(const wxString& key, const wxString& value, int limit)
 {
-    Data* info = search_cache(INFONAME(key));
-    if (!info) { // not cached
-        Data_Set items = find(INFONAME(key));
-        if (!items.empty())
-            info = get_id(items[0].INFOID);
-        if (!info) {
-            info = create();
-            info->INFONAME = key;
-        }
+    const Data* info_n = search_cache_n(InfoCol::INFONAME(key));
+    if (!info_n) {
+        DataA info_a = find(InfoCol::INFONAME(key));
+        if (!info_a.empty())
+            info_n = get_id_data_n(info_a[0].m_id);
     }
+
+    Data info_d = info_n ? *info_n : Data();
+    if (!info_n)
+        info_d.m_name = key;
+
     wxArrayString a;
     if (!value.empty() && limit != 0)
         a.Add(value);
 
     Document j_doc;
-    if (!j_doc.Parse(info->INFOVALUE.utf8_str()).HasParseError()
+    if (!j_doc.Parse(info_d.m_value.utf8_str()).HasParseError()
         && j_doc.IsArray()
     ) {
         int i = 1;
@@ -348,8 +350,8 @@ void InfoModel::prependArrayItem(const wxString& key, const wxString& value, int
     }
     json_writer.EndArray();
 
-    info->INFOVALUE = wxString::FromUTF8(json_buffer.GetString());
-    save(info);
+    info_d.m_value = wxString::FromUTF8(json_buffer.GetString());
+    save_data_n(info_d);
 }
 
 void InfoModel::eraseArrayItem(const wxString& key, int i)
@@ -407,8 +409,8 @@ bool InfoModel::checkDBVersion()
 loop_t InfoModel::to_loop_t()
 {
     loop_t loop;
-    for (const auto &r: instance().get_all())
-        loop += r.to_row_t();
+    for (const auto &r: instance().find_all())
+        loop += r.to_html_row();
     return loop;
 }
 

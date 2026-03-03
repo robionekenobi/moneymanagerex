@@ -31,7 +31,7 @@
 
 #include "dialog/AttachmentDialog.h"
 #include "dialog/StockDialog.h"
-#include "dialog/TransactionShareDialog.h"
+#include "dialog/TrxShareDialog.h"
 
 enum {
     IDC_PANEL_STOCKS_LISTCTRL = wxID_HIGHEST + 1900,
@@ -162,7 +162,7 @@ void StockList::OnMouseRightClick(wxMouseEvent& event)
 
     menu.Enable(MENU_TREEPOPUP_NEW, m_stock_panel->m_account_id > -1);
     menu.Enable(MENU_TREEPOPUP_EDIT,  m_selected_row > -1);
-    menu.Enable(MENU_TREEPOPUP_ADDTRANS, enable_menu_item && m_stocks[m_selected_row].NUMSHARES > 0);
+    menu.Enable(MENU_TREEPOPUP_ADDTRANS, enable_menu_item && m_stocks[m_selected_row].m_num_shares > 0);
     menu.Enable(MENU_TREEPOPUP_VIEWTRANS, m_selected_row > -1);
     menu.Enable(MENU_TREEPOPUP_DELETE, enable_menu_item);
     menu.Enable(MENU_TREEPOPUP_ORGANIZE_ATTACHMENTS, enable_menu_item);
@@ -178,37 +178,37 @@ wxString StockList::OnGetItemText(long item, long col_nr) const
     int col_id = getColId_Nr(static_cast<int>(col_nr));
     switch (col_id) {
     case LIST_ID_ID:
-        return wxString::Format("%lld", m_stocks[item].STOCKID).Trim();
+        return wxString::Format("%lld", m_stocks[item].m_id).Trim();
     case LIST_ID_DATE:
-        return mmGetDateTimeForDisplay(m_stocks[item].PURCHASEDATE);
+        return mmGetDateTimeForDisplay(m_stocks[item].m_purchase_date_);
     case LIST_ID_NAME:
-        return m_stocks[item].STOCKNAME;
+        return m_stocks[item].m_name;
     case LIST_ID_SYMBOL:
-        return m_stocks[item].SYMBOL;
+        return m_stocks[item].m_symbol;
     case LIST_ID_NUMBER: {
-        int precision = m_stocks[item].NUMSHARES == floor(m_stocks[item].NUMSHARES) ? 0 : 4;
-        return CurrencyModel::toString(m_stocks[item].NUMSHARES, m_stock_panel->m_currency, precision);
+        int precision = m_stocks[item].m_num_shares == floor(m_stocks[item].m_num_shares) ? 0 : 4;
+        return CurrencyModel::toString(m_stocks[item].m_num_shares, m_stock_panel->m_currency, precision);
     }
     case LIST_ID_PRICE:
-        return CurrencyModel::toString(m_stocks[item].PURCHASEPRICE, m_stock_panel->m_currency, 4);
+        return CurrencyModel::toString(m_stocks[item].m_purchase_price, m_stock_panel->m_currency, 4);
     case LIST_ID_VALUE:
-        return CurrencyModel::toString(m_stocks[item].VALUE, m_stock_panel->m_currency);
+        return CurrencyModel::toString(m_stocks[item].m_purchase_value, m_stock_panel->m_currency);
     case LIST_ID_REAL_GAIN_LOSS:
         return CurrencyModel::toString(GetRealGainLoss(item), m_stock_panel->m_currency);
     case LIST_ID_GAIN_LOSS:
         return CurrencyModel::toString(GetGainLoss(item), m_stock_panel->m_currency);
     case LIST_ID_CURRENT:
-        return CurrencyModel::toString(m_stocks[item].CURRENTPRICE, m_stock_panel->m_currency, 4);
+        return CurrencyModel::toString(m_stocks[item].m_current_price, m_stock_panel->m_currency, 4);
     case LIST_ID_CURRVALUE:
         return CurrencyModel::toString(StockModel::CurrentValue(m_stocks[item]), m_stock_panel->m_currency);
     case LIST_ID_PRICEDATE:
-        return mmGetDateTimeForDisplay(StockModel::instance().lastPriceDate(&m_stocks[item]));
+        return mmGetDateTimeForDisplay(StockModel::instance().lastPriceDate(m_stocks[item]));
     case LIST_ID_COMMISSION:
-        return CurrencyModel::toString(m_stocks[item].COMMISSION, m_stock_panel->m_currency);
+        return CurrencyModel::toString(m_stocks[item].m_commission, m_stock_panel->m_currency);
     case LIST_ID_NOTES: {
-        wxString full_notes = m_stocks[item].NOTES;
+        wxString full_notes = m_stocks[item].m_notes;
         full_notes.Replace("\n", " ");
-        if (AttachmentModel::NrAttachments(StockModel::refTypeName, m_stocks[item].STOCKID))
+        if (AttachmentModel::NrAttachments(StockModel::refTypeName, m_stocks[item].m_id))
             full_notes.Prepend(mmAttachmentManage::GetAttachmentNoteSign());
         return full_notes;
     }
@@ -222,9 +222,9 @@ double StockList::GetGainLoss(long item) const
     return getGainLoss(m_stocks[item]);
 }
 
-double StockList::getGainLoss(const StockModel::Data& stock)
+double StockList::getGainLoss(const StockData& stock)
 {
-    return StockModel::CurrentValue(stock) - stock.VALUE;
+    return StockModel::CurrentValue(stock) - stock.m_purchase_value;
 }
 
 double StockList::GetRealGainLoss(long item) const
@@ -232,7 +232,7 @@ double StockList::GetRealGainLoss(long item) const
     return getRealGainLoss(m_stocks[item]);
 }
 
-double StockList::getRealGainLoss(const StockModel::Data& stock)
+double StockList::getRealGainLoss(const StockData& stock)
 {
     return StockModel::RealGainLoss(stock);
 }
@@ -291,8 +291,7 @@ void StockList::OnNewStocks(wxCommandEvent& /*event*/)
 {
     StockDialog dlg(this, nullptr, m_stock_panel->m_account_id);
     dlg.ShowModal();
-    if (StockModel::instance().get_id(dlg.m_stock_id))
-    {
+    if (StockModel::instance().get_id_data_n(dlg.m_stock_id)) {
         doRefreshItems(dlg.m_stock_id);
         m_stock_panel->m_frame->RefreshNavigationTree();
     }
@@ -307,9 +306,9 @@ void StockList::OnDeleteStocks(wxCommandEvent& /*event*/)
         , wxYES_NO | wxNO_DEFAULT | wxICON_ERROR);
     if (msgDlg.ShowModal() == wxID_YES)
     {
-        StockModel::instance().remove(m_stocks[m_selected_row].STOCKID);
-        mmAttachmentManage::DeleteAllAttachments(StockModel::refTypeName, m_stocks[m_selected_row].STOCKID);
-        TransactionLinkModel::RemoveTransLinkRecords<StockModel>(m_stocks[m_selected_row].STOCKID);
+        StockModel::instance().purge_id(m_stocks[m_selected_row].m_id);
+        mmAttachmentManage::DeleteAllAttachments(StockModel::refTypeName, m_stocks[m_selected_row].m_id);
+        TrxLinkModel::RemoveTransLinkRecords<StockModel>(m_stocks[m_selected_row].m_id);
         DeleteItem(m_selected_row);
         doRefreshItems(-1);
         m_stock_panel->m_frame->RefreshNavigationTree();
@@ -321,27 +320,30 @@ void StockList::OnMoveStocks(wxCommandEvent& /*event*/)
     if (m_selected_row == -1) return;
 
     const auto& accounts = AccountModel::instance().find(
-        AccountModel::ACCOUNTTYPE(NavigatorTypes::instance().getInvestmentAccountStr()));
+        AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().getInvestmentAccountStr())
+    );
     if (accounts.empty()) return;
 
-    const AccountModel::Data* from_account = AccountModel::instance().get_id(m_stock_panel->m_account_id);
-    wxString headerMsg = wxString::Format(_t("Moving Transaction from %s to"), from_account->ACCOUNTNAME);
-    mmSingleChoiceDialog scd(this, _t("Select the destination Account "), headerMsg , accounts);
+    const AccountData* from_account = AccountModel::instance().get_id_data_n(m_stock_panel->m_account_id);
+    wxString headerMsg = wxString::Format(_t("Moving Transaction from %s to"),
+        from_account->m_name
+    );
+    mmSingleChoiceDialog scd(this, _t("Select the destination Account "),
+        headerMsg , accounts
+    );
 
     int64 toAccountID = -1;
     int error_code = scd.ShowModal();
-    if (error_code == wxID_OK)
-    {
+    if (error_code == wxID_OK) {
         wxString acctName = scd.GetStringSelection();
-        const AccountModel::Data* to_account = AccountModel::instance().get_key(acctName);
-        toAccountID = to_account->ACCOUNTID;
+        const AccountData* to_account = AccountModel::instance().get_name_data_n(acctName);
+        toAccountID = to_account->m_id;
     }
 
-    if ( toAccountID != -1 )
-    {
-        StockModel::Data* stock = StockModel::instance().get_id(m_stocks[m_selected_row].STOCKID);
-        stock->HELDAT = toAccountID;
-        StockModel::instance().save(stock);
+    if ( toAccountID != -1 ) {
+        StockData* stock_n = StockModel::instance().unsafe_get_id_data_n(m_stocks[m_selected_row].m_id);
+        stock_n->m_account_id_n = toAccountID;
+        StockModel::instance().unsafe_update_data_n(stock_n);
 
         DeleteItem(m_selected_row);
         m_stock_panel->m_frame->RefreshNavigationTree();
@@ -364,7 +366,7 @@ void StockList::OnOrganizeAttachments(wxCommandEvent& /*event*/)
     if (m_selected_row < 0) return;
 
     wxString RefType = StockModel::refTypeName;
-    int64 RefId = m_stocks[m_selected_row].STOCKID;
+    int64 RefId = m_stocks[m_selected_row].m_id;
 
     AttachmentDialog dlg(this, RefType, RefId);
     dlg.ShowModal();
@@ -375,7 +377,7 @@ void StockList::OnOrganizeAttachments(wxCommandEvent& /*event*/)
 void StockList::OnStockWebPage(wxCommandEvent& /*event*/)
 {
     if (m_selected_row < 0) return;
-    const wxString stockSymbol = m_stocks[m_selected_row].SYMBOL;
+    const wxString stockSymbol = m_stocks[m_selected_row].m_symbol;
 
     if (!stockSymbol.IsEmpty())
     {
@@ -390,7 +392,7 @@ void StockList::OnOpenAttachment(wxCommandEvent& /*event*/)
     if (m_selected_row < 0) return;
 
     wxString RefType = StockModel::refTypeName;
-    int64 RefId = m_stocks[m_selected_row].STOCKID;
+    int64 RefId = m_stocks[m_selected_row].m_id;
 
     mmAttachmentManage::OpenAttachmentFromPanelIcon(this, RefType, RefId);
     doRefreshItems(RefId);
@@ -429,10 +431,10 @@ void StockList::OnColClick(wxListEvent& event)
     else if (event.GetId() != MENU_HEADER_SORT)
         m_sort_asc[0] = !m_sort_asc[0];
     updateSortIcon();
-    savePreferences();
+    savePref();
 
     int64 trx_id = -1;
-    if (m_selected_row>=0) trx_id = m_stocks[m_selected_row].STOCKID;
+    if (m_selected_row>=0) trx_id = m_stocks[m_selected_row].m_id;
     doRefreshItems(trx_id);
     m_stock_panel->OnListItemSelected(-1);
 }
@@ -468,13 +470,13 @@ int StockList::initVirtualListControl(int64 trx_id)
     // TODO
     if (m_stock_panel->m_account_id > -1 ) {
         m_stocks = StockModel::instance().find(
-            StockModel::HELDAT(m_stock_panel->m_account_id),
-            StockModel::NUMSHARES(m_stock_panel->getFilter() ? OP_GT : OP_GE, 0.0)
+            StockCol::HELDAT(m_stock_panel->m_account_id),
+            StockCol::NUMSHARES(m_stock_panel->getFilter() ? OP_GT : OP_GE, 0.0)
         );
     }
     else { // create summary
         m_stocks = StockModel::instance().find(
-            StockModel::NUMSHARES(m_stock_panel->getFilter() ? OP_GT : OP_GE, 0.0)
+            StockCol::NUMSHARES(m_stock_panel->getFilter() ? OP_GT : OP_GE, 0.0)
         );
         if (!m_stocks.empty())
             createSummary();
@@ -486,12 +488,12 @@ int StockList::initVirtualListControl(int64 trx_id)
     int cnt = 0, selected_item = -1;
     for (auto& stock : m_stocks)
     {
-        if (trx_id == stock.STOCKID)
+        if (trx_id == stock.m_id)
         {
             selected_item = cnt;
             break;
         }
-        if (!stock.PURCHASEPRICE) {
+        if (!stock.m_purchase_price) {
             StockModel::UpdatePosition(&stock);
         }
         ++cnt;
@@ -507,50 +509,50 @@ void StockList::sortList()
     switch (getSortColId())
     {
     case StockList::LIST_ID_ID:
-        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockRow::SorterBySTOCKID());
+        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockData::SorterBySTOCKID());
         break;
     case StockList::LIST_ID_DATE:
-        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockRow::SorterByPURCHASEDATE());
+        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockData::SorterByPURCHASEDATE());
         break;
     case StockList::LIST_ID_NAME:
-        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockRow::SorterBySTOCKNAME());
+        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockData::SorterBySTOCKNAME());
         break;
     case StockList::LIST_ID_SYMBOL:
-        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockRow::SorterBySYMBOL());
+        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockData::SorterBySYMBOL());
         break;
     case StockList::LIST_ID_NUMBER:
-        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockRow::SorterByNUMSHARES());
+        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockData::SorterByNUMSHARES());
         break;
     case StockList::LIST_ID_PRICE:
-        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockRow::SorterByPURCHASEPRICE());
+        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockData::SorterByPURCHASEPRICE());
         break;
     case StockList::LIST_ID_VALUE:
         std::stable_sort(m_stocks.begin(), m_stocks.end()
-            , [](const StockModel::Data& x, const StockModel::Data& y)
+            , [](const StockData& x, const StockData& y)
             {
-                return x.VALUE < y.VALUE;
+                return x.m_purchase_value < y.m_purchase_value;
             });
         break;
     case StockList::LIST_ID_REAL_GAIN_LOSS:
         std::stable_sort(m_stocks.begin(), m_stocks.end()
-            , [](const StockModel::Data& x, const StockModel::Data& y)
+            , [](const StockData& x, const StockData& y)
         {
             return getRealGainLoss(x) < getRealGainLoss(y);
         });
         break;
     case StockList::LIST_ID_GAIN_LOSS:
         std::stable_sort(m_stocks.begin(), m_stocks.end()
-            , [](const StockModel::Data& x, const StockModel::Data& y)
+            , [](const StockData& x, const StockData& y)
             {
                 return getGainLoss(x) < getGainLoss(y);
             });
         break;
     case StockList::LIST_ID_CURRENT:
-        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockRow::SorterByCURRENTPRICE());
+        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockData::SorterByCURRENTPRICE());
         break;
     case StockList::LIST_ID_CURRVALUE:
         std::stable_sort(m_stocks.begin(), m_stocks.end()
-            , [](const StockModel::Data& x, const StockModel::Data& y)
+            , [](const StockData& x, const StockData& y)
             {
                 double valueX = StockModel::CurrentValue(x);
                 double valueY = StockModel::CurrentValue(y);
@@ -561,10 +563,10 @@ void StockList::sortList()
         //TODO
         break;
     case StockList::LIST_ID_COMMISSION:
-        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockRow::SorterByCOMMISSION());
+        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockData::SorterByCOMMISSION());
         break;
     case StockList::LIST_ID_NOTES:
-        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockRow::SorterByNOTES());
+        std::stable_sort(m_stocks.begin(), m_stocks.end(), StockData::SorterByNOTES());
         break;
     default:
         break;
@@ -574,35 +576,39 @@ void StockList::sortList()
 
 void StockList::createSummary()
 {
-    StockModel::Data_Set stocks_summary;
-    StockModel::Data prevStock;
-    wxString prevSymbol = "";
+    StockModel::DataA stocks_summary;
+    StockData prev_stock_d;
+    wxString prev_symbol = "";
     m_investedVal = 0;
     m_marketVal = 0;
 
     std::sort(m_stocks.begin(), m_stocks.end());
-    std::stable_sort(m_stocks.begin(), m_stocks.end(), StockRow::SorterBySYMBOL());
+    std::stable_sort(m_stocks.begin(), m_stocks.end(), StockData::SorterBySYMBOL());
 
-    for (StockModel::Data stock : m_stocks) {
-        if (stock.SYMBOL != prevSymbol) {
-            if (!prevSymbol.IsEmpty()) {
-                stocks_summary.push_back(prevStock);
+    for (StockData stock_d : m_stocks) {
+        if (stock_d.m_symbol != prev_symbol) {
+            if (!prev_symbol.IsEmpty()) {
+                // FIXME: m_purchase_value includes m_commission here
+                prev_stock_d.m_purchase_price = (
+                    prev_stock_d.m_purchase_value - prev_stock_d.m_commission
+                ) / prev_stock_d.m_num_shares;
+                stocks_summary.push_back(prev_stock_d);
             }
-            prevSymbol = stock.SYMBOL;
-            prevStock = stock;
+            prev_symbol = stock_d.m_symbol;
+            prev_stock_d = stock_d;
         }
         else {
-            prevStock.NUMSHARES += stock.NUMSHARES;
-            prevStock.VALUE += stock.VALUE;
-            prevStock.COMMISSION += stock.COMMISSION;
-            prevStock.PURCHASEPRICE = (prevStock.VALUE - prevStock.COMMISSION)/ prevStock.NUMSHARES;
-            prevStock.NOTES += (prevStock.NOTES.IsEmpty() ? "" : " - ") + stock.NOTES;
+            prev_stock_d.m_num_shares     += stock_d.m_num_shares;
+            prev_stock_d.m_purchase_value += stock_d.m_purchase_value;
+            prev_stock_d.m_commission     += stock_d.m_commission;
+            prev_stock_d.m_notes          += (prev_stock_d.m_notes.IsEmpty() ? "" : " - ") + stock_d.m_notes;
         }
-        m_investedVal += stock.VALUE + stock.COMMISSION;
-        m_marketVal += stock.CURRENTPRICE * stock.NUMSHARES;
+        // FIXME: m_purchase_value does not include m_commission here
+        m_investedVal += stock_d.m_purchase_value + stock_d.m_commission;
+        m_marketVal += stock_d.m_current_price * stock_d.m_num_shares;
 
     }
-    stocks_summary.push_back(prevStock);
+    stocks_summary.push_back(prev_stock_d);
 
     m_stocks = stocks_summary;
 }

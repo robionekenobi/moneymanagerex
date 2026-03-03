@@ -10,82 +10,140 @@ Copyright: (c) 2026      George Ef (george.a.ef@gmail.com)
 #pragma once
 
 #include "_TableBase.h"
+#include "util/mmCache.h"
 
-template<typename RowType>
-struct TableFactory : TableBase
+template<typename TableType, typename DataType>
+struct TableFactory : public TableType
 {
-public:
-    using Row = RowType;
-    using Col = typename Row::Col;
-    using COL_ID = typename Col::COL_ID;
-    using Cache = std::vector<Row*>;
-    using CacheIndex = std::map<int64, Row*>;
+    static_assert(std::is_base_of<TableBase, TableType>::value,
+        "TableType must derive from TableBase"
+    );
 
-    // A container to hold a list of Row records for the table
-    struct RowA : public std::vector<Row>
+public:
+    using Table  = TableType;
+    using Row    = typename Table::Row;
+    using Col    = typename Row::Col;
+    using COL_ID = typename Col::COL_ID;
+    using Data   = DataType;
+
+    // A container to hold a list of Data records for the table
+    struct DataA : public std::vector<Data>
     {
-        wxString to_json() const;
+        const wxString to_json() const;
     };
 
 protected:
-    // A container to hold a list of Row record pointers for the table in memory
-    Cache m_cache;
-    CacheIndex m_cache_index;
-    size_t m_hit, m_miss, m_skip;
-    Row* fake_; // in case the entity not found
+    mmCache<int64, Data> m_cache;
 
 public:
-    TableFactory<RowType>(): m_hit(0), m_miss(0), m_skip(0), fake_(new Row()) {};
+    TableFactory<TableType, DataType>() : m_cache(mmCache<int64, Data>()) {};
+    ~TableFactory<TableType, DataType>() { m_cache.reset(); };
 
-    bool cache_empty() const { return m_cache.empty(); }
-    void destroy_cache();
-    Row* create();
-    Row* clone(const Row* e);
-    bool save(Row* row);
-    bool remove(const int64 id);
-    bool remove(Row* row);
-    Row* get_id(const int64 id);
-    Row* get_record(const int64 id);
-    const RowA get_all(const COL_ID = Col::PRIMARY_ID, const bool asc = true);
+    // Methods starting with 'find_' bypass the cache; other methods use the cache.
+    auto unsafe_get_id_data_n(const int64 id) -> Data*;
+    auto get_id_data_n(const int64 id) -> const Data*;
+    auto get_id_data_n(wxLongLong_t id) -> const Data* { return get_id_data_n(int64(id)); }
+    auto add_data_n(Data& data) -> const Data*;
+    bool add_data_a(DataA& data);
+    auto unsafe_update_data_n(Data* data) -> Data*;
+    auto update_data_n(Data& data) -> const Data*;
+    auto unsafe_save_data_n(Data* data) -> const Data*;
+    auto save_data_n(Data& data) -> const Data*;
+    bool save_data_a(DataA& data);
+    bool unsafe_remove_id(const int64 id);
+    auto find_all(const COL_ID = Col::PRIMARY_ID, const bool asc = true) -> const DataA;
+    void preload_cache(int max_size = 1000);
+    void reset_cache() { m_cache.reset(); }
+    bool cache_empty() const { return m_cache.get_stat().max_size == 0; }
+    auto stat_json() const -> const wxString;
+    void debug_stat() const;
 
+    // TODO:
+    //   Add unordered_map<wxString, wxString> m_ref_query_m (a map from
+    //   other_table to SQL query) in TableBase and initialize it in *Model.
+    // Find records in other_table which refer to id in this table.
+    // The returned records either use id, or fully belong to id in this table.
+    // Returns a vector of ids in other_table.
+    // The complete list of table dependencies can be found in _dependencies.txt
+    // auto find_ref(int64 id, wxString other_table) -> std::vector<int64>;
+
+    // Remove all auxiliary records in other tables owned by id, and then remove id
+    // from this table. Return false in case or error.
+    // Before calling this function, the caller shall validate that only records fully
+    // owned by id refer to it, i.e., no references to id remain after this call.
+    // The default implementation assumes no auxiliary records; tables which have
+    // auxiliary records shall override it.
+    // Specializations of this function shall stop immediately in case of error,
+    // such that id in this table is removed only after all its auxiliary records
+    // are removed (otherwise the database will contain dangling references).
+    // The complete list of table dependencies can be found in _dependencies.txt
+    virtual bool purge_id(int64 id) { return unsafe_remove_id(id); }
+
+    // This is a trivial implementation of indexing in cache, using linear search.
+    // It does not require additional storage, other than the cache.
+    // TODO:
+    //   Implement a more efficient indexing using a map<key, id> for each key.
+    //   The index is used as a hint for fast access in cache. If the id is wrong,
+    //   the entry in the index is removed and a full search (with find) is executed.
     template<typename... Args>
-    Row* search_cache(const Args& ... args)
+    auto unsafe_search_cache_n(const Args& ... args) -> Data*
     {
-        for (auto& [_, r] : m_cache_index) {
-            if (r->id() > 0 && r->match(args...)) {
-                ++m_hit;
+        for (auto& [_, r] : m_cache.get_map()) {
+            if (r->id() > 0 && r->to_row().match(args...)) {
                 return r;
             }
         }
-        ++m_miss;
-        return 0;
+        return nullptr;
     }
 
     template<typename... Args>
-    const RowA find_by(bool op_and, const Args&... args)
+    auto search_cache_n(const Args& ... args) -> const Data*
     {
-        RowA result;
-        try {
-            wxString query = m_select_query + " WHERE ";
-            write_condition(query, op_and, args...);
-            wxSQLite3Statement stmt = m_db->PrepareStatement(query);
-            bind_at(stmt, 1, args...);
+        return unsafe_search_cache_n(args...);
+    }
 
+    // Return the result of a SELECT query as an array of Data records.
+    // The WHERE conditions are specified by one or more Specialised Parameters
+    // of the form: *Col::ColumnName(op, value) or *Col::ColumnName(value).
+    // The conditions are combined with AND or OR, if op_and is true or false, resp.
+    // Example:
+    //   true, AssetCol::ASSETID(2), AssetCol::ASSETTYPE(AssetType::e_jewellery)
+    //   produces the SQL statement condition: ASSETID = 2 AND ASSETTYPE = "Jewellery"
+    // Return an empty array if no records are found.
+    // 
+    // TODO: do not store all record in a vactor; return an iterator instead.
+    template<typename... Args>
+    auto find_where(bool op_and, const Args&... args) -> const DataA
+    {
+        DataA result;
+        try {
+            wxString query = this->m_select_query + " WHERE ";
+            write_condition(query, op_and, args...);
+            wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
+            bind_at(stmt, 1, args...);
             wxSQLite3ResultSet q = stmt.ExecuteQuery();
 
             while (q.NextRow()) {
-                Row r(q);
+                Data r(q);
                 result.push_back(std::move(r));
             }
 
             q.Finalize();
         }
         catch(const wxSQLite3Exception &e) {
-            wxLogError("%s: Exception %s", m_table_name, e.GetMessage().utf8_str());
+            wxLogError("%s: Exception %s", this->m_table_name, e.GetMessage().utf8_str());
         }
 
         return result;
     }
+
+    // Shorter name for conditions combined with AND (most common usage).
+    template<typename... Args>
+    auto find(const Args&... args) -> const DataA { return find_where(true, args...); }
+
+    // Longer name for conditions combined with OR (less common usage).
+    template<typename... Args>
+    auto find_or(const Args&... args) -> const DataA { return find_where(false, args...); }
 
     template<typename Arg1>
     void write_condition(wxString& out, bool /*op_and*/, const Arg1& arg1)
@@ -130,4 +188,3 @@ public:
         bind_at(stmt, index+1, args...);
     }
 };
-

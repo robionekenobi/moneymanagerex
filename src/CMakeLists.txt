@@ -78,17 +78,20 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     base/paths.cpp
     base/paths.h
     base/platfdep.h
+    base/types.h
 
-    util/_choices.cpp
-    util/_choices.h
     util/_primitive.cpp
     util/_primitive.h
     util/_simple.cpp
     util/_simple.h
     util/_util.cpp
     util/_util.h
-    util/mmDateDay.cpp
-    util/mmDateDay.h
+    util/mmCache.h
+    util/mmCache.tpp
+    util/mmChoice.cpp
+    util/mmChoice.h
+    util/mmDate.cpp
+    util/mmDate.h
     util/mmDateRange.cpp
     util/mmDateRange.h
     util/mmDateRange2.cpp
@@ -132,10 +135,10 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     table/PayeeTable.h
     table/ReportTable.cpp
     table/ReportTable.h
-    table/ScheduledSplitTable.cpp
-    table/ScheduledSplitTable.h
-    table/ScheduledTable.cpp
-    table/ScheduledTable.h
+    table/SchedSplitTable.cpp
+    table/SchedSplitTable.h
+    table/SchedTable.cpp
+    table/SchedTable.h
     table/SettingTable.cpp
     table/SettingTable.h
     table/StockHistoryTable.cpp
@@ -146,14 +149,14 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     table/TagLinkTable.h
     table/TagTable.cpp
     table/TagTable.h
-    table/TransactionLinkTable.cpp
-    table/TransactionLinkTable.h
-    table/TransactionShareTable.cpp
-    table/TransactionShareTable.h
-    table/TransactionSplitTable.cpp
-    table/TransactionSplitTable.h
-    table/TransactionTable.cpp
-    table/TransactionTable.h
+    table/TrxLinkTable.cpp
+    table/TrxLinkTable.h
+    table/TrxShareTable.cpp
+    table/TrxShareTable.h
+    table/TrxSplitTable.cpp
+    table/TrxSplitTable.h
+    table/TrxTable.cpp
+    table/TrxTable.h
     table/UsageTable.cpp
     table/UsageTable.h
     table/_TableBase.cpp
@@ -162,12 +165,58 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     table/_TableFactory.tpp
     table/_TableUpgrade.h
 
-    db/dbcheck.cpp
-    db/dbcheck.h
-    db/dbupgrade.cpp
-    db/dbupgrade.h
-    db/dbwrapper.cpp
-    db/dbwrapper.h
+    data/AccountData.cpp
+    data/AccountData.h
+    data/AssetData.cpp
+    data/AssetData.h
+    data/AttachmentData.cpp
+    data/AttachmentData.h
+    data/BudgetData.cpp
+    data/BudgetData.h
+    data/BudgetPeriodData.cpp
+    data/BudgetPeriodData.h
+    data/CategoryData.cpp
+    data/CategoryData.h
+    data/CurrencyData.cpp
+    data/CurrencyData.h
+    data/CurrencyHistoryData.cpp
+    data/CurrencyHistoryData.h
+    data/FieldData.cpp
+    data/FieldData.h
+    data/FieldValueData.cpp
+    data/FieldValueData.h
+    data/InfoData.cpp
+    data/InfoData.h
+    data/PayeeData.cpp
+    data/PayeeData.h
+    data/ReportData.cpp
+    data/ReportData.h
+    data/SchedData.cpp
+    data/SchedData.h
+    data/SchedSplitData.cpp
+    data/SchedSplitData.h
+    data/SettingData.cpp
+    data/SettingData.h
+    data/StockData.cpp
+    data/StockData.h
+    data/StockHistoryData.cpp
+    data/StockHistoryData.h
+    data/TagData.cpp
+    data/TagData.h
+    data/TagLinkData.cpp
+    data/TagLinkData.h
+    data/TrxData.cpp
+    data/TrxData.h
+    data/TrxLinkData.cpp
+    data/TrxLinkData.h
+    data/TrxShareData.cpp
+    data/TrxShareData.h
+    data/TrxSplitData.cpp
+    data/TrxSplitData.h
+    data/UsageData.cpp
+    data/UsageData.h
+    data/_DataEnum.cpp
+    data/_DataEnum.h
 
     model/AccountModel.cpp
     model/AccountModel.h
@@ -195,14 +244,14 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     model/Journal.h
     model/PayeeModel.cpp
     model/PayeeModel.h
-    model/PreferencesModel.cpp
-    model/PreferencesModel.h
+    model/PrefModel.cpp
+    model/PrefModel.h
     model/ReportModel.cpp
     model/ReportModel.h
-    model/ScheduledModel.cpp
-    model/ScheduledModel.h
-    model/ScheduledSplitModel.cpp
-    model/ScheduledSplitModel.h
+    model/SchedModel.cpp
+    model/SchedModel.h
+    model/SchedSplitModel.cpp
+    model/SchedSplitModel.h
     model/SettingModel.cpp
     model/SettingModel.h
     model/StockHistoryModel.cpp
@@ -213,16 +262,16 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     model/TagLinkModel.h
     model/TagModel.cpp
     model/TagModel.h
-    model/TransactionFilter.cpp
-    model/TransactionFilter.h
-    model/TransactionLinkModel.cpp
-    model/TransactionLinkModel.h
-    model/TransactionModel.cpp
-    model/TransactionModel.h
-    model/TransactionShareModel.cpp
-    model/TransactionShareModel.h
-    model/TransactionSplitModel.cpp
-    model/TransactionSplitModel.h
+    model/TrxFilter.cpp
+    model/TrxFilter.h
+    model/TrxLinkModel.cpp
+    model/TrxLinkModel.h
+    model/TrxModel.cpp
+    model/TrxModel.h
+    model/TrxShareModel.cpp
+    model/TrxShareModel.h
+    model/TrxSplitModel.cpp
+    model/TrxSplitModel.h
     model/UsageModel.cpp
     model/UsageModel.h
     model/_ModelBase.cpp
@@ -245,8 +294,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     panel/JournalPanel.h
     panel/ReportPanel.cpp
     panel/ReportPanel.h
-    panel/ScheduledPanel.cpp
-    panel/ScheduledPanel.h
+    panel/SchedPanel.cpp
+    panel/SchedPanel.h
     panel/StockList.cpp
     panel/StockList.h
     panel/StockPanel.cpp
@@ -266,8 +315,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     manager/GeneralReportManager.h
     manager/PayeeManager.cpp
     manager/PayeeManager.h
-    manager/PreferencesManager.cpp
-    manager/PreferencesManager.h
+    manager/PrefManager.cpp
+    manager/PrefManager.h
     manager/TagManager.cpp
     manager/TagManager.h
     manager/ThemeManager.cpp
@@ -303,41 +352,41 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     dialog/MergePayeeDialog.h
     dialog/MergeTagDialog.cpp
     dialog/MergeTagDialog.h
-    dialog/TransactionFilterDialog.cpp
-    dialog/TransactionFilterDialog.h
-    dialog/TransactionLinkDialog.cpp
-    dialog/TransactionLinkDialog.h
-    dialog/TransactionShareDialog.cpp
-    dialog/TransactionShareDialog.h
-    dialog/TransactionUpdateDialog.cpp
-    dialog/TransactionUpdateDialog.h
-    dialog/ScheduledDialog.cpp
-    dialog/ScheduledDialog.h
+    dialog/SchedDialog.cpp
+    dialog/SchedDialog.h
     dialog/SplitDialog.cpp
     dialog/SplitDialog.h
     dialog/StartupDialog.cpp
     dialog/StartupDialog.h
     dialog/StockDialog.cpp
     dialog/StockDialog.h
-    dialog/TransactionDialog.cpp
-    dialog/TransactionDialog.h
+    dialog/TrxDialog.cpp
+    dialog/TrxDialog.h
+    dialog/TrxFilterDialog.cpp
+    dialog/TrxFilterDialog.h
+    dialog/TrxLinkDialog.cpp
+    dialog/TrxLinkDialog.h
+    dialog/TrxShareDialog.cpp
+    dialog/TrxShareDialog.h
+    dialog/TrxUpdateDialog.cpp
+    dialog/TrxUpdateDialog.h
 
-    preferences/AttachmentPreferences.cpp
-    preferences/AttachmentPreferences.h
-    preferences/DashboardPreferences.cpp
-    preferences/DashboardPreferences.h
-    preferences/GeneralPreferences.cpp
-    preferences/GeneralPreferences.h
-    preferences/NetworkPreferences.cpp
-    preferences/NetworkPreferences.h
-    preferences/OtherPreferences.cpp
-    preferences/OtherPreferences.h
-    preferences/TransactionPreferences.cpp
-    preferences/TransactionPreferences.h
-    preferences/ViewPreferences.cpp
-    preferences/ViewPreferences.h
-    preferences/_PreferencesBase.cpp
-    preferences/_PreferencesBase.h
+    pref/AttachmentPref.cpp
+    pref/AttachmentPref.h
+    pref/DashboardPref.cpp
+    pref/DashboardPref.h
+    pref/GeneralPref.cpp
+    pref/GeneralPref.h
+    pref/NetworkPref.cpp
+    pref/NetworkPref.h
+    pref/OtherPref.cpp
+    pref/OtherPref.h
+    pref/TrxPref.cpp
+    pref/TrxPref.h
+    pref/ViewPref.cpp
+    pref/ViewPref.h
+    pref/_PrefBase.cpp
+    pref/_PrefBase.h
 
     report/BalanceReport.cpp
     report/BalanceReport.h
@@ -353,8 +402,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     report/PayeeReport.h
     report/StocksReport.cpp
     report/StocksReport.h
-    report/TransactionsReport.cpp
-    report/TransactionsReport.h
+    report/TrxReport.cpp
+    report/TrxReport.h
     report/UsageReport.cpp
     report/UsageReport.h
     report/_ReportBase.cpp
@@ -382,6 +431,13 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     uicontrols/toolbardialog.h
     uicontrols/toolbartypes.cpp
     uicontrols/toolbartypes.h
+
+    db/dbcheck.cpp
+    db/dbcheck.h
+    db/dbupgrade.cpp
+    db/dbupgrade.h
+    db/dbwrapper.cpp
+    db/dbwrapper.h
 
     import_export/export.cpp
     import_export/export.h

@@ -49,47 +49,51 @@ void  StocksReport::refreshData()
     m_unreal_gain_loss_excl_forex = 0.0;
     m_stock_balance = 0.0;
 
-    data_holder line;
-    account_holder account;
+    DataHolder line;
+    AccountHolder account_holder;
     const wxDate today = wxDate::Today();
 
-    for (const auto& a : AccountModel::instance().get_all(AccountCol::COL_ID_ACCOUNTNAME))
-    {
-        if (AccountModel::type_id(a) != NavigatorTypes::TYPE_ID_INVESTMENT) continue;
-        if (AccountModel::status_id(a) != AccountModel::STATUS_ID_OPEN) continue;
+    for (const auto& a : AccountModel::instance().find_all(
+        AccountCol::COL_ID_ACCOUNTNAME
+    )) {
+        if (AccountModel::type_id(a) != NavigatorTypes::TYPE_ID_INVESTMENT)
+            continue;
+        if (!a.is_open())
+            continue;
 
-        account.id = a.id();
-        account.name = a.ACCOUNTNAME;
-        account.realgainloss = 0.0;
-        account.unrealgainloss = 0.0;
-        account.total = AccountModel::investment_balance(a).first;
-        account.data.clear();
+        account_holder.id = a.id();
+        account_holder.name = a.m_name;
+        account_holder.realgainloss = 0.0;
+        account_holder.unrealgainloss = 0.0;
+        account_holder.total = AccountModel::instance().get_data_investment_balance(a).first;
+        account_holder.data.clear();
 
-        for (const auto& stock : StockModel::instance().find(StockModel::HELDAT(a.ACCOUNTID)))
-        {
-            const CurrencyModel::Data* currency = AccountModel::currency(a);
-            const double today_rate = CurrencyHistoryModel::getDayRate(currency->CURRENCYID, today);
-            m_stock_balance += today_rate * StockModel::CurrentValue(stock);
-            line.realgainloss = StockModel::RealGainLoss(stock);
-            account.realgainloss += line.realgainloss;
-            line.unrealgainloss = StockModel::UnrealGainLoss(stock);
-            account.unrealgainloss += line.unrealgainloss;
-            m_unreal_gain_loss_sum_total += StockModel::UnrealGainLoss(stock, true);
-            m_real_gain_loss_sum_total += StockModel::RealGainLoss(stock, true);
+        for (const auto& stock_d : StockModel::instance().find(
+            StockCol::HELDAT(a.m_id)
+        )) {
+            const CurrencyData* currency_n = AccountModel::instance().get_data_currency_p(a);
+            const double today_rate = CurrencyHistoryModel::getDayRate(currency_n->m_id, today);
+            m_stock_balance += today_rate * StockModel::CurrentValue(stock_d);
+            line.realgainloss = StockModel::RealGainLoss(stock_d);
+            account_holder.realgainloss += line.realgainloss;
+            line.unrealgainloss = StockModel::UnrealGainLoss(stock_d);
+            account_holder.unrealgainloss += line.unrealgainloss;
+            m_unreal_gain_loss_sum_total += StockModel::UnrealGainLoss(stock_d, true);
+            m_real_gain_loss_sum_total += StockModel::RealGainLoss(stock_d, true);
             m_real_gain_loss_excl_forex += line.realgainloss * today_rate;
             m_unreal_gain_loss_excl_forex += line.unrealgainloss * today_rate;
 
-            line.name = stock.STOCKNAME;
-            line.symbol = stock.SYMBOL;
-            line.date = stock.PURCHASEDATE;
-            line.qty = stock.NUMSHARES;
-            line.purchase = StockModel::InvestmentValue(stock);
-            line.current = stock.CURRENTPRICE;
-            line.commission = stock.COMMISSION;
-            line.value = StockModel::CurrentValue(stock);
-            account.data.push_back(line);
+            line.name       = stock_d.m_name;
+            line.symbol     = stock_d.m_symbol;
+            line.date       = stock_d.m_purchase_date_;
+            line.qty        = stock_d.m_num_shares;
+            line.purchase   = StockModel::InvestmentValue(stock_d);
+            line.current    = stock_d.m_current_price;
+            line.commission = stock_d.m_commission;
+            line.value      = StockModel::CurrentValue(stock_d);
+            account_holder.data.push_back(line);
         }
-        m_stocks.push_back(account);
+        m_stocks.push_back(account_holder);
     }
 }
 
@@ -127,10 +131,9 @@ wxString StocksReport::getHTMLText()
             }
             hb.endThead();
 
-            for (const auto& acct : m_stocks)
-            {
-                const AccountModel::Data* account = AccountModel::instance().get_id(acct.id);
-                const CurrencyModel::Data* currency = AccountModel::currency(account);
+            for (const auto& acct : m_stocks) {
+                const AccountData* account_n = AccountModel::instance().get_id_data_n(acct.id);
+                const CurrencyData* currency_p = AccountModel::instance().get_data_currency_p(*account_n);
 
                 hb.startThead();
                 {
@@ -153,13 +156,16 @@ wxString StocksReport::getHTMLText()
                             hb.addTableCell(entry.name);
                             hb.addTableCell(entry.symbol);
                             hb.addTableCellDate(entry.date);
-                            hb.addTableCell(AccountModel::toString(entry.qty, account, trunc(entry.qty) == entry.qty ? 0 : 4), "text-right");
-                            hb.addCurrencyCell(entry.purchase, currency, 4);
-                            hb.addCurrencyCell(entry.current, currency, 4);
-                            hb.addCurrencyCell(entry.commission, currency, 4);
-                            hb.addCurrencyCell(entry.realgainloss, currency);
-                            hb.addCurrencyCell(entry.unrealgainloss, currency);
-                            hb.addCurrencyCell(entry.value, currency);
+                            hb.addTableCell(AccountModel::instance().value_number(
+                                *account_n, entry.qty,
+                                trunc(entry.qty) == entry.qty ? 0 : 4
+                            ), "text-right");
+                            hb.addCurrencyCell(entry.purchase, currency_p, 4);
+                            hb.addCurrencyCell(entry.current, currency_p, 4);
+                            hb.addCurrencyCell(entry.commission, currency_p, 4);
+                            hb.addCurrencyCell(entry.realgainloss, currency_p);
+                            hb.addCurrencyCell(entry.unrealgainloss, currency_p);
+                            hb.addCurrencyCell(entry.value, currency_p);
                             _tot_purchase += entry.purchase;
                             _tot_purchase_rate += entry.purchase * CurrencyHistoryModel::getDayRate(currency->CURRENCYID, entry.date);
                         }
@@ -171,9 +177,9 @@ wxString StocksReport::getHTMLText()
                         hb.addEmptyTableCell(3);
                         hb.addCurrencyCell(_tot_purchase, currency, 4);
                         hb.addEmptyTableCell(2);
-                        hb.addCurrencyCell(acct.realgainloss, currency);
-                        hb.addCurrencyCell(acct.unrealgainloss, currency);
-                        hb.addCurrencyCell(acct.total, currency);
+                        hb.addCurrencyCell(acct.realgainloss, currency_p);
+                        hb.addCurrencyCell(acct.unrealgainloss, currency_p);
+                        hb.addCurrencyCell(acct.total, currency_p);
                     }
                     _tot_purchase_tot += _tot_purchase_rate;
                     hb.endTableRow();
@@ -185,7 +191,7 @@ wxString StocksReport::getHTMLText()
             hb.startTfoot();
             {
                 // Round FX gain/loss to the scale of the base currency for display
-                int scale = pow(10, log10(CurrencyModel::instance().GetBaseCurrency()->SCALE.GetValue()));
+                int scale = pow(10, log10(CurrencyModel::instance().GetBaseCurrency()->m_scale.GetValue()));
                 double forex_real_gain_loss = std::round((m_real_gain_loss_sum_total - m_real_gain_loss_excl_forex) * scale) / scale;
                 double forex_unreal_gain_loss = std::round((m_unreal_gain_loss_sum_total - m_unreal_gain_loss_excl_forex) * scale) / scale;
 
@@ -274,44 +280,49 @@ wxString mmReportChartStocks::getHTMLText()
 
     wxTimeSpan dist;
     wxArrayString symbols;
-    for (const auto& stock : StockModel::instance().get_all(StockCol::COL_ID_SYMBOL))
-    {
-        AccountModel::Data* account = AccountModel::instance().get_id(stock.HELDAT);
-        if (AccountModel::status_id(account) != AccountModel::STATUS_ID_OPEN) continue;
-        if (symbols.Index(stock.SYMBOL) != wxNOT_FOUND) continue;
+    for (const auto& stock_d : StockModel::instance().find_all(
+        StockCol::COL_ID_SYMBOL
+    )) {
+        const AccountData* account = AccountModel::instance().get_id_data_n(
+            stock_d.m_account_id_n
+        );
+        if (!account->is_open())
+            continue;
+        if (symbols.Index(stock_d.m_symbol) != wxNOT_FOUND)
+            continue;
 
-        symbols.Add(stock.SYMBOL);
+        symbols.Add(stock_d.m_symbol);
         int dataCount = 0, freq = 1;
-        auto histData = StockHistoryModel::instance().find(
-            StockHistoryModel::SYMBOL(stock.SYMBOL),
+        auto sh_a = StockHistoryModel::instance().find(
+            StockHistoryCol::SYMBOL(stock_d.m_symbol),
             StockHistoryModel::DATE(OP_GE, m_date_range->start_date()),
-            StockHistoryModel::DATE(OP_LE, m_date_range->end_date()));
-        std::stable_sort(histData.begin(), histData.end(), StockHistoryRow::SorterByDATE());
+            StockHistoryModel::DATE(OP_LE, m_date_range->end_date())
+        );
+        std::stable_sort(sh_a.begin(), sh_a.end(), StockHistoryData::SorterByDATE());
 
-        //bool showGridLines = (histData.size() <= 366);
-        //bool pointDot = (histData.size() <= 30);
-        if (histData.size() > 366) {
-            freq = histData.size() / 366;
+        //bool showGridLines = (sh_a.size() <= 366);
+        //bool pointDot = (sh_a.size() <= 30);
+        if (sh_a.size() > 366) {
+            freq = sh_a.size() / 366;
         }
 
         GraphData gd;
         GraphSeries data;
 
-        for (const auto& hist : histData)
-        {
-            if (dataCount % freq == 0)
-            {
-                const wxDate d = StockHistoryModel::DATE(hist);
+        for (const auto& sh_d : sh_a) {
+            if (dataCount % freq == 0) {
+                const wxDate d = StockHistoryModel::DATE(sh_d);
                 gd.labels.push_back(d.FormatISODate());
-                data.values.push_back(hist.VALUE);
+                data.values.push_back(sh_d.m_price);
             }
             dataCount++;
         }
         gd.series.push_back(data);
 
-        if (!gd.series.empty())
-        {
-            hb.addHeader(1, wxString::Format("%s / %s - (%s)", stock.SYMBOL, stock.STOCKNAME, account->ACCOUNTNAME));
+        if (!gd.series.empty()) {
+            hb.addHeader(1, wxString::Format("%s / %s - (%s)",
+                stock_d.m_symbol, stock_d.m_name, account->m_name
+            ));
             gd.type = GraphData::LINE_DATETIME;
             hb.addChart(gd);
         }

@@ -31,22 +31,45 @@ class AccountDialog : public wxDialog
     wxDECLARE_DYNAMIC_CLASS(AccountDialog);
     wxDECLARE_EVENT_TABLE();
 
+private:
+    AccountData* m_account_n = nullptr;
+    AccountData m_account_d;
+    int64 m_currencyID = 0;
+    bool m_accessinfo_infocus = false;
+    wxVector<wxBitmapBundle> m_images;
+    wxString m_accessInfo;
+
+    wxNotebook*       m_notebook              = nullptr;
+    wxTextCtrl*       m_textAccountName       = nullptr;
+    wxTextCtrl*       m_notesCtrl             = nullptr;
+    mmTextCtrl*       m_initbalance_ctrl      = nullptr;
+    mmDatePickerCtrl* m_initdate_ctrl         = nullptr;
+    wxBitmapButton*   m_bitmapButtons         = nullptr;
+    wxBitmapButton*   bAttachments_           = nullptr;
+    wxCheckBox*       m_statement_lock_ctrl   = nullptr;
+    mmDatePickerCtrl* m_statement_date_ctrl   = nullptr;
+    mmTextCtrl*       m_minimum_balance_ctrl  = nullptr;
+    mmTextCtrl*       m_credit_limit_ctrl     = nullptr;
+    mmTextCtrl*       m_interest_rate_ctrl    = nullptr;
+    mmDatePickerCtrl* m_payment_due_date_ctrl = nullptr;
+    mmTextCtrl*       m_minimum_payment_ctrl  = nullptr;
+
 public:
     AccountDialog();
-    AccountDialog(AccountModel::Data* account, wxWindow* parent);
+    AccountDialog(AccountData* account, wxWindow* parent);
     ~AccountDialog();
 
-    bool Create(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , const wxString& caption = _t("New Account")
-        , const wxPoint& pos = wxDefaultPosition
-        , const wxSize& size = wxDefaultSize
-        , long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX);
+    bool Create(
+        wxWindow* parent,
+        wxWindowID id = wxID_ANY,
+        const wxString& caption = _t("New Account"),
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX
+    );
 
 private:
     void CreateControls();
-
-    // utility functions
     void OnOk(wxCommandEvent& event);
     void OnCancel(wxCommandEvent& event);
     void OnCurrency(wxCommandEvent& event);
@@ -55,33 +78,7 @@ private:
     void OnAttachments(wxCommandEvent& event);
     void OnAccountStatus(void);
     void OnAccountStatus(wxCommandEvent& event);
-
     void OnImageButton(wxCommandEvent& event);
     void OnChangeFocus(wxChildFocusEvent& event);
-
-private:
-    AccountModel::Data* m_account = nullptr;
-    wxNotebook* m_notebook = nullptr;
-    wxTextCtrl* m_textAccountName = nullptr;
-    wxTextCtrl* m_notesCtrl = nullptr;
-    mmTextCtrl* m_initbalance_ctrl = nullptr;
-    mmDatePickerCtrl* m_initdate_ctrl = nullptr;
-
-    wxVector<wxBitmapBundle> m_images;
-    wxBitmapButton* m_bitmapButtons = nullptr;
-    wxBitmapButton* bAttachments_ = nullptr;
-    wxString m_accessInfo;
-
-    wxCheckBox* m_statement_lock_ctrl = nullptr;
-    mmDatePickerCtrl* m_statement_date_ctrl = nullptr;
-    mmTextCtrl* m_minimum_balance_ctrl = nullptr;
-
-    mmTextCtrl* m_credit_limit_ctrl = nullptr;
-    mmTextCtrl* m_interest_rate_ctrl = nullptr;
-    mmDatePickerCtrl* m_payment_due_date_ctrl = nullptr;
-    mmTextCtrl* m_minimum_payment_ctrl = nullptr;
-
-    int64 m_currencyID = 0;
-    bool m_accessinfo_infocus = false;
 };
 

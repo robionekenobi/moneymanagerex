@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,14 +13,14 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #pragma once
 
-#include "_TableFactory.h"
+#include "_TableBase.h"
 
 // Columns in database table ATTACHMENT_V1
 struct AttachmentCol
@@ -86,7 +86,6 @@ struct AttachmentCol
 struct AttachmentRow
 {
     using Col = AttachmentCol;
-    using COL_ID = Col::COL_ID;
 
     int64 ATTACHMENTID; // primary key
     wxString REFTYPE;
@@ -100,17 +99,17 @@ struct AttachmentRow
 
     int64 id() const { return ATTACHMENTID; }
     void id(const int64 id) { ATTACHMENTID = id; }
-    void destroy() { delete this; }
-
-    bool equals(const AttachmentRow* r) const;
     void to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const;
-    void from_select_result(wxSQLite3ResultSet& q);
+    void to_update_stmt(wxSQLite3Statement& stmt) const;
+    AttachmentRow& from_select_result(wxSQLite3ResultSet& q);
     wxString to_json() const;
     void as_json(PrettyWriter<StringBuffer>& json_writer) const;
-    row_t to_row_t() const;
-    void to_template(html_template& t) const;
+    row_t to_html_row() const;
+    void to_html_template(html_template& t) const;
+    void destroy() { delete this; }
 
-    AttachmentRow& operator=(const AttachmentRow& other);
+    AttachmentRow& clone_from(const AttachmentRow& other);
+    bool equals(const AttachmentRow* other) const;
     bool operator< (const AttachmentRow& other) const { return id() < other.id(); }
     bool operator< (const AttachmentRow* other) const { return id() < other->id(); }
 
@@ -195,17 +194,28 @@ struct AttachmentRow
 };
 
 // Interface to database table ATTACHMENT_V1
-struct AttachmentTable : public TableFactory<AttachmentRow>
+struct AttachmentTable : public TableBase
 {
-    // Use Col::(COLUMN_NAME) until model provides similar functionality based on Data.
-    using ATTACHMENTID = Col::ATTACHMENTID;
-    using REFTYPE = Col::REFTYPE;
-    using REFID = Col::REFID;
-    using DESCRIPTION = Col::DESCRIPTION;
-    using FILENAME = Col::FILENAME;
+    using Row = AttachmentRow;
+    using Col = typename Row::Col;
 
     AttachmentTable();
-    ~AttachmentTable();
-
-    void ensure_data() override;
+    ~AttachmentTable() {}
 };
+
+inline AttachmentRow::AttachmentRow(wxSQLite3ResultSet& q)
+{
+    from_select_result(q);
+}
+
+inline void AttachmentRow::to_update_stmt(wxSQLite3Statement& stmt) const
+{
+    to_insert_stmt(stmt, id());
+}
+
+inline AttachmentRow& AttachmentRow::clone_from(const AttachmentRow& other)
+{
+    *this = other;
+    id(-1);
+    return *this;
+}

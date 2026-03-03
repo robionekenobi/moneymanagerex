@@ -20,6 +20,7 @@
 #pragma once
 
 #include "base/defs.h"
+#include "base/types.h"
 #include <map>
 #include <vector>
 #include <wx/dataview.h>
@@ -27,8 +28,6 @@
 
 class mmDatePickerCtrl;
 class mmTextCtrl;
-
-typedef wxLongLong int64;
 
 struct CurrencyHistoryRate
 {

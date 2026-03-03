@@ -27,9 +27,9 @@ Copyright (C) 2018 Stefano Giorgio (stef145g)
 #include <wx/log.h>
 
 #include "util/mmSingleton.h"
-#include "util/_choices.h"
+#include "util/mmChoice.h"
 
-#include "table/_TableBase.h"
+#include "table/_TableFactory.h"
 
 class wxSQLite3Statement;
 class wxSQLite3Database;
@@ -69,7 +69,7 @@ public:
         REFTYPE_ID_size
     };
 
-    static ChoicesName REFTYPE_CHOICES;
+    static mmChoiceNameA REFTYPE_CHOICES;
     static const wxString REFTYPE_NAME_TRANSACTION;
     static const wxString REFTYPE_NAME_STOCK;
     static const wxString REFTYPE_NAME_ASSET;
@@ -79,154 +79,18 @@ public:
     static const wxString REFTYPE_NAME_TRANSACTIONSPLIT;
     static const wxString REFTYPE_NAME_BILLSDEPOSITSPLIT;
     static const wxString reftype_name(int id);
-    static int reftype_id(const wxString& name, int default_id = -1);
+    static int reftype_id(const wxString& name);
 
 public:
     ModelBase() {};
-    virtual ~ModelBase() {};
-
-public:
-    virtual wxString GetTableStatsAsJson() const = 0;
-    virtual void show_statistics() const = 0;
-    virtual void destroyCache() = 0;
+    ~ModelBase() {};
 };
 
 inline const wxString ModelBase::reftype_name(int id)
 {
-    return REFTYPE_CHOICES.getName(id);
+    return REFTYPE_CHOICES.get_name(id);
 }
-
-inline int ModelBase::reftype_id(const wxString& name, int default_id)
+inline int ModelBase::reftype_id(const wxString& name)
 {
-    return REFTYPE_CHOICES.findName(name, default_id);
+    return REFTYPE_CHOICES.find_name_n(name);
 }
-
-template<typename TableType>
-class Model : public ModelBase, public TableType
-{
-public:
-    using Data = typename TableType::Row;
-    using Data_Set = typename TableType::RowA;
-    using TableType::save;
-    using TableType::remove;
-    using TableType::get_id;
-    using TableType::get_record;
-    using TableType::get_all;
-
-    template<typename... Args>
-    /**
-    * Command: find(const Args&... args)
-    * Args: One or more Specialised Parameters creating SQL statement conditions used after the WHERE statement.
-    * Specialised Parameters: Table_Column_Name(content)[, Table_Column_Name(content)[, ...]]
-    * Example:
-    *   AssetModel::ASSETID(2), AssetModel::ASSETTYPE(AssetModel::TYPE_ID_JEWELLERY)
-    *   produces SQL statement condition: ASSETID = 2 AND ASSETTYPE = "Jewellery"
-    * Returns a Data_Set containing the addresses of the items found.
-    * The Data_Set is empty when nothing found.
-    */
-    const Data_Set find(const Args&... args)
-    {
-        return this->find_by(true, args...);
-    }
-
-    template<typename... Args>
-    /**
-    * Command: find_or(const Args&... args)
-    * Args: One or more Specialised Parameters creating SQL statement conditions used after the WHERE statement.
-    * Specialised Parameters: Table_Column_Name(content)[, Table_Column_Name(content)[, ...]]
-    * Example:
-    *   AssetModel::ASSETID(2), AssetModel::ASSETTYPE(AssetModel::TYPE_ID_JEWELLERY)
-    *   produces SQL statement condition: ASSETID = 2 OR ASSETTYPE = "Jewellery"
-    * Returns a Data_Set containing the addresses of the items found.
-    * The Data_Set is empty when nothing found.
-    */
-    const Data_Set find_or(const Args&... args)
-    {
-        return this->find_by(false, args...);
-    }
-
-    Data* get_id(wxLongLong_t id)
-    {
-        return this->get_id(int64(id));
-    }
-
-    // Save all Data record memory instances contained
-    // in the record list (Data_Set) to the database.
-    template<class DATA>
-    int save(std::vector<DATA>& rows)
-    {
-        this->Savepoint();
-        for (auto& r : rows) {
-            if (r.id() < 0)
-                wxLogDebug("Incorrect function call to save %s", r.to_json().utf8_str());
-            this->save(&r);
-        }
-        this->ReleaseSavepoint();
-
-        return rows.size();
-    }
-
-    template<class DATA>
-    int save(std::vector<DATA*>& rows)
-    {
-        this->Savepoint();
-        for (auto& r : rows)
-            this->save(r);
-        this->ReleaseSavepoint();
-
-        return rows.size();
-    }
-
-public:
-    void preload(int max_num = 1000)
-    {
-        int i = 0;
-        for (const auto & item : get_all()) {
-            get_id(item.id());
-            if (++i >= max_num) break;
-        }
-    }
-
-    // Return accomulated table stats as a json string
-    wxString  GetTableStatsAsJson() const
-    {
-        StringBuffer json_buffer;
-        rapidjson::Writer<StringBuffer> json_writer(json_buffer);
-        json_writer.StartObject();
-        json_writer.Key("table_name");
-        json_writer.String(this->m_table_name.utf8_str());
-        json_writer.Key("cache");
-        json_writer.Int(this->m_cache.size());
-        json_writer.Key("cache_index");
-        json_writer.Int(this->m_cache_index.size());
-        json_writer.Key("hit");
-        json_writer.Int(this->m_hit);
-        json_writer.Key("miss");
-        json_writer.Int(this->m_miss);
-        json_writer.Key("skip");
-        json_writer.Int(this->m_skip);
-        json_writer.EndObject();
-
-        wxLogDebug("======== model/_ModelBase.h : GetTableStatsAsJson =======");
-        wxLogDebug("%s", wxString::FromUTF8(json_buffer.GetString()));
-
-        return wxString::FromUTF8(json_buffer.GetString());
-    }
-
-    void destroyCache()
-    {
-        if (this->m_cache.size() > 0)
-            this->destroy_cache();
-    }
-
-    // Show table statistics
-    void show_statistics() const
-    {
-        wxLogDebug("%s : (cache %zu, cache_index %zu, hit %zu, miss %zu, skip %zu)",
-            this->m_table_name,
-            this->m_cache.size(),
-            this->m_cache_index.size(),
-            this->m_hit, this->m_miss, this->m_skip
-        );
-    }
-};

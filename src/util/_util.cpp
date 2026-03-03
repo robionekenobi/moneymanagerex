@@ -49,7 +49,7 @@
 #include "model/CurrencyHistoryModel.h"
 #include "model/CurrencyModel.h"
 #include "model/InfoModel.h"
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 #include "model/SettingModel.h"
 
 #ifdef __WXMSW__
@@ -612,8 +612,8 @@ bool mmParseDisplayStringToDate(wxDateTime& date, const wxString& str_date, cons
 
 const wxDateTime getUserDefinedFinancialYear(const bool prevDayRequired)
 {
-    int day = PreferencesModel::instance().getFinancialFirstDay();
-    wxDateTime::Month month = PreferencesModel::instance().getFinancialFirstMonth();
+    int day = PrefModel::instance().getFinancialFirstDay();
+    wxDateTime::Month month = PrefModel::instance().getFinancialFirstMonth();
     int year = wxDate::GetCurrentYear();
 
     if (wxDate::GetCurrentMonth() < month) year--;
@@ -824,20 +824,19 @@ bool getOnlineCurrencyRates(wxString& msg,const int64 curr_id, const bool used_o
     const wxDateTime today = wxDateTime::Today();
     const wxString today_str = today.FormatISODate();
 
-    auto currencies = CurrencyModel::instance().find(
-        CurrencyModel::CURRENCY_SYMBOL(OP_NE, base_currency_symbol)
+    auto currency_a = CurrencyModel::instance().find(
+        CurrencyCol::CURRENCY_SYMBOL(OP_NE, base_currency_symbol)
     );
-    for (const auto& currency : currencies)
-    {
-        if (curr_id > 0 && currency.CURRENCYID != curr_id)
+    for (const auto& currency : currency_a) {
+        if (curr_id > 0 && currency.m_id != curr_id)
             continue;
-        if (curr_id < 0 && !AccountModel::is_used(currency))
+        if (curr_id < 0 && !CurrencyModel::is_used(currency.m_id))
             continue;
-        const auto symbol = currency.CURRENCY_SYMBOL;
+        const auto symbol = currency.m_symbol;
         if (symbol.IsEmpty())
             continue;
 
-        fiat[symbol] = CurrencyHistoryModel::getDayRate(currency.CURRENCYID, today_str);
+        fiat[symbol] = CurrencyHistoryModel::getDayRate(currency.m_id, today_str);
     }
 
     if (fiat.empty())
@@ -866,7 +865,7 @@ bool getOnlineCurrencyRates(wxString& msg,const int64 curr_id, const bool used_o
                     if (usd == nullptr) {
                         break; // can't use coincap without USD, since all prices are in USD so give up
                     }
-                    usd_conv_rate = usd->BASECONVRATE;
+                    usd_conv_rate = usd->m_base_conv_rate;
                 }
 
                 currency_data[item.first] = coincap_price_usd * usd_conv_rate;
@@ -877,48 +876,45 @@ bool getOnlineCurrencyRates(wxString& msg,const int64 curr_id, const bool used_o
     const auto b = CurrencyModel::GetBaseCurrency();
     msg << _t("Currency rates have been updated");
     msg << "\n\n";
-    for (const auto & item : fiat)
-    {
+    for (const auto & item : fiat) {
         const wxString value0_str(fmt::format("{:>{}}", fmt::string_view(CurrencyModel::toString(item.second, b, 4).mb_str()), 20));
         const wxString symbol(fmt::format("{:<{}}", fmt::string_view(item.first.mb_str()), 10));
 
-        if (currency_data.find(item.first) != currency_data.end())
-        {
+        if (currency_data.find(item.first) != currency_data.end()) {
             auto value1 = currency_data[item.first];
             const wxString value1_str(fmt::format("{:>{}}", fmt::string_view(CurrencyModel::toString(value1, b, 4).mb_str()), 20));
             msg << wxString::Format("%s\t%s\t\t%s\n", symbol, value0_str, value1_str);
         }
-        else
-        {
+        else {
             msg << wxString::Format("%s\t%s\t\t%s\n", symbol, value0_str, _t("Invalid value"));
         }
     }
 
+    CurrencyModel::instance().db_savepoint();
+    CurrencyHistoryModel::instance().db_savepoint();
+    for (auto& currency_d : currency_a) {
+        if (!used_only && !CurrencyModel::is_used(currency_d.m_id))
+            continue;
 
-    CurrencyModel::instance().Savepoint();
-    CurrencyHistoryModel::instance().Savepoint();
-    for (auto& currency : currencies)
-    {
-        if (!used_only && !AccountModel::is_used(currency)) continue;
-
-        const wxString currency_symbol = currency.CURRENCY_SYMBOL;
-        if (!currency_symbol.IsEmpty() && currency_data.find(currency_symbol) != currency_data.end())
-        {
+        const wxString currency_symbol = currency_d.m_symbol;
+        if (!currency_symbol.IsEmpty()
+            && currency_data.find(currency_symbol) != currency_data.end()
+        ) {
             double new_rate = currency_data[currency_symbol];
-            if (new_rate > 0)
-            {
-                if(PreferencesModel::instance().getUseCurrencyHistory())
-                    CurrencyHistoryModel::instance().addUpdate(currency.CURRENCYID, today, new_rate, CurrencyHistoryModel::ONLINE);
-                else
-                {
-                    currency.BASECONVRATE = new_rate;
-                    CurrencyModel::instance().save(&currency);
+            if (new_rate > 0) {
+                if(PrefModel::instance().getUseCurrencyHistory())
+                    CurrencyHistoryModel::instance().addUpdate(
+                        currency_d.m_id, today, new_rate, CurrencyHistoryModel::ONLINE
+                    );
+                else {
+                    currency_d.m_base_conv_rate = new_rate;
+                    CurrencyModel::instance().save_data_n(currency_d);
                 }
             }
         }
     }
-    CurrencyModel::instance().ReleaseSavepoint();
-    CurrencyHistoryModel::instance().ReleaseSavepoint();
+    CurrencyModel::instance().db_release_savepoint();
+    CurrencyHistoryModel::instance().db_release_savepoint();
 
     return true;
 }
@@ -1201,7 +1197,7 @@ bool getCoincapAssetHistory(const wxString& asset_id, wxDateTime begin_date, std
             return false;
         }
 
-        multiplier = usd->BASECONVRATE;
+        multiplier = usd->m_base_conv_rate;
     }
 
 
@@ -1912,7 +1908,7 @@ const wxString md2html(const wxString& md)
 
 wxImageList* createImageList(const int size)
 {
-    int x = (size > 0) ? size : PreferencesModel::instance().getIconSize();
+    int x = (size > 0) ? size : PrefModel::instance().getIconSize();
     return(new wxImageList(x, x, false));   // No mask creation, not needed and causes image correuption on Mac
 
 }
@@ -1921,7 +1917,7 @@ wxImageList* createImageList(const int size)
 // but this only works on some platforms!
 void mmToolTip(wxWindow* widget, const wxString& tip)
 {
-    if (PreferencesModel::instance().getShowToolTips()) widget->SetToolTip(tip);
+    if (PrefModel::instance().getShowToolTips()) widget->SetToolTip(tip);
 }
 
 wxString HTMLEncode(const wxString& input)
@@ -2016,7 +2012,7 @@ void mmSetSize(wxWindow* w)
 
 void mmFontSize(wxWindow* widget)
 {
-    int x = PreferencesModel::instance().getFontSize();
+    int x = PrefModel::instance().getFontSize();
     for (int i = 0; i < x; i++)
     {
         widget->SetFont(widget->GetFont().Larger());

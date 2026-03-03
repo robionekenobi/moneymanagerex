@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "TagLinkTable.h"
+#include "data/TagLinkData.h"
 
-template class TableFactory<TagLinkRow>;
+template class TableFactory<TagLinkTable, TagLinkData>;
+template class mmCache<int64, TagLinkData>;
 
 // List of column names in database table TAGLINK_V1,
 // in the order of TagLinkCol::COL_ID.
@@ -42,23 +44,7 @@ TagLinkRow::TagLinkRow()
     TAGID = -1;
 }
 
-TagLinkRow::TagLinkRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool TagLinkRow::equals(const TagLinkRow* r) const
-{
-    if ( TAGLINKID != r->TAGLINKID) return false;
-    if (!REFTYPE.IsSameAs(r->REFTYPE)) return false;
-    if ( REFID != r->REFID) return false;
-    if ( TAGID != r->TAGID) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void TagLinkRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, REFTYPE);
@@ -67,12 +53,14 @@ void TagLinkRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(4, id);
 }
 
-void TagLinkRow::from_select_result(wxSQLite3ResultSet& q)
+TagLinkRow& TagLinkRow::from_select_result(wxSQLite3ResultSet& q)
 {
     TAGLINKID = q.GetInt64(0);
     REFTYPE = q.GetString(1);
     REFID = q.GetInt64(2);
     TAGID = q.GetInt64(3);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -104,7 +92,7 @@ void TagLinkRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.Int64(TAGID.GetValue());
 }
 
-row_t TagLinkRow::to_row_t() const
+row_t TagLinkRow::to_html_row() const
 {
     row_t row;
 
@@ -116,7 +104,7 @@ row_t TagLinkRow::to_row_t() const
     return row;
 }
 
-void TagLinkRow::to_template(html_template& t) const
+void TagLinkRow::to_html_template(html_template& t) const
 {
     t(L"TAGLINKID") = TAGLINKID.GetValue();
     t(L"REFTYPE") = REFTYPE;
@@ -124,16 +112,14 @@ void TagLinkRow::to_template(html_template& t) const
     t(L"TAGID") = TAGID.GetValue();
 }
 
-TagLinkRow& TagLinkRow::operator=(const TagLinkRow& other)
+bool TagLinkRow::equals(const TagLinkRow* other) const
 {
-    if (this == &other) return *this;
+    if ( TAGLINKID != other->TAGLINKID) return false;
+    if (!REFTYPE.IsSameAs(other->REFTYPE)) return false;
+    if ( REFID != other->REFID) return false;
+    if ( TAGID != other->TAGID) return false;
 
-    TAGLINKID = other.TAGLINKID;
-    REFTYPE = other.REFTYPE;
-    REFID = other.REFID;
-    TAGID = other.TAGID;
-
-    return *this;
+    return true;
 }
 
 TagLinkTable::TagLinkTable()
@@ -155,17 +141,4 @@ TagLinkTable::TagLinkTable()
     m_delete_query = "DELETE FROM TAGLINK_V1 WHERE TAGLINKID = ?";
 
     m_select_query = "SELECT TAGLINKID, REFTYPE, REFID, TAGID FROM TAGLINK_V1";
-}
-
-// Destructor: clears any data records stored in memory
-TagLinkTable::~TagLinkTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void TagLinkTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

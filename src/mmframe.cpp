@@ -50,7 +50,7 @@
 #include "panel/JournalList.h"
 #include "panel/JournalPanel.h"
 #include "panel/ReportPanel.h"
-#include "panel/ScheduledPanel.h"
+#include "panel/SchedPanel.h"
 #include "panel/StockPanel.h"
 
 #include "manager/CategoryManager.h"
@@ -58,7 +58,7 @@
 #include "manager/FieldManager.h"
 #include "manager/GeneralReportManager.h"
 #include "manager/PayeeManager.h"
-#include "manager/PreferencesManager.h"
+#include "manager/PrefManager.h"
 #include "manager/TagManager.h"
 #include "manager/ThemeManager.h"
 
@@ -71,10 +71,10 @@
 #include "dialog/MergeCategoryDialog.h"
 #include "dialog/MergePayeeDialog.h"
 #include "dialog/MergeTagDialog.h"
-#include "dialog/ScheduledDialog.h"
+#include "dialog/SchedDialog.h"
 #include "dialog/StartupDialog.h"
-#include "dialog/TransactionDialog.h"
-#include "dialog/TransactionFilterDialog.h"
+#include "dialog/TrxDialog.h"
+#include "dialog/TrxFilterDialog.h"
 
 #include "report/_all.h"
 #include "report/bugreport.h"
@@ -98,7 +98,7 @@
 
 //----------------------------------------------------------------------------
 
-int REPEAT_TRANS_DELAY_TIME = 3000; // 3 seconds
+int REPEAT_FREQ_TRANS_DELAY_TIME = 3000; // 3 seconds
 //----------------------------------------------------------------------------
 
 void mmToolbarArt::DrawPlainBackground(wxDC& dc, wxWindow* WXUNUSED(wnd), const wxRect& rect)
@@ -300,7 +300,7 @@ mmGUIFrame::mmGUIFrame(
     }
 
     //Read news, if checking enabled
-    if (PreferencesModel::instance().getCheckNews())
+    if (PrefModel::instance().getCheckNews())
         getNewsRSS(websiteNewsArray_);
 
     /* Create the Controls for the frame */
@@ -396,7 +396,7 @@ mmGUIFrame::mmGUIFrame(
         autocleanDeletedTransactions();
 
         // Refresh stock quotes
-        if (!StockModel::instance().get_all().empty() &&
+        if (!StockModel::instance().find_all().empty() &&
             SettingModel::instance().getBool("REFRESH_STOCK_QUOTES_ON_OPEN", false)
         ) {
             wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, MENU_RATES);
@@ -419,8 +419,8 @@ mmGUIFrame::~mmGUIFrame()
 
     // Report database statistics
     for (const auto & model : this->m_all_models) {
-        model->show_statistics();
-        UsageModel::instance().AppendToCache(model->GetTableStatsAsJson());
+        model->debug_stat();
+        UsageModel::instance().AppendToCache(model->stat_json());
     }
 }
 //----------------------------------------------------------------------------
@@ -442,7 +442,7 @@ void mmGUIFrame::cleanup()
     CloseTheme();
 
     // Backup the database according to user requirements
-    if (PreferencesModel::instance().getDatabaseUpdated() &&
+    if (PrefModel::instance().getDatabaseUpdated() &&
         SettingModel::instance().getBool("BACKUPDB_UPDATE", false)
     ) {
         dbUpgrade::BackupDB(
@@ -458,7 +458,7 @@ void mmGUIFrame::ShutdownDatabase()
     if (!m_db)
         return;
 
-    // Cache empty on InfoTable means instance never initialized
+    // Cache empty on InfoModel means instance never initialized
     if (!InfoModel::instance().cache_empty()) {
         if (!db_lockInPlace)
             InfoModel::instance().setBool("ISUSED", false);
@@ -467,7 +467,7 @@ void mmGUIFrame::ShutdownDatabase()
     m_db->Close();
     m_db.reset();
     for (auto& model : m_all_models)
-        model->destroyCache();
+        model->reset_cache();
 }
 
 void mmGUIFrame::resetNavTreeControl()
@@ -598,107 +598,117 @@ void mmGUIFrame::OnAutoRepeatTransactionsTimer(wxTimerEvent& /*event*/)
     //Auto scheduled transaction
     bool continueExecution = false;
 
-    ScheduledModel& bills = ScheduledModel::instance();
-    for (const auto& q1 : bills.get_all()) {
-        bills.decode_fields(q1);
-        if (bills.autoExecuteManual() && bills.requireExecution()) {
-            if (bills.allowExecution() && bills.AllowTransaction(q1)) {
+    SchedModel& bills = SchedModel::instance();
+    for (const auto& q1 : bills.find_all()) {
+        if (!bills.requires_execution(q1))
+            continue;
+
+        SchedModel::RepeatNum rn;
+        if (!bills.decode_repeat_num(q1, rn))
+            continue;
+
+        bool allow = bills.AllowTransaction(q1);
+        if (rn.exec == SchedModel::REPEAT_EXEC_MANUAL) {
+            if (allow) {
                 continueExecution = true;
-                ScheduledDialog repeatTransactionsDlg(this, q1.BDID, false, true);
+                SchedDialog repeatTransactionsDlg(this, q1.BDID, false, true);
                 repeatTransactionsDlg.SetDialogHeader(_t("Auto Repeat Transactions"));
                 if (repeatTransactionsDlg.ShowModal() == wxID_OK) {
                     refreshPanelData();
                 }
-                else // stop repeat executions from occuring
+                else {
+                    // stop repeat executions from occuring
                     continueExecution = false;
+                }
             }
         }
-
-        if (bills.autoExecuteSilent() && bills.requireExecution()) {
-            if (bills.allowExecution() && bills.AllowTransaction(q1)) {
+        else if (rn.exec == SchedModel::REPEAT_EXEC_SILENT) {
+            if (allow) {
                 continueExecution = true;
-                TransactionModel::Data* tran = TransactionModel::instance().create();
-
-                tran->ACCOUNTID = q1.ACCOUNTID;
-                tran->TOACCOUNTID = q1.TOACCOUNTID;
-                tran->PAYEEID = q1.PAYEEID;
-                tran->TRANSCODE = q1.TRANSCODE;
-                tran->TRANSAMOUNT = q1.TRANSAMOUNT;
-                tran->TOTRANSAMOUNT = q1.TOTRANSAMOUNT;
-                tran->STATUS = q1.STATUS;
-                tran->TRANSACTIONNUMBER = q1.TRANSACTIONNUMBER;
-                tran->NOTES = q1.NOTES;
-                tran->CATEGID = q1.CATEGID;
-                tran->FOLLOWUPID = q1.FOLLOWUPID;
+                TrxData new_trx_d = TrxData();
                 const wxDateTime payment_date = bills.getTransDateTime(q1);
-                tran->TRANSDATE = payment_date.FormatISOCombined();
-                tran->COLOR = q1.COLOR;
-                int64 transID = TransactionModel::instance().save_trx(tran);
+                new_trx_d.ACCOUNTID         = q1.ACCOUNTID;
+                new_trx_d.TOACCOUNTID       = q1.TOACCOUNTID;
+                new_trx_d.PAYEEID           = q1.PAYEEID;
+                new_trx_d.TRANSCODE         = q1.TRANSCODE;
+                new_trx_d.TRANSAMOUNT       = q1.TRANSAMOUNT;
+                new_trx_d.TOTRANSAMOUNT     = q1.TOTRANSAMOUNT;
+                new_trx_d.STATUS            = q1.STATUS;
+                new_trx_d.TRANSACTIONNUMBER = q1.TRANSACTIONNUMBER;
+                new_trx_d.NOTES             = q1.NOTES;
+                new_trx_d.CATEGID           = q1.CATEGID;
+                new_trx_d.FOLLOWUPID        = q1.FOLLOWUPID;
+                new_trx_d.TRANSDATE         = payment_date.FormatISOCombined();
+                new_trx_d.COLOR             = q1.COLOR;
+                TrxModel::instance().save_trx(new_trx_d);
+                int64 transID = new_trx_d.id();
 
-                TransactionSplitModel::Cache checking_splits;
+                TrxSplitModel::DataA tp_a;
                 std::vector<wxArrayInt64> splitTags;
-                for (const auto &item : ScheduledModel::split(q1)) {
-                    TransactionSplitModel::Data *split = TransactionSplitModel::instance().create();
-                    split->TRANSID = transID;
-                    split->CATEGID = item.CATEGID;
-                    split->SPLITTRANSAMOUNT = item.SPLITTRANSAMOUNT;
-                    split->NOTES = item.NOTES;
-                    checking_splits.push_back(split);
+                for (const auto& qp_d : SchedModel::split(q1)) {
+                    TrxSplitData tp_d = TrxSplitData();
+                    tp_d.m_trx_id_p      = transID;
+                    tp_d.m_category_id_p = qp_d.m_category_id_p;
+                    tp_d.m_amount        = qp_d.m_amount;
+                    tp_d.m_notes         = qp_d.m_notes;
+                    tp_a.push_back(tp_d);
+
                     wxArrayInt64 tags;
-                    for (const auto& tag : TagLinkModel::instance().find(
-                        TagLinkModel::REFTYPE(ScheduledSplitModel::refTypeName),
-                        TagLinkModel::REFID(item.SPLITTRANSID)
-                    ))
-                        tags.push_back(tag.TAGID);
+                    for (const auto& tag_d : TagLinkModel::instance().find(
+                        TagLinkCol::REFTYPE(SchedSplitModel::refTypeName),
+                        TagLinkCol::REFID(qp_d.m_id)
+                    )) {
+                        tags.push_back(tag_d.TAGID);
+                    }
                     splitTags.push_back(tags);
                 }
-                TransactionSplitModel::instance().save(checking_splits);
+                TrxSplitModel::instance().save_data_a(tp_a);
 
                 // Save split tags
-                const wxString& splitRefType = TransactionSplitModel::refTypeName;
+                const wxString& splitRefType = TrxSplitModel::refTypeName;
 
-                for (size_t i = 0; i < checking_splits.size(); i++) {
-                    TagLinkModel::Data_Set splitTaglinks;
+                for (size_t i = 0; i < tp_a.size(); i++) {
+                    TagLinkModel::DataA splitTaglinks;
                     for (const auto& tagId : splitTags.at(i)) {
-                        TagLinkModel::Data* t = TagLinkModel::instance().create();
-                        t->REFTYPE = splitRefType;
-                        t->REFID = checking_splits[i]->SPLITTRANSID;
-                        t->TAGID = tagId;
-                        splitTaglinks.push_back(*t);
+                        TagLinkData new_gl_d = TagLinkData();
+                        new_gl_d.REFTYPE = splitRefType;
+                        new_gl_d.REFID   = tp_a[i].m_id;
+                        new_gl_d.TAGID   = tagId;
+                        splitTaglinks.push_back(new_gl_d);
                     }
-                    TagLinkModel::instance().update(splitTaglinks, splitRefType, checking_splits.at(i)->SPLITTRANSID);
+                    TagLinkModel::instance().update(splitTaglinks, splitRefType, tp_a.at(i).m_id);
                 }
 
                 // Copy the custom fields to the newly created transaction
-                const auto& customDataSet = FieldValueModel::instance().find(
-                    FieldValueModel::REFID(-q1.BDID)
+                const auto& fv_a = FieldValueModel::instance().find(
+                    FieldValueCol::REFID(-q1.BDID)
                 );
-                FieldValueModel::instance().Savepoint();
-                for (const auto& entry : customDataSet) {
-                    FieldValueModel::Data* fieldData = FieldValueModel::instance().create();
-                    fieldData->FIELDID = entry.FIELDID;
-                    fieldData->REFID = transID;
-                    fieldData->CONTENT = entry.CONTENT;
-                    FieldValueModel::instance().save(fieldData);
+                FieldValueModel::instance().db_savepoint();
+                for (const auto& fv_d : fv_a) {
+                    FieldValueData new_fv_d = FieldValueData();
+                    new_fv_d.FIELDID = fv_d.FIELDID;
+                    new_fv_d.REFID   = transID;
+                    new_fv_d.CONTENT = fv_d.CONTENT;
+                    FieldValueModel::instance().add_data_n(new_fv_d);
                 }
-                FieldValueModel::instance().ReleaseSavepoint();
+                FieldValueModel::instance().db_release_savepoint();
 
                 // Save base transaction tags
-                TagLinkModel::Data_Set taglinks;
-                const wxString& txnRefType = TransactionModel::refTypeName;
-                for (const auto& tag : TagLinkModel::instance().find(
-                    TagLinkModel::REFTYPE(ScheduledModel::refTypeName),
-                    TagLinkModel::REFID(q1.BDID)
+                TagLinkModel::DataA taglinks;
+                const wxString& txnRefType = TrxModel::refTypeName;
+                for (const auto& gl_d : TagLinkModel::instance().find(
+                    TagLinkCol::REFTYPE(SchedModel::refTypeName),
+                    TagLinkCol::REFID(q1.BDID)
                 )) {
-                    TagLinkModel::Data* t = TagLinkModel::instance().create();
-                    t->REFTYPE = txnRefType;
-                    t->REFID = transID;
-                    t->TAGID = tag.TAGID;
-                    taglinks.push_back(*t);
+                    TagLinkData new_gl_d = TagLinkData();
+                    new_gl_d.REFTYPE = txnRefType;
+                    new_gl_d.REFID   = transID;
+                    new_gl_d.TAGID   = gl_d.TAGID;
+                    taglinks.push_back(new_gl_d);
                 }
                 TagLinkModel::instance().update(taglinks, txnRefType, transID);
             }
-            ScheduledModel::instance().completeBDInSeries(q1.BDID);
+            SchedModel::instance().completeBDInSeries(q1.BDID);
         }
     }
 
@@ -712,7 +722,7 @@ void mmGUIFrame::OnAutoRepeatTransactionsTimer(wxTimerEvent& /*event*/)
 // Save our settings to ini db.
 void mmGUIFrame::saveSettings()
 {
-    SettingModel::instance().Savepoint();
+    SettingModel::instance().db_savepoint();
     if (!m_filename.IsEmpty()) {
         wxFileName fname(m_filename);
         SettingModel::instance().setString("LASTFILENAME", fname.GetFullPath());
@@ -733,7 +743,7 @@ void mmGUIFrame::saveSettings()
     SettingModel::instance().setInt("SIZEW", value_w);
     SettingModel::instance().setInt("SIZEH", value_h);
     SettingModel::instance().setBool("ISMAXIMIZED", this->IsMaximized());
-    SettingModel::instance().ReleaseSavepoint();
+    SettingModel::instance().db_release_savepoint();
 }
 //----------------------------------------------------------------------------
 
@@ -830,7 +840,7 @@ void mmGUIFrame::createControls()
     mmThemeMetaColour(m_nav_tree_ctrl, meta::COLOR_NAVPANEL);
     mmThemeMetaColour(m_nav_tree_ctrl, meta::COLOR_NAVPANEL_FONT, true);
 
-    const auto navIconSize = PreferencesModel::instance().getNavigationIconSize();
+    const auto navIconSize = PrefModel::instance().getNavigationIconSize();
     m_nav_tree_ctrl->SetImages(navtree_images_list(navIconSize));
     m_nav_tree_ctrl->SetIndent(10);
 
@@ -983,7 +993,7 @@ void mmGUIFrame::DoRecreateNavTreeControl(bool home_page)
 
     ///////////////////////////////////////////////////////////////////
 
-    bool hideShareAccounts = PreferencesModel::instance().getHideShareAccounts();
+    bool hideShareAccounts = PrefModel::instance().getHideShareAccounts();
 
     if (m_db) {
         /* Start Populating the dynamic data */
@@ -1000,24 +1010,28 @@ void mmGUIFrame::DoRecreateNavTreeControl(bool home_page)
         wxTreeItemId accountItem;
         wxTreeItemId sectionid;
 
-        for (const auto& account : AccountModel::instance().get_all(AccountCol::COL_ID_ACCOUNTNAME)) {
-            if ((m_temp_view == VIEW_ACCOUNTS_OPEN_STR && AccountModel::status_id(account) != AccountModel::STATUS_ID_OPEN) ||
-                (m_temp_view == VIEW_ACCOUNTS_CLOSED_STR && AccountModel::status_id(account) == AccountModel::STATUS_ID_OPEN) ||
-                (m_temp_view == VIEW_ACCOUNTS_FAVORITES_STR && !AccountModel::FAVORITEACCT(account))) {
+        for (const auto& account_d : AccountModel::instance().find_all(
+            AccountCol::COL_ID_ACCOUNTNAME
+        )) {
+            if (
+                (m_temp_view == VIEW_ACCOUNTS_OPEN_STR      && !account_d.is_open()) ||
+                (m_temp_view == VIEW_ACCOUNTS_CLOSED_STR    && !account_d.is_closed()) ||
+                (m_temp_view == VIEW_ACCOUNTS_FAVORITES_STR && !account_d.is_favorite())
+            ) {
                 continue;
             }
-            account_type = NavigatorTypes::instance().getTypeIdFromDBName(account.ACCOUNTTYPE);
+            account_type = NavigatorTypes::instance().getTypeIdFromDBName(account_d.m_type_);
             if (account_type == NavigatorTypes::TYPE_ID_SHARES && hideShareAccounts)
                 continue;
 
-            accountImg = PreferencesModel::instance().AccountImageId(account.ACCOUNTID, false);
+            accountImg = PrefModel::instance().AccountImageId(account_d.m_id, false);
 
             if (favorites &&
                 account_type != NavigatorTypes::TYPE_ID_INVESTMENT &&
-                AccountModel::FAVORITEACCT(account) &&
-                AccountModel::status_id(account) == AccountModel::STATUS_ID_OPEN)
-            {
-                accountItem = addNavTreeItem(favorites, account.ACCOUNTNAME, accountImg, mmTreeItemData::CHECKING, account.ACCOUNTID);
+                account_d.is_favorite() &&
+                account_d.is_open()
+            ) {
+                accountItem = addNavTreeItem(favorites, account_d.m_name, accountImg, mmTreeItemData::CHECKING, account_d.m_id);
             }
 
             if (account_type > NavigatorTypes::NAV_ENTRY_HELP){
@@ -1036,28 +1050,29 @@ void mmGUIFrame::DoRecreateNavTreeControl(bool home_page)
 
             switch (account_type) {
                 case NavigatorTypes::TYPE_ID_INVESTMENT: {
-                    accountItem = addNavTreeItem(accountSection[account_type], account.ACCOUNTNAME, accountImg, mmTreeItemData::INVESTMENT, account.ACCOUNTID);
+                    accountItem = addNavTreeItem(accountSection[account_type], account_d.m_name, accountImg, mmTreeItemData::INVESTMENT, account_d.m_id);
 
                     // Cash Ledger
-                    if (PreferencesModel::instance().getShowNavigatorCashLedger()) {
+                    if (PrefModel::instance().getShowNavigatorCashLedger()) {
                         wxTreeItemId stockItem = m_nav_tree_ctrl->AppendItem(accountItem, _n("Cash Ledger"), accountImg, accountImg);
-                        m_nav_tree_ctrl->SetItemData(stockItem, new mmTreeItemData(mmTreeItemData::CHECKING, account.ACCOUNTID));
+                        m_nav_tree_ctrl->SetItemData(stockItem, new mmTreeItemData(mmTreeItemData::CHECKING, account_d.m_id));
                         // find all the accounts associated with this stock portfolio
                         // just to keep compatibility for legacy Shares account data
-                        StockModel::Data_Set stocks = StockModel::instance().find(StockModel::HELDAT(account.ACCOUNTID));
-                        std::sort(stocks.begin(), stocks.end(), StockRow::SorterBySTOCKNAME());
+                        StockModel::DataA stocks = StockModel::instance().find(
+                            StockCol::HELDAT(account_d.m_id)
+                        );
+                        std::sort(stocks.begin(), stocks.end(), StockData::SorterBySTOCKNAME());
 
                         // Put the names of the Stock_entry names as children of the stock account.
                         std::unordered_set<wxString> processedStockNames;
-                        for (const auto& stock : stocks)
-                        {
-                            if (!processedStockNames.insert(stock.STOCKNAME).second)
+                        for (const auto& stock : stocks) {
+                            if (!processedStockNames.insert(stock.m_name).second)
                                 continue;
-                            AccountModel::Data* share_account = AccountModel::instance().get_key(stock.STOCKNAME);
+                            const AccountData* share_account = AccountModel::instance().get_name_data_n(stock.m_name);
                             if (!share_account)
                                 continue;
-                            stockItem = m_nav_tree_ctrl->AppendItem(accountItem, stock.STOCKNAME, accountImg, accountImg);
-                            m_nav_tree_ctrl->SetItemData(stockItem, new mmTreeItemData(mmTreeItemData::CHECKING, share_account->ACCOUNTID));
+                            stockItem = m_nav_tree_ctrl->AppendItem(accountItem, stock.m_name, accountImg, accountImg);
+                            m_nav_tree_ctrl->SetItemData(stockItem, new mmTreeItemData(mmTreeItemData::CHECKING, share_account->m_id));
                         }
                     }
                     break;
@@ -1070,12 +1085,12 @@ void mmGUIFrame::DoRecreateNavTreeControl(bool home_page)
                 case NavigatorTypes::TYPE_ID_TERM:
                 case NavigatorTypes::TYPE_ID_SHARES:
                 case NavigatorTypes::TYPE_ID_ASSET:
-                    accountItem = addNavTreeItem(accountSection[account_type], account.ACCOUNTNAME, accountImg, mmTreeItemData::CHECKING, account.ACCOUNTID);
+                    accountItem = addNavTreeItem(accountSection[account_type], account_d.m_name, accountImg, mmTreeItemData::CHECKING, account_d.m_id);
                     break;
 
                 default:
                     if (account_type < acc_size) {
-                        accountItem = addNavTreeItem(accountSection[account_type], account.ACCOUNTNAME, accountImg, mmTreeItemData::CHECKING, account.ACCOUNTID);
+                        accountItem = addNavTreeItem(accountSection[account_type], account_d.m_name, accountImg, mmTreeItemData::CHECKING, account_d.m_id);
                     }
                     break;
             }
@@ -1097,9 +1112,9 @@ void mmGUIFrame::DoRecreateNavTreeControl(bool home_page)
             }
         }
 
-        if (TransactionModel::instance().find(
-            TransactionModel::DELETEDTIME(OP_NE, wxEmptyString)
-            ).empty() || PreferencesModel::instance().getHideDeletedTransactions()
+        if (TrxModel::instance().find(
+            TrxCol::DELETEDTIME(OP_NE, wxEmptyString)
+            ).empty() || PrefModel::instance().getHideDeletedTransactions()
         ) {
             if (trash) {
                 m_nav_tree_ctrl->Delete(trash);
@@ -1341,8 +1356,8 @@ void mmGUIFrame::navTreeSelection(wxTreeItemId selectedItem)
     }
 
     case mmTreeItemData::INVESTMENT: {
-        AccountModel::Data* account = AccountModel::instance().get_id(iData->getId());
-        gotoAccountID_ = account->ACCOUNTID;
+        const AccountData* account = AccountModel::instance().get_id_data_n(iData->getId());
+        gotoAccountID_ = account->m_id;
         return createStocksAccountPage(gotoAccountID_);
     }
     case mmTreeItemData::ASSETS:
@@ -1354,11 +1369,11 @@ void mmGUIFrame::navTreeSelection(wxTreeItemId selectedItem)
         return OnTransactionReport(e);
     case mmTreeItemData::FILTER_REPORT: {
         activeReport_ = true;
-        wxSharedPtr<TransactionFilterDialog> dlg(
-            new TransactionFilterDialog(this, iData->getString())
+        wxSharedPtr<TrxFilterDialog> dlg(
+            new TrxFilterDialog(this, iData->getString())
         );
         /// FIXME memory leak
-        TransactionsReport* rs = new TransactionsReport(dlg);
+        TrxReport* rs = new TrxReport(dlg);
         return createReportsPage(rs, true);
     }
     case mmTreeItemData::BUDGET:
@@ -1395,11 +1410,11 @@ void mmGUIFrame::OnLaunchAccountWebsite(wxCommandEvent& /*event*/)
         return;
 
     int64 id = selectedItemData_->getId();
-    AccountModel::Data* account = AccountModel::instance().get_id(id);
-    if (!account)
+    const AccountData* acccount_n = AccountModel::instance().get_id_data_n(id);
+    if (!acccount_n)
         return;
 
-    wxString website = account->WEBSITE;
+    wxString website = acccount_n->m_website;
     if (!website.IsEmpty())
         wxLaunchDefaultBrowser(website);
 }
@@ -1419,13 +1434,14 @@ void mmGUIFrame::OnAccountAttachments(wxCommandEvent& /*event*/)
 
 void mmGUIFrame::OnReconcileAccount(wxCommandEvent& WXUNUSED(event))
 {
-    AccountModel::Data* account = AccountModel::instance().get_id(selectedItemData_->getId());
-    if (account) {
-        JournalPanel* cp = wxDynamicCast(panelCurrent_, JournalPanel);
-        mmReconcileDialog dlg(wxGetTopLevelParent(this), account, cp);
-        if (dlg.ShowModal() == wxID_OK) {
-            cp->refreshList();
-        }
+    const AccountData* account = AccountModel::instance().get_id_data_n(selectedItemData_->getId());
+    if (!account)
+        return;
+
+    JournalPanel* cp = wxDynamicCast(panelCurrent_, JournalPanel);
+    mmReconcileDialog dlg(wxGetTopLevelParent(this), account, cp);
+    if (dlg.ShowModal() == wxID_OK) {
+        cp->refreshList();
     }
 }
 
@@ -1436,7 +1452,7 @@ void mmGUIFrame::OnPopupEditAccount(wxCommandEvent& /*event*/)
         return;
 
     int64 id = selectedItemData_->getId();
-    AccountModel::Data* account = AccountModel::instance().get_id(id);
+    AccountData* account = AccountModel::instance().unsafe_get_id_data_n(id);
     if (!account)
         return;
 
@@ -1537,14 +1553,14 @@ void mmGUIFrame::OnPopupEditFilter(wxCommandEvent& /*event*/)
 {
     if (!m_db)
         return;
-    if (AccountModel::instance().get_all().empty())
+    if (AccountModel::instance().find_all().empty())
         return;
 
     wxString data = selectedItemData_->getString();
 
     const auto filter_settings = InfoModel::instance().getArrayString("TRANSACTIONS_FILTER");
 
-    wxSharedPtr<TransactionFilterDialog> dlg(new TransactionFilterDialog(this, -1, true, data));
+    wxSharedPtr<TrxFilterDialog> dlg(new TrxFilterDialog(this, -1, true, data));
     bool is_ok = (dlg->ShowModal() == wxID_OK);
     if (filter_settings != InfoModel::instance().getArrayString("TRANSACTIONS_FILTER")) {
         DoRecreateNavTreeControl();
@@ -1552,7 +1568,7 @@ void mmGUIFrame::OnPopupEditFilter(wxCommandEvent& /*event*/)
     }
 
     if (is_ok) {
-        TransactionsReport* rs = new TransactionsReport(dlg);
+        TrxReport* rs = new TrxReport(dlg);
         createReportsPage(rs, true);
     }
 }
@@ -1564,13 +1580,13 @@ void mmGUIFrame::OnPopupDeleteAccount(wxCommandEvent& /*event*/)
         return;
 
     int64 id = selectedItemData_->getId();
-    AccountModel::Data* account = AccountModel::instance().get_id(id);
-    if (!account)
+    const AccountData* account_n = AccountModel::instance().get_id_data_n(id);
+    if (!account_n)
         return;
 
     wxString warning_msg = _t("Do you want to delete the account?");
-    if (NavigatorTypes::instance().isInvestmentAccount(account->ACCOUNTTYPE) ||
-        NavigatorTypes::instance().isShareAccount(account->ACCOUNTTYPE)
+    if (NavigatorTypes::instance().isInvestmentAccount(account_n->m_type_) ||
+        NavigatorTypes::instance().isShareAccount(account_n->m_type_)
     )
     {
         warning_msg += "\n\n" + _t("This will also delete any associated Shares.");
@@ -1580,9 +1596,9 @@ void mmGUIFrame::OnPopupDeleteAccount(wxCommandEvent& /*event*/)
         wxYES_NO | wxNO_DEFAULT | wxICON_ERROR
     );
     if (msgDlg.ShowModal() == wxID_YES) {
-        AccountModel::instance().remove(account->ACCOUNTID);
+        AccountModel::instance().purge_id(account_n->m_id);
         mmAttachmentManage::DeleteAllAttachments(
-            AccountModel::refTypeName, account->ACCOUNTID
+            AccountModel::refTypeName, account_n->m_id
         );
         DoRecreateNavTreeControl(true);
     }
@@ -1647,8 +1663,8 @@ void mmGUIFrame::showTreePopupMenu(const wxTreeItemId& id, const wxPoint& pt)
         break;
     case mmTreeItemData::INVESTMENT: {
         acct_id = iData->getId();
-        AccountModel::Data* account = AccountModel::instance().get_id(acct_id);
-        if (account) {
+        const AccountData* account_n = AccountModel::instance().get_id_data_n(acct_id);
+        if (account_n) {
             menu.Append(MENU_TREEPOPUP_RECONCILE, _t("&Reconcile Account"));
             menu.AppendSeparator();
             menu.Append(MENU_TREEPOPUP_LAUNCHWEBSITE, _t("&Launch Account Website"));
@@ -1657,7 +1673,7 @@ void mmGUIFrame::showTreePopupMenu(const wxTreeItemId& id, const wxPoint& pt)
             menu.Append(MENU_TREEPOPUP_EDIT, _tu("&Edit Account…"));
             menu.Append(MENU_TREEPOPUP_DELETE, _tu("&Delete Account…"));
 
-            menu.Enable(MENU_TREEPOPUP_LAUNCHWEBSITE, !account->WEBSITE.IsEmpty());
+            menu.Enable(MENU_TREEPOPUP_LAUNCHWEBSITE, !account_n->m_website.IsEmpty());
             PopupMenu(&menu, pt);
         }
         break;
@@ -1665,8 +1681,8 @@ void mmGUIFrame::showTreePopupMenu(const wxTreeItemId& id, const wxPoint& pt)
     case mmTreeItemData::CHECKING: {
         acct_id = iData->getId();
         if (acct_id >= 1) { // isAccount
-            AccountModel::Data* account = AccountModel::instance().get_id(acct_id);
-            if (!account)
+            const AccountData* account_n = AccountModel::instance().get_id_data_n(acct_id);
+            if (!account_n)
                 break;
             menu.Append(MENU_TREEPOPUP_RECONCILE, _t("&Reconcile Account"));;
             menu.AppendSeparator();
@@ -1680,16 +1696,18 @@ void mmGUIFrame::showTreePopupMenu(const wxTreeItemId& id, const wxPoint& pt)
             menu.AppendSeparator();
             menu.Append(MENU_TREEPOPUP_DELETE, _tu("&Delete Account…"));
 
-            menu.Enable(MENU_TREEPOPUP_LAUNCHWEBSITE, !account->WEBSITE.IsEmpty());
-            menu.Enable(MENU_TREEPOPUP_REALLOCATE, !NavigatorTypes::instance().isShareAccount(account->ACCOUNTTYPE) &&
-                                                   !NavigatorTypes::instance().isInvestmentAccount(account->ACCOUNTTYPE) &&
-                                                   !NavigatorTypes::instance().isAssetAccount(account->ACCOUNTTYPE));
+            menu.Enable(MENU_TREEPOPUP_LAUNCHWEBSITE, !account_n->m_website.IsEmpty());
+            menu.Enable(MENU_TREEPOPUP_REALLOCATE,
+                !NavigatorTypes::instance().isShareAccount(account_n->m_type_) &&
+                !NavigatorTypes::instance().isInvestmentAccount(account_n->m_type_) &&
+                !NavigatorTypes::instance().isAssetAccount(account_n->m_type_)
+            );
             PopupMenu(&menu, pt);
         }
         break;
     } }
-    if (acct_id == -1 || acct_id <= -3) // isAllTrans/Stock Portfolios, isGroup
-    {
+    // isAllTrans/Stock Portfolios, isGroup
+    if (acct_id == -1 || acct_id <= -3) {
         menu.Append(
             MENU_TREEPOPUP_ACCOUNT_NEW,
             _tu("&New Account…")
@@ -1944,8 +1962,11 @@ void mmGUIFrame::createMenu()
         ->Check(m_app->getGUILanguage() == wxLANGUAGE_DEFAULT);
     for (auto & file : lang_files) {
         const wxLanguageInfo* info = wxLocale::FindLanguageInfo(file);
-        if (info)
-            langs[wxGetTranslation(info->Description)] = std::make_pair(info->Language, info->CanonicalName);
+        if (info) {
+            //wxString label = wxGetTranslation(info->Description);
+            wxString label = info->CanonicalName + " " + info->DescriptionNative;
+            langs[label] = std::make_pair(info->Language, info->CanonicalName);
+        }
     }
     langs[wxGetTranslation(wxLocale::GetLanguageName(wxLANGUAGE_ENGLISH_US))] = std::make_pair(wxLANGUAGE_ENGLISH_US, "en_US");
     for (auto const& lang : langs) {
@@ -2221,14 +2242,14 @@ void mmGUIFrame::createMenu()
     menuBar_->Append(menuHelp, _t("&Help"));
     SetMenuBar(menuBar_);
 
-    menuBar_->Check(MENU_VIEW_HIDE_SHARE_ACCOUNTS, !PreferencesModel::instance().getHideShareAccounts());
-    menuBar_->Check(MENU_VIEW_HIDE_DELETED_TRANSACTIONS, !PreferencesModel::instance().getHideDeletedTransactions());
-    menuBar_->Check(MENU_VIEW_BUDGET_FINANCIAL_YEARS, PreferencesModel::instance().getBudgetFinancialYears());
-    menuBar_->Check(MENU_VIEW_BUDGET_TRANSFER_TOTAL, PreferencesModel::instance().getBudgetIncludeTransfers());
-    menuBar_->Check(MENU_VIEW_BUDGET_CATEGORY_SUMMARY, PreferencesModel::instance().getBudgetSummaryWithoutCategories());
-    menuBar_->Check(MENU_VIEW_IGNORE_FUTURE_TRANSACTIONS, PreferencesModel::instance().getIgnoreFutureTransactions());
-    menuBar_->Check(MENU_VIEW_SHOW_TOOLTIPS, PreferencesModel::instance().getShowToolTips());
-    menuBar_->Check(MENU_VIEW_SHOW_MONEYTIPS, PreferencesModel::instance().getShowMoneyTips());
+    menuBar_->Check(MENU_VIEW_HIDE_SHARE_ACCOUNTS, !PrefModel::instance().getHideShareAccounts());
+    menuBar_->Check(MENU_VIEW_HIDE_DELETED_TRANSACTIONS, !PrefModel::instance().getHideDeletedTransactions());
+    menuBar_->Check(MENU_VIEW_BUDGET_FINANCIAL_YEARS, PrefModel::instance().getBudgetFinancialYears());
+    menuBar_->Check(MENU_VIEW_BUDGET_TRANSFER_TOTAL, PrefModel::instance().getBudgetIncludeTransfers());
+    menuBar_->Check(MENU_VIEW_BUDGET_CATEGORY_SUMMARY, PrefModel::instance().getBudgetSummaryWithoutCategories());
+    menuBar_->Check(MENU_VIEW_IGNORE_FUTURE_TRANSACTIONS, PrefModel::instance().getIgnoreFutureTransactions());
+    menuBar_->Check(MENU_VIEW_SHOW_TOOLTIPS, PrefModel::instance().getShowToolTips());
+    menuBar_->Check(MENU_VIEW_SHOW_MONEYTIPS, PrefModel::instance().getShowMoneyTips());
 }
 //----------------------------------------------------------------------------
 
@@ -2246,7 +2267,7 @@ void mmGUIFrame::createToolBar()
 
 void  mmGUIFrame::PopulateToolBar(bool update)
 {
-    const int toolbar_icon_size = PreferencesModel::instance().getToolbarIconSize();
+    const int toolbar_icon_size = PrefModel::instance().getToolbarIconSize();
     toolBar_->ClearTools();
     ToolBarEntries::ToolBarEntry* ainfo = ToolBarEntries::instance().getFirstEntry();
     while (ainfo != nullptr) {
@@ -2311,14 +2332,14 @@ void mmGUIFrame::InitializeModelTables()
     m_all_models.push_back(&StockHistoryModel::instance(m_db.get()));
     m_all_models.push_back(&AccountModel::instance(m_db.get()));
     m_all_models.push_back(&PayeeModel::instance(m_db.get()));
-    m_all_models.push_back(&TransactionModel::instance(m_db.get()));
+    m_all_models.push_back(&TrxModel::instance(m_db.get()));
     m_all_models.push_back(&CurrencyModel::instance(m_db.get()));
     m_all_models.push_back(&CurrencyHistoryModel::instance(m_db.get()));
     m_all_models.push_back(&BudgetPeriodModel::instance(m_db.get()));
     m_all_models.push_back(&CategoryModel::instance(m_db.get()));
-    m_all_models.push_back(&ScheduledModel::instance(m_db.get()));
-    m_all_models.push_back(&TransactionSplitModel::instance(m_db.get()));
-    m_all_models.push_back(&ScheduledSplitModel::instance(m_db.get()));
+    m_all_models.push_back(&SchedModel::instance(m_db.get()));
+    m_all_models.push_back(&TrxSplitModel::instance(m_db.get()));
+    m_all_models.push_back(&SchedSplitModel::instance(m_db.get()));
     m_all_models.push_back(&BudgetModel::instance(m_db.get()));
     m_all_models.push_back(&ReportModel::instance(m_db.get()));
     m_all_models.push_back(&AttachmentModel::instance(m_db.get()));
@@ -2326,8 +2347,8 @@ void mmGUIFrame::InitializeModelTables()
     m_all_models.push_back(&FieldModel::instance(m_db.get()));
     m_all_models.push_back(&TagModel::instance(m_db.get()));
     m_all_models.push_back(&TagLinkModel::instance(m_db.get()));
-    m_all_models.push_back(&TransactionLinkModel::instance(m_db.get()));
-    m_all_models.push_back(&TransactionShareModel::instance(m_db.get()));
+    m_all_models.push_back(&TrxLinkModel::instance(m_db.get()));
+    m_all_models.push_back(&TrxShareModel::instance(m_db.get()));
 }
 
 bool mmGUIFrame::createDataStore(const wxString& fileName, const wxString& pwd, bool openingNew)
@@ -2335,7 +2356,7 @@ bool mmGUIFrame::createDataStore(const wxString& fileName, const wxString& pwd, 
     if (m_db) {
         ShutdownDatabase();
         // Backup the database according to user requirements
-        if (PreferencesModel::instance().getDatabaseUpdated() &&
+        if (PrefModel::instance().getDatabaseUpdated() &&
             SettingModel::instance().getBool("BACKUPDB_UPDATE", false)
         ) {
             dbUpgrade::BackupDB(
@@ -2343,7 +2364,7 @@ bool mmGUIFrame::createDataStore(const wxString& fileName, const wxString& pwd, 
                 dbUpgrade::BACKUPTYPE::CLOSE,
                 SettingModel::instance().getInt("MAX_BACKUP_FILES", 4)
             );
-            PreferencesModel::instance().setDatabaseUpdated(false);
+            PrefModel::instance().setDatabaseUpdated(false);
         }
     }
 
@@ -2437,29 +2458,29 @@ bool mmGUIFrame::createDataStore(const wxString& fileName, const wxString& pwd, 
         wxString sSettings = InfoModel::instance().getString("HIDDEN_CATEGS_ID", "");
         if (!sSettings.empty()) {
             wxStringTokenizer token(sSettings, ";");
-            CategoryModel::instance().Savepoint();
+            CategoryModel::instance().db_savepoint();
             while (token.HasMoreTokens()) {
                 wxString catData = token.GetNextToken();
                 wxLongLong_t catID = 0;
                 wxLongLong_t subCatID = 0;
                 if (2 == sscanf(catData.mb_str(),"*%lld:%lld*", &catID, &subCatID)) {
                     if (subCatID == -1) {
-                        CategoryModel::Data* cat = CategoryModel::instance().get_id(catID);
-                        if (cat && cat->CATEGID != -1) {
-                            cat->ACTIVE = 0;
-                            CategoryModel::instance().save(cat);
+                        CategoryData* cat_n = CategoryModel::instance().unsafe_get_id_data_n(catID);
+                        if (cat_n && cat_n->m_id != -1) {
+                            cat_n->m_active = false;
+                            CategoryModel::instance().unsafe_update_data_n(cat_n);
                         }
                     }
                     else {
-                        CategoryModel::Data* subcat = CategoryModel::instance().get_id(subCatID);
-                        if (subcat && subcat->CATEGID != -1) {
-                            subcat->ACTIVE = 0;
-                            CategoryModel::instance().save(subcat);
+                        CategoryData* subcat_n = CategoryModel::instance().unsafe_get_id_data_n(subCatID);
+                        if (subcat_n && subcat_n->m_id != -1) {
+                            subcat_n->m_active = false;
+                            CategoryModel::instance().unsafe_update_data_n(subcat_n);
                         }
                     }
                 }
             }
-            CategoryModel::instance().ReleaseSavepoint();
+            CategoryModel::instance().db_release_savepoint();
             InfoModel::instance().setString("HIDDEN_CATEGS_ID", "");
         }
     }
@@ -2533,8 +2554,8 @@ void mmGUIFrame::SetDataBaseParameters(const wxString& fileName)
 
     if (m_db) {
         m_filename = fileName;
-        /* Set InfoTable Options into memory */
-        PreferencesModel::instance().load();
+        /* Set Info Options into memory */
+        PrefModel::instance().load();
     }
     else {
         m_filename.Clear();
@@ -2573,7 +2594,7 @@ bool mmGUIFrame::openFile(const wxString& fileName, bool openingNew, const wxStr
         InfoModel::instance().setBool("ISUSED", true);
         db_lockInPlace = false;
         NavigatorTypes::instance().LoadFromDB();
-        autoRepeatTransactionsTimer_.Start(REPEAT_TRANS_DELAY_TIME, wxTIMER_ONE_SHOT);
+        autoRepeatTransactionsTimer_.Start(REPEAT_FREQ_TRANS_DELAY_TIME, wxTIMER_ONE_SHOT);
     }
     else
         return false;
@@ -2622,7 +2643,7 @@ void mmGUIFrame::OnOpen(wxCommandEvent& /*event*/)
         saveSettings();
         if (m_db) {
             autocleanDeletedTransactions();
-            if (!StockModel::instance().get_all().empty() &&
+            if (!StockModel::instance().find_all().empty() &&
                 SettingModel::instance().getBool("REFRESH_STOCK_QUOTES_ON_OPEN", false)
             ) {
                 wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, MENU_RATES);
@@ -2948,8 +2969,8 @@ void mmGUIFrame::OnImportQIF(wxCommandEvent& /*event*/)
     RefreshNavigationTree();
     if (account_id > 0) {
         setGotoAccountID(account_id);
-        AccountModel::Data* account = AccountModel::instance().get_id(account_id);
-        selectNavTreeItem(account->ACCOUNTNAME);
+        const AccountData* account = AccountModel::instance().get_id_data_n(account_id);
+        selectNavTreeItem(account->m_name);
         wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, MENU_GOTOACCOUNT);
         this->GetEventHandler()->AddPendingEvent(evt);
     }
@@ -2972,7 +2993,7 @@ void mmGUIFrame::OnImportOFX(wxCommandEvent& /*event*/)
 
 void mmGUIFrame::OnImportUniversalCSV(wxCommandEvent& /*event*/)
 {
-    if (AccountModel::instance().get_all().empty()) {
+    if (AccountModel::instance().find_all().empty()) {
         wxMessageBox(_t("No account available to import"), _t("Universal CSV Import"), wxOK | wxICON_WARNING);
         return;
     }
@@ -2980,10 +3001,10 @@ void mmGUIFrame::OnImportUniversalCSV(wxCommandEvent& /*event*/)
     mmUnivCSVDialog univCSVDialog(this, mmUnivCSVDialog::DIALOG_TYPE_IMPORT_CSV, gotoAccountID_);
     univCSVDialog.ShowModal();
     if (univCSVDialog.isImportCompletedSuccessfully()) {
-        AccountModel::Data* account = AccountModel::instance().get_id(univCSVDialog.ImportedAccountID());
-        if (account) {
-            createCheckingPage(account->ACCOUNTID);
-            selectNavTreeItem(account->ACCOUNTNAME);
+        const AccountData* account_n = AccountModel::instance().get_id_data_n(univCSVDialog.ImportedAccountID());
+        if (account_n) {
+            createCheckingPage(account_n->m_id);
+            selectNavTreeItem(account_n->m_name);
         }
     }
 }
@@ -2991,7 +3012,7 @@ void mmGUIFrame::OnImportUniversalCSV(wxCommandEvent& /*event*/)
 
 void mmGUIFrame::OnImportXML(wxCommandEvent& /*event*/)
 {
-    if (AccountModel::instance().get_all().empty()) {
+    if (AccountModel::instance().find_all().empty()) {
         wxMessageBox(_t("No account available to import"), _t("Universal CSV Import"), wxOK | wxICON_WARNING);
         return;
     }
@@ -2999,10 +3020,10 @@ void mmGUIFrame::OnImportXML(wxCommandEvent& /*event*/)
     mmUnivCSVDialog univCSVDialog(this, mmUnivCSVDialog::DIALOG_TYPE_IMPORT_XML, gotoAccountID_);
     univCSVDialog.ShowModal();
     if (univCSVDialog.isImportCompletedSuccessfully()) {
-        AccountModel::Data* account = AccountModel::instance().get_id(univCSVDialog.ImportedAccountID());
-        if (account) {
-            createCheckingPage(account->ACCOUNTID);
-            selectNavTreeItem(account->ACCOUNTNAME);
+        const AccountData* account_n = AccountModel::instance().get_id_data_n(univCSVDialog.ImportedAccountID());
+        if (account_n) {
+            createCheckingPage(account_n->m_id);
+            selectNavTreeItem(account_n->m_name);
         }
     }
 }
@@ -3035,10 +3056,10 @@ void mmGUIFrame::OnNewAccount(wxCommandEvent& /*event*/)
     wizard->RunIt();
 
     if (wizard->acctID_ != -1) {
-        AccountModel::Data* account = AccountModel::instance().get_id(wizard->acctID_);
+        AccountData* account = AccountModel::instance().unsafe_get_id_data_n(wizard->acctID_);
         AccountDialog dlg(account, this);
         dlg.ShowModal();
-        if (NavigatorTypes::instance().isAssetAccount(account->ACCOUNTTYPE)) {
+        if (NavigatorTypes::instance().isAssetAccount(account->m_type_)) {
             wxMessageBox(_t(
                 "Asset Accounts hold Asset transactions\n\n"
                 "Asset transactions are created within the Assets View\n"
@@ -3047,7 +3068,7 @@ void mmGUIFrame::OnNewAccount(wxCommandEvent& /*event*/)
             ), _t("Asset Account Creation"));
         }
 
-        else if (NavigatorTypes::instance().isShareAccount(account->ACCOUNTTYPE)) {
+        else if (NavigatorTypes::instance().isShareAccount(account->m_type_)) {
             wxMessageBox(_tu(
                 "Share Accounts hold Share transactions\n\n"
                 "Share transactions are created within the Stock Portfolio View\n"
@@ -3092,7 +3113,7 @@ void mmGUIFrame::refreshPanelData()
         wxDynamicCast(panelCurrent_, AssetPanel)->RefreshList();
         break;
     case mmID_BILLS:
-        wxDynamicCast(panelCurrent_, ScheduledPanel)->RefreshList();
+        wxDynamicCast(panelCurrent_, SchedPanel)->RefreshList();
         break;
     case mmID_BUDGET:
         wxDynamicCast(panelCurrent_, BudgetPanel)->RefreshList();
@@ -3134,11 +3155,14 @@ void mmGUIFrame::OnOrgPayees(wxCommandEvent& /*event*/)
     dlg.ShowModal();
     if (dlg.getAddActionRequested()) { // show transaction report
         std::list<int64> selections = dlg.getSelectedPayees();
-        PayeeModel::Data *payee = PayeeModel::instance().get_id(selections.front());
-        wxString filter = wxString::Format("{\"LABEL\":\"%s\",\"PAYEE\":\"%s\"}",_t("Transactions per payee"), payee->PAYEENAME);
-        wxSharedPtr<TransactionFilterDialog> pdlg(new TransactionFilterDialog(this, filter));
+        const PayeeData *payee_n = PayeeModel::instance().get_id_data_n(selections.front());
+        wxString filter = wxString::Format("{\"LABEL\":\"%s\",\"PAYEE\":\"%s\"}",
+            _t("Transactions per payee"),
+            payee_n->m_name
+        );
+        wxSharedPtr<TrxFilterDialog> pdlg(new TrxFilterDialog(this, filter));
         if (pdlg->ShowModal() == wxID_OK) {
-            TransactionsReport* rs = new TransactionsReport(pdlg);
+            TrxReport* rs = new TrxReport(pdlg);
             createReportsPage(rs, true);
         }
     }
@@ -3168,8 +3192,8 @@ void mmGUIFrame::OnNewTransaction(wxCommandEvent& event)
     if (!m_db)
         return;
 
-    if (AccountModel::instance().all_checking_account_names().empty()) return;
-    TransactionDialog dlg(this, gotoAccountID_, {0, false});
+    if (AccountModel::instance().find_all_name_a().empty()) return;
+    TrxDialog dlg(this, gotoAccountID_, {0, false});
 
     int i = dlg.ShowModal();
     if (i == wxID_CANCEL)
@@ -3177,10 +3201,10 @@ void mmGUIFrame::OnNewTransaction(wxCommandEvent& event)
 
     gotoAccountID_ = dlg.GetAccountID();
     gotoTransID_ = { dlg.GetTransactionID(), 0 };
-    AccountModel::Data * account = AccountModel::instance().get_id(gotoAccountID_);
-    if (account) {
+    const AccountData * account_n = AccountModel::instance().get_id_data_n(gotoAccountID_);
+    if (account_n) {
         createCheckingPage(gotoAccountID_);
-        selectNavTreeItem(account->ACCOUNTNAME);
+        selectNavTreeItem(account_n->m_name);
     }
 
     if (i == wxID_NEW)
@@ -3191,17 +3215,17 @@ void mmGUIFrame::OnNewTransaction(wxCommandEvent& event)
 void mmGUIFrame::OnTransactionReport(wxCommandEvent& WXUNUSED(event))
 {
     if (!m_db) return;
-    if (AccountModel::instance().get_all().empty()) return;
+    if (AccountModel::instance().find_all().empty()) return;
 
     const auto filter_settings = InfoModel::instance().getArrayString("TRANSACTIONS_FILTER");
 
-    wxSharedPtr<TransactionFilterDialog> dlg(new TransactionFilterDialog(this, -1, true));
+    wxSharedPtr<TrxFilterDialog> dlg(new TrxFilterDialog(this, -1, true));
     bool is_ok = (dlg->ShowModal() == wxID_OK);
     if (filter_settings != InfoModel::instance().getArrayString("TRANSACTIONS_FILTER")) {
         DoRecreateNavTreeControl();
     }
     if (is_ok) {
-        TransactionsReport* rs = new TransactionsReport(dlg);
+        TrxReport* rs = new TrxReport(dlg);
         setNavTreeSection(_t("Transaction Report"));
         createReportsPage(rs, true);
     }
@@ -3215,9 +3239,9 @@ void mmGUIFrame::OnBudgetSetupDialog(wxCommandEvent& WXUNUSED(event))
     if (!m_db)
         return;
 
-    const auto a = BudgetPeriodModel::instance().get_all(BudgetPeriodCol::COL_ID_BUDGETYEARNAME).to_json();
+    const auto a = BudgetPeriodModel::instance().find_all(BudgetPeriodCol::COL_ID_BUDGETYEARNAME).to_json();
     BudgetYearDialog(this).ShowModal();
-    const auto b = BudgetPeriodModel::instance().get_all(BudgetPeriodCol::COL_ID_BUDGETYEARNAME).to_json();
+    const auto b = BudgetPeriodModel::instance().find_all(BudgetPeriodCol::COL_ID_BUDGETYEARNAME).to_json();
     if (a != b)
         DoRecreateNavTreeControl(true);
     setNavTreeSection(_t("Budget Planner"));
@@ -3248,15 +3272,15 @@ void mmGUIFrame::OnOptions(wxCommandEvent& /*event*/)
     if (!m_db.get())
         return;
 
-    PreferencesManager systemOptions(this, this->m_app);
+    PrefManager systemOptions(this, this->m_app);
     if (systemOptions.ShowModal() == wxID_OK) {
         //set the View Menu Option items the same as the options saved.
-        menuBar_->FindItem(MENU_VIEW_BUDGET_FINANCIAL_YEARS)->Check(PreferencesModel::instance().getBudgetFinancialYears());
-        menuBar_->FindItem(MENU_VIEW_BUDGET_TRANSFER_TOTAL)->Check(PreferencesModel::instance().getBudgetIncludeTransfers());
-        menuBar_->FindItem(MENU_VIEW_BUDGET_CATEGORY_SUMMARY)->Check(PreferencesModel::instance().getBudgetSummaryWithoutCategories());
-        menuBar_->FindItem(MENU_VIEW_IGNORE_FUTURE_TRANSACTIONS)->Check(PreferencesModel::instance().getIgnoreFutureTransactions());
-        menuBar_->FindItem(MENU_VIEW_SHOW_TOOLTIPS)->Check(PreferencesModel::instance().getShowToolTips());
-        menuBar_->FindItem(MENU_VIEW_SHOW_MONEYTIPS)->Check(PreferencesModel::instance().getShowMoneyTips());
+        menuBar_->FindItem(MENU_VIEW_BUDGET_FINANCIAL_YEARS)->Check(PrefModel::instance().getBudgetFinancialYears());
+        menuBar_->FindItem(MENU_VIEW_BUDGET_TRANSFER_TOTAL)->Check(PrefModel::instance().getBudgetIncludeTransfers());
+        menuBar_->FindItem(MENU_VIEW_BUDGET_CATEGORY_SUMMARY)->Check(PrefModel::instance().getBudgetSummaryWithoutCategories());
+        menuBar_->FindItem(MENU_VIEW_IGNORE_FUTURE_TRANSACTIONS)->Check(PrefModel::instance().getIgnoreFutureTransactions());
+        menuBar_->FindItem(MENU_VIEW_SHOW_TOOLTIPS)->Check(PrefModel::instance().getShowToolTips());
+        menuBar_->FindItem(MENU_VIEW_SHOW_MONEYTIPS)->Check(PrefModel::instance().getShowMoneyTips());
         menuBar_->Refresh();
         menuBar_->Update();
         refreshPanelData();
@@ -3388,7 +3412,7 @@ void mmGUIFrame::OnBeNotified(wxCommandEvent& /*event*/)
     SettingModel::instance().setString(INIDB_NEWS_LAST_READ_DATE, wxDate::Today().FormatISODate());
     wxLaunchDefaultBrowser(mmex::weblink::News);
 
-    int toolbar_icon_size = PreferencesModel::instance().getToolbarIconSize();
+    int toolbar_icon_size = PrefModel::instance().getToolbarIconSize();
     //toolBar_->SetToolBitmapSize(wxSize(toolbar_icon_size, toolbar_icon_size));
     toolBar_->SetToolBitmap(MENU_ANNOUNCEMENTMAILING, mmBitmapBundle(png::NEWS, toolbar_icon_size));
 
@@ -3450,7 +3474,7 @@ void mmGUIFrame::showBeginAppDialog(bool fromScratch)
         break;
     }
     case wxID_SETUP: {
-        // auto language = PreferencesModel::instance().getLanguageID(true);
+        // auto language = PrefModel::instance().getLanguageID(true);
         break;
     }
     case wxID_EXIT:
@@ -3590,13 +3614,13 @@ void mmGUIFrame::createBillsDeposits()
 
     m_nav_tree_ctrl->SetEvtHandlerEnabled(false);
     if (panelCurrent_->GetId() == mmID_BILLS) {
-        ScheduledPanel* billsDepositsPanel = wxDynamicCast(panelCurrent_, ScheduledPanel);
+        SchedPanel* billsDepositsPanel = wxDynamicCast(panelCurrent_, SchedPanel);
         billsDepositsPanel->RefreshList();
     }
     else {
         DoWindowsFreezeThaw(homePanel_);
         wxSizer *sizer = cleanupHomePanel();
-        panelCurrent_ = new ScheduledPanel(homePanel_, mmID_BILLS);
+        panelCurrent_ = new SchedPanel(homePanel_, mmID_BILLS);
 
         sizer->Add(panelCurrent_, 1, wxGROW | wxALL, 1);
 
@@ -3671,8 +3695,8 @@ void mmGUIFrame::createCheckingPage(int64 checking_id, const std::vector<int64> 
     // If this differs from before then we need to rebuild
     bool newCreditDisplayed = false;
     if (checking_id >= 1) {
-        AccountModel::Data* account = AccountModel::instance().get_id(checking_id);
-        newCreditDisplayed = (account->CREDITLIMIT != 0);
+        const AccountData* account = AccountModel::instance().get_id_data_n(checking_id);
+        newCreditDisplayed = (account->m_credit_limit != 0);
     }
 
     m_nav_tree_ctrl->SetEvtHandlerEnabled(false);
@@ -3762,11 +3786,11 @@ void mmGUIFrame::OnGotoAccount(wxCommandEvent& event)
                 wxLongLong_t id = -1;
                 accid.ToLongLong(&id);
                 setGotoAccountID(id);
-                AccountModel::Data *account = AccountModel::instance().get_id(gotoAccountID_);
-                if (account) {
-                    if (AccountModel::type_id(account) != NavigatorTypes::TYPE_ID_INVESTMENT) {
+                const AccountData* account_n = AccountModel::instance().get_id_data_n(gotoAccountID_);
+                if (account_n) {
+                    if (AccountModel::type_id(*account_n) != NavigatorTypes::TYPE_ID_INVESTMENT) {
                         createCheckingPage(gotoAccountID_);
-                        selectNavTreeItem(account->ACCOUNTNAME);
+                        selectNavTreeItem(account_n->m_name);
                     }
                 }
             }
@@ -3778,11 +3802,11 @@ void mmGUIFrame::OnGotoAccount(wxCommandEvent& event)
                 wxLongLong_t id = -1;
                 accid.ToLongLong(&id);
                 setGotoAccountID(id);
-                AccountModel::Data *account = AccountModel::instance().get_id(gotoAccountID_);
-                if (account) {
-                    if (AccountModel::type_id(account) == NavigatorTypes::TYPE_ID_INVESTMENT) {
+                const AccountData* account_n = AccountModel::instance().get_id_data_n(gotoAccountID_);
+                if (account_n) {
+                    if (AccountModel::type_id(*account_n) == NavigatorTypes::TYPE_ID_INVESTMENT) {
                         createStocksAccountPage(gotoAccountID_);
-                        selectNavTreeItem(account->ACCOUNTNAME);
+                        selectNavTreeItem(account_n->m_name);
                     }
                 }
             }
@@ -3860,39 +3884,45 @@ void mmGUIFrame::OnRates(wxCommandEvent& WXUNUSED(event))
     wxString msg;
     getOnlineCurrencyRates(msg);
 
-    StockModel::Data_Set stock_list = StockModel::instance().get_all();
-    if (!stock_list.empty()) {
+    StockModel::DataA stock_a = StockModel::instance().find_all();
+    if (!stock_a.empty()) {
 
         std::map<wxString, double> symbols;
-        for (const auto& stock : stock_list) {
-            const wxString symbol = stock.SYMBOL.Upper();
+        for (const auto& stock_d : stock_a) {
+            const wxString symbol = stock_d.m_symbol.Upper();
             if (symbol.IsEmpty()) continue;
-            symbols[symbol] = stock.CURRENTPRICE;
+            symbols[symbol] = stock_d.m_current_price;
         }
 
         std::map<wxString, double> stocks_data;
         if (get_yahoo_prices(symbols, stocks_data, "", msg, yahoo_price_type::SHARES)) {
-            StockHistoryModel::instance().Savepoint();
-            for (auto& s : stock_list) {
-                std::map<wxString, double>::const_iterator it = stocks_data.find(s.SYMBOL.Upper());
+            StockHistoryModel::instance().db_savepoint();
+            for (auto& stock_d : stock_a) {
+                std::map<wxString, double>::const_iterator it = stocks_data.find(stock_d.m_symbol.Upper());
                 if (it == stocks_data.end())
                     continue;
 
                 double dPrice = it->second;
 
                 if (dPrice != 0) {
-                    msg += wxString::Format("%s\t: %0.6f -> %0.6f\n", s.SYMBOL, s.CURRENTPRICE, dPrice);
-                    s.CURRENTPRICE = dPrice;
-                    if (s.STOCKNAME.empty()) s.STOCKNAME = s.SYMBOL;
-                    StockModel::instance().save(&s);
-                    StockHistoryModel::instance().addUpdate(s.SYMBOL
-                        , wxDate::Now(), dPrice, StockHistoryModel::ONLINE);
+                    msg += wxString::Format("%s\t: %0.6f -> %0.6f\n",
+                        stock_d.m_symbol, stock_d.m_current_price, dPrice
+                    );
+                    stock_d.m_current_price = dPrice;
+                    if (stock_d.m_name.empty())
+                        stock_d.m_name = stock_d.m_symbol;
+                    StockModel::instance().save_data_n(stock_d);
+                    StockHistoryModel::instance().addUpdate(
+                        stock_d.m_symbol, wxDate::Now(), dPrice, StockHistoryModel::ONLINE
+                    );
                 }
             }
-            StockHistoryModel::instance().ReleaseSavepoint();
+            StockHistoryModel::instance().db_release_savepoint();
             wxString strLastUpdate;
-            strLastUpdate.Printf(_t("%1$s on %2$s"), wxDateTime::Now().FormatTime()
-                , mmGetDateTimeForDisplay(wxDateTime::Now().FormatISODate()));
+            strLastUpdate.Printf(_t("%1$s on %2$s"),
+                wxDateTime::Now().FormatTime(),
+                mmGetDateTimeForDisplay(wxDateTime::Now().FormatISODate())
+            );
             InfoModel::instance().setString("STOCKS_LAST_REFRESH_DATETIME", strLastUpdate);
         }
 
@@ -3905,7 +3935,7 @@ void mmGUIFrame::OnRates(wxCommandEvent& WXUNUSED(event))
 
 void mmGUIFrame::OnEditAccount(wxCommandEvent& /*event*/)
 {
-    const auto &accounts = AccountModel::instance().get_all(AccountCol::COL_ID_ACCOUNTNAME);
+    const auto &accounts = AccountModel::instance().find_all(AccountCol::COL_ID_ACCOUNTNAME);
     if (accounts.empty()) {
         wxMessageBox(_t("No account available to edit!"), _t("Accounts"), wxOK | wxICON_WARNING);
         return;
@@ -3913,8 +3943,11 @@ void mmGUIFrame::OnEditAccount(wxCommandEvent& /*event*/)
 
     mmSingleChoiceDialog scd(this, _t("Choose Account to Edit"), _t("Accounts"), accounts);
     if (scd.ShowModal() == wxID_OK) {
-        AccountModel::Data* account = AccountModel::instance().get_key(scd.GetStringSelection());
-        AccountDialog dlg(account, this);
+        const AccountData* account = AccountModel::instance().get_name_data_n(scd.GetStringSelection());
+        AccountData* edit_account = account
+            ? AccountModel::instance().unsafe_get_id_data_n(account->id())
+            : nullptr;
+        AccountDialog dlg(edit_account, this);
         if (dlg.ShowModal() == wxID_OK)
             RefreshNavigationTree();
     }
@@ -3923,7 +3956,7 @@ void mmGUIFrame::OnEditAccount(wxCommandEvent& /*event*/)
 
 void mmGUIFrame::OnDeleteAccount(wxCommandEvent& /*event*/)
 {
-    const auto &accounts = AccountModel::instance().get_all(AccountCol::COL_ID_ACCOUNTNAME);
+    const auto &accounts = AccountModel::instance().find_all(AccountCol::COL_ID_ACCOUNTNAME);
     if (accounts.empty()) {
         wxMessageBox(_t("No account available to delete!"), _t("Accounts"), wxOK | wxICON_WARNING);
         return;
@@ -3931,17 +3964,17 @@ void mmGUIFrame::OnDeleteAccount(wxCommandEvent& /*event*/)
 
     mmSingleChoiceDialog scd(this, _t("Choose Account to Delete"), _t("Accounts"), accounts);
     if (scd.ShowModal() == wxID_OK) {
-        AccountModel::Data* account = AccountModel::instance().get_key(scd.GetStringSelection());
+        const AccountData* account = AccountModel::instance().get_name_data_n(scd.GetStringSelection());
         wxString deletingAccountName = wxString::Format(
             _t("Do you you want to delete\n%1$s account: %2$s?"),
-            wxGetTranslation(account->ACCOUNTTYPE),
-            account->ACCOUNTNAME
+            wxGetTranslation(account->m_type_),
+            account->m_name
         );
         wxMessageDialog msgDlg(this, deletingAccountName, _t("Confirm Account Deletion"),
             wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION);
         if (msgDlg.ShowModal() == wxID_YES) {
-            AccountModel::instance().remove(account->id());
             mmAttachmentManage::DeleteAllAttachments(AccountModel::refTypeName, account->id());
+            AccountModel::instance().purge_id(account->id());
         }
     }
     DoRecreateNavTreeControl(true);
@@ -3953,32 +3986,32 @@ void mmGUIFrame::OnReallocateAccount(wxCommandEvent& WXUNUSED(event))
     mmSingleChoiceDialog account_choice(
         this,
         _t("Select account"), _t("Change Account Type"),
-        AccountModel::instance().all_checking_account_names()
+        AccountModel::instance().find_all_name_a()
     );
 
     if (account_choice.ShowModal() == wxID_OK) {
-        AccountModel::Data* account = AccountModel::instance().get_key(account_choice.GetStringSelection());
+        const AccountData* account = AccountModel::instance().get_name_data_n(account_choice.GetStringSelection());
         if (account)
-            ReallocateAccount(account->ACCOUNTID);
+            ReallocateAccount(account->m_id);
     }
 }
 
 void mmGUIFrame::ReallocateAccount(int64 accountID)
 {
-    AccountModel::Data* account = AccountModel::instance().get_id(accountID);
-    wxArrayString types = NavigatorTypes::instance().getAccountSelectionNames(account->ACCOUNTTYPE);
+    AccountData* account = AccountModel::instance().unsafe_get_id_data_n(accountID);
+    wxArrayString types = NavigatorTypes::instance().getAccountSelectionNames(account->m_type_);
 
     mmSingleChoiceDialog type_choice(
         this,
-        wxString::Format(_t("Select new account type for %s"), account->ACCOUNTNAME),
+        wxString::Format(_t("Select new account type for %s"), account->m_name),
         _t("Change Account Type"),
         types
     );
 
     if (type_choice.ShowModal() == wxID_OK) {
         int sel = type_choice.GetSelection();
-        account->ACCOUNTTYPE = NavigatorTypes::instance().getAccountDbTypeFromChoice(types[sel]);
-        AccountModel::instance().save(account);
+        account->m_type_ = NavigatorTypes::instance().getAccountDbTypeFromChoice(types[sel]);
+        AccountModel::instance().unsafe_update_data_n(account);
         DoRecreateNavTreeControl(true);
     }
 }
@@ -4013,15 +4046,15 @@ void mmGUIFrame::OnViewLinksUpdateUI(wxUpdateUIEvent &event)
 
 void mmGUIFrame::OnHideShareAccounts(wxCommandEvent &WXUNUSED(event))
 {
-    PreferencesModel::instance().setHideShareAccounts(!PreferencesModel::instance().getHideShareAccounts());
-    NavigatorTypes::instance().SetShareAccountStatus(!PreferencesModel::instance().getHideShareAccounts());
+    PrefModel::instance().setHideShareAccounts(!PrefModel::instance().getHideShareAccounts());
+    NavigatorTypes::instance().SetShareAccountStatus(!PrefModel::instance().getHideShareAccounts());
     RefreshNavigationTree();
 }
 
 void mmGUIFrame::OnHideDeletedTransactions(wxCommandEvent& WXUNUSED(event))
 {
-    PreferencesModel::instance().setHideDeletedTransactions(!PreferencesModel::instance().getHideDeletedTransactions());
-    NavigatorTypes::instance().SetTrashStatus(!PreferencesModel::instance().getHideDeletedTransactions());
+    PrefModel::instance().setHideDeletedTransactions(!PrefModel::instance().getHideDeletedTransactions());
+    NavigatorTypes::instance().SetTrashStatus(!PrefModel::instance().getHideDeletedTransactions());
     RefreshNavigationTree();
 }
 
@@ -4087,37 +4120,37 @@ wxTreeItemId mmGUIFrame::findItemByData(wxTreeItemId itemId, mmTreeItemData& sea
 
 void mmGUIFrame::OnViewBudgetFinancialYears(wxCommandEvent& WXUNUSED(event))
 {
-    PreferencesModel::instance().setBudgetFinancialYears(!PreferencesModel::instance().getBudgetFinancialYears());
+    PrefModel::instance().setBudgetFinancialYears(!PrefModel::instance().getBudgetFinancialYears());
     refreshPanelData();
 }
 
 void mmGUIFrame::OnViewBudgetTransferTotal(wxCommandEvent& WXUNUSED(event))
 {
-    PreferencesModel::instance().setBudgetIncludeTransfers(!PreferencesModel::instance().getBudgetIncludeTransfers());
+    PrefModel::instance().setBudgetIncludeTransfers(!PrefModel::instance().getBudgetIncludeTransfers());
     refreshPanelData();
 }
 
 void mmGUIFrame::OnViewBudgetCategorySummary(wxCommandEvent& WXUNUSED(event))
 {
-    PreferencesModel::instance().setBudgetSummaryWithoutCategories(!PreferencesModel::instance().getBudgetSummaryWithoutCategories());
+    PrefModel::instance().setBudgetSummaryWithoutCategories(!PrefModel::instance().getBudgetSummaryWithoutCategories());
     refreshPanelData();
 }
 
 void mmGUIFrame::OnViewIgnoreFutureTransactions(wxCommandEvent& WXUNUSED(event))
 {
-    PreferencesModel::instance().setIgnoreFutureTransactions(!PreferencesModel::instance().getIgnoreFutureTransactions());
+    PrefModel::instance().setIgnoreFutureTransactions(!PrefModel::instance().getIgnoreFutureTransactions());
     RefreshNavigationTree();
 }
 
 void mmGUIFrame::OnViewShowToolTips(wxCommandEvent& WXUNUSED(event))
 {
-    PreferencesModel::instance().setShowToolTips(!PreferencesModel::instance().getShowToolTips());
+    PrefModel::instance().setShowToolTips(!PrefModel::instance().getShowToolTips());
     RefreshNavigationTree();
 }
 
 void mmGUIFrame::OnViewShowMoneyTips(wxCommandEvent& WXUNUSED(event))
 {
-    PreferencesModel::instance().setShowMoneyTips(!PreferencesModel::instance().getShowMoneyTips());
+    PrefModel::instance().setShowMoneyTips(!PrefModel::instance().getShowMoneyTips());
     RefreshNavigationTree();
 }
 //----------------------------------------------------------------------------
@@ -4180,30 +4213,30 @@ wxSizer* mmGUIFrame::cleanupHomePanel(bool new_sizer)
 void mmGUIFrame::autocleanDeletedTransactions() {
     wxDateSpan days = wxDateSpan::Days(SettingModel::instance().getInt("DELETED_TRANS_RETAIN_DAYS", 30));
     wxDateTime earliestDate = wxDateTime().Now().ToUTC().Subtract(days);
-    TransactionModel::Data_Set deletedTransactions = TransactionModel::instance().find(
-        TransactionModel::DELETEDTIME(OP_LE, earliestDate.FormatISOCombined()),
-        TransactionModel::DELETEDTIME(OP_NE, wxEmptyString)
+    TrxModel::DataA deletedTransactions = TrxModel::instance().find(
+        TrxCol::DELETEDTIME(OP_LE, earliestDate.FormatISOCombined()),
+        TrxCol::DELETEDTIME(OP_NE, wxEmptyString)
     );
     if (!deletedTransactions.empty()) {
-        TransactionModel::instance().Savepoint();
-        AttachmentModel::instance().Savepoint();
-        TransactionSplitModel::instance().Savepoint();
-        FieldValueModel::instance().Savepoint();
+        TrxModel::instance().db_savepoint();
+        AttachmentModel::instance().db_savepoint();
+        TrxSplitModel::instance().db_savepoint();
+        FieldValueModel::instance().db_savepoint();
         for (const auto& transaction : deletedTransactions) {
             // removing the checking transaction also removes split, translink, and share entries
-            TransactionModel::instance().remove(transaction.TRANSID);
+            TrxModel::instance().purge_id(transaction.TRANSID);
 
             // remove also any attachments for the transaction
-            const wxString& RefType = TransactionModel::refTypeName;
+            const wxString& RefType = TrxModel::refTypeName;
             mmAttachmentManage::DeleteAllAttachments(RefType, transaction.TRANSID);
 
             // remove also any custom fields for the transaction
             FieldValueModel::DeleteAllData(RefType, transaction.TRANSID);
         }
-        FieldValueModel::instance().ReleaseSavepoint();
-        TransactionSplitModel::instance().ReleaseSavepoint();
-        AttachmentModel::instance().ReleaseSavepoint();
-        TransactionModel::instance().ReleaseSavepoint();
+        FieldValueModel::instance().db_release_savepoint();
+        TrxSplitModel::instance().db_release_savepoint();
+        AttachmentModel::instance().db_release_savepoint();
+        TrxModel::instance().db_release_savepoint();
     }
 }
 
@@ -4292,39 +4325,46 @@ void mmGUIFrame::OnChangeGUILanguage(wxCommandEvent& event)
 
 void mmGUIFrame::DoUpdateBudgetNavigation(wxTreeItemId& parent_item)
 {
-    const auto all_budgets = BudgetPeriodModel::instance().get_all(BudgetPeriodCol::COL_ID_BUDGETYEARNAME);
-    if (!all_budgets.empty()) {
-        std::map <wxString, int64> years;
+    const auto bp_a = BudgetPeriodModel::instance().find_all(BudgetPeriodCol::COL_ID_BUDGETYEARNAME);
+    if (bp_a.empty())
+        return;
 
-        wxRegEx pattern_year(R"(^([0-9]{4})$)");
-        wxRegEx pattern_month(R"(^([0-9]{4})-([0-9]{2})$)");
+    std::map <wxString, int64> years;
 
-        for (const auto& e : all_budgets) {
-            const wxString& name = e.BUDGETYEARNAME;
-            if (pattern_year.Matches(name)) {
-                years[name] = e.BUDGETYEARID;
-            }
-            else {
-                if (pattern_month.Matches(name)) {
-                    wxString root_year = pattern_month.GetMatch(name, 1);
-                    if (years.find(root_year) == years.end())
-                        years[root_year] = e.BUDGETYEARID;
-                }
-            }
+    wxRegEx pattern_year(R"(^([0-9]{4})$)");
+    wxRegEx pattern_month(R"(^([0-9]{4})-([0-9]{2})$)");
+
+    for (const auto& bp_d : bp_a) {
+        const wxString& name = bp_d.m_name;
+        if (pattern_year.Matches(name)) {
+            years[name] = bp_d.m_id;
         }
+        else if (pattern_month.Matches(name)) {
+            wxString root_year = pattern_month.GetMatch(name, 1);
+            if (years.find(root_year) == years.end())
+                years[root_year] = bp_d.m_id;
+        }
+    }
 
-        wxTreeItemId year_budget;
-        for (const auto& entry : years) {
-            for (const auto& e : all_budgets) {
-                if (entry.second == e.BUDGETYEARID) {
-                    year_budget = addNavTreeItem(parent_item, e.BUDGETYEARNAME, img::CALENDAR_PNG, mmTreeItemData::BUDGET, e.BUDGETYEARID);
-                }
-                else if (pattern_month.Matches(e.BUDGETYEARNAME) &&
-                    pattern_month.GetMatch(e.BUDGETYEARNAME, 1) == entry.first)
-                {
-                    addNavTreeItem(year_budget, e.BUDGETYEARNAME, img::CALENDAR_PNG, mmTreeItemData::BUDGET, e.BUDGETYEARID);
+    wxTreeItemId year_budget;
+    for (const auto& entry : years) {
+        for (const auto& bp_d : bp_a) {
+            if (entry.second == bp_d.m_id) {
+                year_budget = addNavTreeItem(
+                    parent_item, bp_d.m_name,
+                    img::CALENDAR_PNG, mmTreeItemData::BUDGET,
+                    bp_d.m_id
+                );
+            }
+            else if (pattern_month.Matches(bp_d.m_name) &&
+                pattern_month.GetMatch(bp_d.m_name, 1) == entry.first
+            ) {
+                addNavTreeItem(
+                    year_budget, bp_d.m_name,
+                    img::CALENDAR_PNG, mmTreeItemData::BUDGET,
+                    bp_d.m_id
+                );
 
-                }
             }
         }
     }

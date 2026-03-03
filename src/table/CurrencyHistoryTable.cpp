@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "CurrencyHistoryTable.h"
+#include "data/CurrencyHistoryData.h"
 
-template class TableFactory<CurrencyHistoryRow>;
+template class TableFactory<CurrencyHistoryTable, CurrencyHistoryData>;
+template class mmCache<int64, CurrencyHistoryData>;
 
 // List of column names in database table CURRENCYHISTORY_V1,
 // in the order of CurrencyHistoryCol::COL_ID.
@@ -44,24 +46,7 @@ CurrencyHistoryRow::CurrencyHistoryRow()
     CURRUPDTYPE = -1;
 }
 
-CurrencyHistoryRow::CurrencyHistoryRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool CurrencyHistoryRow::equals(const CurrencyHistoryRow* r) const
-{
-    if ( CURRHISTID != r->CURRHISTID) return false;
-    if ( CURRENCYID != r->CURRENCYID) return false;
-    if (!CURRDATE.IsSameAs(r->CURRDATE)) return false;
-    if ( CURRVALUE != r->CURRVALUE) return false;
-    if ( CURRUPDTYPE != r->CURRUPDTYPE) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void CurrencyHistoryRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, CURRENCYID);
@@ -71,13 +56,15 @@ void CurrencyHistoryRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) cons
     stmt.Bind(5, id);
 }
 
-void CurrencyHistoryRow::from_select_result(wxSQLite3ResultSet& q)
+CurrencyHistoryRow& CurrencyHistoryRow::from_select_result(wxSQLite3ResultSet& q)
 {
     CURRHISTID = q.GetInt64(0);
     CURRENCYID = q.GetInt64(1);
     CURRDATE = q.GetString(2);
     CURRVALUE = q.GetDouble(3);
     CURRUPDTYPE = q.GetInt64(4);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -112,7 +99,7 @@ void CurrencyHistoryRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.Int64(CURRUPDTYPE.GetValue());
 }
 
-row_t CurrencyHistoryRow::to_row_t() const
+row_t CurrencyHistoryRow::to_html_row() const
 {
     row_t row;
 
@@ -125,7 +112,7 @@ row_t CurrencyHistoryRow::to_row_t() const
     return row;
 }
 
-void CurrencyHistoryRow::to_template(html_template& t) const
+void CurrencyHistoryRow::to_html_template(html_template& t) const
 {
     t(L"CURRHISTID") = CURRHISTID.GetValue();
     t(L"CURRENCYID") = CURRENCYID.GetValue();
@@ -134,17 +121,15 @@ void CurrencyHistoryRow::to_template(html_template& t) const
     t(L"CURRUPDTYPE") = CURRUPDTYPE.GetValue();
 }
 
-CurrencyHistoryRow& CurrencyHistoryRow::operator=(const CurrencyHistoryRow& other)
+bool CurrencyHistoryRow::equals(const CurrencyHistoryRow* other) const
 {
-    if (this == &other) return *this;
+    if ( CURRHISTID != other->CURRHISTID) return false;
+    if ( CURRENCYID != other->CURRENCYID) return false;
+    if (!CURRDATE.IsSameAs(other->CURRDATE)) return false;
+    if ( CURRVALUE != other->CURRVALUE) return false;
+    if ( CURRUPDTYPE != other->CURRUPDTYPE) return false;
 
-    CURRHISTID = other.CURRHISTID;
-    CURRENCYID = other.CURRENCYID;
-    CURRDATE = other.CURRDATE;
-    CURRVALUE = other.CURRVALUE;
-    CURRUPDTYPE = other.CURRUPDTYPE;
-
-    return *this;
+    return true;
 }
 
 CurrencyHistoryTable::CurrencyHistoryTable()
@@ -166,17 +151,4 @@ CurrencyHistoryTable::CurrencyHistoryTable()
     m_delete_query = "DELETE FROM CURRENCYHISTORY_V1 WHERE CURRHISTID = ?";
 
     m_select_query = "SELECT CURRHISTID, CURRENCYID, CURRDATE, CURRVALUE, CURRUPDTYPE FROM CURRENCYHISTORY_V1";
-}
-
-// Destructor: clears any data records stored in memory
-CurrencyHistoryTable::~CurrencyHistoryTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void CurrencyHistoryTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

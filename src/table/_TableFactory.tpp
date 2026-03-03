@@ -10,10 +10,11 @@ Copyright: (c) 2026      George Ef (george.a.ef@gmail.com)
 #pragma once
 
 #include "_TableFactory.h"
+#include "util/mmCache.tpp"
 
 // Return the data records as a json array string
-template<typename RowType>
-wxString TableFactory<RowType>::RowA::to_json() const
+template<typename T, typename D>
+const wxString TableFactory<T, D>::DataA::to_json() const
 {
     StringBuffer json_buffer;
     PrettyWriter<StringBuffer> json_writer(json_buffer);
@@ -29,223 +30,321 @@ wxString TableFactory<RowType>::RowA::to_json() const
     return json_buffer.GetString();
 }
 
-// Remove all records stored in memory (cache) for the table
-template<typename RowType>
-void TableFactory<RowType>::destroy_cache()
+// If id exists in database, return a pointer to a Data record owned by cache.
+// Return nullptr if id does not exist in database, or in case of error.
+// Assertion: if id exists in cache, then it also exists in database.
+// If id exists in cache, return a pointer in cache, without search in database.
+// Otherwise, if id exists in database, add it in cache.
+// The returned pointer can modify the record in cache.
+// This call can be combined with unsafe_update_data_n() for efficiency.
+template<typename T, typename D>
+auto TableFactory<T, D>::unsafe_get_id_data_n(const int64 id) -> Data*
 {
-    // all objects in m_cache_index are contained in m_cache
-    std::for_each(m_cache.begin(), m_cache.end(), std::mem_fn(&Row::destroy));
-    m_cache.clear();
-    m_cache_index.clear();
+    if (id <= 0)
+        return nullptr;
+
+    Data* data_n = m_cache.unsafe_get(id);
+    if (data_n)
+        return data_n;
+
+    wxString where = wxString::Format(" WHERE %s = ?", Col::PRIMARY_NAME.utf8_str());
+    try {
+        wxSQLite3Statement stmt = this->m_db->PrepareStatement(this->m_select_query + where);
+        stmt.Bind(1, id);
+        wxSQLite3ResultSet q = stmt.ExecuteQuery();
+
+        if (q.NextRow()) {
+            m_cache.add(id, Data(q));
+            data_n = m_cache.unsafe_get(id);
+        }
+
+        stmt.Finalize();
+    }
+    catch (const wxSQLite3Exception &e) {
+        wxLogError("%s: Exception %s",
+            this->m_table_name, e.GetMessage().utf8_str()
+        );
+        return nullptr;
+    }
+
+    return data_n;
 }
 
-// Create a new Row record and add to memory table (cache)
-template<typename RowType>
-typename TableFactory<RowType>::Row* TableFactory<RowType>::create()
+// Same as unsafe_get_id_data_n(const int64), except that
+// the returned pointer cannot modify the record in cache.
+template<typename T, typename D>
+auto TableFactory<T, D>::get_id_data_n(const int64 id) -> const Data*
 {
-    Row* r = new Row();
-    m_cache.push_back(r);
-    return r;
+    return unsafe_get_id_data_n(id);
 }
 
-// Create a copy of the Row record and add to memory table (cache)
-template<typename RowType>
-typename TableFactory<RowType>::Row* TableFactory<RowType>::clone(const typename TableFactory<RowType>::Row* row)
+// Add a new Data record in database and in cache.
+// Return a pointer to the copy owned by cache, or nullptr in case of error.
+// data.id() shall be invalid (<= 0) before the call; it set to a new id after the call.
+// data shall not be owned by cache before the call; it is not embraced by cache.
+template<typename T, typename D>
+auto TableFactory<T, D>::add_data_n(Data& data) -> const Data*
 {
-    Row* r = create();
-    *r = *row;
-    r->id(-1);
-    return r;
-}
-
-// Save a Row record to the database table.
-// Either create a new record or update the existing record.
-// Remove old record from the memory table (cache).
-template<typename RowType>
-bool TableFactory<RowType>::save(typename TableFactory<RowType>::Row* row)
-{
-    wxString sql = (row->id() <= 0) ? m_insert_query : m_update_query;
+    if (data.id() > 0) {
+        wxLogError("%s: Cannot add existing %s",
+            this->m_table_name, data.to_json().utf8_str()
+        );
+        return nullptr;
+    }
 
     try {
-        wxSQLite3Statement stmt = m_db->PrepareStatement(sql);
-        int64 id = (row->id() > 0) ? row->id() : newId();
-        // insert and update statements have the same bindings
-        row->to_insert_stmt(stmt, id);
+        wxSQLite3Statement stmt = this->m_db->PrepareStatement(this->m_insert_query);
+        int64 id = this->newId();
+        data.to_insert_stmt(stmt, id);
+        data.id(id);
         stmt.ExecuteUpdate();
         stmt.Finalize();
+    }
+    catch (const wxSQLite3Exception &e) {
+        wxLogError("%s: Exception %s, %s",
+            this->m_table_name, e.GetMessage().utf8_str(), data.to_json().utf8_str()
+        );
+        return nullptr;
+    }
 
-        if (row->id() > 0) {
-            // update row in cache
-            // TODO: use m_cache_index
-            for (typename Cache::iterator it = m_cache.begin(); it != m_cache.end(); ++ it) {
-                Row* r = *it;
-                if (r->id() == row->id())
-                    // update in place
-                    *r = *row;
-            }
+    return m_cache.add(data.id(), data);
+}
+
+// Add new Data records in database and in cache.
+// Return false in case of error.
+template<typename T, typename D>
+bool TableFactory<T, D>::add_data_a(DataA& data_a)
+{
+    bool ok = true;
+    this->db_savepoint();
+    for (auto& data : data_a) {
+        if (!add_data_n(data)) {
+            ok = false;
+            break;
         }
     }
-    catch(const wxSQLite3Exception &e) {
+    this->db_release_savepoint();
+
+    return ok;
+}
+
+// Update an existing Data record in database with the value already in cache.
+// data shall be a valid (not nullptr) pointer into cache.
+// Return data, or nullptr in case of error.
+// This call can be combined with unsafe_get_id_data_n() for efficiency.
+template<typename T, typename D>
+auto TableFactory<T, D>::unsafe_update_data_n(Data* data) -> Data*
+{
+    try {
+        wxSQLite3Statement stmt = this->m_db->PrepareStatement(this->m_update_query);
+        data->to_update_stmt(stmt);
+        stmt.ExecuteUpdate();
+        stmt.Finalize();
+    }
+    catch (const wxSQLite3Exception &e) {
         wxLogError("%s: Exception %s, %s",
-            m_table_name, e.GetMessage().utf8_str(), row->to_json()
+            this->m_table_name, e.GetMessage().utf8_str(), data->to_json().utf8_str()
+        );
+        return nullptr;
+    }
+
+    // no need to update the cache. data shall point into cache and the caller
+    // updated directly the Data record in cache before this call.
+    // nevertheless, the input argument is not specified as const. in the future,
+    // this call may validate and repair the Data record prepared by the caller.
+
+    return data;
+}
+
+// Update an existing Data record in database and add or update it in cache.
+// Return a pointer to the copy owned by cache, or nullptr in case of error.
+// data.id() shall already exist in database; it may not exist in cache.
+// data shall not be owned by cache before the call; it is not embraced by cache.
+template<typename T, typename D>
+auto TableFactory<T, D>::update_data_n(Data& data) -> const Data*
+{
+    if (data.id() <= 0) {
+        wxLogError("%s: Cannot update non-existing %s",
+            this->m_table_name, data.to_json().utf8_str()
+        );
+        return nullptr;
+    }
+
+    try {
+        wxSQLite3Statement stmt = this->m_db->PrepareStatement(this->m_update_query);
+        data.to_update_stmt(stmt);
+        stmt.ExecuteUpdate();
+        stmt.Finalize();
+    }
+    catch (const wxSQLite3Exception &e) {
+        wxLogError("%s: Exception %s, %s",
+            this->m_table_name, e.GetMessage().utf8_str(), data.to_json().utf8_str()
+        );
+        return nullptr;
+    }
+
+    // data is not modified, but see comments in unsafe_update_data_n().
+
+    return m_cache.set(data.id(), data);
+}
+
+// Add a new or update an existing Data record in database and in cache.
+// Return a pointer to the copy owned by cache, or nullptr in case of error.
+// If data.id() is valid (> 0), data may or may not be owned by cache.
+template<typename T, typename D>
+auto TableFactory<T, D>::unsafe_save_data_n(Data* data) -> const Data*
+{
+    if (!data)
+        return nullptr;
+
+    if (data->id() <= 0)
+        return add_data_n(*data);
+
+    Data* data_n = m_cache.unsafe_get(data->id());
+    if (data_n == data)
+        return unsafe_update_data_n(data_n);
+    else
+        return update_data_n(*data);
+}
+
+// Add a new or update an existing Data record in database and in cache.
+// Return a pointer to the copy owned by cache, or nullptr in case of error.
+template<typename T, typename D>
+auto TableFactory<T, D>::save_data_n(Data& data) -> const Data*
+{
+    return (data.id() <= 0) ? add_data_n(data) : update_data_n(data);
+}
+
+// Add or update multiple Data records in database and in cache.
+// Return false and stop database operations immediately in case of error.
+template<typename T, typename D>
+bool TableFactory<T, D>::save_data_a(DataA& data_a)
+{
+    bool ok = true;
+
+    this->db_savepoint();
+    for (Data& data : data_a) {
+        if (!save_data_n(data)) {
+            ok = false;
+            break;
+        }
+    }
+    this->db_release_savepoint();
+
+    return ok;
+}
+
+// Remove a Data record from the database and from the cache.
+// Return false in case of error.
+// Before calling this function, the caller shall remove all auxiliary data
+// belonging to id from other tables. See the comments in virtual remove_id().
+template<typename T, typename D>
+bool TableFactory<T, D>::unsafe_remove_id(const int64 id)
+{
+    if (id <= 0) {
+        wxLogError("%s: Cannot remove id %lld", this->m_table_name, id.GetValue());
+        return false;
+    }
+
+    // first remove id from the cache (this is the inverse order of add/update),
+    // such that the cache is always a subset of the database, also in case of error.
+    m_cache.remove(id);
+
+    try {
+        wxSQLite3Statement stmt = this->m_db->PrepareStatement(this->m_delete_query);
+        stmt.Bind(1, id);
+        stmt.ExecuteUpdate();
+        stmt.Finalize();
+    }
+    catch (const wxSQLite3Exception &e) {
+        wxLogError("%s: Exception %s",
+            this->m_table_name, e.GetMessage().utf8_str()
         );
         return false;
     }
 
-    if (row->id() <= 0) {
-        // TODO: add row in m_cache
-        row->id(m_db->GetLastRowId());
-        m_cache_index.insert(std::make_pair(row->id(), row));
-    }
-
     return true;
 }
 
-// Remove the Row record from the database and the memory table (cache)
-template<typename RowType>
-bool TableFactory<RowType>::remove(const int64 id)
+// Preload cache with up to max_size Data records.
+template<typename T, typename D>
+void TableFactory<T, D>::preload_cache(int max_size)
 {
-    if (id <= 0)
-        return false;
+    // TODO: fetch up to max_size Data records from database.
+    // note: preload_cache() is typically used for smaller tables;
+    // usually all records are preloaded and max_size is not reached.
 
-    try {
-        wxSQLite3Statement stmt = m_db->PrepareStatement(m_delete_query);
-        stmt.Bind(1, id);
-        stmt.ExecuteUpdate();
-        stmt.Finalize();
-
-        Cache c;
-        for (typename Cache::iterator it = m_cache.begin(); it != m_cache.end(); ++ it) {
-            Row* r = *it;
-            if (r->id() == id) {
-                m_cache_index.erase(r->id());
-                delete r;
-            }
-            else {
-                c.push_back(r);
-            }
-        }
-        m_cache.clear();
-        m_cache.swap(c);
+    int i = 0;
+    for (const Data& data : find_all()) {
+        m_cache.add(data.id(), data);
+        if (++i >= max_size) break;
     }
-    catch(const wxSQLite3Exception &e) {
-        wxLogError("%s: Exception %s", m_table_name, e.GetMessage().utf8_str());
-        return false;
-    }
-
-    return true;
 }
 
-// Remove the Row record from the database and the memory table (cache)
-template<typename RowType>
-bool TableFactory<RowType>::remove(typename TableFactory<RowType>::Row* row)
+// Return cache statistics as a json string.
+template<typename T, typename D>
+auto TableFactory<T, D>::stat_json() const -> const wxString
 {
-    if (remove(row->id())) {
-        row->id(-1);
-        return true;
-    }
+    const mmCacheStat& cache_stat = m_cache.get_stat();
+    StringBuffer json_buffer;
+    rapidjson::Writer<StringBuffer> json_writer(json_buffer);
 
-    return false;
+    json_writer.StartObject();
+    json_writer.Key("table_name");
+    json_writer.String(this->m_table_name.utf8_str());
+    if (cache_stat.capacity > 0) {
+        json_writer.Key("cache_capacity");
+        json_writer.Int(cache_stat.capacity);
+    }
+    json_writer.Key("cache_max_size");
+    json_writer.Int(cache_stat.max_size);
+    json_writer.Key("cache_hit");
+    json_writer.Int(cache_stat.hit_cnt);
+    json_writer.Key("cache_miss");
+    json_writer.Int(cache_stat.miss_cnt);
+    json_writer.EndObject();
+
+    wxLogDebug("======== TableFactory::stat_json =======");
+    wxLogDebug("%s", wxString::FromUTF8(json_buffer.GetString()));
+
+    return wxString::FromUTF8(json_buffer.GetString());
 }
 
-// Search the memory table (Cache) for the data record.
-// If not found in memory, search the database and update the cache.
-template<typename RowType>
-typename TableFactory<RowType>::Row* TableFactory<RowType>::get_id(const int64 id)
+// Print table statistics for debugging.
+template<typename T, typename D>
+void TableFactory<T, D>::debug_stat() const
 {
-    if (id <= 0) {
-        ++m_skip;
-        return nullptr;
-    }
-
-    if (auto it = m_cache_index.find(id); it != m_cache_index.end()) {
-        ++m_hit;
-        return it->second;
-    }
-
-    ++m_miss;
-    Row* r = nullptr;
-    wxString where = wxString::Format(" WHERE %s = ?", Col::PRIMARY_NAME.utf8_str());
-    try {
-        wxSQLite3Statement stmt = m_db->PrepareStatement(m_select_query + where);
-        stmt.Bind(1, id);
-
-        wxSQLite3ResultSet q = stmt.ExecuteQuery();
-        if (q.NextRow()) {
-            r = new Row(q);
-            m_cache.push_back(r);
-            m_cache_index.insert(std::make_pair(id, r));
-        }
-        stmt.Finalize();
-    }
-    catch(const wxSQLite3Exception &e) {
-        wxLogError("%s: Exception %s", m_table_name, e.GetMessage().utf8_str());
-    }
-
-    if (!r) {
-        r = fake_;
-        // wxLogError("%s: %d not found", m_table_name, id);
-    }
-
-    return r;
+    const mmCacheStat& cache_stat = m_cache.get_stat();
+    wxLogDebug("%s : (cap %zu, max_size %zu, hit %zu, miss %zu)",
+        this->m_table_name,
+        cache_stat.capacity, cache_stat.max_size, cache_stat.hit_cnt, cache_stat.miss_cnt
+    );
 }
 
-// Search the database for the data record, bypassing the cache.
-template<typename RowType>
-typename TableFactory<RowType>::Row* TableFactory<RowType>::get_record(const int64 id)
+// Return an array of Data records (DataA) fetched directly from database,
+// bypassing the cache. The records are sorted by the col_id column.
+template<typename T, typename D>
+auto TableFactory<T, D>::find_all(const COL_ID col_id, const bool asc) -> const DataA
 {
-    if (id <= 0) {
-        ++m_skip;
-        return nullptr;
-    }
-
-    Row* r = nullptr;
-    wxString where = wxString::Format(" WHERE %s = ?", Col::PRIMARY_NAME.utf8_str());
+    DataA result;
     try {
-        wxSQLite3Statement stmt = m_db->PrepareStatement(m_select_query + where);
-        stmt.Bind(1, id);
-
-        wxSQLite3ResultSet q = stmt.ExecuteQuery();
-        if (q.NextRow()) {
-            r = new Row(q);
-        }
-        stmt.Finalize();
-    }
-    catch (const wxSQLite3Exception &e) {
-        wxLogError("%s: Exception %s", m_table_name, e.GetMessage().utf8_str());
-    }
-
-    if (!r) {
-        r = fake_;
-        // wxLogError("%s: %d not found", m_table_name, id);
-    }
-
-    return r;
-}
-
-// Return a list of Row records (RowA) derived directly from database.
-// The RowA is sorted based on the column number.
-template<typename RowType>
-const typename TableFactory<RowType>::RowA TableFactory<RowType>::get_all(
-    const TableFactory<RowType>::COL_ID col_id, const bool asc
-) {
-    RowA result;
-    try {
-        wxString query = m_select_query
+        wxString query = this->m_select_query
             + " ORDER BY " + Col::col_name(col_id)
             + " COLLATE NOCASE"
             + (asc ? " ASC" : " DESC");
-        wxSQLite3ResultSet q = m_db->ExecuteQuery(query);
+        wxSQLite3ResultSet q = this->m_db->ExecuteQuery(query);
 
         while (q.NextRow()) {
-            Row r(q);
+            Data r(q);
             result.push_back(std::move(r));
         }
 
         q.Finalize();
     }
-    catch(const wxSQLite3Exception &e) {
-        wxLogError("%s: Exception %s", m_table_name, e.GetMessage().utf8_str());
+    catch (const wxSQLite3Exception &e) {
+        wxLogError("%s: Exception %s",
+            this->m_table_name, e.GetMessage().utf8_str()
+        );
     }
 
     return result;

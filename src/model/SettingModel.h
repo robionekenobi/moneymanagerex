@@ -21,10 +21,13 @@
 #pragma once
 
 #include "base/defs.h"
-#include "_ModelBase.h"
-#include "table/SettingTable.h"
 
-class SettingModel : public Model<SettingTable>
+#include "table/SettingTable.h"
+#include "data/SettingData.h"
+
+#include "_ModelBase.h"
+
+class SettingModel : public TableFactory<SettingTable, SettingData>
 {
 public:
     SettingModel();
@@ -91,6 +94,6 @@ public:
 
 public:
     void shrinkUsageTable();
-    static row_t to_row_t();
+    static row_t to_html_row();
 };
 

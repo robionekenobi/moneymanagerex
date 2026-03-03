@@ -25,9 +25,9 @@
 
 #include "model/AttachmentModel.h"
 #include "model/PayeeModel.h"
-#include "model/ScheduledModel.h"
+#include "model/SchedModel.h"
 #include "model/TagModel.h"
-#include "model/TransactionModel.h"
+#include "model/TrxModel.h"
 
 #include "AttachmentDialog.h"
 #include "MergeTagDialog.h"
@@ -93,8 +93,8 @@ void MergeTagDialog::CreateControls()
         , wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
 
     choices_.Clear();
-    for (const auto& tag : TagModel::instance().get_all())
-        choices_.Add(tag.TAGNAME);
+    for (const auto& tag_d : TagModel::instance().find_all())
+        choices_.Add(tag_d.m_name);
     cbSourceTag_ = new wxComboBox(this, wxID_REPLACE, "", wxDefaultPosition, wxDefaultSize, choices_);
     cbSourceTag_->SetMinSize(wxSize(200, -1));
 
@@ -162,50 +162,55 @@ void MergeTagDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         , _t("Merge tags confirmation")
         , wxOK | wxCANCEL | wxICON_INFORMATION);
 
-    if (ans == wxOK)
-    {
-        TagLinkModel::instance().Savepoint();
-        TagLinkModel::Data_Set taglinks = TagLinkModel::instance().find(TagLinkModel::TAGID(sourceTagID_));
-        for (auto &entry : taglinks) {
-            entry.TAGID = destTagID_;
-        }
-        m_changed_records += TagLinkModel::instance().save(taglinks);
-        TagLinkModel::instance().ReleaseSavepoint();
+    if (ans != wxOK)
+        return;
 
-        if (cbDeleteSourceTag_->IsChecked())
-        {
-            TagModel::instance().remove(sourceTagID_);
-            choices_.Remove(source_tag_name);
-            cbSourceTag_->Set(choices_);
-            cbDestTag_->Set(choices_);
-        }
-
-        IsOkOk();
+    TagLinkModel::instance().db_savepoint();
+    TagLinkModel::DataA gl_a = TagLinkModel::instance().find(
+        TagLinkCol::TAGID(sourceTagID_)
+    );
+    for (auto &gl_d : gl_a) {
+        gl_d.TAGID = destTagID_;
     }
+    TagLinkModel::instance().save_data_a(gl_a);
+    m_changed_records += gl_a.size();
+    TagLinkModel::instance().db_release_savepoint();
+
+    if (cbDeleteSourceTag_->IsChecked()) {
+        TagModel::instance().purge_id(sourceTagID_);
+        choices_.Remove(source_tag_name);
+        cbSourceTag_->Set(choices_);
+        cbDestTag_->Set(choices_);
+    }
+
+    IsOkOk();
 }
 
 void MergeTagDialog::IsOkOk()
 {
     bool e = true;
-    TagModel::Data* source = TagModel::instance().get_key(cbSourceTag_->GetValue());
-    TagModel::Data* dest = TagModel::instance().get_key(cbDestTag_->GetValue());
-    if (dest) destTagID_ = dest->TAGID;
-    if (source) sourceTagID_ = source->TAGID;
+    const TagData* src_tag_n = TagModel::instance().get_key(cbSourceTag_->GetValue());
+    const TagData* dst_tag_n = TagModel::instance().get_key(cbDestTag_->GetValue());
+    if (src_tag_n)
+        sourceTagID_ = src_tag_n->m_id;
+    if (dst_tag_n)
+        destTagID_ = dst_tag_n->m_id;
+
     int trxs_size = (sourceTagID_ < 0) ? 0 : TagLinkModel::instance().find(
-        TagLinkModel::REFTYPE(TransactionModel::refTypeName),
-        TagLinkModel::TAGID(sourceTagID_)
+        TagLinkCol::REFTYPE(TrxModel::refTypeName),
+        TagLinkCol::TAGID(sourceTagID_)
     ).size();
     int split_size = (sourceTagID_ < 0) ? 0 : TagLinkModel::instance().find(
-        TagLinkModel::REFTYPE(TransactionSplitModel::refTypeName),
-        TagLinkModel::TAGID(sourceTagID_)
+        TagLinkCol::REFTYPE(TrxSplitModel::refTypeName),
+        TagLinkCol::TAGID(sourceTagID_)
     ).size();
     int bills_size = (sourceTagID_ < 0) ? 0 : TagLinkModel::instance().find(
-        TagLinkModel::REFTYPE(ScheduledModel::refTypeName),
-        TagLinkModel::TAGID(sourceTagID_)
+        TagLinkCol::REFTYPE(SchedModel::refTypeName),
+        TagLinkCol::TAGID(sourceTagID_)
     ).size();
     int bill_split_size = (sourceTagID_ < 0) ? 0 : TagLinkModel::instance().find(
-        TagLinkModel::REFTYPE(ScheduledSplitModel::refTypeName),
-        TagLinkModel::TAGID(sourceTagID_)
+        TagLinkCol::REFTYPE(SchedSplitModel::refTypeName),
+        TagLinkCol::TAGID(sourceTagID_)
     ).size();
 
     if (destTagID_ < 0 || sourceTagID_ < 0

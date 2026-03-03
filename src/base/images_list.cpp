@@ -37,7 +37,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "util/_util.h"
 
 #include "model/SettingModel.h"
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 #include "images_list.h"
 
@@ -266,7 +266,7 @@ static const std::map<int, wxBitmapBundle> acc_images(int size)
 
 wxVector<wxBitmapBundle> navtree_images_list(const int size)
 {
-    int x = (size > 0) ? size : PreferencesModel::instance().getIconSize();
+    int x = (size > 0) ? size : PrefModel::instance().getIconSize();
 
     wxVector<wxBitmapBundle> images;
     for (const auto& img : navtree_images(x))
@@ -280,7 +280,7 @@ wxVector<wxBitmapBundle> navtree_images_list(const int size)
 
 static int getIconSizeIdx(const int iconSize)
 {
-    const int x = (iconSize > 0) ? iconSize : PreferencesModel::instance().getIconSize();
+    const int x = (iconSize > 0) ? iconSize : PrefModel::instance().getIconSize();
     auto it = find_if(sizes.begin(), sizes.end(), [x](const std::pair<int, int>& p) { return p.second == x; });
     if(it == sizes.end())
         return -1;
@@ -497,8 +497,8 @@ void reverttoDefaultTheme()
 
 void LoadTheme()
 {
-    darkMode = ( (mmex::isDarkMode() && (PreferencesModel::THEME_MODE::AUTO == PreferencesModel::instance().getThemeMode()))
-                    || (PreferencesModel::THEME_MODE::DARK == PreferencesModel::instance().getThemeMode()));
+    darkMode = ( (mmex::isDarkMode() && (PrefModel::THEME_MODE::AUTO == PrefModel::instance().getThemeMode()))
+                    || (PrefModel::THEME_MODE::DARK == PrefModel::instance().getThemeMode()));
     filesInVFS = new wxArrayString();
 
     // Scan first for metadata then for the icons and other files

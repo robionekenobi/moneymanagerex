@@ -90,25 +90,25 @@ void ReportBase::setAccounts(int selection, const wxString& type_name)
         break;
     case 1: // Select Accounts
     {
-        wxArrayString accounts;
-        auto a = AccountModel::instance().get_all();
-        std::stable_sort(a.begin(), a.end(), AccountRow::SorterByACCOUNTNAME());
-        for (const auto& item : a) {
-            if (m_only_active && item.STATUS != AccountModel::STATUS_NAME_OPEN)
+        wxArrayString account_name_a;
+        auto account_a = AccountModel::instance().find_all();
+        std::stable_sort(account_a.begin(), account_a.end(), AccountData::SorterByACCOUNTNAME());
+        for (const auto& account_d : account_a) {
+            if (m_only_active && !account_d.is_open())
                 continue;
-            accounts.Add(item.ACCOUNTNAME);
+            account_name_a.Add(account_d.m_name);
         }
 
         auto parent = wxWindow::FindWindowById(mmID_REPORTS);
         mmMultiChoiceDialog mcd(parent ? parent : 0,
-            _t("Choose Accounts"), wxGetTranslation(m_title), accounts
+            _t("Choose Accounts"), wxGetTranslation(m_title), account_name_a
         );
 
         if (m_account_selected_a && !m_account_selected_a->IsEmpty()) {
             wxArrayInt selected;
             int i = 0;
-            for (const auto &account : accounts) {
-                if (wxNOT_FOUND != m_account_selected_a->Index(account))
+            for (const auto& account_name : account_name_a) {
+                if (wxNOT_FOUND != m_account_selected_a->Index(account_name))
                     selected.Add(i);
                 ++i;
             }
@@ -118,7 +118,7 @@ void ReportBase::setAccounts(int selection, const wxString& type_name)
         if (mcd.ShowModal() == wxID_OK) {
             wxArrayString* accountSelections = new wxArrayString();
             for (const auto &i : mcd.GetSelections()) {
-                accountSelections->Add(accounts[i]);
+                accountSelections->Add(account_name_a[i]);
             }
             m_account_selected_a = m_account_a = accountSelections;
         }
@@ -127,12 +127,12 @@ void ReportBase::setAccounts(int selection, const wxString& type_name)
     default: // All of Account type
     {
         wxArrayString* accountSelections = new wxArrayString();
-        auto accounts = AccountModel::instance().find(
-            AccountModel::ACCOUNTTYPE(type_name),
-            AccountModel::STATUS(OP_NE, AccountModel::STATUS_ID_CLOSED)
+        auto account_a = AccountModel::instance().find(
+            AccountCol::ACCOUNTTYPE(type_name),
+            AccountModel::STATUS(OP_NE, AccountStatus(AccountStatus::e_closed))
         );
-        for (const auto &i : accounts) {
-            accountSelections->Add(i.ACCOUNTNAME);
+        for (const auto& account_d : account_a) {
+            accountSelections->Add(account_d.m_name);
         }
         m_account_a = accountSelections;
     } }
@@ -264,20 +264,20 @@ void ReportBase::restoreReportSettings()
 
 //----------------------------------------------------------------------
 
-mmGeneralReport::mmGeneralReport(const ReportModel::Data* report) :
-    ReportBase(report->REPORTNAME),
+mmGeneralReport::mmGeneralReport(const ReportData* report) :
+    ReportBase(report->m_name),
     m_report(report)
 {
     // Store reportid if no id is provided
-    if (m_report_id == -1 && report->REPORTID >= LONG_MIN && report->REPORTID <= LONG_MAX) {
-        m_report_id = static_cast<ReportBase::REPORT_ID>(int(report->REPORTID.ToLong()));
+    if (m_report_id == -1 && report->m_id >= LONG_MIN && report->m_id <= LONG_MAX) {
+        m_report_id = static_cast<ReportBase::REPORT_ID>(int(report->m_id.ToLong()));
     }
 }
 
 wxString mmGeneralReport::getHTMLText()
 {
     wxString out;
-    int error = ReportModel::instance().get_html(this->m_report, out);
+    int error = ReportModel::instance().generate_html(*m_report, out);
     if (error != 0) {
         const char* error_template = R"(
 <!DOCTYPE html>
@@ -318,7 +318,7 @@ wxString mmGeneralReport::getHTMLText()
 int mmGeneralReport::getParameters()
 {
     int params = 0;
-    const auto content = m_report->SQLCONTENT.Lower();
+    const auto content = m_report->m_sql_content.Lower();
     if (content.Contains("&begin_date") || content.Contains("&end_date"))
         params |= M_DATE_RANGE;
     else if (content.Contains("&single_date"))
@@ -340,10 +340,10 @@ mm_html_template::mm_html_template(const wxString& arg_template): html_template(
 void mm_html_template::load_context()
 {
     (*this)(L"TODAY") = wxDate::Now().FormatISODate();
-    for (const auto &r: InfoModel::instance().get_all())
-        (*this)(r.INFONAME.ToStdWstring()) = r.INFOVALUE;
+    for (const auto& info_d: InfoModel::instance().find_all())
+        (*this)(info_d.m_name.ToStdWstring()) = info_d.m_value;
     (*this)(L"INFOTABLE") = InfoModel::to_loop_t();
 
-    const CurrencyModel::Data* currency = CurrencyModel::GetBaseCurrency();
-    if (currency) currency->to_template(*this);
+    const CurrencyData* currency = CurrencyModel::GetBaseCurrency();
+    if (currency) currency->to_html_template(*this);
 }

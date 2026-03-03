@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,14 +13,14 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #pragma once
 
-#include "_TableFactory.h"
+#include "_TableBase.h"
 
 // Columns in database table STOCKHISTORY_V1
 struct StockHistoryCol
@@ -86,7 +86,6 @@ struct StockHistoryCol
 struct StockHistoryRow
 {
     using Col = StockHistoryCol;
-    using COL_ID = Col::COL_ID;
 
     int64 HISTID; // primary key
     wxString SYMBOL;
@@ -100,17 +99,17 @@ struct StockHistoryRow
 
     int64 id() const { return HISTID; }
     void id(const int64 id) { HISTID = id; }
-    void destroy() { delete this; }
-
-    bool equals(const StockHistoryRow* r) const;
     void to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const;
-    void from_select_result(wxSQLite3ResultSet& q);
+    void to_update_stmt(wxSQLite3Statement& stmt) const;
+    StockHistoryRow& from_select_result(wxSQLite3ResultSet& q);
     wxString to_json() const;
     void as_json(PrettyWriter<StringBuffer>& json_writer) const;
-    row_t to_row_t() const;
-    void to_template(html_template& t) const;
+    row_t to_html_row() const;
+    void to_html_template(html_template& t) const;
+    void destroy() { delete this; }
 
-    StockHistoryRow& operator=(const StockHistoryRow& other);
+    StockHistoryRow& clone_from(const StockHistoryRow& other);
+    bool equals(const StockHistoryRow* other) const;
     bool operator< (const StockHistoryRow& other) const { return id() < other.id(); }
     bool operator< (const StockHistoryRow* other) const { return id() < other->id(); }
 
@@ -195,17 +194,28 @@ struct StockHistoryRow
 };
 
 // Interface to database table STOCKHISTORY_V1
-struct StockHistoryTable : public TableFactory<StockHistoryRow>
+struct StockHistoryTable : public TableBase
 {
-    // Use Col::(COLUMN_NAME) until model provides similar functionality based on Data.
-    using HISTID = Col::HISTID;
-    using SYMBOL = Col::SYMBOL;
-    using DATE = Col::DATE;
-    using VALUE = Col::VALUE;
-    using UPDTYPE = Col::UPDTYPE;
+    using Row = StockHistoryRow;
+    using Col = typename Row::Col;
 
     StockHistoryTable();
-    ~StockHistoryTable();
-
-    void ensure_data() override;
+    ~StockHistoryTable() {}
 };
+
+inline StockHistoryRow::StockHistoryRow(wxSQLite3ResultSet& q)
+{
+    from_select_result(q);
+}
+
+inline void StockHistoryRow::to_update_stmt(wxSQLite3Statement& stmt) const
+{
+    to_insert_stmt(stmt, id());
+}
+
+inline StockHistoryRow& StockHistoryRow::clone_from(const StockHistoryRow& other)
+{
+    *this = other;
+    id(-1);
+    return *this;
+}

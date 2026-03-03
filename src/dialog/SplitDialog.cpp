@@ -39,16 +39,21 @@ wxIMPLEMENT_DYNAMIC_CLASS(mmEditSplitOther, wxDialog);
 
 wxBEGIN_EVENT_TABLE(mmEditSplitOther, wxDialog)
     EVT_BUTTON(wxID_CANCEL, mmEditSplitOther::OnCancel)
-    EVT_BUTTON(wxID_OK, mmEditSplitOther::OnOk)
+    EVT_BUTTON(wxID_OK,     mmEditSplitOther::OnOk)
 wxEND_EVENT_TABLE()
 
 mmEditSplitOther::mmEditSplitOther()
 {
 }
-mmEditSplitOther::mmEditSplitOther(wxWindow *parent, CurrencyModel::Data* currency
-                        , Split* split, const wxString &name)
-: m_split(split)
-, m_currency(currency)
+
+mmEditSplitOther::mmEditSplitOther(
+    wxWindow *parent,
+    const CurrencyData* currency,
+    Split* split,
+    const wxString &name
+) :
+    m_split(split),
+    m_currency_n(currency)
 {
     long style = wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER;
     if (!wxDialog::Create(parent, wxID_ANY, _t("Edit Split Detail")
@@ -88,17 +93,17 @@ void mmEditSplitOther::CreateControls()
 
     // Split Amount
     fgSizer1->Add(new wxStaticText(this, wxID_STATIC, _t("Amount")), g_flagsH);
-    wxString amountStr = CurrencyModel::toCurrency(m_split->SPLITTRANSAMOUNT, m_currency);
+    wxString amountStr = CurrencyModel::toCurrency(m_split->SPLITTRANSAMOUNT, m_currency_n);
     wxTextCtrl* amount = new wxTextCtrl(this, wxID_ANY, amountStr);
     amount->Disable();
     fgSizer1->Add(amount, g_flagsExpand);
 
     // Notes
     fgSizer1->Add(new wxStaticText(this, wxID_STATIC, _t("Notes")), g_flagsV);
-    m_Notes = new wxTextCtrl(this, wxID_ANY, ""
+    w_notes = new wxTextCtrl(this, wxID_ANY, ""
         , wxDefaultPosition, wxSize(-1, -1), wxTE_MULTILINE);
-    fgSizer1->Add(m_Notes, g_flagsExpand);
-    mmToolTip(m_Notes, _t("Enter notes to describe this split transaction"));
+    fgSizer1->Add(w_notes, g_flagsExpand);
+    mmToolTip(w_notes, _t("Enter notes to describe this split transaction"));
 
     // Buttons
     wxBoxSizer* bSizer3 = new wxBoxSizer(wxHORIZONTAL);
@@ -115,12 +120,12 @@ void mmEditSplitOther::CreateControls()
 
 void mmEditSplitOther::fillControls()
 {
-    m_Notes->SetValue(m_split->NOTES);
+    w_notes->SetValue(m_split->NOTES);
 }
 
 void mmEditSplitOther::OnOk(wxCommandEvent& /*event*/)
 {
-    m_split->NOTES = m_Notes->GetValue();
+    m_split->NOTES = w_notes->GetValue();
     EndModal(wxID_OK);
 }
 
@@ -164,8 +169,10 @@ SplitDialog::SplitDialog(wxWindow* parent
     , row_num_(static_cast<int>(split.size()))
     , is_view_only_(is_view_only)
 {
-    AccountModel::Data* account = AccountModel::instance().get_id(accountID);
-    m_currency = account ? AccountModel::currency(account) : CurrencyModel::GetBaseCurrency();
+    const AccountData* account_n = AccountModel::instance().get_id_data_n(accountID);
+    m_currency_n = account_n
+        ? AccountModel::instance().get_data_currency_p(*account_n)
+        : CurrencyModel::GetBaseCurrency();
     m_splits = m_orig_splits;
     this->SetFont(parent->GetFont());
     Create(parent);
@@ -342,7 +349,7 @@ void SplitDialog::createNewRow(const bool enabled)
     ncbc->Bind(wxEVT_CHAR_HOOK, &SplitDialog::OnComboKey, this);
     ncbc->SetMinSize(wxSize(250,-1));
 
-    mmTextCtrl* nval = new mmTextCtrl(slider_, mmID_MAX + row, "", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT | wxTE_PROCESS_ENTER, mmCalcValidator(), m_currency);
+    mmTextCtrl* nval = new mmTextCtrl(slider_, mmID_MAX + row, "", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT | wxTE_PROCESS_ENTER, mmCalcValidator(), m_currency_n);
     nval->Enable(enabled);
     nval->Connect(mmID_MAX + row, wxEVT_COMMAND_TEXT_ENTER
                 , wxCommandEventHandler(SplitDialog::OnTextEntered), nullptr, this);
@@ -411,7 +418,7 @@ void SplitDialog::OnOk( wxCommandEvent& /*event*/ )
     double totalAmount = 0;
     for (const auto& entry : m_splits)
         totalAmount += entry.SPLITTRANSAMOUNT;
-    totalAmount = std::round(totalAmount * m_currency->SCALE.GetValue()) / m_currency->SCALE.GetValue();
+    totalAmount = std::round(totalAmount * m_currency_n->m_scale.GetValue()) / m_currency_n->m_scale.GetValue();
     if (totalAmount < 0) {
         return mmErrorDialogs::MessageError(this, _t("Invalid Total Amount"), _t("Error"));
     }
@@ -497,9 +504,8 @@ void SplitDialog::OnNewTagCreated(wxListEvent& event)
 void SplitDialog::OnOtherButton(wxCommandEvent& event)
 {
     int row = event.GetId() - mmID_MAX;
-    if (mmDoCheckRow(row))
-    {
-        mmEditSplitOther dlg(this, m_currency, &m_splits.at(row));
+    if (mmDoCheckRow(row)) {
+        mmEditSplitOther dlg(this, m_currency_n, &m_splits.at(row));
         dlg.ShowModal();
         UpdateExtraInfo(row);
     }
@@ -562,7 +568,7 @@ void SplitDialog::UpdateSplitTotal()
             total += amount;
     }
 
-    wxString total_text = CurrencyModel::toCurrency(total, m_currency);
+    wxString total_text = CurrencyModel::toCurrency(total, m_currency_n);
     transAmount_->SetLabelText(total_text);
     Layout();
 }

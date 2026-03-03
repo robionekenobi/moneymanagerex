@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,14 +13,14 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #pragma once
 
-#include "_TableFactory.h"
+#include "_TableBase.h"
 
 // Columns in database table INFOTABLE_V1
 struct InfoCol
@@ -68,7 +68,6 @@ struct InfoCol
 struct InfoRow
 {
     using Col = InfoCol;
-    using COL_ID = Col::COL_ID;
 
     int64 INFOID; // primary key
     wxString INFONAME;
@@ -80,17 +79,17 @@ struct InfoRow
 
     int64 id() const { return INFOID; }
     void id(const int64 id) { INFOID = id; }
-    void destroy() { delete this; }
-
-    bool equals(const InfoRow* r) const;
     void to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const;
-    void from_select_result(wxSQLite3ResultSet& q);
+    void to_update_stmt(wxSQLite3Statement& stmt) const;
+    InfoRow& from_select_result(wxSQLite3ResultSet& q);
     wxString to_json() const;
     void as_json(PrettyWriter<StringBuffer>& json_writer) const;
-    row_t to_row_t() const;
-    void to_template(html_template& t) const;
+    row_t to_html_row() const;
+    void to_html_template(html_template& t) const;
+    void destroy() { delete this; }
 
-    InfoRow& operator=(const InfoRow& other);
+    InfoRow& clone_from(const InfoRow& other);
+    bool equals(const InfoRow* other) const;
     bool operator< (const InfoRow& other) const { return id() < other.id(); }
     bool operator< (const InfoRow* other) const { return id() < other->id(); }
 
@@ -149,15 +148,30 @@ struct InfoRow
 };
 
 // Interface to database table INFOTABLE_V1
-struct InfoTable : public TableFactory<InfoRow>
+struct InfoTable : public TableBase
 {
-    // Use Col::(COLUMN_NAME) until model provides similar functionality based on Data.
-    using INFOID = Col::INFOID;
-    using INFONAME = Col::INFONAME;
-    using INFOVALUE = Col::INFOVALUE;
+    using Row = InfoRow;
+    using Col = typename Row::Col;
 
     InfoTable();
-    ~InfoTable();
+    ~InfoTable() {}
 
     void ensure_data() override;
 };
+
+inline InfoRow::InfoRow(wxSQLite3ResultSet& q)
+{
+    from_select_result(q);
+}
+
+inline void InfoRow::to_update_stmt(wxSQLite3Statement& stmt) const
+{
+    to_insert_stmt(stmt, id());
+}
+
+inline InfoRow& InfoRow::clone_from(const InfoRow& other)
+{
+    *this = other;
+    id(-1);
+    return *this;
+}

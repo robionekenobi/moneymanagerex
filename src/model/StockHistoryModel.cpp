@@ -19,8 +19,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "StockModel.h"
 #include "StockHistoryModel.h"
 
-StockHistoryModel::StockHistoryModel()
-: Model<StockHistoryTable>()
+StockHistoryModel::StockHistoryModel() :
+    TableFactory<StockHistoryTable, StockHistoryData>()
 {
 }
 
@@ -47,50 +47,55 @@ StockHistoryModel& StockHistoryModel::instance()
     return Singleton<StockHistoryModel>::instance();
 }
 
-StockHistoryModel::Data* StockHistoryModel::get_key(const wxString& symbol, const wxDate& date)
+const StockHistoryData* StockHistoryModel::get_key(const wxString& symbol, const wxDate& date)
 {
-    Data* hist = this->search_cache(
-        SYMBOL(symbol),
-        StockHistoryTable::DATE(date.FormatISODate())
+    const Data* sh_n = search_cache_n(
+        StockHistoryCol::SYMBOL(symbol),
+        StockHistoryCol::DATE(date.FormatISODate())
     );
-    if (hist)
-        return hist;
+    if (sh_n)
+        return sh_n;
 
-    Data_Set items = this->find(SYMBOL(symbol), StockHistoryTable::DATE(date.FormatISODate()));
+    DataA items = this->find(
+        StockHistoryCol::SYMBOL(symbol),
+        StockHistoryCol::DATE(date.FormatISODate())
+    );
     if (!items.empty())
-        hist = this->get_id(items[0].id());
-    return hist;
+        sh_n = get_id_data_n(items[0].id());
+    return sh_n;
 }
 
-wxDate StockHistoryModel::DATE(const Data& hist)
+wxDate StockHistoryModel::DATE(const Data& sh_d)
 {
-    return parseDateTime(hist.DATE);
+    return parseDateTime(sh_d.m_date_);
 }
 
-StockHistoryTable::DATE StockHistoryModel::DATE(OP op, const wxDate& date)
+StockHistoryCol::DATE StockHistoryModel::DATE(OP op, const wxDate& date)
 {
-    return StockHistoryTable::DATE(op, date.FormatISODate());
+    return StockHistoryCol::DATE(op, date.FormatISODate());
 }
 
-/**
-Adds or updates an element in stock history
-*/
-int64 StockHistoryModel::addUpdate(const wxString& symbol, const wxDate& date, double price, UPDTYPE type)
-{
-    Data *stockHist = this->get_key(symbol, date);
-    if (!stockHist) stockHist = this->create();
-
-    stockHist->SYMBOL = symbol;
-    stockHist->DATE = date.FormatISODate();
-    stockHist->VALUE = price;
-    stockHist->UPDTYPE = type;
+// Add or update an element in stock history
+int64 StockHistoryModel::addUpdate(
+    const wxString& symbol,
+    const wxDate& date,
+    double price,
+    UPDTYPE type
+) {
+    const Data* sh_n = get_key(symbol, date);
+    Data sh_d = sh_n ? *sh_n : Data();
+    sh_d.m_symbol      = symbol;
+    sh_d.m_date_       = date.FormatISODate();
+    sh_d.m_price       = price;
+    sh_d.m_update_type_ = type;
 
     if (StockHistoryModel::instance().find(
-        StockHistoryModel::SYMBOL(symbol),
+        StockHistoryCol::SYMBOL(symbol),
         StockHistoryModel::DATE(OP_GT, date)
     ).size() == 0) {
         StockModel::UpdateCurrentPrice(symbol, price);
     }
 
-    return save(stockHist);
+    save_data_n(sh_d);
+    return sh_d.id();
 }

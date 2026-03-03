@@ -19,7 +19,7 @@
 #include "base/constants.h"
 #include "mmDateRange2.h"
 
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 const mmDatePeriod::MapIdLabel mmDatePeriod::mapIdLabel[] =
 {
@@ -421,21 +421,21 @@ const wxString mmDateRange2::Reporting::getLabel() const
 }
 
 mmDateRange2::mmDateRange2(
-    mmDateDayN sDateN_new,
-    mmDateDay  tDate_new,
-    mmDateDayN defStartDateN_new,
-    mmDateDayN defEndDateN_new
+    mmDateN sDateN_new,
+    mmDate  tDate_new,
+    mmDateN defStartDateN_new,
+    mmDateN defEndDateN_new
 ) :
     firstDay{
-        PreferencesModel::instance().getReportingFirstDay(),
-        PreferencesModel::instance().getFinancialFirstDay()
+        PrefModel::instance().getReportingFirstDay(),
+        PrefModel::instance().getFinancialFirstDay()
     },
     firstMonth{
         wxDateTime::Jan,
-        PreferencesModel::instance().getFinancialFirstMonth()
+        PrefModel::instance().getFinancialFirstMonth()
     },
     firstWeekday(
-        PreferencesModel::instance().getReportingFirstWeekday()
+        PrefModel::instance().getReportingFirstWeekday()
     ),
     sDateN(sDateN_new),
     tDate(tDate_new),
@@ -451,10 +451,10 @@ mmDateRange2::mmDateRange2(
     int firstDay_new_0, int firstDay_new_1,
     wxDateTime::Month firstMonth_new_0, wxDateTime::Month firstMonth_new_1,
     wxDateTime::WeekDay firstWeekday_new,
-    mmDateDayN sDateN_new,
-    mmDateDay  tDate_new,
-    mmDateDayN defStartDateN_new,
-    mmDateDayN defEndDateN_new
+    mmDateN sDateN_new,
+    mmDate  tDate_new,
+    mmDateN defStartDateN_new,
+    mmDateN defEndDateN_new
 ) :
     firstDay{firstDay_new_0, firstDay_new_1},
     firstMonth{firstMonth_new_0, firstMonth_new_1},
@@ -490,10 +490,10 @@ bool mmDateRange2::parseReporting(const wxString &buffer)
     return true;
 }
 
-mmDateDayN mmDateRange2::periodStart(mmDateDay date, mmDatePeriod period) const
+mmDateN mmDateRange2::periodStart(mmDate date, mmDatePeriod period) const
 {
     if (period == mmDatePeriod::_A)
-        return mmDateDayN();
+        return mmDateN();
     wxDateTime s = date.getDateTime();
     if (period == mmDatePeriod::_Y || period == mmDatePeriod::_Q || period == mmDatePeriod::_M) {
         if (s.GetDay() < firstDay[range.f])
@@ -515,13 +515,13 @@ mmDateDayN mmDateRange2::periodStart(mmDateDay date, mmDatePeriod period) const
         if (d > 0)
             s -= wxDateSpan::Days(d);
     }
-    return mmDateDay(s);
+    return mmDate(s);
 }
 
-mmDateDayN mmDateRange2::periodEnd(mmDateDay date, mmDatePeriod period) const
+mmDateN mmDateRange2::periodEnd(mmDate date, mmDatePeriod period) const
 {
     if (period == mmDatePeriod::_A)
-        return mmDateDayN();
+        return mmDateN();
     wxDateTime e = date.getDateTime();
     if (period == mmDatePeriod::_Y || period == mmDatePeriod::_Q || period == mmDatePeriod::_M) {
         if (e.GetDay() >= firstDay[range.f])
@@ -544,26 +544,26 @@ mmDateDayN mmDateRange2::periodEnd(mmDateDay date, mmDatePeriod period) const
         if (d > 0)
             e += wxDateSpan::Days(d);
     }
-    return mmDateDay(e);
+    return mmDate(e);
 }
 
-mmDateDayN mmDateRange2::rangeStart() const
+mmDateN mmDateRange2::rangeStart() const
 {
     if (range.sp1 == mmDatePeriod::_A || range.sp2 == mmDatePeriod::_A)
         return defStartDateN;
-    mmDateDayN s1N = (range.sp1 == mmDatePeriod::_S) ? sDateN : tDate;
+    mmDateN s1N = (range.sp1 == mmDatePeriod::_S) ? sDateN : tDate;
     if (!s1N.has_value())
-        return mmDateDayN();
-    mmDateDay s1 = s1N.value();
+        return mmDateN();
+    mmDate s1 = s1N.value();
     if (range.so1 != 0)
         s1.addSpan(mmDatePeriod::span(range.so1, range.sp1));
     s1 = periodStart(s1, range.sp1).value();
     if (!range.sp2.has_value())
         return s1;
-    mmDateDayN s2N = (range.sp2 == mmDatePeriod::_S) ? sDateN : tDate;
+    mmDateN s2N = (range.sp2 == mmDatePeriod::_S) ? sDateN : tDate;
     if (!s2N.has_value())
-        return mmDateDayN();
-    mmDateDay s2 = s2N.value();
+        return mmDateN();
+    mmDate s2 = s2N.value();
     if (range.so2 != 0)
         s2.addSpan(mmDatePeriod::span(range.so2, range.sp2.value()));
     mmDatePeriod p = range.sp1.toInt() > range.sp2.value().toInt() ? range.sp1
@@ -572,23 +572,23 @@ mmDateDayN mmDateRange2::rangeStart() const
     return s1 <= s2 ? s1 : s2;
 }
 
-mmDateDayN mmDateRange2::rangeEnd() const
+mmDateN mmDateRange2::rangeEnd() const
 {
     if (range.ep1 == mmDatePeriod::_A || range.ep2 == mmDatePeriod::_A)
         return defEndDateN;
-    mmDateDayN e1N = (range.ep1 == mmDatePeriod::_S) ? sDateN : tDate;
+    mmDateN e1N = (range.ep1 == mmDatePeriod::_S) ? sDateN : tDate;
     if (!e1N.has_value())
-        return mmDateDayN();
-    mmDateDay e1 = e1N.value();
+        return mmDateN();
+    mmDate e1 = e1N.value();
     if (range.eo1 != 0)
         e1.addSpan(mmDatePeriod::span(range.eo1, range.ep1));
     e1 = periodEnd(e1, range.ep1).value();
     if (!range.ep2.has_value())
         return e1;
-    mmDateDayN e2N = (range.ep2 == mmDatePeriod::_S) ? sDateN : tDate;
+    mmDateN e2N = (range.ep2 == mmDatePeriod::_S) ? sDateN : tDate;
     if (!e2N.has_value())
-        return mmDateDayN();
-    mmDateDay e2 = e2N.value();
+        return mmDateN();
+    mmDate e2 = e2N.value();
     if (range.eo2 != 0)
         e2.addSpan(mmDatePeriod::span(range.eo2, range.ep2.value()));
     mmDatePeriod p = range.ep1.toInt() > range.ep2.value().toInt() ? range.ep1
@@ -597,17 +597,17 @@ mmDateDayN mmDateRange2::rangeEnd() const
     return e2 <= e1 ? e1 : e2;
 }
 
-mmDateDayN mmDateRange2::reportingNext() const
+mmDateN mmDateRange2::reportingNext() const
 {
-    mmDateDayN sN = rangeStart();
-    mmDateDayN eN = rangeEnd();
+    mmDateN sN = rangeStart();
+    mmDateN eN = rangeEnd();
     if (!sN.has_value() || !eN.has_value())
         return eN;
 
-    mmDateDay s = sN.value();
-    mmDateDay e = eN.value();
+    mmDate s = sN.value();
+    mmDate e = eN.value();
     if (s > e)
-        return mmDateDayN();
+        return mmDateN();
 
     if (reporting.p == mmDatePeriod::_A)
         return e;
@@ -615,7 +615,7 @@ mmDateDayN mmDateRange2::reportingNext() const
     if (reporting.m > 0) {
         // return the end of the multi-period aligned at s
         // (i.e., its first period contains s)
-        mmDateDay next = periodEnd(s, reporting.p).value();
+        mmDate next = periodEnd(s, reporting.p).value();
         if (reporting.m > 1) {
             next.addSpan(mmDatePeriod::span(reporting.m - 1, reporting.p));
             next = periodEnd(next, reporting.p).value();
@@ -625,8 +625,8 @@ mmDateDayN mmDateRange2::reportingNext() const
     else { // if (reporting.m < 0)
         // return the end of the multi-period aligned at e
         // (i.e., its last period contains e)
-        mmDateDay next = periodEnd(e, reporting.p).value();
-        mmDateDay next1 = next;
+        mmDate next = periodEnd(e, reporting.p).value();
+        mmDate next1 = next;
         next1.addSpan(mmDatePeriod::span(reporting.m, reporting.p));
         while (s <= next1) {
             next = next1;
@@ -642,8 +642,8 @@ const wxString mmDateRange2::checkingTooltip() const
     static StringBuilder sb;
     sb.reset();
 
-    mmDateDayN s = rangeStart();
-    mmDateDayN e = rangeEnd();
+    mmDateN s = rangeStart();
+    mmDateN e = rangeEnd();
     if (s.has_value())
         sb.append(s.value().isoDate());
     sb.sep(); sb.append(".."); sb.sep();
@@ -675,7 +675,7 @@ void mmDateRange2::ReportingIterator::increment()
     // The iterator reaches the end when (nextDateN == lastDateN)
     // (this includes the special case of open end, in which lastDateN is null).
     // count is initialized to 0 and set to -1 at the end.
-    // Notice that the iterator returns at least one mmDateDayN before it reaches the end.
+    // Notice that the iterator returns at least one mmDateN before it reaches the end.
 
     if (count == -1)
         return;
@@ -694,7 +694,7 @@ void mmDateRange2::ReportingIterator::increment()
     if (rm < 0) rm = -rm;
     mmDatePeriod rp = a->reporting.p;
     // assertion: rp is not mmDatePeriod::_A
-    mmDateDay next1 = nextDateN.value();
+    mmDate next1 = nextDateN.value();
     next1.addSpan(mmDatePeriod::span(rm, rp));
     next1 = a->periodEnd(next1, rp).value();
     if (lastDateN.value() < next1)
@@ -736,8 +736,8 @@ bool mmDateRange2::debug()
         1, 6,
         wxDateTime::Month::Jan, wxDateTime::Month::Apr,
         wxDateTime::WeekDay::Mon,
-        mmDateDay(sDateTime), mmDateDay(tDateTime),
-        mmDateDayN(), mmDateDay(defEndDateTime)
+        mmDate(sDateTime), mmDate(tDateTime),
+        mmDateN(), mmDate(defEndDateTime)
     );
     wxLogDebug("INFO: sDateN.dateTime=[%s]", dateTimeISO(dr.getSDateN().getDateTimeN()));
     wxLogDebug("INFO: tDate.dateTime=[%s]", dateTimeISO(dr.getTDate().getDateTime()));

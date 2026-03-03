@@ -1,0 +1,89 @@
+
+   | is symbol for table
+---+--------------------
+i  | INFOTABLE_V1
+u  | CURRENCYFORMATS_V1
+uh | CURRENCYHISTORY_V1
+a  | ACCOUNTLIST_V1
+e  | ASSETS_V1
+s  | STOCK_V1
+sh | STOCKHISTORY_V1
+c  | CATEGORY_V1
+p  | PAYEE_V1
+t  | CHECKINGACCOUNT_V1
+tp | SPLITTRANSACTIONS_V1
+tl | TRANSLINK_V1
+ts | SHAREINFO_V1
+q  | BILLSDEPOSITS_V1
+qp | BUDGETSPLITTRANSACTIONS_V1
+g  | TAG_V1
+gl | TAGLINK_V1
+f  | CUSTOMFIELD_V1
+fv | CUSTOMFIELDDATA_V1
+d  | ATTACHMENT_V1
+bp | BUDGETYEAR_V1
+b  | BUDGETTABLE_V1
+r  | REPORT_V1
+xs | SETTING_V1
+xu | USAGE_V1
+
+   | uses (capital letter means indirectly)
+---+---------------------------------------
+i  > u a
+a  > u
+e  > u
+s  > U a
+c  >         c
+p  >         c
+t  > U a     c p
+tp >         c
+tl > U A e s
+q  > U a     c p
+qp >         c
+gl >             g
+fv >               f
+b  >         c       bp
+
+   | owns | where
+---+------+------
+u  < uh   | CURRENCYID=u.CURRENCYID
+a  < d    | REFID=a.ACCOUNTID           REFTYPE=BankAccount
+e  < d    | REFID=e.ASSETID             REFTYPE=Asset
+s  < d    | REFID=s.STOCKID             REFTYPE=Stock
+p  < d    | REFID=p.PAYEEID             REFTYPE=Payee
+t  < tp   | TRANSID=t.TRANSID
+t  < tl   | CHECKINGACCOUNTID=t.TRANSID
+t  < ts   | CHECKINGACCOUNTID=t.TRANSID
+t  < gl   | REFID=t.TRANSID             REFTYPE=Transaction
+t  < fv   | REFID=+t.TRANSID
+t  < d    | REFID=t.TRANSID             REFTYPE=Transaction
+tp < gl   | REFID=tp.SPLITTRANSID       REFTYPE=TransactionSplit
+q  < qp   | TRANSID=1.BDID
+q  < gl   | REFID=q.BDID                REFTYPE=RecurringTransaction
+q  < fv   | REFID=-q.BDID
+q  < d    | REFID=q.BDID                REFTYPE=RecurringTransaction
+qp < gl   | REFID=qp.SPLITTRANSID       REFTYPE=RecurringTransactionSplit
+
+   | is used by (capital letter means indirectly)
+---+---------------------------------------------
+u  < i a e S     T    TL Q
+a  < i     s     t    TL q
+e  <                  tl
+s  <                  tl
+c  <         c p t tp    q qp       b
+p  <             t       q
+g  <                          gl
+f  <                             fv
+bp <                                b
+
+   | is owned by
+---+------------
+uh > u
+tp >           t
+tl >           t
+ts >           t
+qp >                q
+gl >           t tp q qp
+fv >           t    q
+d  >   a e s p t    q
+

@@ -42,13 +42,13 @@ protected:
 class mmTreeItemCateg : public wxTreeItemData
 {
 public:
-    mmTreeItemCateg(const CategoryModel::Data& categData)
+    mmTreeItemCateg(const CategoryData& categData)
         : categData_(categData)
     {}
-    CategoryModel::Data* getCategData() { return &categData_; }
+    CategoryData* getCategData() { return &categData_; }
 
 private:
-    CategoryModel::Data categData_;
+    CategoryData categData_;
 };
 
 class CategoryManager : public wxDialog
@@ -81,7 +81,7 @@ private:
     void fillControls();
     void setTreeSelection(int64 category_id);
     void saveCurrentCollapseState();
-    bool AppendSubcategoryItems(wxTreeItemId parentid, const CategoryModel::Data* child);
+    bool AppendSubcategoryItems(wxTreeItemId parentid, const CategoryData* child);
     void OnOk(wxCommandEvent& event);
     void OnCancel(wxCommandEvent& event);
     void OnAdd(wxCommandEvent& event);
@@ -124,7 +124,7 @@ private:
     int64 m_init_selected_categ_id = -1;
     int64 m_dragSourceCATEGID = 0;
     std::map<int64, bool> m_categoryVisible;
-    std::map<int64, std::vector<CategoryModel::Data>> m_categ_children;
+    std::map<int64, std::vector<CategoryData>> m_categ_children;
     bool m_processExpandCollapse = true;
     wxColour NormalColor_;
     wxColour m_hiddenColor;

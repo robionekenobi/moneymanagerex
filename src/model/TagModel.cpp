@@ -19,10 +19,10 @@
 #include "TagModel.h"
 #include "TagLinkModel.h"
 #include "AttachmentModel.h"
-#include "TransactionModel.h"
+#include "TrxModel.h"
 
-TagModel::TagModel()
-: Model<TagTable>()
+TagModel::TagModel() :
+    TableFactory<TagTable, TagData>()
 {
 }
 
@@ -36,8 +36,8 @@ TagModel::~TagModel()
 TagModel& TagModel::instance(wxSQLite3Database* db)
 {
     TagModel& ins = Singleton<TagModel>::instance();
+    ins.reset_cache();
     ins.m_db = db;
-    ins.destroy_cache();
     ins.ensure_table();
 
     return ins;
@@ -49,40 +49,39 @@ TagModel& TagModel::instance()
     return Singleton<TagModel>::instance();
 }
 
-TagModel::Data* TagModel::get_key(const wxString& name)
+const TagData* TagModel::get_key(const wxString& name)
 {
-    Data* tag = this->search_cache(TAGNAME(name));
-    if (tag)
-        return tag;
+    const Data* tag_n = search_cache_n(TagCol::TAGNAME(name));
+    if (tag_n)
+        return tag_n;
 
-    Data_Set items = this->find(TAGNAME(name));
-    if (!items.empty())
-        tag = this->get_id(items[0].TAGID);
-    return tag;
+    DataA tag_a = this->find(TagCol::TAGNAME(name));
+    if (!tag_a.empty())
+        tag_n = get_id_data_n(tag_a[0].m_id);
+    return tag_n;
 }
 
 int TagModel::is_used(int64 id)
 {
-    TagLinkModel::Data_Set taglink = TagLinkModel::instance().find(TagLinkModel::TAGID(id));
+    TagLinkModel::DataA gl_a = TagLinkModel::instance().find(
+        TagLinkCol::TAGID(id)
+    );
 
-    if (taglink.empty())
+    if (gl_a.empty())
         return 0;
 
-    for (const auto& link : taglink)
-    {
-        if (link.REFTYPE == TransactionModel::refTypeName)
-        {
-            TransactionModel::Data* t = TransactionModel::instance().get_id(link.REFID);
-            if (t && t->DELETEDTIME.IsEmpty())
+    for (const auto& gl_d : gl_a) {
+        // FIXME: do not exclude deleted transactions
+        if (gl_d.REFTYPE == TrxModel::refTypeName) {
+            const TrxData* trx_n = TrxModel::instance().get_id_data_n(gl_d.REFID);
+            if (trx_n && trx_n->DELETEDTIME.IsEmpty())
                 return 1;
         }
-        else if (link.REFTYPE == TransactionSplitModel::refTypeName)
-        {
-            TransactionSplitModel::Data* s = TransactionSplitModel::instance().get_id(link.REFID);
-            if (s)
-            {
-                TransactionModel::Data* t = TransactionModel::instance().get_id(s->TRANSID);
-                if (t && t->DELETEDTIME.IsEmpty())
+        else if (gl_d.REFTYPE == TrxSplitModel::refTypeName) {
+            const TrxSplitData* tp_n = TrxSplitModel::instance().get_id_data_n(gl_d.REFID);
+            if (tp_n) {
+                const TrxData* trx_n = TrxModel::instance().get_id_data_n(tp_n->m_trx_id_p);
+                if (trx_n && trx_n->DELETEDTIME.IsEmpty())
                     return 1;
             }
         }

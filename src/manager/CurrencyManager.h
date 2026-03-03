@@ -35,20 +35,39 @@ class CurrencyManager : public wxDialog
     wxDECLARE_DYNAMIC_CLASS(CurrencyManager);
     wxDECLARE_EVENT_TABLE();
 
+private:
+    CurrencyData* m_currency_n = nullptr;
+    CurrencyData m_currency_d;
+    int m_scale = 9;
+    bool m_locale_used = false;
+
+    wxTextCtrl*    w_name         = nullptr;
+    wxTextCtrl*    w_code         = nullptr;
+    wxTextCtrl*    w_symbol       = nullptr;
+    wxRadioButton* w_prefix       = nullptr;
+    wxRadioButton* w_suffix       = nullptr;
+    wxChoice*      w_decimalSep   = nullptr;
+    wxChoice*      w_groupSep     = nullptr;
+    wxTextCtrl*    w_scale        = nullptr;
+    mmTextCtrl*    w_baseConvRate = nullptr;
+    wxStaticText*  w_sampleText   = nullptr;
+
 public:
     CurrencyManager();
+    CurrencyManager(wxWindow* parent, const CurrencyData* currency);
     ~CurrencyManager();
-    CurrencyManager(wxWindow* parent, const CurrencyModel::Data * currency);
 
-    int64 getCurrencyID() { return m_currency->CURRENCYID; };
+    int64 getCurrencyID() { return m_currency_n->m_id; };
 
 private:
-    bool Create(wxWindow* parent, wxWindowID id = wxID_ANY,
+    bool Create(
+        wxWindow* parent, wxWindowID id = wxID_ANY,
         const wxString& caption = _t("Currency Manager"),
         const wxString& name = "Currency Manager",
         const wxPoint& pos = wxDefaultPosition,
         const wxSize& size = wxDefaultSize,
-        long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX | wxRESIZE_BORDER);
+        long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX | wxRESIZE_BORDER
+    );
 
     void CreateControls();
     void fillControls();
@@ -57,21 +76,5 @@ private:
     void OnCancel(wxCommandEvent& event);
     void OnDataChanged(wxCommandEvent& event);
     void OnTextEntered(wxCommandEvent& event);
-
-    CurrencyModel::Data* m_currency  = nullptr;
-    int m_scale = 9;
-    bool m_locale_used = false;
-
-    wxTextCtrl* mctrl_name = nullptr;
-    wxTextCtrl* mctrl_code = nullptr;
-    wxTextCtrl* mctrl_symbol = nullptr;
-    wxRadioButton* mctrl_prefix = nullptr;
-    wxRadioButton* mctrl_suffix = nullptr;
-    wxChoice* mctrl_decimalSep = nullptr;
-    wxChoice* mctrl_groupSep = nullptr;
-    wxTextCtrl* mctrl_scale = nullptr;
-    mmTextCtrl* mctrl_baseConvRate = nullptr;
-    wxStaticText* mctrl_sampleText = nullptr;
-
 };
 

@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "PayeeTable.h"
+#include "data/PayeeData.h"
 
-template class TableFactory<PayeeRow>;
+template class TableFactory<PayeeTable, PayeeData>;
+template class mmCache<int64, PayeeData>;
 
 // List of column names in database table PAYEE_V1,
 // in the order of PayeeCol::COL_ID.
@@ -46,27 +48,7 @@ PayeeRow::PayeeRow()
     ACTIVE = -1;
 }
 
-PayeeRow::PayeeRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool PayeeRow::equals(const PayeeRow* r) const
-{
-    if ( PAYEEID != r->PAYEEID) return false;
-    if (!PAYEENAME.IsSameAs(r->PAYEENAME)) return false;
-    if ( CATEGID != r->CATEGID) return false;
-    if (!NUMBER.IsSameAs(r->NUMBER)) return false;
-    if (!WEBSITE.IsSameAs(r->WEBSITE)) return false;
-    if (!NOTES.IsSameAs(r->NOTES)) return false;
-    if ( ACTIVE != r->ACTIVE) return false;
-    if (!PATTERN.IsSameAs(r->PATTERN)) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void PayeeRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, PAYEENAME);
@@ -79,7 +61,7 @@ void PayeeRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(8, id);
 }
 
-void PayeeRow::from_select_result(wxSQLite3ResultSet& q)
+PayeeRow& PayeeRow::from_select_result(wxSQLite3ResultSet& q)
 {
     PAYEEID = q.GetInt64(0);
     PAYEENAME = q.GetString(1);
@@ -89,6 +71,8 @@ void PayeeRow::from_select_result(wxSQLite3ResultSet& q)
     NOTES = q.GetString(5);
     ACTIVE = q.GetInt64(6);
     PATTERN = q.GetString(7);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -132,7 +116,7 @@ void PayeeRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.String(PATTERN.utf8_str());
 }
 
-row_t PayeeRow::to_row_t() const
+row_t PayeeRow::to_html_row() const
 {
     row_t row;
 
@@ -148,7 +132,7 @@ row_t PayeeRow::to_row_t() const
     return row;
 }
 
-void PayeeRow::to_template(html_template& t) const
+void PayeeRow::to_html_template(html_template& t) const
 {
     t(L"PAYEEID") = PAYEEID.GetValue();
     t(L"PAYEENAME") = PAYEENAME;
@@ -160,20 +144,18 @@ void PayeeRow::to_template(html_template& t) const
     t(L"PATTERN") = PATTERN;
 }
 
-PayeeRow& PayeeRow::operator=(const PayeeRow& other)
+bool PayeeRow::equals(const PayeeRow* other) const
 {
-    if (this == &other) return *this;
+    if ( PAYEEID != other->PAYEEID) return false;
+    if (!PAYEENAME.IsSameAs(other->PAYEENAME)) return false;
+    if ( CATEGID != other->CATEGID) return false;
+    if (!NUMBER.IsSameAs(other->NUMBER)) return false;
+    if (!WEBSITE.IsSameAs(other->WEBSITE)) return false;
+    if (!NOTES.IsSameAs(other->NOTES)) return false;
+    if ( ACTIVE != other->ACTIVE) return false;
+    if (!PATTERN.IsSameAs(other->PATTERN)) return false;
 
-    PAYEEID = other.PAYEEID;
-    PAYEENAME = other.PAYEENAME;
-    CATEGID = other.CATEGID;
-    NUMBER = other.NUMBER;
-    WEBSITE = other.WEBSITE;
-    NOTES = other.NOTES;
-    ACTIVE = other.ACTIVE;
-    PATTERN = other.PATTERN;
-
-    return *this;
+    return true;
 }
 
 PayeeTable::PayeeTable()
@@ -195,17 +177,4 @@ PayeeTable::PayeeTable()
     m_delete_query = "DELETE FROM PAYEE_V1 WHERE PAYEEID = ?";
 
     m_select_query = "SELECT PAYEEID, PAYEENAME, CATEGID, NUMBER, WEBSITE, NOTES, ACTIVE, PATTERN FROM PAYEE_V1";
-}
-
-// Destructor: clears any data records stored in memory
-PayeeTable::~PayeeTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void PayeeTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

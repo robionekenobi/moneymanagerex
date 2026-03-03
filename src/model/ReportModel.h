@@ -19,53 +19,59 @@
 #pragma once
 
 #include "base/defs.h"
-#include "_ModelBase.h"
-#include "table/ReportTable.h"
 
-class ReportModel : public Model<ReportTable>
+#include "table/ReportTable.h"
+#include "data/ReportData.h"
+
+#include "_ModelBase.h"
+
+class ReportRecord : public std::map<std::wstring, std::wstring>
 {
 public:
-    using Model<ReportTable>::get_id;
+    ReportRecord() {}
+    ~ReportRecord() {}
 
+    // Access functions for LuaGlue
+    // The required conversion between char and wchar_t is done through wxString.
+    std::string get(const char* index)
+    { 
+        return std::string(wxString((*this)[wxString(index).ToStdWstring()]).ToUTF8());
+    }
+    void set(const char* index, const char * val)
+    {
+        (*this)[wxString(index).ToStdWstring()] = wxString::FromUTF8(val).ToStdWstring();
+    }
+};
+
+struct ReportParam
+{
+    wxString label;
+    wxString type;
+    wxString def_value;
+    int      ID;
+    wxString name;
+
+    static auto get_param_a() -> const std::vector<ReportParam>;
+    static auto get_label_name_a() -> const std::vector<std::pair<wxString, wxString>>;
+    static bool prepare_sql(wxString& query, std::map<wxString, wxString>& label_value_m);
+};
+
+class ReportModel : public TableFactory<ReportTable, ReportData>
+{
 public:
     ReportModel(); 
     ~ReportModel();
 
 public:
-    /**
-    Initialize the global ReportModel table on initial call.
-    Resets the global table on subsequent calls.
-    * Return the static instance address for ReportModel table
-    * Note: Assigning the address to a local variable can destroy the instance.
-    */
     static ReportModel& instance(wxSQLite3Database* db);
-
-    /**
-    * Return the static instance address for ReportModel table
-    * Note: Assigning the address to a local variable can destroy the instance.
-    */
     static ReportModel& instance();
 
 public:
-    bool get_objects_from_sql(const wxString& query, PrettyWriter<StringBuffer>& json_writer);
-    wxArrayString allGroupNames();
-    int get_html(const Data* r, wxString& out);
-    //wxString get_html(const Data& r);
+    auto get_name_data_n(const wxString& name) -> const Data*;
+    auto find_all_group_name_a() -> const wxArrayString;
+    int  generate_html(const Data& r, wxString& out);
 
-public:
-    Data* get_key(const wxString& name);
-    static bool PrepareSQL(wxString& sql, std::map <wxString, wxString>& rep_params);
-    static const std::vector<std::pair<wxString, wxString>> getParamNames();
-
-private:
-    struct Values
-    {
-        wxString label;
-        wxString type;
-        wxString def_value;
-        int ID;
-        wxString name;
-    };
-    static const std::vector<Values> SqlPlaceHolders();
+    // not used
+    bool sql_result_as_json(const wxString& query, PrettyWriter<StringBuffer>& json_writer);
 };
 

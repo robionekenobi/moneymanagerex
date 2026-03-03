@@ -31,7 +31,6 @@
 #include <sys/time.h>
 #endif
 
-
 // #define MMEX_USE_REPORT_SYNC 1 // Remove comment to activate report sync (not functional yet)
 
 class wxSQLite3Database;

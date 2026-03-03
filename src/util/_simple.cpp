@@ -434,9 +434,9 @@ bool mmComboBox::mmIsValid() const
 
 void mmComboBoxAccount::init()
 {
-    all_elements_ = AccountModel::instance().all_accounts(excludeClosed_);
+    all_elements_ = AccountModel::instance().find_all_name_id_m(excludeClosed_);
     if (accountID_ > -1)
-        all_elements_[AccountModel::cache_id_name(accountID_)] = accountID_;
+        all_elements_[AccountModel::instance().get_id_name(accountID_)] = accountID_;
 }
 
 // accountID = always include this account even if it would have been excluded as closed
@@ -461,9 +461,9 @@ mmComboBoxAccount::mmComboBoxAccount(wxWindow* parent, wxWindowID id
 
 void mmComboBoxPayee::init()
 {
-    all_elements_ = PayeeModel::instance().all_payees(excludeHidden_);
+    all_elements_ = PayeeModel::instance().find_all_name_id_m(excludeHidden_);
     if (payeeID_ > -1)
-        all_elements_[PayeeModel::get_payee_name(payeeID_)] = payeeID_;
+        all_elements_[PayeeModel::instance().get_id_name(payeeID_)] = payeeID_;
 }
 
 // payeeID = always include this payee even if it would have been excluded as inactive
@@ -486,7 +486,12 @@ mmComboBoxPayee::mmComboBoxPayee(wxWindow* parent, wxWindowID id
 
 void mmComboBoxUsedPayee::init()
 {
-    all_elements_ = PayeeModel::instance().used_payee();
+    std::set<int64> used_id_s = PayeeModel::instance().find_used_id_s();
+    all_elements_.clear();
+    for (int64 id : used_id_s) {
+        wxString name = PayeeModel::instance().get_id_name(id);
+        all_elements_[name] = id;
+    }
 }
 
 mmComboBoxUsedPayee::mmComboBoxUsedPayee(wxWindow* parent, wxWindowID id, wxSize size)
@@ -684,7 +689,7 @@ wxBoxSizer* mmDatePickerCtrl::mmGetLayout(bool showTimeCtrl)
     date_sizer->Add(this->getSpinButton(), g_flagsH);
 #endif
     // If time picker is requested and turned on in Options, add it to the layout
-    if (showTimeCtrl && PreferencesModel::instance().UseTransDateTime())
+    if (showTimeCtrl && PrefModel::instance().UseTransDateTime())
     {
         timePicker_ = new wxTimePickerCtrl(parent_, GetId(), dt_, wxDefaultPosition, wxDefaultSize);
         timePicker_->Bind(wxEVT_TIME_CHANGED, &mmDatePickerCtrl::OnDateChanged, this);
@@ -700,7 +705,7 @@ wxBoxSizer* mmDatePickerCtrl::mmGetLayoutWithTime()
 {
     wxBoxSizer* date_sizer = new wxBoxSizer(wxHORIZONTAL);
     date_sizer->Add(this, g_flagsH);
-    if (PreferencesModel::instance().UseTransDateTime())
+    if (PrefModel::instance().UseTransDateTime())
     {
         timePicker_ = new wxTimePickerCtrl(parent_, GetId(), dt_, wxDefaultPosition, wxDefaultSize);
         timePicker_->Bind(wxEVT_TIME_CHANGED, &mmDatePickerCtrl::OnDateChanged, this);
@@ -832,8 +837,8 @@ mmChoiceAmountMask::mmChoiceAmountMask(wxWindow* parent, wxWindowID id)
         this->Append(wxGetTranslation(entry.first), new wxStringClientData(entry.second));
     }
 
-    CurrencyModel::Data* base_currency = CurrencyModel::GetBaseCurrency();
-    const auto decimal_point = base_currency->DECIMAL_POINT;
+    const CurrencyData* base_currency = CurrencyModel::GetBaseCurrency();
+    const auto decimal_point = base_currency->m_decimal_point;
 
     SetDecimalChar(decimal_point);
 }
@@ -1124,11 +1129,12 @@ mmSingleChoiceDialog::mmSingleChoiceDialog(wxWindow* parent, const wxString& mes
     Fit();
 }
 mmSingleChoiceDialog::mmSingleChoiceDialog(wxWindow* parent, const wxString& message,
-    const wxString& caption, const AccountModel::Data_Set& accounts)
+    const wxString& caption, const AccountModel::DataA& account_a)
 {
     if (parent) this->SetFont(parent->GetFont());
     wxArrayString choices;
-    for (const auto& item : accounts) choices.Add(item.ACCOUNTNAME);
+    for (const auto& account_d : account_a)
+        choices.Add(account_d.m_name);
     wxSingleChoiceDialog::Create(parent, message, caption, choices);
     mmThemeAutoColour(this);
     SetMinSize(wxSize(220, 384));
@@ -1537,10 +1543,9 @@ void mmTagTextCtrl::init()
     // Initialize the tag map and dropdown checkboxes
     tag_map_.clear();
     tagCheckListBox_->Clear();
-    for (const auto& tag : TagModel::instance().get_all(TagCol::COL_ID_TAGNAME))
-    {
-        tag_map_[tag.TAGNAME] = tag.TAGID;
-        tagCheckListBox_->Append(tag.TAGNAME);
+    for (const auto& tag_d : TagModel::instance().find_all(TagCol::COL_ID_TAGNAME)) {
+        tag_map_[tag_d.m_name] = tag_d.m_id;
+        tagCheckListBox_->Append(tag_d.m_name);
     }
 
     tagCheckListBox_->Fit();
@@ -1560,13 +1565,11 @@ void mmTagTextCtrl::OnTextChanged(wxKeyEvent& event)
         // Show autocomplete
         wxString pattern = textCtrl_->GetText().Mid(tag_start, std::min(ip, anchor) - tag_start).Append(event.GetUnicodeKey());
         autocomplete_string_.Clear();
-        for (const auto& tag : tag_map_)
-        {
-            if (tag.first.Lower().Matches(pattern.Lower().Prepend("*").Append("*")))
-                autocomplete_string_.Append(tag.first + " ");
+        for (const auto& tag_d : tag_map_) {
+            if (tag_d.first.Lower().Matches(pattern.Lower().Prepend("*").Append("*")))
+                autocomplete_string_.Append(tag_d.first + " ");
         }
-        if (!autocomplete_string_.IsEmpty())
-        {
+        if (!autocomplete_string_.IsEmpty()) {
             textCtrl_->AutoCompShow(tag_end - tag_start, autocomplete_string_);
         }
         else
@@ -1582,12 +1585,10 @@ void mmTagTextCtrl::OnPopupCheckboxSelected(wxCommandEvent& event)
     // If they checked a box, append to the string
     if (tagCheckListBox_->IsChecked(event.GetSelection()))
         textCtrl_->SetText(textCtrl_->GetText().Trim() + " " + selectedText +  " ");
-    else
-    {
+    else {
         // If they unchecked a box, remove the tag from the string.
         int pos = 0;
-        while (pos <= textCtrl_->GetLastPosition())
-        {
+        while (pos <= textCtrl_->GetLastPosition()) {
             pos = textCtrl_->FindText(pos, textCtrl_->GetLastPosition(), selectedText);
 
             if (pos == wxNOT_FOUND)
@@ -1595,8 +1596,7 @@ void mmTagTextCtrl::OnPopupCheckboxSelected(wxCommandEvent& event)
 
             pos = textCtrl_->WordStartPosition(pos, true);
             int end = textCtrl_->WordEndPosition(pos, true);
-            if (textCtrl_->GetTextRange(pos, end) == selectedText)
-            {
+            if (textCtrl_->GetTextRange(pos, end) == selectedText) {
                 textCtrl_->Remove(pos, end);
                 break;
             }
@@ -1638,14 +1638,12 @@ bool mmTagTextCtrl::Enable(bool enable)
     textCtrl_->Enable(enable);
     btn_dropdown_->Enable(enable);
 
-    if (enable)
-    {
+    if (enable) {
         textCtrl_->StyleSetBackground(wxSTC_STYLE_DEFAULT, bgColorEnabled_);
         SetBackgroundColour(bgColorEnabled_);
         btn_dropdown_->SetBitmap(dropArrow_);
     }
-    else
-    {
+    else {
         textCtrl_->StyleSetBackground(wxSTC_STYLE_DEFAULT, bgColorDisabled_);
         SetBackgroundColour(bgColorDisabled_);
         btn_dropdown_->SetBitmap(dropArrowInactive_);
@@ -1662,16 +1660,14 @@ void mmTagTextCtrl::OnPaint(wxPaintEvent& event)
     // Reset the text style
     textCtrl_->ClearDocumentStyle();
 
-    while (position < end)
-    {
+    while (position < end) {
         // Find start and end of word
         int wordStart = textCtrl_->WordStartPosition(position, true);
         int wordEnd = textCtrl_->WordEndPosition(position, true);
         wxString word = textCtrl_->GetTextRange(wordStart, wordEnd);
 
         // If the word is a valid tag, color it
-        if (auto it = tag_map_.find(word); it != tag_map_.end())
-        {
+        if (auto it = tag_map_.find(word); it != tag_map_.end()) {
             textCtrl_->StartStyling(wordStart);
             textCtrl_->SetStyling(wordEnd - wordStart, 1);
         }
@@ -1683,8 +1679,7 @@ void mmTagTextCtrl::OnPaint(wxPaintEvent& event)
     // paint a TextCtrl over the background -- not currently used on macOS due to dark mode bug
     wxPaintDC dc(this);
     wxRegion clipRegion(GetClientRect());
-    if (btn_dropdown_->GetClientRect().Contains(btn_dropdown_->ScreenToClient(wxGetMousePosition())))
-    {
+    if (btn_dropdown_->GetClientRect().Contains(btn_dropdown_->ScreenToClient(wxGetMousePosition()))) {
         wxRect btnRect(btn_dropdown_->GetRect());
         btnRect.y = 1;
         btnRect.height -= 2;
@@ -1720,8 +1715,7 @@ void mmTagTextCtrl::OnPaint(wxPaintEvent& event)
 
     dc.DrawLines(5, pt);
 
-    if (!initialRefreshDone_)
-    {
+    if (!initialRefreshDone_) {
         btn_dropdown_->Refresh();
         initialRefreshDone_ = true;
     }
@@ -1746,16 +1740,14 @@ void mmTagTextCtrl::OnPaintButton(wxPaintEvent& )
 
     if(style != wxCONTROL_NONE)
         wxRendererNative::Get().DrawComboBoxDropButton(this, dc, rect, style);
-    else
-    {
+    else {
         // If we aren't interacting with the button, draw the drop arrow
         // directly on the texctrl like the native combobox
         dc.DrawBitmap(btn_dropdown_->IsEnabled() ? dropArrow_ : dropArrowInactive_, wxPoint(0, 0));
     }
 
     // Redraw the top, right, and bottom borders to match the window border
-    if (style != wxCONTROL_CURRENT && style != wxCONTROL_PRESSED)
-    {
+    if (style != wxCONTROL_CURRENT && style != wxCONTROL_PRESSED) {
         dc.SetPen(borderColor_);
         dc.DrawLine(rect.x, 0, rect.x + rect.width, 0);
         dc.DrawLine(rect.x + rect.width - 1, 0, rect.x + rect.width - 1, rect.height);
@@ -1782,26 +1774,25 @@ bool mmTagTextCtrl::ValidateTagText(const wxString& tagText)
     wxString tags_out;
     bool is_valid = true;
     // parse the tags and prompt to create any which don't exist
-    for (const auto& tag : parseTags(tags_in))
-    {
+    for (const auto& tag : parseTags(tags_in)) {
         // ignore search operators
-        if (tag == "&" || tag == "|")
-        {
+        if (tag == "&" || tag == "|") {
             tags_out.Append(tag + " ");
             continue;
         }
 
-        if (tag_map_.find(tag) == tag_map_.end())
-        {
+        if (tag_map_.find(tag) == tag_map_.end()) {
             // Prompt user to create a new tag
-            if (wxMessageDialog(nullptr, wxString::Format(_t("Create new tag '%s'?"), tag), _t("New tag entered"), wxYES_NO).ShowModal() == wxID_YES)
-            {
-                TagModel::Data* newTag = TagModel::instance().create();
-                newTag->TAGNAME = tag;
-                newTag->ACTIVE = 1;
-                TagModel::instance().save(newTag);
+            if (wxMessageDialog(nullptr,
+                wxString::Format(_t("Create new tag '%s'?"), tag),
+                _t("New tag entered"),
+                wxYES_NO
+            ).ShowModal() == wxID_YES) {
+                TagData new_tag_d = TagData();
+                new_tag_d.m_name = tag;
+                TagModel::instance().add_data_n(new_tag_d);
                 // Save the new tag to reference
-                tag_map_[tag] = newTag->TAGID;
+                tag_map_[tag] = new_tag_d.m_id;
                 tagCheckListBox_->Append(tag);
 
                 // Generate an event to tell the parent that a new tag has been added
@@ -1811,8 +1802,7 @@ bool mmTagTextCtrl::ValidateTagText(const wxString& tagText)
                 evt.SetId(GetId());
                 GetEventHandler()->AddPendingEvent(evt);
             }
-            else
-            {
+            else {
                 is_valid = false;
                 continue;
             }

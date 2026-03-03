@@ -29,12 +29,12 @@ table_class_basename = {
     'ACCOUNTLIST_V1'             : 'Account',
     'ASSETS_V1'                  : 'Asset',
     'ATTACHMENT_V1'              : 'Attachment',
-    'BILLSDEPOSITS_V1'           : 'Scheduled',
-    'BUDGETSPLITTRANSACTIONS_V1' : 'ScheduledSplit',
+    'BILLSDEPOSITS_V1'           : 'Sched',
+    'BUDGETSPLITTRANSACTIONS_V1' : 'SchedSplit',
     'BUDGETTABLE_V1'             : 'Budget',
     'BUDGETYEAR_V1'              : 'BudgetPeriod',
     'CATEGORY_V1'                : 'Category',
-    'CHECKINGACCOUNT_V1'         : 'Transaction',
+    'CHECKINGACCOUNT_V1'         : 'Trx',
     'CURRENCYFORMATS_V1'         : 'Currency',
     'CURRENCYHISTORY_V1'         : 'CurrencyHistory',
     'CUSTOMFIELDDATA_V1'         : 'FieldValue',
@@ -43,13 +43,13 @@ table_class_basename = {
     'PAYEE_V1'                   : 'Payee',
     'REPORT_V1'                  : 'Report',
     'SETTING_V1'                 : 'Setting',
-    'SHAREINFO_V1'               : 'TransactionShare',
-    'SPLITTRANSACTIONS_V1'       : 'TransactionSplit',
+    'SHAREINFO_V1'               : 'TrxShare',
+    'SPLITTRANSACTIONS_V1'       : 'TrxSplit',
     'STOCKHISTORY_V1'            : 'StockHistory',
     'STOCK_V1'                   : 'Stock',
     'TAGLINK_V1'                 : 'TagLink',
     'TAG_V1'                     : 'Tag',
-    'TRANSLINK_V1'               : 'TransactionLink',
+    'TRANSLINK_V1'               : 'TrxLink',
     'USAGE_V1'                   : 'Usage',
 }
 
@@ -203,13 +203,14 @@ class Table:
     # {{{ def generate_table_h(self, header)
 
     def generate_table_h(self, header):
-        """ Generate .h file for the table class"""
+        """ Generate .h file for the *Table class"""
 
         # short names
         dt = self.table_name
         cb = self.class_basename
         cc = self.class_basename + 'Col'
         cr = self.class_basename + 'Row'
+        cd = self.class_basename + 'Data'
         ct = self.class_name
         fa = self.field_a
         fp = self.field_pk
@@ -221,7 +222,7 @@ class Table:
 #pragma once
 
 #include "%s.h"
-''' % factory_basename
+''' % base_basename
 
         # }}}
         # {{{ struct *Col ...
@@ -288,7 +289,6 @@ struct %s
 struct %s
 {
     using Col = %s;
-    using COL_ID = Col::COL_ID;
 ''' % (dt, cr, cc)
 
         # }}}
@@ -318,22 +318,22 @@ struct %s
         code += '''
     int64 id() const { return %s; }
     void id(const int64 id) { %s = id; }
-    void destroy() { delete this; }
-
-    bool equals(const %s* r) const;
     void to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const;
-    void from_select_result(wxSQLite3ResultSet& q);
+    void to_update_stmt(wxSQLite3Statement& stmt) const;
+    %s& from_select_result(wxSQLite3ResultSet& q);
     wxString to_json() const;
     void as_json(PrettyWriter<StringBuffer>& json_writer) const;
-    row_t to_row_t() const;
-    void to_template(html_template& t) const;
+    row_t to_html_row() const;
+    void to_html_template(html_template& t) const;
+    void destroy() { delete this; }
 ''' % (fp['name'], fp['name'], cr)
 
         code += '''
-    %s& operator=(const %s& other);
+    %s& clone_from(const %s& other);
+    bool equals(const %s* other) const;
     bool operator< (const %s& other) const { return id() < other.id(); }
     bool operator< (const %s* other) const { return id() < other->id(); }
-''' % (cr, cr, cr, cr)
+''' % (cr, cr, cr, cr, cr)
 
         # }}}
         # {{{ match
@@ -414,20 +414,24 @@ struct %s
 
         code += '''
 // Interface to database table %s
-struct %s : public TableFactory<%s>
-{''' % (dt, ct, cr)
+struct %s : public TableBase
+{
+    using Row = %s;
+    using Col = typename Row::Col;
+''' % (dt, ct, cr)
 
         # }}}
         # {{{ using (COLUMN_NAME)
 
-        code += '''
+        if False:
+            code += '''
     // Use Col::(COLUMN_NAME) until model provides similar functionality based on Data.'''
 
-        for f in fa:
-            code += '''
+            for f in fa:
+                code += '''
     using %s = Col::%s;''' % (f['name'].upper(), f['name'].upper())
 
-        code += '''
+            code += '''
 '''
 
         # }}}
@@ -435,10 +439,13 @@ struct %s : public TableFactory<%s>
 
         code += '''
     %s();
-    ~%s();
-
-    void ensure_data() override;
+    ~%s() {}
 ''' % (ct, ct)
+
+        if self.data_a:
+            code += '''
+    void ensure_data() override;
+'''
 
         # }}}
         # {{{ ... struct *Table
@@ -447,9 +454,32 @@ struct %s : public TableFactory<%s>
 '''
         # }}}
 
+        # {{{ inline methods
+
+        code += '''
+inline %s::%s(wxSQLite3ResultSet& q)
+{
+    from_select_result(q);
+}
+
+inline void %s::to_update_stmt(wxSQLite3Statement& stmt) const
+{
+    to_insert_stmt(stmt, id());
+}
+
+inline %s& %s::clone_from(const %s& other)
+{
+    *this = other;
+    id(-1);
+    return *this;
+}
+''' % (cr, cr, cr, cr, cr, cr)
+
+        # }}}
+
         file_name = self.file_basename + '.h'
         print ('Generate %s (source code for %s)' % (file_name, dt))
-        rfp = codecs.open(file_name, 'w', 'utf-8-sig')
+        rfp = codecs.open(file_name, 'w', 'utf-8')
         rfp.write(header
             .replace('@file', file_name)
             .replace('@brief', 'Interface to database table %s' % dt)
@@ -461,13 +491,14 @@ struct %s : public TableFactory<%s>
     # {{{ def generate_table_cpp(self, header)
 
     def generate_table_cpp(self, header):
-        """ Generate .cpp file for the table class"""
+        """ Generate .cpp file for the *Table class"""
 
         # short names
         dt = self.table_name
         cb = self.class_basename
         cc = self.class_basename + 'Col'
         cr = self.class_basename + 'Row'
+        cd = self.class_basename + 'Data'
         ct = self.class_name
         fa = self.field_a
         fp = self.field_pk
@@ -478,11 +509,13 @@ struct %s : public TableFactory<%s>
         code = '''
 #include "%s.tpp"
 #include "%s.h"
-''' % (factory_basename, self.file_basename)
+#include "data/%s.h"
+''' % (factory_basename, self.file_basename, cd)
 
         code += '''
-template class TableFactory<%s>;
-''' % cr
+template class TableFactory<%s, %s>;
+template class mmCache<int64, %s>;
+''' % (ct, cd, cd)
 
         # }}}
         # {{{ *Col
@@ -525,41 +558,13 @@ const wxString %s::PRIMARY_NAME = COL_NAME_A[COL_ID_%s];
 
         code += '''
 }
-
-%s::%s(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-''' % (cr, cr)
-
-        # }}}
-        # {{{ *Row::equals
-
-        code += '''
-bool %s::equals(const %s* r) const
-{''' % (cr, cr)
-
-        for f in fa:
-            ftype = dbtype_ctype[f['type']]
-            if ftype == 'int64' or ftype == 'double':
-                code += '''
-    if ( %s != r->%s) return false;''' % (f['name'], f['name'])
-            elif ftype == 'wxString':
-                code += '''
-    if (!%s.IsSameAs(r->%s)) return false;''' % (f['name'], f['name'])
-
-        code += '''
-
-    return true;
-}
 '''
 
         # }}}
         # {{{ *Row::to_insert_stmt, *Row::from_select_result
 
         code += '''
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void %s::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {''' % cr
 
@@ -573,14 +578,16 @@ void %s::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 ''' % len(fa)
 
         code += '''
-void %s::from_select_result(wxSQLite3ResultSet& q)
-{''' % cr
+%s& %s::from_select_result(wxSQLite3ResultSet& q)
+{''' % (cr, cr)
 
         for f in fa:
             code += '''
     %s = q.%s(%d);''' % (f['name'], dbtype_function[f['type']], f['cid'])
 
         code += '''
+
+    return *this;
 }
 '''
 
@@ -631,10 +638,10 @@ void %s::as_json(PrettyWriter<StringBuffer>& json_writer) const
 '''
 
         # }}}
-        # {{{ *Row::to_row_t, *Row::to_template
+        # {{{ *Row::to_html_row, *Row::to_html_template
 
         code += '''
-row_t %s::to_row_t() const
+row_t %s::to_html_row() const
 {
     row_t row;
 ''' % cr
@@ -653,7 +660,7 @@ row_t %s::to_row_t() const
 '''
 
         code += '''
-void %s::to_template(html_template& t) const
+void %s::to_html_template(html_template& t) const
 {''' % cr
 
         for f in fa:
@@ -668,21 +675,24 @@ void %s::to_template(html_template& t) const
 '''
 
         # }}}
-        # {{{ *Row::operator=
+        # {{{ *Row::equals
 
         code += '''
-%s& %s::operator=(const %s& other)
-{
-    if (this == &other) return *this;
-''' % (cr, cr, cr)
+bool %s::equals(const %s* other) const
+{''' % (cr, cr)
 
         for f in fa:
-            code += '''
-    %s = other.%s;''' % (f['name'], f['name'])
+            ftype = dbtype_ctype[f['type']]
+            if ftype == 'int64' or ftype == 'double':
+                code += '''
+    if ( %s != other->%s) return false;''' % (f['name'], f['name'])
+            elif ftype == 'wxString':
+                code += '''
+    if (!%s.IsSameAs(other->%s)) return false;''' % (f['name'], f['name'])
 
         code += '''
 
-    return *this;
+    return true;
 }
 '''
 
@@ -754,36 +764,28 @@ void %s::to_template(html_template& t) const
             select_query
         )
 
-        code += '''
-// Destructor: clears any data records stored in memory
-%s::~%s()
-{
-    delete fake_;
-    destroy_cache();
-}
-''' % (ct, ct)
-
         # }}}
         # {{{ ensure_data
 
-        code += '''
+        if self.data_a:
+            code += '''
 void %s::ensure_data()
 {
     m_db->Begin();''' % ct
 
-        rf1, rf2, rf3 = '', '', ''
-        for r in self.data_a:
-            rf2 = ', '.join(["'%s'" if is_trans(i) else "'%s'" % i for i in r])
-            rf3 = ', '.join([translation_for(i) for i in r if is_trans(i)])
-            if rf2.find('%s') >= 0:
-                rf3 = ', ' + rf3
-            rf1 = '"INSERT INTO %s VALUES (%s)"%s' % (dt, rf2, rf3)
-            if rf2.find('%s') >= 0:
-                rf1 = 'wxString::Format(' + rf1 + ')'
-            code += '''
+            rf1, rf2, rf3 = '', '', ''
+            for r in self.data_a:
+                rf2 = ', '.join(["'%s'" if is_trans(i) else "'%s'" % i for i in r])
+                rf3 = ', '.join([translation_for(i) for i in r if is_trans(i)])
+                if rf2.find('%s') >= 0:
+                    rf3 = ', ' + rf3
+                rf1 = '"INSERT INTO %s VALUES (%s)"%s' % (dt, rf2, rf3)
+                if rf2.find('%s') >= 0:
+                    rf1 = 'wxString::Format(' + rf1 + ')'
+                code += '''
     m_db->ExecuteUpdate(%s);''' % (rf1)
 
-        code += '''
+            code += '''
     m_db->Commit();
 }
 '''
@@ -792,10 +794,329 @@ void %s::ensure_data()
 
         file_name = self.file_basename + '.cpp'
         print ('Generate %s (source code for %s)' % (file_name, dt))
-        rfp = codecs.open(file_name, 'w', 'utf-8-sig')
+        rfp = codecs.open(file_name, 'w', 'utf-8')
         rfp.write(header
             .replace('@file', file_name)
             .replace('@brief', 'Implementation of the interface to database table %s' % dt)
+        )
+        rfp.write(code)
+        rfp.close()
+
+    # }}}
+    # {{{ def generate_data_h(self, header)
+
+    def generate_data_h(self, header):
+        """ Generate sample .h file for the *Data class"""
+
+        # short names
+        dt = self.table_name
+        cb = self.class_basename
+        cc = self.class_basename + 'Col'
+        cr = self.class_basename + 'Row'
+        cd = self.class_basename + 'Data'
+        ct = self.class_name
+        fa = self.field_a
+        fp = self.field_pk
+        fo = self.field_other_a
+
+        # {{{ include
+
+        code = '''
+// PLEASE EDIT!
+//
+// This is only sample code re-used from "table/%s.h".
+//
+// The data structure can be refined by:
+// * using more user-frielndly filed name
+// * using stronger field types
+// * adding enumerations for fields with limited choices
+// * demultiplexing composite values in database columns
+//
+// See also an implementation in Swift:
+//   https://github.com/moneymanagerex/mmex-ios/tree/master/MMEX/Data
+// and an implementation in Java:
+//   https://github.com/moneymanagerex/android-money-manager-ex/tree/master/app/src/main/java/com/money/manager/ex/domainmodel
+
+#pragma once
+
+#include "table/%s.h"
+#include "table/%s.h"
+''' % (ct, base_basename, ct)
+
+        # }}}
+        # {{{ struct *Data ...
+
+        code += '''
+// User-friendly representation of a record in table %s.
+struct %s
+{''' % (dt, cd)
+
+        # }}}
+        # {{{ member variables
+
+        code += '''
+    %s %s; // primary key''' % (dbtype_ctype[fp['type']], fp['name'])
+
+        for f in fo:
+            code += '''
+    %s %s;''' % (
+                dbtype_ctype[f['type']], f['name']
+            )
+
+        code += '''
+'''
+
+        # }}}
+        # {{{ instance methods
+
+        code += '''
+    explicit %s();
+    explicit %s(wxSQLite3ResultSet& q);
+    %s(const %s& other) = default;
+''' % (cd, cd, cd, cd)
+
+        code += '''
+    int64 id() const { return %s; }
+    void id(const int64 id) { %s = id; }
+    %s to_row() const;
+    %s& from_row(const %s& row);
+    void to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const;
+    void to_update_stmt(wxSQLite3Statement& stmt) const;
+    %s& from_select_result(wxSQLite3ResultSet& q);
+    wxString to_json() const;
+    void as_json(PrettyWriter<StringBuffer>& json_writer) const;
+    row_t to_html_row() const;
+    void to_html_template(html_template& t) const;
+    void destroy() { delete this; }
+''' % (fp['name'], fp['name'], cr, cd, cr, cd)
+
+        code += '''
+    %s& clone_from(const %s& other);
+    bool equals(const %s* other) const;
+    bool operator< (const %s& other) const { return id() < other.id(); }
+    bool operator< (const %s* other) const { return id() < other->id(); }
+''' % (cd, cd, cd, cd, cd)
+
+        # }}}
+        # {{{ SorterBy
+
+        for f in fa:
+            code += '''
+    struct SorterBy%s
+    {
+        bool operator()(const %s& x, const %s& y)
+        {''' % (f['name'], cd, cd)
+
+            if f['name'] in ['ACCOUNTNAME', 'CATEGNAME', 'PAYEENAME', 'SUBCATEGNAME']:
+                code += '''
+            // Locale case-insensitive
+            return std::wcscoll(x.%s.Lower().wc_str(), y.%s.Lower().wc_str()) < 0;
+''' % (f['name'], f['name'])
+
+            elif f['name'] in ['CURRENCYNAME']:
+                code += '''
+            return wxGetTranslation(x.%s) < wxGetTranslation(y.%s);
+''' % (f['name'], f['name'])
+
+            else:
+                code += '''
+            return x.%s < y.%s;
+''' % (f['name'], f['name'])
+
+            code += '''        }
+    };
+'''
+
+        # }}}
+        # {{{ ... struct *Data
+
+        code += '''};
+'''
+        # }}}
+        # {{{ inline methods
+
+        code += '''
+inline %s::%s(wxSQLite3ResultSet& q)
+{
+    from_select_result(q);
+}
+
+inline void %s::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
+{
+    to_row().to_insert_stmt(stmt, id);
+}
+
+inline void %s::to_update_stmt(wxSQLite3Statement& stmt) const
+{
+    to_row().to_update_stmt(stmt);
+}
+
+inline %s& %s::from_select_result(wxSQLite3ResultSet& q)
+{
+    return from_row(%s().from_select_result(q));
+}
+
+inline wxString %s::to_json() const
+{
+    return to_row().to_json();
+}
+
+inline void %s::as_json(PrettyWriter<StringBuffer>& json_writer) const
+{
+    to_row().as_json(json_writer);
+}
+
+inline row_t %s::to_html_row() const
+{
+    return to_row().to_html_row();
+}
+
+inline void %s::to_html_template(html_template& t) const
+{
+    to_row().to_html_template(t);
+}
+
+inline %s& %s::clone_from(const %s& other)
+{
+    *this = other;
+    id(-1);
+    return *this;
+}
+''' % (cd, cd, cd, cd, cd, cd, cr, cd, cd, cd, cd, cd, cd, cd)
+
+        # }}}
+
+        file_name = self.class_basename + 'Data' + '.h'
+        if os.path.exists(file_name):
+            print ('WARNING: %s already exists!' % file_name)
+            return
+
+        print ('Generate %s (sample data structure for %s)' % (file_name, dt))
+        rfp = codecs.open(file_name, 'w', 'utf-8')
+        rfp.write(header
+            .replace('@file', file_name)
+            .replace('@brief', 'Sample data structure for a single record in table %s' % dt)
+        )
+        rfp.write(code)
+        rfp.close()
+
+    # }}}
+    # {{{ def generate_data_cpp(self, header)
+
+    def generate_data_cpp(self, header):
+        """ Generate sample .cpp file for the *Data class"""
+
+        # short names
+        dt = self.table_name
+        cb = self.class_basename
+        cc = self.class_basename + 'Col'
+        cr = self.class_basename + 'Row'
+        cd = self.class_basename + 'Data'
+        ct = self.class_name
+        fa = self.field_a
+        fp = self.field_pk
+        fo = self.field_other_a
+
+        # {{{ include
+
+        code = '''
+// PLEASE EDIT!
+// This is only sample code re-used from "table/%s.cpp".
+
+#include "%s.h"
+''' % (ct, cd)
+
+        # }}}
+        # {{{ *Data::*Data
+
+        code += '''
+%s::%s()
+{''' % (cd, cd)
+
+        for f in fa:
+            ftype = dbtype_ctype[f['type']]
+            if ftype == 'wxString':
+                continue
+            elif ftype == 'double':
+                code += '''
+    %s = 0.0;''' % f['name']
+            elif ftype == 'int64':
+                code += '''
+    %s = -1;''' % f['name']
+
+        code += '''
+}
+'''
+
+        # }}}
+        # {{{ *Data::to_row, *Data::from_row
+
+        code += '''
+// Convert %s to %s
+%s %s::to_row() const
+{
+    %s row;
+''' % (cd, cr, cr, cd, cr)
+
+        for f in fa:
+            code += '''
+    row.%s = %s;''' % (f['name'], f['name'])
+
+        code += '''
+
+    return row;
+}
+'''
+
+        code += '''
+// Convert %s to %s
+%s& %s::from_row(const %s& row)
+{''' % (cr, cd, cd, cd, cr)
+
+        for f in fa:
+            code += '''
+    %s = row.%s; // %s''' % (f['name'], f['name'], dbtype_ctype[f['type']])
+
+        code += '''
+
+    return *this;
+}
+'''
+
+        # }}}
+        # {{{ *Data::equals
+
+        code += '''
+bool %s::equals(const %s* other) const
+{''' % (cd, cd)
+
+        for f in fa:
+            ftype = dbtype_ctype[f['type']]
+            if ftype == 'int64' or ftype == 'double':
+                code += '''
+    if ( %s != other->%s) return false;''' % (f['name'], f['name'])
+            elif ftype == 'wxString':
+                code += '''
+    if (!%s.IsSameAs(other->%s)) return false;''' % (f['name'], f['name'])
+
+        code += '''
+
+    return true;
+}
+'''
+
+        # }}}
+
+        file_name = self.class_basename + 'Data' + '.cpp'
+        if os.path.exists(file_name):
+            print ('WARNING: %s already exists!' % file_name)
+            return
+
+        print ('Generate %s (sample data structure for %s)' % (file_name, dt))
+        rfp = codecs.open(file_name, 'w', 'utf-8')
+        rfp.write(header
+            .replace('@file', file_name)
+            .replace('@brief', 'Sample data structure for a single record in table %s' % dt)
         )
         rfp.write(code)
         rfp.close()
@@ -837,9 +1158,9 @@ UPDATE OR IGNORE %s SET %s WHERE CURRENCY_SYMBOL='%s';''' % (
 # {{{ __main__
 
 if __name__ == '__main__':
-    # {{{ header
+    # {{{ table_header
 
-    header = '''// -*- C++ -*-
+    table_header = '''// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-%s Guan Lisheng (guanlisheng@gmail.com)
@@ -861,9 +1182,54 @@ if __name__ == '__main__':
 '''% (datetime.date.today().year, os.path.basename(__file__), str(datetime.datetime.now()))
 
     # }}}
-    sql_file, conn, cursor = None, None, None
+    # {{{ data_header
+
+    data_header = '''/*******************************************************
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ ********************************************************/
+'''
+
+    # }}}
+    # {{{ opt, sql_file
+
+    opt_default = 'stp'
+    opt = ''
+    sql_file = None
+
+    ai = 1
+    while ai < len(sys.argv):
+        av = sys.argv[ai]
+        if av.startswith('-'):
+            opt += av[1:]
+        else:
+            sql_file = av
+            break
+        ai += 1
+
+    if opt == '':
+        opt = opt_default
+
+    if sql_file is None:
+        sys.exit(1)
+
+    # }}}
+
+    conn, cursor = None, None
     try:
-        sql_file = sys.argv[1]
         conn = sqlite3.connect(":memory:")
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
@@ -888,20 +1254,26 @@ if __name__ == '__main__':
 
         sql_txt = sql_txt + line
 
-    print ('Generate %s (clean database without translation)' % tables_sql_filename)
-    file_data = codecs.open(tables_sql_filename, 'w', 'utf-8')
-    file_data.write(sql_txt)
-    file_data.close()
+    if 's' in opt:
+        print ('Generate %s (clean database without translation)' % tables_sql_filename)
+        file_data = codecs.open(tables_sql_filename, 'w', 'utf-8')
+        file_data.write(sql_txt)
+        file_data.close()
 
     cursor.executescript(sql)
 
     for table_name, table_sql in get_table_a(cursor):
         table = Table(cursor, table_name, table_sql)
-        table.generate_table_h(header)
-        table.generate_table_cpp(header)
-        if table_name.upper() == 'CURRENCYFORMATS_V1':
-            table.generate_patch_currency(patch_currency_filename, False)
-            table.generate_patch_currency(patch_currency_utf8_filename, True)
+        if 't' in opt:
+            table.generate_table_h(table_header)
+            table.generate_table_cpp(table_header)
+        if 'd' in opt:
+            table.generate_data_h(data_header)
+            table.generate_data_cpp(data_header)
+        if 'p' in opt:
+            if table_name.upper() == 'CURRENCYFORMATS_V1':
+                table.generate_patch_currency(patch_currency_filename, False)
+                table.generate_patch_currency(patch_currency_utf8_filename, True)
 
     conn.close()
     print ('Done')

@@ -23,10 +23,12 @@
 #include "base/defs.h"
 #include "util/_util.h"
 
-#include "_ModelBase.h"
 #include "table/InfoTable.h"
+#include "data/InfoData.h"
 
-class InfoModel : public Model<InfoTable>
+#include "_ModelBase.h"
+
+class InfoModel : public TableFactory<InfoTable, InfoData>
 {
 public:
     InfoModel();

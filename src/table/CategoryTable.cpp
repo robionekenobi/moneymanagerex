@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "CategoryTable.h"
+#include "data/CategoryData.h"
 
-template class TableFactory<CategoryRow>;
+template class TableFactory<CategoryTable, CategoryData>;
+template class mmCache<int64, CategoryData>;
 
 // List of column names in database table CATEGORY_V1,
 // in the order of CategoryCol::COL_ID.
@@ -42,23 +44,7 @@ CategoryRow::CategoryRow()
     PARENTID = -1;
 }
 
-CategoryRow::CategoryRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool CategoryRow::equals(const CategoryRow* r) const
-{
-    if ( CATEGID != r->CATEGID) return false;
-    if (!CATEGNAME.IsSameAs(r->CATEGNAME)) return false;
-    if ( ACTIVE != r->ACTIVE) return false;
-    if ( PARENTID != r->PARENTID) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void CategoryRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, CATEGNAME);
@@ -67,12 +53,14 @@ void CategoryRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(4, id);
 }
 
-void CategoryRow::from_select_result(wxSQLite3ResultSet& q)
+CategoryRow& CategoryRow::from_select_result(wxSQLite3ResultSet& q)
 {
     CATEGID = q.GetInt64(0);
     CATEGNAME = q.GetString(1);
     ACTIVE = q.GetInt64(2);
     PARENTID = q.GetInt64(3);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -104,7 +92,7 @@ void CategoryRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.Int64(PARENTID.GetValue());
 }
 
-row_t CategoryRow::to_row_t() const
+row_t CategoryRow::to_html_row() const
 {
     row_t row;
 
@@ -116,7 +104,7 @@ row_t CategoryRow::to_row_t() const
     return row;
 }
 
-void CategoryRow::to_template(html_template& t) const
+void CategoryRow::to_html_template(html_template& t) const
 {
     t(L"CATEGID") = CATEGID.GetValue();
     t(L"CATEGNAME") = CATEGNAME;
@@ -124,16 +112,14 @@ void CategoryRow::to_template(html_template& t) const
     t(L"PARENTID") = PARENTID.GetValue();
 }
 
-CategoryRow& CategoryRow::operator=(const CategoryRow& other)
+bool CategoryRow::equals(const CategoryRow* other) const
 {
-    if (this == &other) return *this;
+    if ( CATEGID != other->CATEGID) return false;
+    if (!CATEGNAME.IsSameAs(other->CATEGNAME)) return false;
+    if ( ACTIVE != other->ACTIVE) return false;
+    if ( PARENTID != other->PARENTID) return false;
 
-    CATEGID = other.CATEGID;
-    CATEGNAME = other.CATEGNAME;
-    ACTIVE = other.ACTIVE;
-    PARENTID = other.PARENTID;
-
-    return *this;
+    return true;
 }
 
 CategoryTable::CategoryTable()
@@ -156,13 +142,6 @@ CategoryTable::CategoryTable()
     m_delete_query = "DELETE FROM CATEGORY_V1 WHERE CATEGID = ?";
 
     m_select_query = "SELECT CATEGID, CATEGNAME, ACTIVE, PARENTID FROM CATEGORY_V1";
-}
-
-// Destructor: clears any data records stored in memory
-CategoryTable::~CategoryTable()
-{
-    delete fake_;
-    destroy_cache();
 }
 
 void CategoryTable::ensure_data()

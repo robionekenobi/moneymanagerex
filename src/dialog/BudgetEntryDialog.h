@@ -27,36 +27,46 @@ class BudgetEntryDialog : public wxDialog
     wxDECLARE_DYNAMIC_CLASS(BudgetEntryDialog);
     wxDECLARE_EVENT_TABLE();
 
-public:
-    BudgetEntryDialog();
-    BudgetEntryDialog(wxWindow* parent
-        , BudgetModel::Data* entry
-        , const wxString& categoryEstimate, const wxString& CategoryActual);
-
-    bool Create(wxWindow* parent, wxWindowID id
-        , const wxString& caption
-        , const wxPoint& pos
-        , const wxSize& size
-        , long style);
-
-    void CreateControls();
-    void onChoiceChar(wxKeyEvent& event);
-    // utility functions
-    void OnOk(wxCommandEvent& event);
-
-    void fillControls();
+private:
+    enum { DEF_TYPE_EXPENSE, DEF_TYPE_INCOME };
+    enum
+    {
+        DEF_FREQ_NONE, DEF_FREQ_WEEKLY, DEF_FREQ_BIWEEKLY,
+        DEF_FREQ_MONTHLY, DEF_FREQ_BIMONTHLY, DEF_FREQ_QUARTERLY,
+        DEF_FREQ_HALFYEARLY, DEF_FREQ_YEARLY, DEF_FREQ_DAILY
+    };
 
 private:
-    BudgetModel::Data* budgetEntry_ = nullptr;
-    wxChoice* m_choiceItem = nullptr;
-    mmTextCtrl* m_textAmount = nullptr;
-    wxChoice* m_choiceType = nullptr;
-    wxTextCtrl* m_Notes = nullptr;
-
+    BudgetData* m_budget_n = nullptr;
     wxString catEstimateAmountStr_;
     wxString catActualAmountStr_;
 
-    enum { DEF_TYPE_EXPENSE, DEF_TYPE_INCOME };
-    enum { DEF_FREQ_NONE, DEF_FREQ_WEEKLY, DEF_FREQ_BIWEEKLY, DEF_FREQ_MONTHLY, DEF_FREQ_BIMONTHLY, DEF_FREQ_QUARTERLY, DEF_FREQ_HALFYEARLY, DEF_FREQ_YEARLY, DEF_FREQ_DAILY };
+    wxChoice*   m_choiceItem = nullptr;
+    mmTextCtrl* m_textAmount = nullptr;
+    wxChoice*   m_choiceType = nullptr;
+    wxTextCtrl* m_Notes      = nullptr;
+
+public:
+    BudgetEntryDialog();
+    BudgetEntryDialog(
+        wxWindow* parent,
+        BudgetData* entry,
+        const wxString& categoryEstimate,
+        const wxString& CategoryActual
+    );
+
+    bool Create(
+        wxWindow* parent,
+        wxWindowID id,
+        const wxString& caption,
+        const wxPoint& pos,
+        const wxSize& size,
+        long style
+    );
+
+    void CreateControls();
+    void onChoiceChar(wxKeyEvent& event);
+    void OnOk(wxCommandEvent& event);
+    void fillControls();
 };
 

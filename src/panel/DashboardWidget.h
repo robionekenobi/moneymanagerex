@@ -20,11 +20,10 @@ Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
 #pragma once
 
 #include "base/defs.h"
+#include "base/types.h"
 #include <map>
 #include <vector>
 #include "util/mmDateRange.h"
-
-typedef wxLongLong int64;
 
 class htmlWidgetStocks
 {

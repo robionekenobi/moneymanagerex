@@ -19,43 +19,28 @@
 #pragma once
 
 #include "base/defs.h"
-#include "_ModelBase.h"
+
 #include "table/BudgetPeriodTable.h"
+#include "data/BudgetPeriodData.h"
 
-class BudgetPeriodModel : public Model<BudgetPeriodTable>
+#include "_ModelBase.h"
+
+class BudgetPeriodModel : public TableFactory<BudgetPeriodTable, BudgetPeriodData>
 {
-public:
-    using Model<BudgetPeriodTable>::remove;
-
 public:
     BudgetPeriodModel();
     ~BudgetPeriodModel();
 
 public:
-    /**
-    Initialize the global BudgetPeriodModel table on initial call.
-    Resets the global table on subsequent calls.
-    * Return the static instance address for BudgetPeriodModel table
-    * Note: Assigning the address to a local variable can destroy the instance.
-    */
     static BudgetPeriodModel& instance(wxSQLite3Database* db);
-
-    /**
-    * Return the static instance address for BudgetPeriodModel table
-    * Note: Assigning the address to a local variable can destroy the instance.
-    */
     static BudgetPeriodModel& instance();
 
-    bool remove(int64 id);
-
 public:
-    void Set(int64 year_id, const wxString& value);
-    int64 Add(const wxString& value);
+    // override
+    bool purge_id(int64 id) override;
 
-    wxString Get(int64 year_id);
-    int64 Get(const wxString& year_name);
-
-    bool Exists(int64 year_id);
-    bool Exists(const wxString& year_name);
+    auto get_id_name(int64 period_id) -> const wxString;
+    auto get_name_id(const wxString& period_name) -> int64;
+    auto ensure_name(const wxString& period_name) -> int64;
 };
 

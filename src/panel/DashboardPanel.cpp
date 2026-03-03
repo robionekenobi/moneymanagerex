@@ -30,12 +30,12 @@ Copyright (C) 2026 Klaus Wich
 #include "util/_util.h"
 
 #include "model/_all.h"
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 #include "mmframe.h"
 #include "DashboardPanel.h"
 #include "DashboardWidget.h"
-#include "ScheduledPanel.h"
+#include "SchedPanel.h"
 
 wxBEGIN_EVENT_TABLE(DashboardPanel, wxPanel)
     EVT_WEBVIEW_NAVIGATING(wxID_ANY, DashboardPanel::OnLinkClicked)
@@ -132,11 +132,11 @@ void DashboardPanel::PrintPage()
 
 void DashboardPanel::insertDataIntoTemplate()
 {
-    m_frames["HTMLSCALE"] = wxString::Format("%d", PreferencesModel::instance().getHtmlScale());
+    m_frames["HTMLSCALE"] = wxString::Format("%d", PrefModel::instance().getHtmlScale());
 
     // Get curreny details to pass to report for Apexcharts
-    int64 baseCurrencyID = PreferencesModel::instance().getBaseCurrencyID();
-    CurrencyModel::Data* baseCurrency = CurrencyModel::instance().get_id(baseCurrencyID);
+    int64 baseCurrencyID = PrefModel::instance().getBaseCurrencyID();
+    const CurrencyData* baseCurrency = CurrencyModel::instance().get_id_data_n(baseCurrencyID);
 
     // Get locale to pass to reports for Apexcharts
     wxString locale = InfoModel::instance().getString("LOCALE", "en-US"); // Stay blank of not set, currency override handled in Apexcharts call.
@@ -191,7 +191,7 @@ void DashboardPanel::insertDataIntoTemplate()
 
             htmlWidgetAssets assets;
             m_frames[AccountsInfo] = assets.getHTMLText();
-            tBalance += AssetModel::instance().balance();
+            tBalance += AssetModel::instance().find_all_balance();
             account_stats.displayAccounts(tBalance, tReconciled, NavigatorTypes::TYPE_ID_ASSET);
         }
         navinfo = NavigatorTypes::instance().getNextActiveEntry(navinfo);
@@ -201,8 +201,11 @@ void DashboardPanel::insertDataIntoTemplate()
     }
 
     htmlWidgetGrandTotals grand_totals;
-    m_frames["GRAND_TOTAL"] = grand_totals.getHTMLText(tBalance, tReconciled
-                                                , AssetModel::instance().balance(), stocks_widget.get_total());
+    m_frames["GRAND_TOTAL"] = grand_totals.getHTMLText(
+        tBalance, tReconciled,
+        AssetModel::instance().find_all_balance(),
+        stocks_widget.get_total()
+    );
 
     //
     htmlWidgetIncomeVsExpenses income_vs_expenses;
@@ -210,11 +213,11 @@ void DashboardPanel::insertDataIntoTemplate()
     m_frames["INCOME_VS_EXPENSES_FORECOLOR"] = mmThemeMetaString(meta::COLOR_REPORT_FORECOLOR);
     m_frames["INCOME_VS_EXPENSES_COLORS"] = wxString::Format("'%s', '%s'", mmThemeMetaString(meta::COLOR_REPORT_CREDIT)
                                                 , mmThemeMetaString(meta::COLOR_REPORT_DEBIT));
-    m_frames["INCOME_VS_EXPENSES_CURR_PFX_SYMBOL"] = baseCurrency ? baseCurrency->PFX_SYMBOL : "$";
-    m_frames["INCOME_VS_EXPENSES_CURR_SFX_SYMBOL"] = baseCurrency ? baseCurrency->SFX_SYMBOL : "";
-    m_frames["INCOME_VS_EXPENSES_CURR_GROUP_SEPARATOR"] = baseCurrency ? baseCurrency->GROUP_SEPARATOR : ",";
-    m_frames["INCOME_VS_EXPENSES_CURR_DECIMAL_POINT"] = baseCurrency ? baseCurrency->DECIMAL_POINT : ".";
-    m_frames["INCOME_VS_EXPENSES_CURR_SCALE"] = baseCurrency ? wxString::Format("%d", static_cast<int>(log10(baseCurrency->SCALE.GetValue()))) : "";
+    m_frames["INCOME_VS_EXPENSES_CURR_PFX_SYMBOL"] = baseCurrency ? baseCurrency->m_prefix_symbol : "$";
+    m_frames["INCOME_VS_EXPENSES_CURR_SFX_SYMBOL"] = baseCurrency ? baseCurrency->m_suffix_symbol : "";
+    m_frames["INCOME_VS_EXPENSES_CURR_GROUP_SEPARATOR"] = baseCurrency ? baseCurrency->m_group_separator : ",";
+    m_frames["INCOME_VS_EXPENSES_CURR_DECIMAL_POINT"] = baseCurrency ? baseCurrency->m_decimal_point : ".";
+    m_frames["INCOME_VS_EXPENSES_CURR_SCALE"] = baseCurrency ? wxString::Format("%d", static_cast<int>(log10(baseCurrency->m_scale.GetValue()))) : "";
 
 
     htmlWidgetBillsAndDeposits bills_and_deposits(_t("Upcoming Transactions"));

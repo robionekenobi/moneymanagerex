@@ -20,7 +20,7 @@
 #include "base/images_list.h"
 #include "util/_util.h"
 
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 #include "panel/JournalPanel.h"
 #include "panel/ReportPanel.h"
@@ -322,9 +322,9 @@ void DateRangeManager::OnOk(wxCommandEvent&)
         arr.Add(m_date_range_a[k].getLabelName());
     }
     if (m_type_id == TYPE_ID_CHECKING)
-        PreferencesModel::instance().setCheckingRange(arr);
+        PrefModel::instance().setCheckingRange(arr);
     else if (m_type_id == TYPE_ID_REPORTING)
-        PreferencesModel::instance().setReportingRange(arr);
+        PrefModel::instance().setReportingRange(arr);
 
     ++m_date_range_m;
 
@@ -344,9 +344,9 @@ void DateRangeManager::OnDefault(wxCommandEvent&)
     wxArrayString arr;
     // delete stored settings
     if (m_type_id == TYPE_ID_CHECKING)
-        PreferencesModel::instance().setCheckingRange(arr);
+        PrefModel::instance().setCheckingRange(arr);
     else if (m_type_id == TYPE_ID_REPORTING)
-        PreferencesModel::instance().setReportingRange(arr);
+        PrefModel::instance().setReportingRange(arr);
 
     EndModal(wxID_OK);
 }

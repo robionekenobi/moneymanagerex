@@ -19,15 +19,16 @@
 #pragma once
 
 #include "base/defs.h"
-#include "util/_choices.h"
-#include "_ModelBase.h"
-#include "table/FieldTable.h"
+#include "util/mmChoice.h"
 
-class FieldModel : public Model<FieldTable>
+#include "table/FieldTable.h"
+#include "data/FieldData.h"
+
+#include "_ModelBase.h"
+
+class FieldModel : public TableFactory<FieldTable, FieldData>
 {
 public:
-    using Model<FieldTable>::get_id;
-
     enum TYPE_ID
     {
         TYPE_ID_UNKNOWN = -1,
@@ -43,7 +44,7 @@ public:
     };
 
 private:
-    static ChoicesName TYPE_CHOICES;
+    static mmChoiceNameA TYPE_CHOICES;
 
 public:
     FieldModel();
@@ -66,7 +67,7 @@ public:
 
 public:
     static const wxString type_name(int id);
-    static int type_id(const wxString& name, int default_id = TYPE_ID_UNKNOWN);
+    static int type_id(const wxString& name);
     static TYPE_ID type_id(const Data* r);
     static TYPE_ID type_id(const Data& r);
 
@@ -76,7 +77,7 @@ public:
     static bool getAutocomplete(const wxString& properties);
     static const wxString getDefault(const wxString& properties);
     static const wxArrayString getChoices(const wxString& properties);
-    static const wxArrayString getUDFCList(Data* r);
+    static const wxArrayString getUDFCList(const Data* r);
     static const wxString getUDFC(const wxString& properties);
     static const wxString getUDFCName(const wxString& ref_type, const wxString& name);
     static TYPE_ID getUDFCType(const wxString& ref_type, const wxString& name);
@@ -94,19 +95,16 @@ public:
 
 inline const wxString FieldModel::type_name(int id)
 {
-    return TYPE_CHOICES.getName(id);
+    return TYPE_CHOICES.get_name(id);
 }
-
-inline int FieldModel::type_id(const wxString& name, int default_id)
+inline int FieldModel::type_id(const wxString& name)
 {
-    return TYPE_CHOICES.findName(name, default_id);
+    return TYPE_CHOICES.find_name_n(name);
 }
-
 inline FieldModel::TYPE_ID FieldModel::type_id(const Data* r)
 {
     return static_cast<TYPE_ID>(type_id(r->TYPE));
 }
-
 inline FieldModel::TYPE_ID FieldModel::type_id(const Data& r)
 {
     return type_id(&r);

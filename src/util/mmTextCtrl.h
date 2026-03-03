@@ -34,7 +34,7 @@ public:
         , const wxSize &size = wxDefaultSize
         , long style = wxTE_PROCESS_ENTER | wxALIGN_RIGHT
         , const wxValidator &validator = wxDefaultValidator
-        , const CurrencyModel::Data* currency = CurrencyModel::GetBaseCurrency()
+        , const CurrencyData* currency = CurrencyModel::GetBaseCurrency()
         , const wxString &name = "mmTextCtrl")
     : wxTextCtrl(parent, id, value, pos, size, style, validator, name)
         , m_currency(currency)
@@ -44,27 +44,27 @@ public:
     void SetValue(double value, int precision);
     //SetValue without generating an event
     void SetValueNoEvent(double value, int precision);
-    void SetValue(double value, const AccountModel::Data* account, int precision = -1);
-    void SetValue(double value, const CurrencyModel::Data* currency, int precision = -1);
+    void SetValue(double value, const AccountData* account, int precision = -1);
+    void SetValue(double value, const CurrencyData* currency, int precision = -1);
     bool Calculate(int alt_precision = -1);
     bool GetDouble(double &amount) const;
     bool checkValue(double &amount, bool positive_value = true);
     wxChar GetDecimalPoint();
-    void SetCurrency(const CurrencyModel::Data* currency);
+    void SetCurrency(const CurrencyData* currency);
     void SetAltPrecision(int precision);
     void SetIgnoreFocusChange(bool ignore_focus);
-    const CurrencyModel::Data* GetCurrency();
+    const CurrencyData* GetCurrency();
 
 private:
     int m_alt_precision = -1;
     bool ignore_focus_ = false;
     void OnTextEntered(wxCommandEvent&);
     void OnKillFocus(wxFocusEvent& event);
-    const CurrencyModel::Data* m_currency = nullptr;
+    const CurrencyData* m_currency = nullptr;
     wxDECLARE_EVENT_TABLE();
 };
 
 inline void mmTextCtrl::SetAltPrecision(int precision) { m_alt_precision = precision; }
-inline const CurrencyModel::Data* mmTextCtrl::GetCurrency() { return m_currency; }
-inline void mmTextCtrl::SetCurrency(const CurrencyModel::Data* currency) { m_currency = currency; }
+inline const CurrencyData* mmTextCtrl::GetCurrency() { return m_currency; }
+inline void mmTextCtrl::SetCurrency(const CurrencyData* currency) { m_currency = currency; }
 inline void mmTextCtrl::SetIgnoreFocusChange(bool ignore_focus) { ignore_focus_ = ignore_focus; }

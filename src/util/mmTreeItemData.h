@@ -22,7 +22,7 @@
 
 #include "base/defs.h"
 #include "_primitive.h"
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 #include "report/_ReportBase.h"
 
 class mmTreeItemData : public wxTreeItemData

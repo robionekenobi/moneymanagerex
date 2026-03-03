@@ -24,7 +24,7 @@
 #include <wx/textctrl.h>
 #include <wx/button.h>
 
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 class mmNewDatabaseWizard : public wxWizard
 {

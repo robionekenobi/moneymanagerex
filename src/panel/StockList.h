@@ -57,7 +57,7 @@ public:
     };
 
 public:
-    StockModel::Data_Set m_stocks;
+    StockModel::DataA m_stocks;
 
 private:
     static const std::vector<ListColumnInfo> LIST_INFO;
@@ -87,9 +87,9 @@ public:
 private:
     static int col_sort();
     double GetGainLoss(long item) const;
-    static double getGainLoss(const StockModel::Data& stock);
+    static double getGainLoss(const StockData& stock);
     double GetRealGainLoss(long item) const;
-    static double getRealGainLoss(const StockModel::Data& stock);
+    static double getRealGainLoss(const StockData& stock);
     void sortList();
     void createSummary();
     wxSharedPtr<wxListItemAttr> m_attr1;  // Style for loss

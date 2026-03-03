@@ -91,7 +91,7 @@ private:
     void OnListKeyDown(wxListEvent& event);
     void OnListItemSelected(wxListEvent& event);
     void OnEndLabelEdit(wxListEvent& event);
-    bool EditAsset(AssetModel::Data* pEntry);
+    bool EditAsset(AssetData* pEntry);
 };
 
 class AssetPanel : public PanelBase
@@ -112,15 +112,20 @@ public:
         ICON_DOWNARROW
     };
 
-    AssetPanel(mmGUIFrame* frame, wxWindow *parent, wxWindowID winid, const wxString& name="AssetPanel");
+    AssetPanel(
+        mmGUIFrame* frame,
+        wxWindow *parent,
+        wxWindowID winid,
+        const wxString& name="AssetPanel"
+    );
     mmGUIFrame* m_frame = nullptr;
 
     void updateExtraAssetData(int selIndex);
     int initVirtualListControl(int64 trx_id = -1);
     wxString getItem(long item, int col_id);
 
-    AssetModel::Data_Set m_assets;
-    AssetModel::TYPE_ID m_filter_type;
+    AssetModel::DataA m_assets;
+    int m_filter_type; // -1 (All), AssetType
 
     wxString BuildPage() const { return m_lc->BuildPage(_t("Assets")); }
 
@@ -128,7 +133,7 @@ public:
     void ViewAssetTrans(const int selected_index);
     wxListCtrl* InitAssetTxnListCtrl(wxWindow* parent);
     void LoadAssetTransactions(wxListCtrl* listCtrl, int64 assetId);
-    void FillAssetListRow(wxListCtrl* listCtrl, long index, const TransactionModel::Data& txn);
+    void FillAssetListRow(wxListCtrl* listCtrl, long index, const TrxData& txn);
     void BindAssetListEvents(wxListCtrl* listCtrl);
     void CopySelectedRowsToClipboard(wxListCtrl* listCtrl);
     void GotoAssetAccount(const int selected_index);
@@ -161,7 +166,7 @@ private:
 
     void OnViewPopupSelected(wxCommandEvent& event);
     void sortList();
-    void SetAccountParameters(const AccountModel::Data* account);
+    void SetAccountParameters(const AccountData* account);
 
 private:
     wxString tips_;

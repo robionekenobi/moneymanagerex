@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "StockHistoryTable.h"
+#include "data/StockHistoryData.h"
 
-template class TableFactory<StockHistoryRow>;
+template class TableFactory<StockHistoryTable, StockHistoryData>;
+template class mmCache<int64, StockHistoryData>;
 
 // List of column names in database table STOCKHISTORY_V1,
 // in the order of StockHistoryCol::COL_ID.
@@ -43,24 +45,7 @@ StockHistoryRow::StockHistoryRow()
     UPDTYPE = -1;
 }
 
-StockHistoryRow::StockHistoryRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool StockHistoryRow::equals(const StockHistoryRow* r) const
-{
-    if ( HISTID != r->HISTID) return false;
-    if (!SYMBOL.IsSameAs(r->SYMBOL)) return false;
-    if (!DATE.IsSameAs(r->DATE)) return false;
-    if ( VALUE != r->VALUE) return false;
-    if ( UPDTYPE != r->UPDTYPE) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void StockHistoryRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, SYMBOL);
@@ -70,13 +55,15 @@ void StockHistoryRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(5, id);
 }
 
-void StockHistoryRow::from_select_result(wxSQLite3ResultSet& q)
+StockHistoryRow& StockHistoryRow::from_select_result(wxSQLite3ResultSet& q)
 {
     HISTID = q.GetInt64(0);
     SYMBOL = q.GetString(1);
     DATE = q.GetString(2);
     VALUE = q.GetDouble(3);
     UPDTYPE = q.GetInt64(4);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -111,7 +98,7 @@ void StockHistoryRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.Int64(UPDTYPE.GetValue());
 }
 
-row_t StockHistoryRow::to_row_t() const
+row_t StockHistoryRow::to_html_row() const
 {
     row_t row;
 
@@ -124,7 +111,7 @@ row_t StockHistoryRow::to_row_t() const
     return row;
 }
 
-void StockHistoryRow::to_template(html_template& t) const
+void StockHistoryRow::to_html_template(html_template& t) const
 {
     t(L"HISTID") = HISTID.GetValue();
     t(L"SYMBOL") = SYMBOL;
@@ -133,17 +120,15 @@ void StockHistoryRow::to_template(html_template& t) const
     t(L"UPDTYPE") = UPDTYPE.GetValue();
 }
 
-StockHistoryRow& StockHistoryRow::operator=(const StockHistoryRow& other)
+bool StockHistoryRow::equals(const StockHistoryRow* other) const
 {
-    if (this == &other) return *this;
+    if ( HISTID != other->HISTID) return false;
+    if (!SYMBOL.IsSameAs(other->SYMBOL)) return false;
+    if (!DATE.IsSameAs(other->DATE)) return false;
+    if ( VALUE != other->VALUE) return false;
+    if ( UPDTYPE != other->UPDTYPE) return false;
 
-    HISTID = other.HISTID;
-    SYMBOL = other.SYMBOL;
-    DATE = other.DATE;
-    VALUE = other.VALUE;
-    UPDTYPE = other.UPDTYPE;
-
-    return *this;
+    return true;
 }
 
 StockHistoryTable::StockHistoryTable()
@@ -165,17 +150,4 @@ StockHistoryTable::StockHistoryTable()
     m_delete_query = "DELETE FROM STOCKHISTORY_V1 WHERE HISTID = ?";
 
     m_select_query = "SELECT HISTID, SYMBOL, DATE, VALUE, UPDTYPE FROM STOCKHISTORY_V1";
-}
-
-// Destructor: clears any data records stored in memory
-StockHistoryTable::~StockHistoryTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void StockHistoryTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

@@ -37,23 +37,31 @@ class PayeeManager : public wxDialog
     wxDECLARE_DYNAMIC_CLASS(PayeeManager);
     wxDECLARE_EVENT_TABLE();
 
+private:
+    PayeeData* m_payee_n = nullptr;
+    PayeeData m_payee_d;
+
+    wxTextCtrl*         m_payeeName    = nullptr;
+    wxCheckBox*         m_hidden       = nullptr;
+    mmComboBoxCategory* m_category     = nullptr;
+    wxTextCtrl*         m_reference    = nullptr;
+    wxTextCtrl*         m_website      = nullptr;
+    wxTextCtrl*         m_Notes        = nullptr;
+    wxGrid*             m_patternTable = nullptr;
+    wxBoxSizer*         patternButton_Arranger = nullptr;
+
 public:
     PayeeManager();
-    PayeeManager(wxWindow* parent, PayeeModel::Data* payee, const wxString &name = "PayeeManager");
+    PayeeManager(
+        wxWindow* parent,
+        PayeeData* payee_n,
+        const wxString &name = "PayeeManager"
+    );
     ~PayeeManager();
-    PayeeModel::Data* getChangedPayee();
+
+    const PayeeData* getChangedPayee() { return m_payee_n; }
 
 private:
-    PayeeModel::Data* m_payee = nullptr;
-    wxTextCtrl* m_payeeName = nullptr;
-    wxCheckBox* m_hidden = nullptr;
-    mmComboBoxCategory* m_category = nullptr;
-    wxTextCtrl* m_reference = nullptr;
-    wxTextCtrl* m_website = nullptr;
-    wxTextCtrl* m_Notes = nullptr;
-    wxGrid* m_patternTable = nullptr;
-    wxBoxSizer* patternButton_Arranger = nullptr;
-
     void CreateControls();
     void fillControls();
     void ResizeDialog();
@@ -66,9 +74,6 @@ private:
     void OnPatternTableSize(wxSizeEvent&);
 };
 
-inline PayeeModel::Data* PayeeManager::getChangedPayee() { return m_payee; }
-
-
 struct RowData {
     int64 payeeId;
     bool active;
@@ -80,14 +85,6 @@ class mmPayeeDialog : public wxDialog
 {
     wxDECLARE_DYNAMIC_CLASS(mmPayeeDialog);
     wxDECLARE_EVENT_TABLE();
-
-public:
-    ~mmPayeeDialog();
-    mmPayeeDialog(wxWindow* parent, bool payee_choose, const wxString& name = "mmPayeeDialog", const wxString& payee_selected = wxEmptyString);
-    int64 getPayeeId() const;
-    bool getRefreshRequested() const;
-    bool getAddActionRequested() const;
-    std::list<int64> getSelectedPayees();
 
 private:
     enum cols
@@ -117,24 +114,40 @@ private:
         MENU_RELOCATE_PAYEE  // Must be last!
     };
 
+private:
+    bool m_payee_choose = false;
+    wxString m_init_selected_payee;
+    wxString m_maskStr;
+    int m_sort = cols::PAYEE_NAME;
+    int m_lastSort = cols::PAYEE_NAME;
+    bool refreshRequested_ = false;
+    bool m_sortReverse = false;
+    bool m_addActionRequested = false;
+    bool m_showHiddenPayees = true;
+    std::list<RowData*> m_selectedItems;
+    std::map<int64, int> m_payeeUsage;
+    wxColour m_normalColor;
+    wxColour m_hiddenColor;
+    std::vector<RowData*> m_rowData;
+
     wxListView* payeeListBox_ = nullptr;
     wxSearchCtrl* m_maskTextCtrl = nullptr;
     wxBitmapButton* m_magicButton = nullptr;
     wxToggleButton* m_tbShowAll = nullptr;
 
-    bool m_payee_choose = false;
-    wxString m_init_selected_payee;
-    wxString m_maskStr;
-    int m_sort = cols::PAYEE_NAME, m_lastSort = cols::PAYEE_NAME;
-    bool refreshRequested_ = false, m_sortReverse = false;
-    bool m_addActionRequested = false;
-    bool m_showHiddenPayees = true;
-    std::list<RowData*> m_selectedItems;
-    std::map<int64, int> m_payeeUsage;
+public:
+    mmPayeeDialog(
+        wxWindow* parent,
+        bool payee_choose,
+        const wxString& name = "mmPayeeDialog",
+        const wxString& payee_selected = wxEmptyString
+    );
+    ~mmPayeeDialog();
 
-    wxColour m_normalColor;
-    wxColour m_hiddenColor;
-    std::vector<RowData*> m_rowData;
+    int64 getPayeeId() const;
+    bool getRefreshRequested() const;
+    bool getAddActionRequested() const;
+    std::list<int64> getSelectedPayees();
 
 private:
     mmPayeeDialog() {}
@@ -142,7 +155,7 @@ private:
     void Create(wxWindow* parent, const wxString &name);
     void CreateControls();
     void fillControls();
-    void addPayeeDataIntoItem(long idx, const PayeeModel::Data* payee, int count);
+    void addPayeeDataIntoItem(long idx, const PayeeData* payee_n, int count);
     bool isPayeeWithStateSelected(bool state);
 
     void AddPayee();

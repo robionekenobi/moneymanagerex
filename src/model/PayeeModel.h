@@ -21,59 +21,42 @@
 #pragma once
 
 #include "base/defs.h"
-#include "_ModelBase.h"
-#include "table/PayeeTable.h"
 
-class PayeeModel : public Model<PayeeTable>
+#include "table/PayeeTable.h"
+#include "data/PayeeData.h"
+
+#include "_ModelBase.h"
+
+class PayeeModel : public TableFactory<PayeeTable, PayeeData>
 {
 public:
-    using Model<PayeeTable>::remove;
-    using Model<PayeeTable>::get_id;
+    static const wxString refTypeName;
 
 public:
     PayeeModel();
     ~PayeeModel();
 
 public:
-    /**
-    Initialize the global PayeeModel table on initial call.
-    Resets the global table on subsequent calls.
-    * Return the static instance address for PayeeModel table
-    * Note: Assigning the address to a local variable can destroy the instance.
-    */
     static PayeeModel& instance(wxSQLite3Database* db);
-
-    /**
-    * Return the static instance address for PayeeModel table
-    * Note: Assigning the address to a local variable can destroy the instance.
-    */
     static PayeeModel& instance();
 
 public:
-    const Data_Set FilterPayees(const wxString& payee_pattern, bool includeInActive = true);
+    // TODO: add to virtual methods in TableFactory
+    int find_id_aux_cnt(int64 payee_id);
+    int find_id_dep_cnt(int64 payee_id);
 
-    /**
-    * Return the Data record pointer for the given payee name
-    * Returns 0 when payee not found.
-    */
-    Data* get_key(const wxString& name);
-    static wxString get_payee_name(int64 payee_id);
+    // override
+    bool purge_id(int64 payee_id) override;
 
-    bool remove(int64 id);
+    // lookup for given id
+    auto get_id_name(int64 payee_id) -> const wxString;
 
-    const std::map<wxString, int64> all_payees(bool excludeHidden = false);
-    const wxArrayString all_payee_names();
-    const std::map<wxString, int64> used_payee();
+    // lookup for given field
+    auto get_name_data_n(const wxString& name) -> const Data*;
 
-    static bool is_hidden(int64 id);
-    static bool is_hidden(const Data* record);
-    static bool is_hidden(const Data& record);
-
-    static bool is_used(int64 id);
-    static bool is_used(const Data* record);
-    static bool is_used(const Data& record);
-
-public:
-    static const wxString refTypeName;
+    // lookup for all Data
+    auto find_all_name_a() -> const wxArrayString;
+    auto find_all_name_id_m(bool only_active = false) -> const std::map<wxString, int64>;
+    auto find_used_id_s() -> const std::set<int64>;
+    auto find_pattern_data_a(const wxString& pattern, bool only_active = false) -> const DataA;
 };
-

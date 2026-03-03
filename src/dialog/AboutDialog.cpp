@@ -42,7 +42,7 @@ AboutDialog::AboutDialog()
 AboutDialog::~AboutDialog()
 {
     const bool v = m_send_data->GetValue();
-    PreferencesModel::instance().setSendUsageStats(v);
+    PrefModel::instance().setSendUsageStats(v);
 }
 
 
@@ -247,7 +247,7 @@ void AboutDialog::createControls(int tabToOpenNo)
     buttonPanelSizer->Add(m_send_data, g_flagsV);
 
     m_send_data->Show(tabToOpenNo == 4);
-    m_send_data->SetValue(PreferencesModel::instance().getSendUsageStats());
+    m_send_data->SetValue(PrefModel::instance().getSendUsageStats());
 
     wxButton* buttonOk = new wxButton(buttonPanel, wxID_OK, _t("&OK "));
     buttonOk->SetDefault();

@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "model/CategoryModel.h"
 #include "model/FieldValueModel.h"
 #include "model/InfoModel.h"
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 #include "qif_export.h"
 #include "export.h"
@@ -82,17 +82,17 @@ void mmQIFExportDialog::fillControls()
     selected_accounts_id_.clear();
     accounts_id_.clear();
 
-    AccountModel::Data_Set all_accounts = AccountModel::instance().find(
-        AccountModel::ACCOUNTTYPE(OP_NE, NavigatorTypes::instance().getInvestmentAccountStr())
+    AccountModel::DataA all_accounts = AccountModel::instance().find(
+        AccountCol::ACCOUNTTYPE(OP_NE, NavigatorTypes::instance().getInvestmentAccountStr())
     );
 
     for (const auto& a : all_accounts)
     {
-        m_accounts_name.Add(a.ACCOUNTNAME);
-        selected_accounts_id_.push_back(a.ACCOUNTID);
-        accounts_id_.push_back(a.ACCOUNTID);
-        if (a.ACCOUNTID == m_account_id)
-            bSelectedAccounts_->SetLabelText(a.ACCOUNTNAME);
+        m_accounts_name.Add(a.m_name);
+        selected_accounts_id_.push_back(a.m_id);
+        accounts_id_.push_back(a.m_id);
+        if (a.m_id == m_account_id)
+            bSelectedAccounts_->SetLabelText(a.m_name);
     }
 
     if (m_account_id > -1)
@@ -185,7 +185,7 @@ void mmQIFExportDialog::CreateControls()
     // Encoding --------------------------------------------
 
     // Date Format Settings --------------------------------
-    wxString dateFormatStr = PreferencesModel::instance().getDateFormat();
+    wxString dateFormatStr = PrefModel::instance().getDateFormat();
 
     choiceDateFormat_label_ = new wxStaticText(main_tab, wxID_STATIC, _t("Date Format"));
     m_choiceDateFormat = new wxComboBox(main_tab, wxID_ANY);
@@ -263,13 +263,13 @@ void mmQIFExportDialog::OnAccountsButton(wxCommandEvent& WXUNUSED(event))
 
     int i = 0;
     wxArrayInt s;
-    AccountModel::Data_Set all_accounts = AccountModel::instance().find(
-        AccountModel::ACCOUNTTYPE(OP_NE, NavigatorTypes::instance().getInvestmentAccountStr())
+    AccountModel::DataA all_accounts = AccountModel::instance().find(
+        AccountCol::ACCOUNTTYPE(OP_NE, NavigatorTypes::instance().getInvestmentAccountStr())
     );
 
     for (const auto& a : all_accounts)
     {
-        if (std::find(selected_accounts_id_.begin(), selected_accounts_id_.end(), a.ACCOUNTID) != selected_accounts_id_.end())
+        if (std::find(selected_accounts_id_.begin(), selected_accounts_id_.end(), a.m_id) != selected_accounts_id_.end())
             s.push_back(i);
         i++;
     }
@@ -286,25 +286,22 @@ void mmQIFExportDialog::OnAccountsButton(wxCommandEvent& WXUNUSED(event))
         {
             int index = entry;
             const wxString accounts_name = m_accounts_name[index];
-            const auto account = AccountModel::instance().get_key(accounts_name);
-            if (account) selected_accounts_id_.push_back(account->ACCOUNTID);
+            const auto account = AccountModel::instance().get_name_data_n(accounts_name);
+            if (account) selected_accounts_id_.push_back(account->m_id);
             baloon += accounts_name + "\n";
         }
     }
     *log_field_ << baloon;
 
-    if (selected_accounts_id_.empty())
-    {
+    if (selected_accounts_id_.empty()) {
         fillControls();
     }
-    else if (selected_accounts_id_.size() == 1)
-    {
+    else if (selected_accounts_id_.size() == 1) {
         int64 account_id = accounts_id_[selected_items[0]];
-        const AccountModel::Data* account = AccountModel::instance().get_id(account_id);
-        if (account) bSelectedAccounts_->SetLabelText(account->ACCOUNTNAME);
+        const AccountData* account = AccountModel::instance().get_id_data_n(account_id);
+        if (account) bSelectedAccounts_->SetLabelText(account->m_name);
     }
-    else if (selected_accounts_id_.size() > 1)
-    {
+    else if (selected_accounts_id_.size() > 1) {
         bSelectedAccounts_->SetLabelText(wxString::FromUTF8Unchecked("…"));
         mmToolTip(bSelectedAccounts_, baloon);
     }
@@ -353,7 +350,7 @@ void mmQIFExportDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 
     bool bCorrect = false;
     wxString sErrorMsg = "";
-    if (AccountModel::instance().get_all().empty() && accountsCheckBox_->IsChecked())
+    if (AccountModel::instance().find_all().empty() && accountsCheckBox_->IsChecked())
         sErrorMsg =_t("No Account available for export");
     else if (selected_accounts_id_.size() < 1 && accountsCheckBox_->IsChecked())
         sErrorMsg =_t("No Accounts selected for export");
@@ -453,14 +450,14 @@ void mmQIFExportDialog::mmExportQIF()
     if (m_type == QIF && exp_categ)
     {
         buffer << mmExportTransaction::getCategoriesQIF();
-        numCategories = CategoryModel::instance().get_all().size();
+        numCategories = CategoryModel::instance().find_all().size();
         sErrorMsg << _t("Categories exported") << "\n";
     }
     else if (m_type == JSON)
     {
         if (exp_categ) {
             mmExportTransaction::getCategoriesJSON(json_writer);
-            numCategories = CategoryModel::instance().get_all().size();
+            numCategories = CategoryModel::instance().find_all().size();
         }
         else {
             mmExportTransaction::getUsedCategoriesJSON(json_writer);
@@ -470,12 +467,12 @@ void mmQIFExportDialog::mmExportQIF()
 
     std::map<int64 /*account ID*/, wxString> allAccounts4Export;
     wxArrayInt64 allPayees4Export;
-    const wxString RefType = TransactionModel::refTypeName;
+    const wxString RefType = TrxModel::refTypeName;
     wxArrayInt64 allAttachments4Export;
     wxArrayInt64 allCustomFields4Export;
     wxArrayInt64 allTags4Export;
-    const auto transactions = TransactionModel::instance().find(
-        TransactionModel::STATUS(OP_NE, TransactionModel::STATUS_ID_VOID));
+    const auto transactions = TrxModel::instance().find(
+        TrxModel::STATUS(OP_NE, TrxModel::STATUS_ID_VOID));
 
     if (exp_transactions && !transactions.empty())
     {
@@ -488,8 +485,8 @@ void mmQIFExportDialog::mmExportQIF()
         wxProgressDialog progressDlg(_tu("Please wait…"), _t("Exporting")
             , 100, this, wxPD_APP_MODAL | wxPD_CAN_ABORT);
 
-        const auto splits = TransactionSplitModel::instance().get_all_id();
-        const auto tags = TagLinkModel::instance().get_all_id(TransactionModel::refTypeName);
+        const auto splits = TrxSplitModel::instance().get_all_id();
+        const auto tags = TagLinkModel::instance().get_all_id(TrxModel::refTypeName);
 
         const wxString begin_date = fromDateCtrl_->GetValue().FormatISODate();
         const wxString end_date = toDateCtrl_->GetValue().FormatISODate();
@@ -497,16 +494,16 @@ void mmQIFExportDialog::mmExportQIF()
         for (const auto& transaction : transactions)
         {
             if (!transaction.DELETEDTIME.IsEmpty()) continue;
-            wxString strDate = TransactionModel::getTransDateTime(transaction).FormatISODate();
+            wxString strDate = TrxModel::getTransDateTime(transaction).FormatISODate();
             //Filtering
             if (dateFromCheckBox_->IsChecked() && strDate < begin_date)
                 continue;
             if (dateToCheckBox_->IsChecked() && strDate > end_date)
                 continue;
-            if (!TransactionModel::is_transfer(transaction.TRANSCODE)
+            if (!TrxModel::is_transfer(transaction.TRANSCODE)
                 && (std::find(selected_accounts_id_.begin(), selected_accounts_id_.end(), transaction.ACCOUNTID) == selected_accounts_id_.end()))
                 continue;
-            if (TransactionModel::is_transfer(transaction.TRANSCODE)
+            if (TrxModel::is_transfer(transaction.TRANSCODE)
                 && (std::find(selected_accounts_id_.begin(), selected_accounts_id_.end(), transaction.ACCOUNTID) == selected_accounts_id_.end())
                 && (std::find(selected_accounts_id_.begin(), selected_accounts_id_.end(), transaction.TOACCOUNTID) == selected_accounts_id_.end()))
                 continue;
@@ -518,7 +515,7 @@ void mmQIFExportDialog::mmExportQIF()
 
             bool is_reverce = false;
             wxString trx_str;
-            TransactionModel::Full_Data full_tran(transaction, splits, tags);
+            TrxModel::Full_Data full_tran(transaction, splits, tags);
             int64 account_id = transaction.ACCOUNTID;
 
             switch (m_type)
@@ -527,7 +524,7 @@ void mmQIFExportDialog::mmExportQIF()
                 mmExportTransaction::getTransactionJSON(json_writer, full_tran);
                 allAccounts4Export[account_id] = "";
                 if (std::find(allPayees4Export.begin(), allPayees4Export.begin(), full_tran.PAYEEID) == allPayees4Export.end()
-                    && full_tran.TRANSCODE != TransactionModel::TYPE_NAME_TRANSFER) {
+                    && full_tran.TRANSCODE != TrxModel::TYPE_NAME_TRANSFER) {
                     allPayees4Export.push_back(full_tran.PAYEEID);
                 }
 
@@ -536,26 +533,26 @@ void mmQIFExportDialog::mmExportQIF()
                     allAttachments4Export.push_back(full_tran.TRANSID);
                 }
 
-                for (const auto & entry : FieldValueModel::instance().find(FieldValueModel::REFID(full_tran.id())))
-                {
+                for (const auto & entry : FieldValueModel::instance().find(
+                    FieldValueCol::REFID(full_tran.id())
+                )) {
                     if (std::find(allCustomFields4Export.begin(), allCustomFields4Export.end(), entry.FIELDATADID) == allCustomFields4Export.end()) {
                         allCustomFields4Export.push_back(entry.FIELDATADID);
                     }
                 }
 
                 // store tags from the transaction
-                for (const auto& tag : full_tran.m_tags)
-                {
+                for (const auto& tag : full_tran.m_tags) {
                     if (std::find(allTags4Export.begin(), allTags4Export.end(), tag.TAGID) == allTags4Export.end())
                         allTags4Export.push_back(tag.TAGID);
                 }
                 // store tags from the splits
-                for (const auto& split : full_tran.m_splits)
-                {
-                    for (const auto& taglink : TagLinkModel::instance().cache_ref(TransactionSplitModel::refTypeName, split.SPLITTRANSID))
-                    {
-                        if (std::find(allTags4Export.begin(), allTags4Export.end(), taglink.second) == allTags4Export.end())
-                            allTags4Export.push_back(taglink.second);
+                for (const auto& tp_d : full_tran.m_splits) {
+                    for (const auto& gl_d : TagLinkModel::instance().get_ref(
+                        TrxSplitModel::refTypeName, tp_d.m_id
+                    )) {
+                        if (std::find(allTags4Export.begin(), allTags4Export.end(), gl_d.second) == allTags4Export.end())
+                            allTags4Export.push_back(gl_d.second);
                     }
                 }
 
@@ -563,7 +560,7 @@ void mmQIFExportDialog::mmExportQIF()
 
             case QIF:
 
-                if (TransactionModel::is_transfer(transaction.TRANSCODE))
+                if (TrxModel::is_transfer(transaction.TRANSCODE))
                 {
                     if (std::find(selected_accounts_id_.begin(), selected_accounts_id_.end(), transaction.ACCOUNTID) == selected_accounts_id_.end()) {
                         is_reverce = true;
@@ -582,7 +579,7 @@ void mmQIFExportDialog::mmExportQIF()
 
             case CSV:
 
-                if (TransactionModel::is_transfer(transaction.TRANSCODE))
+                if (TrxModel::is_transfer(transaction.TRANSCODE))
                 {
                     if (std::find(selected_accounts_id_.begin(), selected_accounts_id_.end(), transaction.ACCOUNTID) == selected_accounts_id_.end()) {
                         is_reverce = true;

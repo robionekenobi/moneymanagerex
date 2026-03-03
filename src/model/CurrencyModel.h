@@ -22,18 +22,16 @@
 #include <map>
 
 #include "base/defs.h"
-#include "util/_choices.h"
+#include "util/mmChoice.h"
+
 #include "table/CurrencyTable.h"
+#include "data/CurrencyData.h"
+
 #include "_ModelBase.h"
 #include "InfoModel.h" // detect base currency setting BASECURRENCYID
 
-class CurrencyModel : public Model<CurrencyTable>
+class CurrencyModel : public TableFactory<CurrencyTable, CurrencyData>
 {
-public:
-    using Model<CurrencyTable>::remove;
-    CurrencyModel();
-    ~CurrencyModel();
-
 public:
     /**
     Initialize the global CurrencyModel table on initial call.
@@ -50,81 +48,51 @@ public:
     static CurrencyModel& instance();
 
 public:
-    enum TYPE_ID
-    {
-        TYPE_ID_FIAT = 0,
-        TYPE_ID_CRYPTO,
-        TYPE_ID_size
-    };
-    static const wxString TYPE_NAME_FIAT;
-    static const wxString TYPE_NAME_CRYPTO;
+    static CurrencyCol::CURRENCY_TYPE CURRENCY_TYPE(OP op, CurrencyType currency_type);
 
-private:
-    static ChoicesName TYPE_CHOICES;
-
-public:
-    static const wxString type_name(int id);
-    static int type_id(const wxString& name, int default_id = TYPE_ID_FIAT);
-    static TYPE_ID type_id(const Data* r);
-    static TYPE_ID type_id(const Data& r);
-
-    static CurrencyTable::CURRENCY_TYPE CURRENCY_TYPE(OP op, TYPE_ID currencytype);
-    const wxArrayString all_currency_names();
-    const std::map<wxString, int64>  all_currency();
-    const wxArrayString all_currency_symbols();
-
-    /** Return the Data record of the base currency.*/
-    static Data* GetBaseCurrency();
+    // Return the Data record of the base currency.
+    static const Data* GetBaseCurrency();
     static bool GetBaseCurrencySymbol(wxString& base_currency_symbol);
 
-    /** Resets all BASECONVRATE to 1 */
+    // Resets all BASECONVRATE to 1
     static void ResetBaseConversionRates();
-
-    /** Return the currency Data record for the given symbol */
-    CurrencyModel::Data* GetCurrencyRecord(const wxString& currency_symbol);
-
-    /**
-    * Remove the Data record from memory and the database.
-    * Delete also all currency history
-    */
-    bool remove(int64 id);
 
     static std::map<wxDateTime,int> DateUsed(int64 CurrencyID);
 
-    /** Add prefix and suffix characters to string value */
+    // Add prefix and suffix characters to string value
     static const wxString toCurrency(double value, const Data* currency = GetBaseCurrency(), int precision = -1);
  
-    /** convert value to a string with required precision. Currency is used only for percision */
-    static const wxString toStringNoFormatting(double value, const Data* currency = GetBaseCurrency(), int precision = -1);
-    /** convert value to a currency formatted string with required precision */
-    static const wxString toString(double value, const Data* currency = GetBaseCurrency(), int precision = -1);
-    /** Reset currency string like 1.234,56 to standard number format like 1234.56 */
-    static const wxString fromString2CLocale(const wxString &s, const Data* currency = CurrencyModel::GetBaseCurrency());
+    // convert value to a string with required precision. Currency is used only for percision
+    static const wxString toStringNoFormatting(
+        double value, const Data* currency = GetBaseCurrency(), int precision = -1
+    );
+    // convert value to a currency formatted string with required precision
+    static const wxString toString(
+        double value, const Data* currency = GetBaseCurrency(), int precision = -1
+    );
+    // Reset currency string like 1.234,56 to standard number format like 1234.56
+    static const wxString fromString2CLocale(
+        const wxString &s, const Data* currency = CurrencyModel::GetBaseCurrency()
+    );
     static bool fromString(wxString s, double& val, const Data* currency = GetBaseCurrency());
     static int precision(const Data* r);
     static int precision(const Data& r);
     static int precision(int64 account_id);
+    static bool is_used(int64 currency_id);
+
+public:
+    // Remove the Data record from memory and the database.
+    // Delete also all currency history
+    bool purge_id(int64 id) override;
+
+    const wxArrayString all_currency_names();
+    const std::map<wxString, int64> all_currency();
+    const wxArrayString all_currency_symbols();
+
+    // Return the currency Data record for the given symbol
+    const CurrencyData* GetCurrencyRecord(const wxString& currency_symbol);
+
+public:
+    CurrencyModel();
+    ~CurrencyModel();
 };
-
-//----------------------------------------------------------------------------
-
-inline const wxString CurrencyModel::type_name(int id)
-{
-    return TYPE_CHOICES.getName(id);
-}
-
-inline int CurrencyModel::type_id(const wxString& name, int default_id)
-{
-    return TYPE_CHOICES.findName(name, default_id);
-}
-
-inline CurrencyModel::TYPE_ID CurrencyModel::type_id(const Data* r)
-{
-    return static_cast<TYPE_ID>(type_id(r->CURRENCY_TYPE));
-}
-
-inline CurrencyModel::TYPE_ID CurrencyModel::type_id(const Data& r)
-{
-    return type_id(&r);
-}
-

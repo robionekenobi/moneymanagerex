@@ -26,7 +26,7 @@
 #include <wx/dataview.h>
 
 #include "util/_simple.h"
-#include "model/TransactionModel.h"
+#include "model/TrxModel.h"
 
 class wxSpinCtrl;
 class wxSpinEvent;
@@ -145,7 +145,7 @@ private:
     struct tran_holder
     {
         wxDateTime Date;
-        wxString Type = TransactionModel::TYPE_NAME_WITHDRAWAL;
+        wxString Type = TrxModel::TYPE_NAME_WITHDRAWAL;
         wxString Status = "";
         int64 ToAccountID = -1;
         double ToAmount = 0.0;

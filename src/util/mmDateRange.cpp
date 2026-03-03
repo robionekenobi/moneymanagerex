@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "base/constants.h"
 #include "mmDateRange.h"
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 mmDateRange::mmDateRange() :
     today_(wxDateTime::Today()),
@@ -32,7 +32,7 @@ mmDateRange::mmDateRange() :
 {
     start_date_ = today_;
     end_date_ = today_end_;
-    startDay_ = PreferencesModel::instance().getReportingFirstDay();
+    startDay_ = PrefModel::instance().getReportingFirstDay();
     title_ = _n("Date Range");
 }
 
@@ -69,7 +69,7 @@ mmCurrentMonth::mmCurrentMonth()
 {
     this->findEndOfMonth();
     this->findBeginOfMonth();
-    if (PreferencesModel::instance().getIgnoreFutureTransactions() && (end_date_ > today_end_)) 
+    if (PrefModel::instance().getIgnoreFutureTransactions() && (end_date_ > today_end_)) 
     {
         end_date_ = today_end_;
         futureIgnored_ = true;
@@ -127,7 +127,7 @@ mmLast3Months::mmLast3Months()
     this->findEndOfMonth();
     this->start_date_.Subtract(wxDateSpan::Months(2));
     this->findBeginOfMonth();
-    if (PreferencesModel::instance().getIgnoreFutureTransactions() && (end_date_ > today_end_)) 
+    if (PrefModel::instance().getIgnoreFutureTransactions() && (end_date_ > today_end_)) 
     {
         end_date_ = today_end_;
         futureIgnored_ = true;
@@ -141,7 +141,7 @@ mmLast12Months::mmLast12Months()
     this->findEndOfMonth();
     this->start_date_.Subtract(wxDateSpan::Months(11));
     this->findBeginOfMonth();
-    if (PreferencesModel::instance().getIgnoreFutureTransactions() && (end_date_ > today_end_)) 
+    if (PrefModel::instance().getIgnoreFutureTransactions() && (end_date_ > today_end_)) 
     {
         end_date_ = today_end_;
         futureIgnored_ = true;
@@ -157,7 +157,7 @@ mmCurrentYear::mmCurrentYear()
     this->end_date_ = this->start_date_;
     this->end_date_.Add(wxDateSpan::Months(11));
     this->findEndOfMonth();
-    if (PreferencesModel::instance().getIgnoreFutureTransactions() && (end_date_ > today_end_)) 
+    if (PrefModel::instance().getIgnoreFutureTransactions() && (end_date_ > today_end_)) 
     {
         end_date_ = today_end_;
         futureIgnored_ = true;
@@ -201,8 +201,8 @@ mmLastYearBefore::mmLastYearBefore()
 mmCurrentFinancialYear::mmCurrentFinancialYear()
 : mmDateRange()
 {
-    int day = PreferencesModel::instance().getFinancialFirstDay();
-    wxDateTime::Month month = PreferencesModel::instance().getFinancialFirstMonth();
+    int day = PrefModel::instance().getFinancialFirstDay();
+    wxDateTime::Month month = PrefModel::instance().getFinancialFirstMonth();
 
     wxDateTime::Month this_month = this->start_date_.GetMonth();
     auto finDate = this->start_date_;
@@ -220,7 +220,7 @@ mmCurrentFinancialYear::mmCurrentFinancialYear()
     this->end_date_ = this->start_date_;
     end_date_ = getDayEnd(end_date_.Add(wxDateSpan::Year()).Subtract(wxDateSpan::Day()));
 
-    if (PreferencesModel::instance().getIgnoreFutureTransactions() && (end_date_ > today_end_)) 
+    if (PrefModel::instance().getIgnoreFutureTransactions() && (end_date_ > today_end_)) 
     {
         end_date_ = today_end_;
         futureIgnored_ = true;
@@ -254,7 +254,7 @@ mmAllTime::mmAllTime()
 {
     this->start_date_.SetDay(1).SetMonth(wxDateTime::Jan).SetYear(1900);
     this->end_date_ = future_;
-    if (PreferencesModel::instance().getIgnoreFutureTransactions() && (end_date_ > today_end_)) 
+    if (PrefModel::instance().getIgnoreFutureTransactions() && (end_date_ > today_end_)) 
     {
         end_date_ = today_end_;
         futureIgnored_ = true;
@@ -273,7 +273,7 @@ mmSpecifiedRange::mmSpecifiedRange(const wxDateTime& start, const wxDateTime& en
     this->title_ = _n("Custom");
     this->start_date_ = start;
     this->end_date_ = end;
-    if (PreferencesModel::instance().getIgnoreFutureTransactions() && (end_date_ > today_end_)) 
+    if (PrefModel::instance().getIgnoreFutureTransactions() && (end_date_ > today_end_)) 
     {
         end_date_ = today_end_;
         futureIgnored_ = true;

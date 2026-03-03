@@ -22,14 +22,15 @@
 #include "base/defs.h"
 #include <wx/sharedptr.h>
 
-#include "_ModelBase.h"
 #include "table/CategoryTable.h"
+#include "data/CategoryData.h"
+
+#include "_ModelBase.h"
 
 class mmDateRange;
-class CategoryModel : public Model<CategoryTable>
+class CategoryModel : public TableFactory<CategoryTable, CategoryData>
 {
 public:
-    using Model<CategoryTable>::get_id;
     struct SorterByFULLNAME
     {
         template<class DATA>
@@ -60,15 +61,15 @@ public:
 
 public:
     /** Return the Data record for the given category name */
-    Data* get_key(const wxString& name, const int64 parentid);
-    Data* cache_name(const wxString& name, const wxString& parentname);
+    const Data* get_key(const wxString& name, const int64 parentid);
+    const Data* get_name(const wxString& name, const wxString& parentname);
 
     const wxArrayString FilterCategory(const wxString& category_pattern);
     static const std::map<wxString, int64 > all_categories(bool excludeHidden = false);
-    static CategoryModel::Data_Set sub_category(const Data* r);
-    static CategoryModel::Data_Set sub_category(const Data& r);
-    static CategoryModel::Data_Set sub_tree(const Data& r);
-    static CategoryModel::Data_Set sub_tree(const Data* r);
+    static CategoryModel::DataA sub_category(const Data* r);
+    static CategoryModel::DataA sub_category(const Data& r);
+    static CategoryModel::DataA sub_tree(const Data& r);
+    static CategoryModel::DataA sub_tree(const Data* r);
     static const wxString full_name(int64 category_id);
     static const wxString full_name(int64 category_id, wxString delimiter);
     static bool is_hidden(int64 catID);

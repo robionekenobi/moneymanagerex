@@ -19,7 +19,7 @@
 #include "base/constants.h"
 #include "base/images_list.h"
 
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 #include "navigatoreditdialog.h"
 
@@ -104,7 +104,7 @@ void mmNavigatorEditDialog::CreateControls()
     wxStaticText* iconLabel = new wxStaticText(uiBox, wxID_ANY, _t("Symbol") + ":");
 
     wxVector<wxBitmapBundle> images = navtree_images_list();
-    const auto navIconSize = PreferencesModel::instance().getNavigationIconSize();
+    const auto navIconSize = PrefModel::instance().getNavigationIconSize();
     wxImageList* imageList = new wxImageList(navIconSize, navIconSize);
     for (const auto& bundle : navtree_images_list(navIconSize)) {
         wxBitmap bitmap = bundle.GetBitmap(wxSize(navIconSize, navIconSize));

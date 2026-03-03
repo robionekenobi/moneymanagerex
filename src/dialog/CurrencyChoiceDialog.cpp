@@ -73,14 +73,14 @@ CurrencyChoiceDialog::CurrencyChoiceDialog(
     bEnableSelect_(bEnableSelect)
     , m_maskStr("")
 {
-    bHistoryEnabled_ = PreferencesModel::instance().getUseCurrencyHistory();
+    bHistoryEnabled_ = PrefModel::instance().getUseCurrencyHistory();
 
     ColName_[CURR_BASE]   = " ";
     ColName_[CURR_SYMBOL] = _t("Code");
     ColName_[CURR_NAME]   = _t("Name");
     ColName_[BASE_RATE]   = bHistoryEnabled_ ? _t("Last Rate") : _t("Fixed Rate");
 
-    m_currency_id = currencyID == -1 ? PreferencesModel::instance().getBaseCurrencyID() : currencyID;
+    m_currency_id = currencyID == -1 ? PrefModel::instance().getBaseCurrencyID() : currencyID;
     this->SetFont(parent->GetFont());
     Create(parent);
     bEnableSelect_ ? SetMinSize(wxSize(200, 350)) : SetMinSize(wxSize(500, 350));
@@ -122,19 +122,21 @@ void CurrencyChoiceDialog::fillControls()
 
     int64 base_currency_id = -1;
     if (CurrencyModel::GetBaseCurrency()) {
-        base_currency_id = CurrencyModel::GetBaseCurrency()->CURRENCYID;
+        base_currency_id = CurrencyModel::GetBaseCurrency()->m_id;
     }
 
     bool skip_unused = !cbShowAll_->IsChecked();
-    for (const auto& currency : CurrencyModel::instance().get_all(CurrencyCol::COL_ID_CURRENCYNAME))
-    {
-        int64 currencyID = currency.CURRENCYID;
+    for (const auto& currency : CurrencyModel::instance().find_all(
+        CurrencyCol::COL_ID_CURRENCYNAME
+    )) {
+        int64 currencyID = currency.m_id;
 
-        if (skip_unused && !(AccountModel::is_used(currency) || currencyID == base_currency_id))
+        if (skip_unused &&
+            !(CurrencyModel::is_used(currency.m_id) || currencyID == base_currency_id)
+        )
             continue;
-        if (!m_maskStr.IsEmpty())
-        {
-            if (!currency.CURRENCYNAME.Lower().Matches(m_maskStr) && !currency.CURRENCY_SYMBOL.Lower().Matches(m_maskStr))
+        if (!m_maskStr.IsEmpty()) {
+            if (!currency.m_name.Lower().Matches(m_maskStr) && !currency.m_symbol.Lower().Matches(m_maskStr))
                 continue;
         }
         wxString amount;
@@ -143,11 +145,11 @@ void CurrencyChoiceDialog::fillControls()
         else
             amount = bHistoryEnabled_
             ? CurrencyModel::toString(CurrencyHistoryModel::getLastRate(currencyID), nullptr, 4)
-            : CurrencyModel::toString(currency.BASECONVRATE, nullptr, 4);
+            : CurrencyModel::toString(currency.m_base_conv_rate, nullptr, 4);
         wxVector<wxVariant> data;
         data.push_back(wxVariant(base_currency_id == currencyID ? L"\u2713" : L""));
-        data.push_back(wxVariant(currency.CURRENCY_SYMBOL));
-        data.push_back(wxVariant(currency.CURRENCYNAME));
+        data.push_back(wxVariant(currency.m_symbol));
+        data.push_back(wxVariant(currency.m_name));
         data.push_back(wxVariant(amount));
         currencyListBox_->AppendItem(data, static_cast<wxUIntPtr>(currencyID.GetValue()));
         if (selected_index == currencyListBox_->GetItemCount() - 1)
@@ -348,9 +350,9 @@ void CurrencyChoiceDialog::OnBtnAdd()
 
 void CurrencyChoiceDialog::OnBtnEdit()
 {
-    CurrencyModel::Data *currency = CurrencyModel::instance().get_id(m_currency_id);
-    if (currency)
-        CurrencyManager(this, currency).ShowModal();
+    const CurrencyData *data_n = CurrencyModel::instance().get_id_data_n(m_currency_id);
+    if (data_n)
+        CurrencyManager(this, data_n).ShowModal();
     fillControls();
 }
 
@@ -365,13 +367,13 @@ void CurrencyChoiceDialog::OnBtnDelete()
     int selected_index = currencyListBox_->GetSelectedRow();
     if (selected_index < 0) return;
 
-    CurrencyModel::Data* currency = CurrencyModel::instance().get_id(m_currency_id);
-    if (!currency) return;
+    const CurrencyData* data_n = CurrencyModel::instance().get_id_data_n(m_currency_id);
+    if (!data_n) return;
     if (wxMessageBox(_t("Do you want to delete the selected currency?")
         , _t("Currency Manager")
         , wxYES_NO | wxNO_DEFAULT | wxICON_ERROR) == wxYES)
     {
-        CurrencyModel::instance().remove(m_currency_id);
+        CurrencyModel::instance().purge_id(m_currency_id);
         m_currency_id = -1;
         fillControls();
     }
@@ -415,41 +417,50 @@ void CurrencyChoiceDialog::OnListItemSelected(wxDataViewEvent& event)
     bool is_selected = currencyListBox_->GetSelectedRow() > -1;
     m_select_btn->Enable(is_selected && bEnableSelect_);
 
-    if (is_selected)
-    {
+    if (is_selected) {
         wxDataViewItem item = event.GetItem();
         m_currency_id = static_cast<int64>(currencyListBox_->GetItemData(item));
-        CurrencyModel::Data* currency = CurrencyModel::instance().get_id(m_currency_id);
-        if (currency)
-        {
+        const CurrencyData* data_n = CurrencyModel::instance().get_id_data_n(m_currency_id);
+        if (data_n) {
 
-            if (!bEnableSelect_)    // prevent user deleting currencies when editing accounts.
-            {
-                int64 baseCurrencyID = PreferencesModel::instance().getBaseCurrencyID();
-                if (bHistoryEnabled_)
-                {
+            // prevent user deleting currencies when editing accounts.
+            if (!bEnableSelect_) {
+                int64 baseCurrencyID = PrefModel::instance().getBaseCurrencyID();
+                if (bHistoryEnabled_) {
                     buttonDownloadHistory_->Enable(m_currency_id != baseCurrencyID);
                     buttonDelUnusedHistory_->Enable(m_currency_id != baseCurrencyID);
                     valueDatePicker_->Enable(m_currency_id != baseCurrencyID);
                     valueTextBox_->Enable(m_currency_id != baseCurrencyID);
-                    valueTextBox_->SetValue(0, CurrencyModel::instance().get_id(m_currency_id), 6);
+                    valueTextBox_->SetValue(0, CurrencyModel::instance().get_id_data_n(m_currency_id), 6);
                 }
-                else if (CurrencyHistoryModel::instance().find(CurrencyHistoryModel::CURRENCYID(m_currency_id)).size() > 0)
-                {
-                    if (wxMessageBox(wxString::Format(_t(
-                        "Historical rates for %1$s found, but “Use historical currency” in options is disabled:\n"
-                        "click No and enable it or click Yes to remove all historical rates for %2$s"),
-                        currency->CURRENCY_SYMBOL, currency->CURRENCY_SYMBOL), _t("Currency Manager")
-                        , wxYES_NO | wxNO_DEFAULT | wxICON_WARNING) == wxYES)
-                    {
-                        CurrencyHistoryModel::instance().Savepoint();
-                        for (const auto& r : CurrencyHistoryModel::instance().find(CurrencyHistoryModel::CURRENCYID(m_currency_id)))
-                            CurrencyHistoryModel::instance().remove(r.id());
-                        CurrencyHistoryModel::instance().ReleaseSavepoint();
+                else if (CurrencyHistoryModel::instance().find(
+                    CurrencyHistoryCol::CURRENCYID(m_currency_id)
+                ).size() > 0) {
+                    if (wxMessageBox(
+                        wxString::Format(
+                            _t("Historical rates for %1$s found, but “Use historical currency” in options is disabled:\n"
+                                "click No and enable it or click Yes to remove all historical rates for %2$s"
+                            ),
+                            data_n->m_symbol,
+                            data_n->m_symbol
+                        ),
+                        _t("Currency Manager"),
+                        wxYES_NO | wxNO_DEFAULT | wxICON_WARNING
+                    ) == wxYES) {
+                        CurrencyHistoryModel::instance().db_savepoint();
+                        for (const auto& r : CurrencyHistoryModel::instance().find(
+                            CurrencyHistoryCol::CURRENCYID(m_currency_id)
+                        )) {
+                            CurrencyHistoryModel::instance().purge_id(r.id());
+                        }
+                        CurrencyHistoryModel::instance().db_release_savepoint();
                     }
                 }
             }
-            historyStaticBox_->SetLabel(wxString::Format(_t("Currency History Options: %s"), currency->CURRENCYNAME));
+            historyStaticBox_->SetLabel(wxString::Format(
+                _t("Currency History Options: %s"),
+                data_n->m_name
+            ));
         }
     }
 
@@ -547,12 +558,12 @@ void CurrencyChoiceDialog::OnItemRightClick(wxDataViewEvent& event)
 
     bool is_selected = currencyListBox_->GetSelectedRow() > -1;
     m_select_btn->Enable(is_selected);
-    int64 baseCurrencyID = PreferencesModel::instance().getBaseCurrencyID();
+    int64 baseCurrencyID = PrefModel::instance().getBaseCurrencyID();
     mainMenu->Enable(MENU_ITEM1, baseCurrencyID != m_currency_id && is_selected);
     mainMenu->Enable(MENU_ITEM2, baseCurrencyID != m_currency_id && is_selected);
 
-    CurrencyModel::Data* currency = CurrencyModel::instance().get_id(m_currency_id);
-    mainMenu->Enable(wxID_REMOVE, !AccountModel::is_used(currency) && is_selected);
+    const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(m_currency_id);
+    mainMenu->Enable(wxID_REMOVE, !CurrencyModel::is_used(currency_n->m_id) && is_selected);
 
     mainMenu->Enable(wxID_EDIT, is_selected);
 
@@ -577,39 +588,36 @@ void CurrencyChoiceDialog::ShowCurrencyHistory()
     if (m_static_dialog) return;    //Abort when trying to set base currency
     valueListBox_->DeleteAllItems();
 
-    int64 baseCurrencyID = PreferencesModel::instance().getBaseCurrencyID();
-    if (!bHistoryEnabled_ || m_currency_id <= 0 || m_currency_id == baseCurrencyID)
-    {
+    int64 baseCurrencyID = PrefModel::instance().getBaseCurrencyID();
+    if (!bHistoryEnabled_ || m_currency_id <= 0 || m_currency_id == baseCurrencyID) {
         historyButtonAdd_->Disable();
         historyButtonDelete_->Disable();
         return;
     }
-    else
-    {
+    else {
         historyButtonAdd_->Enable();
         historyButtonDelete_->Enable();
     }
 
-    CurrencyModel::Data* currency = CurrencyModel::instance().get_id(m_currency_id);
-    CurrencyHistoryModel::Data_Set histData = CurrencyHistoryModel::instance()
-        .find(CurrencyHistoryModel::CURRENCYID(m_currency_id));
-    std::stable_sort(histData.begin(), histData.end(), CurrencyHistoryRow::SorterByCURRDATE());
+    const CurrencyData* currency = CurrencyModel::instance().get_id_data_n(m_currency_id);
+    CurrencyHistoryModel::DataA histData = CurrencyHistoryModel::instance().find(
+        CurrencyHistoryCol::CURRENCYID(m_currency_id)
+    );
+    std::stable_sort(histData.begin(), histData.end(), CurrencyHistoryData::SorterByCURRDATE());
     std::reverse(histData.begin(), histData.end());
-    if (!histData.empty())
-    {
+    if (!histData.empty()) {
         int idx = 0;
-        for (const auto &d : histData)
-        {
+        for (const auto& ch_d : histData) {
             wxListItem item;
             item.SetId(idx);
-            item.SetData(reinterpret_cast<void*>(d.CURRHISTID.GetValue()));
+            item.SetData(reinterpret_cast<void*>(ch_d.m_id.GetValue()));
             valueListBox_->InsertItem(item);
-            const wxString dispAmount = CurrencyModel::toString(d.CURRVALUE, currency, 6);
-            valueListBox_->SetItem(idx, 0, mmGetDateTimeForDisplay(d.CURRDATE));
+            const wxString dispAmount = CurrencyModel::toString(ch_d.m_base_conv_rate, currency, 6);
+            valueListBox_->SetItem(idx, 0, mmGetDateTimeForDisplay(ch_d.m_date));
             valueListBox_->SetItem(idx, 1, dispAmount);
 
 
-            const wxString& priceAmount = "* M"[d.CURRUPDTYPE.GetValue()];
+            const wxString& priceAmount = "* M"[ch_d.m_update_type_.GetValue()];
             valueListBox_->SetItem(idx, 2, priceAmount);
             idx++;
             if (idx > PreferencesModel::instance().getCurrencyHistoryDays())
@@ -627,7 +635,10 @@ void CurrencyChoiceDialog::OnHistoryAdd(wxCommandEvent& /*event*/)
 
     double dPrice = 0.0;
     wxString currentPriceStr = valueTextBox_->GetValue().Trim();
-    if (!CurrencyModel::fromString(currentPriceStr, dPrice, CurrencyModel::instance().get_id(m_currency_id)) || (dPrice < 0.0))
+    if (!CurrencyModel::fromString(
+        currentPriceStr, dPrice,
+        CurrencyModel::instance().get_id_data_n(m_currency_id)
+    ) || dPrice < 0.0)
         return mmErrorDialogs::ToolTip4Object(valueTextBox_, _t("Invalid Entry"), _t("Amount"));
     CurrencyHistoryModel::instance().addUpdate(m_currency_id, valueDatePicker_->GetValue(), dPrice, CurrencyHistoryModel::MANUAL);
 
@@ -640,14 +651,14 @@ void CurrencyChoiceDialog::OnHistoryDelete(wxCommandEvent& WXUNUSED(event))
     if (valueListBox_->GetSelectedItemCount() <= 0) return;
 
     long item = -1;
-    CurrencyHistoryModel::instance().Savepoint();
+    CurrencyHistoryModel::instance().db_savepoint();
     for (;;)
     {
         item = valueListBox_->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
         if (item == -1) break;
-        CurrencyHistoryModel::instance().remove(static_cast<int64>(valueListBox_->GetItemData(item)));
+        CurrencyHistoryModel::instance().purge_id(static_cast<int64>(valueListBox_->GetItemData(item)));
     }
-    CurrencyHistoryModel::instance().ReleaseSavepoint();
+    CurrencyHistoryModel::instance().db_release_savepoint();
 
     fillControls();
     ShowCurrencyHistory();
@@ -656,9 +667,8 @@ void CurrencyChoiceDialog::OnHistoryDelete(wxCommandEvent& WXUNUSED(event))
 void CurrencyChoiceDialog::OnHistoryUpdate(wxCommandEvent& WXUNUSED(event))
 {
     if (m_static_dialog) return;    //Abort when trying to set base currency
-    CurrencyModel::Data* CurrentCurrency = CurrencyModel::instance().get_id(m_currency_id);
-    if (!CurrentCurrency)
-    {
+    const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(m_currency_id);
+    if (!currency_n) {
         return mmErrorDialogs::MessageError(this, _t("No currency selected!"), _t("Currency history error"));
     }
 
@@ -679,12 +689,12 @@ void CurrencyChoiceDialog::OnHistoryUpdate(wxCommandEvent& WXUNUSED(event))
     wxLogDebug("Begin Date: %s", begin_date.FormatISODate());
 
     std::map<wxDateTime, double> historical_rates;
-    bool isUpdStatus = GetOnlineHistory(CurrentCurrency->CURRENCY_SYMBOL, begin_date, historical_rates, msg);
+    bool isUpdStatus = GetOnlineHistory(currency_n->m_symbol, begin_date, historical_rates, msg);
 
-    if (!isUpdStatus && !g_fiat_curr().Contains(CurrentCurrency->CURRENCY_SYMBOL)) {
+    if (!isUpdStatus && !g_fiat_curr().Contains(currency_n->m_symbol)) {
         wxString coincap_id;
         double coincap_price_usd;
-        isUpdStatus = getCoincapInfoFromSymbol(CurrentCurrency->CURRENCY_SYMBOL, coincap_id, coincap_price_usd, msg);
+        isUpdStatus = getCoincapInfoFromSymbol(currency_n->m_symbol, coincap_id, coincap_price_usd, msg);
         if (isUpdStatus)
             isUpdStatus = getCoincapAssetHistory(coincap_id, begin_date, historical_rates, msg);
     }
@@ -693,14 +703,14 @@ void CurrencyChoiceDialog::OnHistoryUpdate(wxCommandEvent& WXUNUSED(event))
     {
         return mmErrorDialogs::MessageError(this
             , wxString::Format(_t("Unable to download %s currency rates")
-                , CurrentCurrency->CURRENCY_SYMBOL)
+                , currency_n->m_symbol)
             , _t("Historical currency error"));
     }
 
     bool isFound = !historical_rates.empty();
     if (isFound)
     {
-        CurrencyHistoryModel::instance().Savepoint();
+        CurrencyHistoryModel::instance().db_savepoint();
         if (isCheckDate)
         {
             for (const auto entry : DatesList)
@@ -721,7 +731,7 @@ void CurrencyChoiceDialog::OnHistoryUpdate(wxCommandEvent& WXUNUSED(event))
                 CurrencyHistoryModel::instance().addUpdate(m_currency_id, entry.first, entry.second, CurrencyHistoryModel::ONLINE);
             }
         }
-        CurrencyHistoryModel::instance().ReleaseSavepoint();
+        CurrencyHistoryModel::instance().db_release_savepoint();
 
         fillControls();
         ShowCurrencyHistory();
@@ -729,35 +739,35 @@ void CurrencyChoiceDialog::OnHistoryUpdate(wxCommandEvent& WXUNUSED(event))
     else
         mmErrorDialogs::MessageError(this
             , wxString::Format(_t("Unable to download history for symbol %s. Historical rates unavailable!")
-                , CurrentCurrency->CURRENCY_SYMBOL)
+                , currency_n->m_symbol)
             , _t("Historical currency error"));
 }
 
 void CurrencyChoiceDialog::OnHistoryDeleteUnused(wxCommandEvent& WXUNUSED(event))
 {
     if (m_static_dialog) return;    //Abort when trying to set base currency
-    CurrencyHistoryModel::instance().Savepoint();
-    auto currencies = CurrencyModel::instance().get_all();
-    for (auto &currency : currencies)
-    {
-        if (!AccountModel::is_used(currency))
-        {
-            for (const auto& r : CurrencyHistoryModel::instance().find(CurrencyHistoryModel::CURRENCYID(currency.CURRENCYID)))
-                CurrencyHistoryModel::instance().remove(r.id());
+    CurrencyHistoryModel::instance().db_savepoint();
+    auto currencies = CurrencyModel::instance().find_all();
+    for (auto &currency : currencies) {
+        if (!CurrencyModel::is_used(currency.m_id)) {
+            for (const auto& ch_d : CurrencyHistoryModel::instance().find(
+                CurrencyHistoryCol::CURRENCYID(currency.m_id)
+            ))
+                CurrencyHistoryModel::instance().purge_id(ch_d.id());
         }
-        else
-        {
-            std::map<wxDateTime, int> DatesList = CurrencyModel::DateUsed(currency.CURRENCYID);
+        else {
+            std::map<wxDateTime, int> DatesList = CurrencyModel::DateUsed(currency.m_id);
             wxDateTime CurrDate;
-            for (const auto& r : CurrencyHistoryModel::instance().find(CurrencyHistoryModel::CURRENCYID(currency.CURRENCYID)))
-            {
-                CurrDate.ParseDate(r.CURRDATE);
+            for (const auto& ch_d : CurrencyHistoryModel::instance().find(
+                CurrencyHistoryCol::CURRENCYID(currency.m_id)
+            )) {
+                CurrDate.ParseDate(ch_d.m_date);
                 if (DatesList.find(CurrDate) == DatesList.end())
-                    CurrencyHistoryModel::instance().remove(r.id());
+                    CurrencyHistoryModel::instance().purge_id(ch_d.id());
             }
         }
     }
-    CurrencyHistoryModel::instance().ReleaseSavepoint();
+    CurrencyHistoryModel::instance().db_release_savepoint();
 
     fillControls();
     ShowCurrencyHistory();
@@ -767,12 +777,11 @@ void CurrencyChoiceDialog::OnHistorySelected(wxListEvent& event)
 {
     long selectedIndex = event.GetIndex();
     int64 histId = valueListBox_->GetItemData(selectedIndex);
-    CurrencyHistoryModel::Data *histData = CurrencyHistoryModel::instance().get_id(histId);
+    const CurrencyHistoryData* ch_n = CurrencyHistoryModel::instance().get_id_data_n(histId);
 
-    if (histData->CURRHISTID > 0)
-    {
-        valueDatePicker_->SetValue(CurrencyHistoryModel::CURRDATE(*histData));
-        valueTextBox_->SetValue(wxString::Format("%f", histData->CURRVALUE));
+    if (ch_n->m_id > 0) {
+        valueDatePicker_->SetValue(CurrencyHistoryModel::CURRDATE(*ch_n));
+        valueTextBox_->SetValue(wxString::Format("%f", ch_n->m_base_conv_rate));
     }
 }
 
@@ -784,7 +793,7 @@ void CurrencyChoiceDialog::OnHistoryDeselected(wxListEvent& WXUNUSED(event))
 
 bool CurrencyChoiceDialog::SetBaseCurrency(int64& baseCurrencyID)
 {
-    int64 baseCurrencyOLD = PreferencesModel::instance().getBaseCurrencyID();
+    int64 baseCurrencyOLD = PrefModel::instance().getBaseCurrencyID();
     if (baseCurrencyID == baseCurrencyOLD)
         return true;
 
@@ -796,23 +805,22 @@ bool CurrencyChoiceDialog::SetBaseCurrency(int64& baseCurrencyID)
             return true;
     }
 
-    PreferencesModel::instance().setBaseCurrencyID(baseCurrencyID);
+    PrefModel::instance().setBaseCurrencyID(baseCurrencyID);
 
-    //Update baseconvrate
-    CurrencyModel::instance().Savepoint();
-    auto currencies = CurrencyModel::instance().get_all();
-    for (auto& currency : currencies)
-    {
-        currency.BASECONVRATE = 1;
-        CurrencyModel::instance().save(&currency);
+    // Update baseconvrate
+    CurrencyModel::instance().db_savepoint();
+    auto currency_a = CurrencyModel::instance().find_all();
+    for (auto& currency_d : currency_a) {
+        currency_d.m_base_conv_rate = 1;
+        CurrencyModel::instance().save_data_n(currency_d);
     }
-    CurrencyModel::instance().ReleaseSavepoint();
+    CurrencyModel::instance().db_release_savepoint();
 
-    //Delete historical currency
-    CurrencyHistoryModel::instance().Savepoint();
-    for (const auto& r : CurrencyHistoryModel::instance().get_all())
-        CurrencyHistoryModel::instance().remove(r.id());
-    CurrencyHistoryModel::instance().ReleaseSavepoint();
+    // Delete historical currency
+    CurrencyHistoryModel::instance().db_savepoint();
+    for (const auto& r : CurrencyHistoryModel::instance().find_all())
+        CurrencyHistoryModel::instance().purge_id(r.id());
+    CurrencyHistoryModel::instance().db_release_savepoint();
 
     if (wxMessageBox(_t("Do you want to update the currency rates?")
             , _t("Currency Manager")

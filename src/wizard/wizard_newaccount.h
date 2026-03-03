@@ -19,12 +19,11 @@
 #pragma once
 
 #include "base/defs.h"
+#include "base/types.h"
 #include <wx/wizard.h>
 #include <wx/frame.h>
 #include <wx/textctrl.h>
 #include <wx/choice.h>
-
-typedef wxLongLong int64;
 
 class mmAddAccountWizard : public wxWizard
 {

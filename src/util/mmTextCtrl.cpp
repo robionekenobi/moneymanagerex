@@ -56,16 +56,17 @@ void mmTextCtrl::SetValueNoEvent(double value, int precision)
     this->ChangeValue(CurrencyModel::toString(value, m_currency, precision));
 }
 
-void mmTextCtrl::SetValue(double value, const AccountModel::Data* account, int precision)
+void mmTextCtrl::SetValue(double value, const AccountData* account, int precision)
 {
-    if (account) m_currency = CurrencyModel::instance().get_id(account->CURRENCYID);
-    this->SetValue(value, precision > -1 ? precision : log10(m_currency->SCALE.GetValue()));
+    if (account)
+        m_currency = CurrencyModel::instance().get_id_data_n(account->m_currency_id_p);
+    this->SetValue(value, precision > -1 ? precision : log10(m_currency->m_scale.GetValue()));
 }
 
-void mmTextCtrl::SetValue(double value, const CurrencyModel::Data* currency, int precision)
+void mmTextCtrl::SetValue(double value, const CurrencyData* currency, int precision)
 {
     m_currency = (currency ? currency : CurrencyModel::GetBaseCurrency());
-    this->SetValue(value, precision > -1 ? precision : log10(m_currency->SCALE.GetValue()));
+    this->SetValue(value, precision > -1 ? precision : log10(m_currency->m_scale.GetValue()));
 }
 
 bool mmTextCtrl::Calculate(int alt_precision)
@@ -91,7 +92,7 @@ bool mmTextCtrl::Calculate(int alt_precision)
     }
 
     double res = state.invokeFunction<double>("calc");
-    int precision = alt_precision >= 0 ? alt_precision : log10(m_currency->SCALE.GetValue());
+    int precision = alt_precision >= 0 ? alt_precision : log10(m_currency->m_scale.GetValue());
     const wxString res_str = CurrencyModel::toString(res, m_currency, precision);
     this->ChangeValue(res_str);
     this->SetInsertionPoint(res_str.Len());
@@ -129,19 +130,15 @@ wxChar mmTextCtrl::GetDecimalPoint()
     auto localeStr = InfoModel::instance().getString("LOCALE", "");
 
     // If there is no defined locale, use the currency decimal
-    if (localeStr.empty())
-    {
-        if (!m_currency->DECIMAL_POINT.empty())
-        {
-            dp = m_currency->DECIMAL_POINT;
+    if (localeStr.empty()) {
+        if (!m_currency->m_decimal_point.empty()) {
+            dp = m_currency->m_decimal_point;
         }
-        else
-        {
-            dp = CurrencyModel::GetBaseCurrency()->DECIMAL_POINT;
+        else {
+            dp = CurrencyModel::GetBaseCurrency()->m_decimal_point;
         }
     }
-    else 
-    {
+    else {
         // Locale is set, so use the locale decimal
         dp = CurrencyModel::toString(1.0);
         wxRegEx pattern2(R"([^.,])");

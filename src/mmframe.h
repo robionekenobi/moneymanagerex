@@ -34,7 +34,7 @@ Copyright (C) 2025, 2026 Klaus Wich
 #include "util/_util.h"
 
 #include "model/AccountModel.h"
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 #include "model/Journal.h"
 
 class BudgetPanel;
@@ -45,7 +45,7 @@ class ModelBase;
 class PanelBase;
 class ReportBase;
 class ReportPanel;
-class ScheduledPanel;
+class SchedPanel;
 class UpdateCallbackHook;
 class mmFileHistory;
 class mmGUIApp;
@@ -81,8 +81,8 @@ public:
     void setGotoAccountID(int64 account_id, Journal::IdRepeat journal_id = {-1, 0});
     bool financialYearIsDifferent()
     {
-        return PreferencesModel::instance().getFinancialFirstDay() != 1 ||
-            PreferencesModel::instance().getFinancialFirstMonth() != wxDateTime::Month::Jan;
+        return PrefModel::instance().getFinancialFirstDay() != 1 ||
+            PrefModel::instance().getFinancialFirstMonth() != wxDateTime::Month::Jan;
     }
     /// return the index (mmex::EDocFile) to return the correct file.
     int getHelpFileIndex() const;
@@ -111,7 +111,7 @@ private:
 
 private:
     std::vector<WebsiteNews> websiteNewsArray_;
-    std::vector<ModelBase*> m_all_models;
+    std::vector<TableBase*> m_all_models;
 
     /* handles to SQLite Database */
     wxSharedPtr<wxSQLite3Database> m_db;

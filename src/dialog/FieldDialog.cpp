@@ -44,22 +44,23 @@ wxBEGIN_EVENT_TABLE(FieldDialog, wxDialog)
     EVT_CLOSE(FieldDialog::OnQuit)
 wxEND_EVENT_TABLE()
 
-FieldDialog::FieldDialog(wxWindow* parent, FieldModel::Data* field)
-    : m_field(field)
-    , m_fieldRefType(TransactionModel::refTypeName)
+FieldDialog::FieldDialog(wxWindow* parent, FieldData* field) :
+    m_field_n(field),
+    m_fieldRefType(TrxModel::refTypeName)
 {
     this->SetFont(parent->GetFont());
     Create(parent);
     Fit();
 }
 
-bool FieldDialog::Create(wxWindow* parent
-    , wxWindowID id
-    , const wxString& caption
-    , const wxPoint& pos
-    , const wxSize& size
-    , long style)
-{
+bool FieldDialog::Create(
+    wxWindow* parent,
+    wxWindowID id,
+    const wxString& caption,
+    const wxPoint& pos,
+    const wxSize& size,
+    long style
+) {
     SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
     if (!wxDialog::Create(parent, id, caption, pos, size, style))
         return false;
@@ -76,29 +77,26 @@ bool FieldDialog::Create(wxWindow* parent
 
 void FieldDialog::dataToControls()
 {
-    if (this->m_field)
-    {
-        m_itemDescription->SetValue(m_field->DESCRIPTION);
-        m_itemType->SetSelection(FieldModel::type_id(m_field));
-        m_itemReference->SetSelection(FieldModel::reftype_id(m_field->REFTYPE));
-        m_itemTooltip->SetValue(FieldModel::getTooltip(m_field->PROPERTIES));
-        m_itemRegEx->SetValue(FieldModel::getRegEx(m_field->PROPERTIES));
-        m_itemAutocomplete->SetValue(FieldModel::getAutocomplete(m_field->PROPERTIES));
-        m_itemDefault->SetValue(FieldModel::getDefault(m_field->PROPERTIES));
-        m_itemDigitScale->SetValue(FieldModel::getDigitScale(m_field->PROPERTIES));
-        m_itemUDFC->SetStringSelection(FieldModel::getUDFC(m_field->PROPERTIES));
+    if (m_field_n) {
+        m_itemDescription->SetValue(m_field_n->DESCRIPTION);
+        m_itemType->SetSelection(FieldModel::type_id(m_field_n));
+        m_itemReference->SetSelection(ModelBase::reftype_id(m_field_n->REFTYPE));
+        m_itemTooltip->SetValue(FieldModel::getTooltip(m_field_n->PROPERTIES));
+        m_itemRegEx->SetValue(FieldModel::getRegEx(m_field_n->PROPERTIES));
+        m_itemAutocomplete->SetValue(FieldModel::getAutocomplete(m_field_n->PROPERTIES));
+        m_itemDefault->SetValue(FieldModel::getDefault(m_field_n->PROPERTIES));
+        m_itemDigitScale->SetValue(FieldModel::getDigitScale(m_field_n->PROPERTIES));
+        m_itemUDFC->SetStringSelection(FieldModel::getUDFC(m_field_n->PROPERTIES));
 
 
         wxString choices = wxEmptyString;
-        for (const auto& arrChoices : FieldModel::getChoices(m_field->PROPERTIES))
-        {
+        for (const auto& arrChoices : FieldModel::getChoices(m_field_n->PROPERTIES)) {
             choices += (choices.empty() ? "": ";") + arrChoices;
         }
         m_itemChoices->ChangeValue(choices);
     }
-    else
-    {
-        m_itemReference->SetSelection(FieldModel::reftype_id(m_fieldRefType));
+    else {
+        m_itemReference->SetSelection(ModelBase::reftype_id(m_fieldRefType));
         m_itemType->SetSelection(FieldModel::TYPE_ID_STRING);
         m_itemUDFC->SetSelection(0);
     }
@@ -127,8 +125,8 @@ void FieldDialog::CreateControls()
 
     itemFlexGridSizer6->Add(new wxStaticText(itemPanel5, wxID_STATIC, _t("Attribute of")), g_flagsH);
     m_itemReference = new wxChoice(itemPanel5, wxID_HIGHEST);
-    for (int i = 0; i < FieldModel::REFTYPE_ID_size; ++i) {
-        if (i != FieldModel::REFTYPE_ID_BILLSDEPOSIT) {
+    for (int i = 0; i < ModelBase::REFTYPE_ID_size; ++i) {
+        if (i != ModelBase::REFTYPE_ID_BILLSDEPOSIT) {
             wxString reftype = ModelBase::reftype_name(i);
             m_itemReference->Append(wxGetTranslation(reftype), new wxStringClientData(reftype));
         }
@@ -186,7 +184,7 @@ void FieldDialog::CreateControls()
 
     itemFlexGridSizer6->Add(new wxStaticText(itemPanel5, wxID_STATIC, _t("Panel's column")), g_flagsH);
     m_itemUDFC = new wxChoice(itemPanel5, wxID_APPLY);
-    for (const auto& type : FieldModel::getUDFCList(m_field)) {
+    for (const auto& type : FieldModel::getUDFCList(m_field_n)) {
         m_itemUDFC->Append(wxGetTranslation(type), new wxStringClientData(type));
     }
     mmToolTip(m_itemUDFC, _t("Select a value to represent the item on a panel"));
@@ -216,79 +214,81 @@ void FieldDialog::OnOk(wxCommandEvent& WXUNUSED(event))
     wxArrayString ArrChoices;
     wxString Choices = m_itemChoices->GetValue();
     wxStringTokenizer token(Choices, ";");
-    while (token.HasMoreTokens())
-    {
+    while (token.HasMoreTokens()) {
         ArrChoices.Add(token.GetNextToken());
     }
 
     int itemType = m_itemType->GetSelection();
-    if (ArrChoices.IsEmpty() && (itemType == FieldModel::TYPE_ID_SINGLECHOICE || itemType == FieldModel::TYPE_ID_MULTICHOICE))
-    {
+    if (ArrChoices.IsEmpty() && (
+        itemType == FieldModel::TYPE_ID_SINGLECHOICE ||
+        itemType == FieldModel::TYPE_ID_MULTICHOICE)
+    ) {
         return mmErrorDialogs::ToolTip4Object(m_itemChoices, _t("Empty value"), _t("Choices"));
     }
 
-    if (!this->m_field)
-    {
-        this->m_field = FieldModel::instance().create();
+    if (!m_field_n) {
+        m_field_d = FieldData();
+        m_field_n = &m_field_d;
     }
-    else if (m_field->TYPE != FieldModel::type_name(m_itemType->GetSelection()))
-    {
-        auto DataSet = FieldValueModel::instance().find(FieldValueModel::FIELDID(m_field->FIELDID));
-        if (DataSet.size() > 0)
-        {
+    else if (m_field_n->TYPE != FieldModel::type_name(m_itemType->GetSelection())) {
+        auto fv_a = FieldValueModel::instance().find(
+            FieldValueCol::FIELDID(m_field_n->FIELDID)
+        );
+        if (fv_a.size() > 0) {
             int DeleteResponse = wxMessageBox(
                 _t("Changing field type will delete all content!") + "\n"
-                + _t("Do you want to continue?") << "\n"
-                , _t("Custom Field Change")
-                , wxYES_NO | wxNO_DEFAULT | wxICON_ERROR);
+                    + _t("Do you want to continue?") << "\n",
+                _t("Custom Field Change"),
+                wxYES_NO | wxNO_DEFAULT | wxICON_ERROR
+            );
             if (DeleteResponse != wxYES)
                 return;
 
-            FieldValueModel::instance().Savepoint();
-            for (auto &data : DataSet)
-            {
-                FieldValueModel::instance().remove(data.id());
+            // CHECK: What is the intention behind removing and adding back all items?
+            // Is removal of CONTENT missing?
+            FieldValueModel::instance().db_savepoint();
+            for (auto& fv_d : fv_a) {
+                FieldValueModel::instance().purge_id(fv_d.id());
             }
-            FieldValueModel::instance().save(DataSet);
-            FieldValueModel::instance().ReleaseSavepoint();
+            FieldValueModel::instance().save_data_a(fv_a);
+            FieldValueModel::instance().db_release_savepoint();
         }
     }
-    else if (FieldModel::getChoices(m_field->PROPERTIES) != ArrChoices)
-    {
-        auto DataSet = FieldValueModel::instance().find(FieldValueModel::FIELDID(m_field->FIELDID));
-        if (DataSet.size() > 0)
-        {
+    else if (FieldModel::getChoices(m_field_n->PROPERTIES) != ArrChoices) {
+        auto fv_a = FieldValueModel::instance().find(
+            FieldValueCol::FIELDID(m_field_n->FIELDID)
+        );
+        if (fv_a.size() > 0) {
             int DeleteResponse = wxMessageBox(
                 _t("Modified choices available: ones removed will be cleaned!") + "\n"
-                + _t("Do you want to continue?") << "\n"
-                , _t("Custom Field Change")
-                , wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION);
+                    + _t("Do you want to continue?") << "\n",
+                _t("Custom Field Change"),
+                wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION
+            );
             if (DeleteResponse != wxYES)
                 return;
 
-            FieldValueModel::instance().Savepoint();
-            for (auto &data : DataSet)
-            {
-                if(ArrChoices.Index(data.CONTENT) == wxNOT_FOUND)
-                    FieldValueModel::instance().remove(data.id());
+            FieldValueModel::instance().db_savepoint();
+            for (auto& fv_d : fv_a) {
+                if (ArrChoices.Index(fv_d.CONTENT) == wxNOT_FOUND)
+                    FieldValueModel::instance().purge_id(fv_d.id());
             }
-            FieldValueModel::instance().save(DataSet);
-            FieldValueModel::instance().ReleaseSavepoint();
+            FieldValueModel::instance().save_data_a(fv_a);
+            FieldValueModel::instance().db_release_savepoint();
         }
     }
 
     const wxString regexp = m_itemRegEx->GetValue();
-    if (!regexp.empty())
-    {
+    if (!regexp.empty()) {
         wxRegEx pattern(regexp);
         if (!pattern.IsValid())
             return;
     }
 
-    m_field->REFTYPE = m_fieldRefType;
-    m_field->DESCRIPTION = name;
-    m_field->TYPE = FieldModel::type_name(m_itemType->GetSelection());
-    m_field->PROPERTIES = FieldModel::formatProperties(
+    m_field_n->REFTYPE = m_fieldRefType;
+    m_field_n->DESCRIPTION = name;
+    m_field_n->TYPE = FieldModel::type_name(m_itemType->GetSelection());
+    m_field_n->PROPERTIES = FieldModel::formatProperties(
         m_itemTooltip->GetValue(),
         regexp,
         m_itemAutocomplete->GetValue(),
@@ -296,9 +296,9 @@ void FieldDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         ArrChoices,
         m_itemDigitScale->GetValue(),
         m_itemUDFC->GetString(m_itemUDFC->GetSelection())
-        );
+    );
 
-    FieldModel::instance().save(m_field);
+    FieldModel::instance().unsafe_save_data_n(m_field_n);
     EndModal(wxID_OK);
 }
 

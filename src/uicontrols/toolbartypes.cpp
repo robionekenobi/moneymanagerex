@@ -95,7 +95,7 @@ void ToolBarEntries::SortEntriesBySeq()
 }
 
 wxImageList* ToolBarEntries::getImageList(){
-    const int toolbar_icon_size = PreferencesModel::instance().getToolbarIconSize();
+    const int toolbar_icon_size = PrefModel::instance().getToolbarIconSize();
     wxImageList* imageList = new wxImageList(toolbar_icon_size, toolbar_icon_size);
     int iidx = 0;
     ToolBarEntries::ToolBarEntry* ainfo = getFirstEntry();

@@ -45,7 +45,7 @@ wxString mmReportBudgetingPerformance::getHTMLText()
 
     int startDay;
     wxDate::Month startMonth;
-    if (PreferencesModel::instance().getBudgetFinancialYears())
+    if (PrefModel::instance().getBudgetFinancialYears())
     {
         GetFinancialYearValues(startDay, startMonth);
     } else
@@ -56,13 +56,12 @@ wxString mmReportBudgetingPerformance::getHTMLText()
 
     long startYear;
 
-    wxString value = BudgetPeriodModel::instance().Get(m_date_selection);
+    wxString value = BudgetPeriodModel::instance().get_id_name(m_date_selection);
     wxString budget_year;
     wxString budget_month;
 
     wxRegEx pattern("^([0-9]{4})(-([0-9]{2}))?$");
-    if (pattern.Matches(value))
-    {
+    if (pattern.Matches(value)) {
         budget_year = pattern.GetMatch(value, 1);
         budget_month = pattern.GetMatch(value, 3);
     }
@@ -78,29 +77,29 @@ wxString mmReportBudgetingPerformance::getHTMLText()
     yearEnd.Add(wxDateSpan::Year()).Subtract(wxDateSpan::Day());
 
     // Readjust dates by the Budget Offset Option
-    PreferencesModel::instance().addBudgetDateOffset(yearBegin);
-    PreferencesModel::instance().addBudgetDateOffset(yearEnd);
+    PrefModel::instance().addBudgetDateOffset(yearBegin);
+    PrefModel::instance().addBudgetDateOffset(yearEnd);
     mmSpecifiedRange date_range(yearBegin, yearEnd);
 
     bool evaluateTransfer = false;
-    if (PreferencesModel::instance().getBudgetIncludeTransfers())
+    if (PrefModel::instance().getBudgetIncludeTransfers())
     {
         evaluateTransfer = true;
     }
     //Get statistics
-    std::map<int64, BudgetModel::PERIOD_ID> budgetPeriod;
+    std::map<int64, BudgetFrequency> budgetFreq;
     std::map<int64, double> budgetAmt;
     std::map<int64, wxString> budgetNotes;
-    BudgetModel::instance().getBudgetEntry(m_date_selection, budgetPeriod, budgetAmt, budgetNotes);
+    BudgetModel::instance().getBudgetEntry(m_date_selection, budgetFreq, budgetAmt, budgetNotes);
 
     std::map<int64, std::map<int, double> > categoryStats;
     CategoryModel::instance().getCategoryStats(categoryStats
         , m_account_a
         , &date_range
-        , PreferencesModel::instance().getIgnoreFutureTransactions()
+        , PrefModel::instance().getIgnoreFutureTransactions()
         , true
         , (evaluateTransfer ? &budgetAmt : nullptr)
-        , PreferencesModel::instance().getBudgetFinancialYears());
+        , PrefModel::instance().getBudgetFinancialYears());
 
     std::map<int64, std::map<int, double> > budgetStats;
     BudgetModel::instance().getBudgetStats(budgetStats, &date_range, true);
@@ -116,7 +115,7 @@ wxString mmReportBudgetingPerformance::getHTMLText()
     mmHTMLBuilder hb;
     hb.init();
 
-    hb.addReportHeader(headingStr, 1, PreferencesModel::instance().getIgnoreFutureTransactions());
+    hb.addReportHeader(headingStr, 1, PrefModel::instance().getIgnoreFutureTransactions());
     hb.displayDateHeading(yearBegin, yearEnd);
     // Prime the filter
     m_filter.clear();
@@ -162,25 +161,25 @@ wxString mmReportBudgetingPerformance::getHTMLText()
             {
                 std::map<int64, std::map<int, double>> catTotalsEstimated, catTotalsActual;
                 std::map<int64, wxString> formattedNames;
-                std::map<int64, std::vector<CategoryModel::Data>> categ_children;
+                std::map<int64, std::vector<CategoryData>> categ_children;
 
-                bool budgetDeductMonthly = PreferencesModel::instance().getBudgetDeductMonthly();
+                bool budgetDeductMonthly = PrefModel::instance().getBudgetDeductMonthly();
                 // pull categories from DB and store
-                for (CategoryModel::Data category : CategoryModel::instance().get_all(CategoryCol::COL_ID_CATEGNAME, false)) {
-                    categ_children[category.PARENTID].push_back(category);
+                for (CategoryData category : CategoryModel::instance().find_all(CategoryCol::COL_ID_CATEGNAME, false)) {
+                    categ_children[category.m_parent_id_n].push_back(category);
                 }
 
-                std::vector<CategoryModel::Data> totals_stack;
-                std::vector<CategoryModel::Data> categ_stack = categ_children[-1];
+                std::vector<CategoryData> totals_stack;
+                std::vector<CategoryData> categ_stack = categ_children[-1];
                 while (!categ_stack.empty())
                 {
-                    CategoryModel::Data category = categ_stack.back();
+                    CategoryData category = categ_stack.back();
                     categ_stack.pop_back();
-                    int64 catID = category.CATEGID;
+                    int64 catID = category.m_id;
                     double estimate = 0;
                     double actual = 0;
                     for (auto child : categ_children[catID]) {
-                        formattedNames[child.CATEGID] = wxString("&nbsp;&nbsp;&nbsp;&nbsp;").Append(formattedNames[catID]);
+                        formattedNames[child.m_id] = wxString("&nbsp;&nbsp;&nbsp;&nbsp;").Append(formattedNames[catID]);
                         categ_stack.push_back(child);
                     }
                     int month = -1;
@@ -188,7 +187,7 @@ wxString mmReportBudgetingPerformance::getHTMLText()
                     hb.startTableCell(" style='vertical-align:middle;'");
                     hb.addText(wxString::Format(formattedNames[catID] + "<a href=\"viewtrans:%lld\" target=\"_blank\">%s</a>"
                         , catID
-                        , category.CATEGNAME));
+                        , category.m_name));
                     hb.endTableCell();
                     for (const auto& stat : categoryStats[catID])
                     {
@@ -236,10 +235,10 @@ wxString mmReportBudgetingPerformance::getHTMLText()
                         //update all the ancestor totals
                         for (auto i = totals_stack.rbegin(); i < totals_stack.rend(); i++)
                         {
-                            catTotalsEstimated[i->CATEGID][month] += estimate;
-                            catTotalsActual[i->CATEGID][month] += actual;
-                            catTotalsEstimated[i->CATEGID][12] += estimate;
-                            catTotalsActual[i->CATEGID][12] += actual;
+                            catTotalsEstimated[i->m_id][month] += estimate;
+                            catTotalsActual[i->m_id][month] += actual;
+                            catTotalsEstimated[i->m_id][12] += estimate;
+                            catTotalsActual[i->m_id][12] += actual;
                         }
                     }
 
@@ -260,17 +259,17 @@ wxString mmReportBudgetingPerformance::getHTMLText()
                         hb.addTableCell("-");
                     hb.endTableRow();
 
-                    if (!categ_stack.empty() && categ_stack.back().PARENTID == catID)
+                    if (!categ_stack.empty() && categ_stack.back().m_parent_id_n == catID)
                         totals_stack.push_back(category); //if next subcategory is our child, store the parent to display after the children
                     else
-                        while (!totals_stack.empty() && !categ_stack.empty() && totals_stack.back().CATEGID != categ_stack.back().PARENTID) {
+                        while (!totals_stack.empty() && !categ_stack.empty() && totals_stack.back().m_id != categ_stack.back().m_parent_id_n) {
                             hb.startAltTableRow();
                             {
-                                int64 id = totals_stack.back().CATEGID;
+                                int64 id = totals_stack.back().m_id;
                                 hb.startTableCell(" style='vertical-align:middle;'");
                                 hb.addText(wxString::Format(formattedNames[id] + "<a href=\"viewtrans:%lld:-2\" target=\"_blank\">%s</a>"
                                     , id
-                                    , totals_stack.back().CATEGNAME));
+                                    , totals_stack.back().m_name));
                                 hb.endTableCell();
                                 // monthly totals
                                 for (int m = 0; m < 12; m++)
@@ -311,11 +310,11 @@ wxString mmReportBudgetingPerformance::getHTMLText()
                 {
                     hb.startAltTableRow();
                     {
-                        int64 id = totals_stack.back().CATEGID;
+                        int64 id = totals_stack.back().m_id;
                         hb.startTableCell(" style='vertical-align:middle;'");
                         hb.addText(wxString::Format(formattedNames[id] + "<a href=\"viewtrans:%lld:-2\" target=\"_blank\">%s</a>"
                             , id
-                            , totals_stack.back().CATEGNAME));
+                            , totals_stack.back().m_name));
                         hb.endTableCell();
                         // monthly totals
                         for (int m = 0; m < 12; m++)

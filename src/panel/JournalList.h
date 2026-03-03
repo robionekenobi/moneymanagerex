@@ -122,7 +122,7 @@ private:
     };
 
 private:
-    Journal::Full_Data_Set m_trans;
+    Journal::Full_DataA m_trans;
     long m_topItemIndex = -1; // where to display the list again after refresh
     wxString m_today;
     bool m_firstSort = true;
@@ -204,7 +204,7 @@ private:
     void onSelectAll(wxCommandEvent& WXUNUSED(event));
     void onCopy(wxCommandEvent& WXUNUSED(event));
     void onPaste(wxCommandEvent& WXUNUSED(event));
-    int64 onPaste(TransactionModel::Data* tran);
+    int64 onPaste(const TrxData* tran);
     void onDuplicateTransaction(wxCommandEvent& event);
     void onEnterScheduled(wxCommandEvent& event);
     void onSkipScheduled(wxCommandEvent& event);
@@ -245,61 +245,61 @@ inline void JournalList::setVisibleItemIndex(long v)
 }
 
 inline static bool SorterByUDFC01(
-    const TransactionModel::Full_Data& i, const TransactionModel::Full_Data& j
+    const TrxModel::Full_Data& i, const TrxModel::Full_Data& j
 ) {
     return (i.UDFC_content[0] < j.UDFC_content[0]);
 }
 
 inline static bool SorterByUDFC02(
-    const TransactionModel::Full_Data& i, const TransactionModel::Full_Data& j
+    const TrxModel::Full_Data& i, const TrxModel::Full_Data& j
 ) {
     return (i.UDFC_content[1] < j.UDFC_content[1]);
 }
 
 inline static bool SorterByUDFC03(
-    const TransactionModel::Full_Data& i, const TransactionModel::Full_Data& j
+    const TrxModel::Full_Data& i, const TrxModel::Full_Data& j
 ) {
     return (i.UDFC_content[2] < j.UDFC_content[2]);
 }
 
 inline static bool SorterByUDFC04(
-    const TransactionModel::Full_Data& i, const TransactionModel::Full_Data& j
+    const TrxModel::Full_Data& i, const TrxModel::Full_Data& j
 ) {
     return (i.UDFC_content[3] < j.UDFC_content[3]);
 }
 
 inline static bool SorterByUDFC05(
-    const TransactionModel::Full_Data& i, const TransactionModel::Full_Data& j
+    const TrxModel::Full_Data& i, const TrxModel::Full_Data& j
 ) {
     return (i.UDFC_content[4] < j.UDFC_content[4]);
 }
 
 inline static bool SorterByUDFC01_val(
-    const TransactionModel::Full_Data& i, const TransactionModel::Full_Data& j
+    const TrxModel::Full_Data& i, const TrxModel::Full_Data& j
 ) {
     return (i.UDFC_value[0] < j.UDFC_value[0]);
 }
 
 inline static bool SorterByUDFC02_val(
-    const TransactionModel::Full_Data& i, const TransactionModel::Full_Data& j
+    const TrxModel::Full_Data& i, const TrxModel::Full_Data& j
 ) {
     return (i.UDFC_value[1] < j.UDFC_value[1]);
 }
 
 inline static bool SorterByUDFC03_val(
-    const TransactionModel::Full_Data& i, const TransactionModel::Full_Data& j
+    const TrxModel::Full_Data& i, const TrxModel::Full_Data& j
 ) {
     return (i.UDFC_value[2] < j.UDFC_value[2]);
 }
 
 inline static bool SorterByUDFC04_val(
-    const TransactionModel::Full_Data& i, const TransactionModel::Full_Data& j
+    const TrxModel::Full_Data& i, const TrxModel::Full_Data& j
 ) {
     return (i.UDFC_value[3] < j.UDFC_value[3]);
 }
 
 inline static bool SorterByUDFC05_val(
-    const TransactionModel::Full_Data& i, const TransactionModel::Full_Data& j
+    const TrxModel::Full_Data& i, const TrxModel::Full_Data& j
 ) {
     return (i.UDFC_value[4] < j.UDFC_value[4]);
 }

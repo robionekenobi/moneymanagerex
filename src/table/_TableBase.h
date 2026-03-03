@@ -28,7 +28,7 @@ using namespace rapidjson;
 #include <html_template.h>
 using namespace tmpl;
 
-typedef wxLongLong int64;
+#include "base/types.h"
 
 class wxString;
 
@@ -69,17 +69,21 @@ public:
     TableBase(): m_db(0), m_ticks(0) {};
     virtual ~TableBase() {};
 
-    void Begin() { m_db->Begin(); }
-    void Commit() { m_db->Commit(); }
-    void Savepoint(const wxString name = "MMEX") { m_db->Savepoint(name); }
-    void ReleaseSavepoint(const wxString name = "MMEX") { m_db->ReleaseSavepoint(name); }
-    void Rollback(const wxString name = "MMEX") { m_db->Rollback(name); }
+    void db_begin() { m_db->Begin(); }
+    void db_commit() { m_db->Commit(); }
+    void db_savepoint(const wxString name = "MMEX") { m_db->Savepoint(name); }
+    void db_release_savepoint(const wxString name = "MMEX") { m_db->ReleaseSavepoint(name); }
+    void db_rollback(const wxString name = "MMEX") { m_db->Rollback(name); }
 
     bool ensure_table();
-    bool ensure_index();
     void drop_table();
     int64 newId();
 
-    virtual void ensure_data() = 0;
+    virtual void ensure_data() {};
+    virtual void preload_cache(int max_size) = 0;
+    virtual void reset_cache() = 0;
+    virtual bool cache_empty() const = 0;
+    virtual auto stat_json() const -> const wxString = 0;
+    virtual void debug_stat() const = 0;
 };
 

@@ -94,8 +94,8 @@ void MergeCategoryDialog::CreateControls()
 
     cbSourceCategory_ = new mmComboBoxCategory(this, wxID_LAST);
     cbSourceCategory_->SetMinSize(wxSize(200, -1));
-    CategoryModel::Data* category = CategoryModel::instance().get_id(m_sourceCatID);
-    if (category)
+    const CategoryData* category_n = CategoryModel::instance().get_id_data_n(m_sourceCatID);
+    if (category_n)
         cbSourceCategory_->SetValue(CategoryModel::full_name(m_sourceCatID));
 
     cbDestCategory_ = new mmComboBoxCategory(this, wxID_NEW, wxDefaultSize, -1, true);
@@ -153,69 +153,68 @@ void MergeCategoryDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 
     const auto& source_category_name = cbSourceCategory_->GetValue();
     const auto& destination_category_name = cbDestCategory_->GetValue();
-    const wxString& info = wxString::Format(_t("From %1$s to %2$s")
-        , source_category_name
-        , destination_category_name);
+    const wxString& info = wxString::Format(_t("From %1$s to %2$s"),
+        source_category_name,
+        destination_category_name
+    );
 
-    if (wxMessageBox(_t("Please Confirm:") + "\n" + info
-        , _t("Merge categories confirmation"), wxOK | wxCANCEL | wxICON_INFORMATION) == wxOK)
-    {
-        auto transactions = TransactionModel::instance()
-            .find(TransactionModel::CATEGID(m_sourceCatID));
-        auto checking_split = TransactionSplitModel::instance()
-            .find(TransactionSplitModel::CATEGID(m_sourceCatID));
-        auto billsdeposits = ScheduledModel::instance()
-            .find(ScheduledModel::CATEGID(m_sourceCatID));
-        auto budget = BudgetModel::instance()
-            .find(BudgetModel::CATEGID(m_sourceCatID));
-        auto budget_split = ScheduledSplitModel::instance()
-            .find(ScheduledSplitModel::CATEGID(m_sourceCatID));
-        auto payees = PayeeModel::instance()
-            .find(PayeeModel::CATEGID(m_sourceCatID));
+    if (wxMessageBox(_t("Please Confirm:") + "\n" + info,
+        _t("Merge categories confirmation"),
+        wxOK | wxCANCEL | wxICON_INFORMATION) == wxOK
+    ) {
+        auto trx_a = TrxModel::instance()
+            .find(TrxCol::CATEGID(m_sourceCatID));
+        auto tp_a = TrxSplitModel::instance()
+            .find(TrxSplitCol::CATEGID(m_sourceCatID));
+        auto sched_a = SchedModel::instance()
+            .find(SchedCol::CATEGID(m_sourceCatID));
+        auto budget_a = BudgetModel::instance()
+            .find(BudgetCol::CATEGID(m_sourceCatID));
+        auto qp_a = SchedSplitModel::instance()
+            .find(SchedSplitCol::CATEGID(m_sourceCatID));
+        auto payee_a = PayeeModel::instance()
+            .find(PayeeCol::CATEGID(m_sourceCatID));
 
-        for (auto &entry : transactions)
-        {
-            entry.CATEGID = m_destCatID;
+        for (auto& trx_d : trx_a) {
+            trx_d.CATEGID = m_destCatID;
         }
-        m_changedRecords += TransactionModel::instance().save_trx(transactions);
+        TrxModel::instance().save_trx_a(trx_a);
+        m_changedRecords += trx_a.size();
 
-        for (auto &entry : billsdeposits)
-        {
-            entry.CATEGID = m_destCatID;
+        for (auto& sched_d : sched_a) {
+            sched_d.CATEGID = m_destCatID;
         }
-        m_changedRecords += ScheduledModel::instance().save(billsdeposits);
+        SchedModel::instance().save_data_a(sched_a);
+        m_changedRecords += sched_a.size();
 
-        for (auto &entry : checking_split)
-        {
-            entry.CATEGID = m_destCatID;
+        for (auto& tp_d : tp_a) {
+            tp_d.m_category_id_p = m_destCatID;
         }
-        m_changedRecords += TransactionSplitModel::instance().save(checking_split);
+        TrxSplitModel::instance().save_data_a(tp_a);
+        m_changedRecords += tp_a.size();
 
-        for (auto &entry : payees)
-        {
-            entry.CATEGID = m_destCatID;
+        for (auto& payee_d : payee_a) {
+            payee_d.m_category_id_n = m_destCatID;
         }
-        m_changedRecords += PayeeModel::instance().save(payees);
+        PayeeModel::instance().save_data_a(payee_a);
+        m_changedRecords += payee_a.size();
         mmWebApp::MMEX_WebApp_UpdatePayee();
 
-        for (auto &entry : budget_split)
-        {
-            entry.CATEGID = m_destCatID;
+        for (auto& qp_d : qp_a) {
+            qp_d.m_category_id_p = m_destCatID;
         }
-        m_changedRecords += ScheduledSplitModel::instance().save(budget_split);
+        SchedSplitModel::instance().save_data_a(qp_a);
+        m_changedRecords += qp_a.size();
 
-        for (auto &entry : budget)
-        {
-            BudgetModel::instance().remove(entry.BUDGETENTRYID);
+        for (auto& budget_d : budget_a) {
+            BudgetModel::instance().purge_id(budget_d.m_period_id);
             m_changedRecords++;
         }
 
-        if (cbDeleteSourceCategory_->IsChecked())
-        {
-            if (m_sourceSubCatID == -1)
-            {
-                if (CategoryModel::sub_category(CategoryModel::instance().get_id(m_sourceCatID)).empty())
-                    CategoryModel::instance().remove(m_sourceCatID);
+        if (cbDeleteSourceCategory_->IsChecked()) {
+            if (m_sourceSubCatID == -1) {
+                if (CategoryModel::sub_category(CategoryModel::instance().get_id_data_n(m_sourceCatID)).empty())
+                    CategoryModel::instance().purge_id(m_sourceCatID);
             }
 
             cbSourceCategory_->mmDoReInitialize();
@@ -232,18 +231,18 @@ void MergeCategoryDialog::IsOkOk()
     m_sourceCatID = cbSourceCategory_->mmGetCategoryId();
     int64 m_destCatID = cbDestCategory_->mmGetCategoryId();
 
-    auto transactions = TransactionModel::instance()
-        .find(TransactionModel::CATEGID(m_sourceCatID));
-    auto checking_split = TransactionSplitModel::instance()
-        .find(TransactionSplitModel::CATEGID(m_sourceCatID));
-    auto billsdeposits = ScheduledModel::instance()
-        .find(ScheduledModel::CATEGID(m_sourceCatID));
+    auto transactions = TrxModel::instance()
+        .find(TrxCol::CATEGID(m_sourceCatID));
+    auto checking_split = TrxSplitModel::instance()
+        .find(TrxSplitCol::CATEGID(m_sourceCatID));
+    auto billsdeposits = SchedModel::instance()
+        .find(SchedCol::CATEGID(m_sourceCatID));
     auto budget = BudgetModel::instance()
-        .find(BudgetModel::CATEGID(m_sourceCatID));
-    auto budget_split = ScheduledSplitModel::instance()
-        .find(ScheduledSplitModel::CATEGID(m_sourceCatID));
+        .find(BudgetCol::CATEGID(m_sourceCatID));
+    auto budget_split = SchedSplitModel::instance()
+        .find(SchedSplitCol::CATEGID(m_sourceCatID));
     auto payees = PayeeModel::instance()
-        .find(PayeeModel::CATEGID(m_sourceCatID));
+        .find(PayeeCol::CATEGID(m_sourceCatID));
 
     const int trxs_size = (m_sourceCatID < 0 && m_sourceSubCatID < 0) ? 0 : static_cast<int>(transactions.size());
     const int checks_size = static_cast<int>(checking_split.size());

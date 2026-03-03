@@ -64,14 +64,14 @@ ListBase::ListBase(wxWindow* parent, wxWindowID winid) :
 
 ListBase::~ListBase()
 {
-    savePreferences();
+    savePref();
 }
 
 //----------------------------------------------------------------------------
 
 void ListBase::createColumns()
 {
-    loadPreferences();
+    loadPref();
     for (int col_nr = 0; col_nr < getColNrSize(); ++col_nr) {
         int col_id = getColId_Nr(col_nr);
         ListColumnInfo col_info = m_col_info_id[col_id];
@@ -140,7 +140,7 @@ const wxString ListBase::getColHeader(int col_id, bool show_icon) const
 
 //----------------------------------------------------------------------------
 
-void ListBase::savePreferences()
+void ListBase::savePref()
 {
     if (m_setting_name.empty())
         return;
@@ -200,7 +200,7 @@ void ListBase::savePreferences()
     SettingModel::instance().setRaw(key, value);
 }
 
-void ListBase::loadPreferences()
+void ListBase::loadPref()
 {
     const wxString& key = "LIST_" + m_setting_name;
     Document json_doc = SettingModel::instance().getJdoc(key, "{}");
@@ -210,8 +210,8 @@ void ListBase::loadPreferences()
     }
 
     if (version < 1) {
-        loadPreferences_v190();
-        savePreferences();
+        loadPref_v190();
+        savePref();
         return;
     }
     else if (version != m_setting_version) {
@@ -289,7 +289,7 @@ void ListBase::loadPreferences()
     }
 }
 
-void ListBase::savePreferences_v190()
+void ListBase::savePref_v190()
 {
     // save m_col_id_nr
     if (!m_col_id_nr.empty() && !o_col_order_prefix.empty()) {
@@ -317,7 +317,7 @@ void ListBase::savePreferences_v190()
     }
 }
 
-void ListBase::loadPreferences_v190()
+void ListBase::loadPref_v190()
 {
     // load m_col_id_nr if columns can be ordered
     if (!m_col_id_nr.empty() && !o_col_order_prefix.empty()) {
@@ -632,7 +632,7 @@ void ListBase::onHeaderToggle(wxCommandEvent& event)
         new_width = 0;
     }
     SetColumnWidth(col_nr, new_width);
-    savePreferences();
+    savePref();
     Thaw();
 }
 
@@ -645,7 +645,7 @@ void ListBase::onHeaderHide(wxCommandEvent& WXUNUSED(event))
     m_col_width_id[col_id] = GetColumnWidth(m_sel_col_nr);
     m_col_hidden_id.insert(col_id);
     SetColumnWidth(m_sel_col_nr, 0);
-    savePreferences();
+    savePref();
     Thaw();
 }
 
@@ -670,7 +670,7 @@ void ListBase::onHeaderShow(wxCommandEvent& event)
     shiftColumn(col_vo, offset);
 
     updateSortIcon();
-    savePreferences();
+    savePref();
     Thaw();
 }
 
@@ -692,7 +692,7 @@ void ListBase::onHeaderMove(wxCommandEvent& WXUNUSED(event), int dir)
     if (isValidColNr(dst_nr)) {
         shiftColumn(src_vo, dst_vo - src_vo);
         updateSortIcon();
-        savePreferences();
+        savePref();
     }
 
     Thaw();
@@ -707,7 +707,7 @@ void ListBase::headerMoveBeginEnd(bool dir){
         if (isValidColNr(dst_nr)) {
             shiftColumn(src_vo, dir ?  getColNrSize() - src_vo : -src_vo);
             updateSortIcon();
-            savePreferences();
+            savePref();
         }
         Thaw();
     }
@@ -725,7 +725,7 @@ void ListBase::onHeaderReset(wxCommandEvent& WXUNUSED(event))
         m_col_width_id[col_id] = col_width;
         SetColumnWidth(col_nr, col_width);
     }
-    savePreferences();
+    savePref();
     Thaw();
 }
 

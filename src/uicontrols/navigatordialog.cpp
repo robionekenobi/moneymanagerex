@@ -20,7 +20,7 @@
 #include "base/images_list.h"
 
 #include "model/AccountModel.h"
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 #include "mmframe.h"
 #include "dialog/DateRangeDialog.h"
@@ -56,7 +56,7 @@ void mmNavigatorDialog::createColumns() {
     m_treeList->AppendColumn(_t("Selection name"));
 
     // Add imagelist
-    const auto navIconSize = PreferencesModel::instance().getNavigationIconSize();
+    const auto navIconSize = PrefModel::instance().getNavigationIconSize();
     wxImageList* imageList = new wxImageList(navIconSize, navIconSize);
     for (const auto& bundle : navtree_images_list(navIconSize)) {
         wxBitmap bitmap = bundle.GetBitmap(wxSize(navIconSize, navIconSize));
@@ -121,7 +121,7 @@ wxTreeListItem mmNavigatorDialog::appendAccountItem(wxTreeListItem parent, Navig
     m_treeList->SetItemImage(item, ainfo->imageId);
     m_treeList->SetItemData(item, new NavData(ainfo));
     if (ainfo->type == NavigatorTypes::TYPE_ID_SHARES) {
-        m_treeList->CheckItem(item, PreferencesModel::instance().getHideShareAccounts() ? wxCHK_UNCHECKED : wxCHK_CHECKED);
+        m_treeList->CheckItem(item, PrefModel::instance().getHideShareAccounts() ? wxCHK_UNCHECKED : wxCHK_CHECKED);
     }
     else {
         m_treeList->CheckItem(item, ainfo->navTyp != NavigatorTypes::NAV_TYP_PANEL ? wxCHK_UNDETERMINED : (ainfo->active ? wxCHK_CHECKED : wxCHK_UNCHECKED));
@@ -186,7 +186,10 @@ void mmNavigatorDialog::closeAction()
 void mmNavigatorDialog::setDefault()
 {
     NavigatorTypes::instance().SetToDefault();
-    AccountModel::instance().resetUnknownAccountTypes();
+    // FIXME: The application is not ready for dynamic account types.
+    // Much of the code assumes well known and fixed account types.
+    // See also the commeent in NavigatorTypes::DeleteEntry
+    AccountModel::instance().dangerous_reset_unknown_types();
 }
 
 void mmNavigatorDialog::OnNameReset(wxCommandEvent&)
@@ -243,7 +246,7 @@ void mmNavigatorDialog::updateItemsRecursive(wxTreeListItem item)
             child = m_treeList->GetNextSibling(child);
             // Special for Trash:
             if (data->ref->type == NavigatorTypes::NAV_ENTRY_DELETED_TRANSACTIONS) {
-                PreferencesModel::instance().setHideDeletedTransactions(!data->ref->active);
+                PrefModel::instance().setHideDeletedTransactions(!data->ref->active);
                 mmGUIFrame* mainFrame = wxDynamicCast(this->GetParent(), mmGUIFrame);
                 if (mainFrame) {
                     mainFrame->SetTrashState(data->ref->active);
@@ -251,7 +254,7 @@ void mmNavigatorDialog::updateItemsRecursive(wxTreeListItem item)
             }
             // Special for Share Accounts:
             if (data->ref->type == NavigatorTypes::TYPE_ID_SHARES) {
-                PreferencesModel::instance().setHideShareAccounts(!data->ref->active);
+                PrefModel::instance().setHideShareAccounts(!data->ref->active);
                 mmGUIFrame* mainFrame = wxDynamicCast(this->GetParent(), mmGUIFrame);
                 if (mainFrame) {
                     mainFrame->SetShareAccountState(data->ref->active);

@@ -76,38 +76,38 @@ struct QIF_Category
 
 enum qifLineType
 {
-    AcctType = 1, // !
-    Date = 2, // D
-    Amount = 3, // T
-    Address = 4, // A
-    Payee = 5, // P
-    EOTLT = 6, // ^
-    TransNumber = 7, // N
-    Status = 8, // C
-    UnknownType = 9,
-    Memo = 10, // M
-    Category = 11,  // L
-    CategorySplit = 12,  // S
-    MemoSplit = 13,  // E
-    AmountSplit = 14,   // '$'
+    QIF_ID_AcctType      = 1,  // !
+    QIF_ID_Date          = 2,  // D
+    QIF_ID_Amount        = 3,  // T
+    QIF_ID_Address       = 4,  // A
+    QIF_ID_Payee         = 5,  // P
+    QIF_ID_EOTLT         = 6,  // ^
+    QIF_ID_TransNumber   = 7,  // N
+    QIF_ID_Status        = 8,  // C
+    QIF_ID_UnknownType   = 9,
+    QIF_ID_Memo          = 10, // M
+    QIF_ID_Category      = 11, // L
+    QIF_ID_CategorySplit = 12, // S
+    QIF_ID_MemoSplit     = 13, // E
+    QIF_ID_AmountSplit   = 14, // '$'
     //mmex extra
-    AccountName = 64,
-    ToAccountName,
-    TrxType,
-    isValid
+    QIF_ID_AccountName   = 64,
+    QIF_ID_ToAccountName,
+    QIF_ID_TrxType,
+    QIF_ID_isValid
 };
 
 //QIF specific data
 enum qifAccountInfoType
 {
-    Name = 1, // N
-    AccountType = 2, // T
-    Description = 3, // D
-    CreditLimit = 4, // L
-    BalanceDate = 5, // /
-    Balance = 6, // $
-    EOT = 7, // ^
-    UnknownInfo = 8
+    QIF_ID_Name        = 1, // N
+    QIF_ID_AccountType = 2, // T
+    QIF_ID_Description = 3, // D
+    QIF_ID_CreditLimit = 4, // L
+    QIF_ID_BalanceDate = 5, // /
+    QIF_ID_Balance     = 6, // $
+    QIF_ID_EOT         = 7, // ^
+    QIF_ID_UnknownInfo = 8
 };
 
 class mmQIFImport

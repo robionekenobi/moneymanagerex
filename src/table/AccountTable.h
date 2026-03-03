@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,14 +13,14 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #pragma once
 
-#include "_TableFactory.h"
+#include "_TableBase.h"
 
 // Columns in database table ACCOUNTLIST_V1
 struct AccountCol
@@ -230,7 +230,6 @@ struct AccountCol
 struct AccountRow
 {
     using Col = AccountCol;
-    using COL_ID = Col::COL_ID;
 
     int64 ACCOUNTID; // primary key
     wxString ACCOUNTNAME;
@@ -260,17 +259,17 @@ struct AccountRow
 
     int64 id() const { return ACCOUNTID; }
     void id(const int64 id) { ACCOUNTID = id; }
-    void destroy() { delete this; }
-
-    bool equals(const AccountRow* r) const;
     void to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const;
-    void from_select_result(wxSQLite3ResultSet& q);
+    void to_update_stmt(wxSQLite3Statement& stmt) const;
+    AccountRow& from_select_result(wxSQLite3ResultSet& q);
     wxString to_json() const;
     void as_json(PrettyWriter<StringBuffer>& json_writer) const;
-    row_t to_row_t() const;
-    void to_template(html_template& t) const;
+    row_t to_html_row() const;
+    void to_html_template(html_template& t) const;
+    void destroy() { delete this; }
 
-    AccountRow& operator=(const AccountRow& other);
+    AccountRow& clone_from(const AccountRow& other);
+    bool equals(const AccountRow* other) const;
     bool operator< (const AccountRow& other) const { return id() < other.id(); }
     bool operator< (const AccountRow* other) const { return id() < other->id(); }
 
@@ -564,33 +563,28 @@ struct AccountRow
 };
 
 // Interface to database table ACCOUNTLIST_V1
-struct AccountTable : public TableFactory<AccountRow>
+struct AccountTable : public TableBase
 {
-    // Use Col::(COLUMN_NAME) until model provides similar functionality based on Data.
-    using ACCOUNTID = Col::ACCOUNTID;
-    using ACCOUNTNAME = Col::ACCOUNTNAME;
-    using ACCOUNTTYPE = Col::ACCOUNTTYPE;
-    using ACCOUNTNUM = Col::ACCOUNTNUM;
-    using STATUS = Col::STATUS;
-    using NOTES = Col::NOTES;
-    using HELDAT = Col::HELDAT;
-    using WEBSITE = Col::WEBSITE;
-    using CONTACTINFO = Col::CONTACTINFO;
-    using ACCESSINFO = Col::ACCESSINFO;
-    using INITIALBAL = Col::INITIALBAL;
-    using INITIALDATE = Col::INITIALDATE;
-    using FAVORITEACCT = Col::FAVORITEACCT;
-    using CURRENCYID = Col::CURRENCYID;
-    using STATEMENTLOCKED = Col::STATEMENTLOCKED;
-    using STATEMENTDATE = Col::STATEMENTDATE;
-    using MINIMUMBALANCE = Col::MINIMUMBALANCE;
-    using CREDITLIMIT = Col::CREDITLIMIT;
-    using INTERESTRATE = Col::INTERESTRATE;
-    using PAYMENTDUEDATE = Col::PAYMENTDUEDATE;
-    using MINIMUMPAYMENT = Col::MINIMUMPAYMENT;
+    using Row = AccountRow;
+    using Col = typename Row::Col;
 
     AccountTable();
-    ~AccountTable();
-
-    void ensure_data() override;
+    ~AccountTable() {}
 };
+
+inline AccountRow::AccountRow(wxSQLite3ResultSet& q)
+{
+    from_select_result(q);
+}
+
+inline void AccountRow::to_update_stmt(wxSQLite3Statement& stmt) const
+{
+    to_insert_stmt(stmt, id());
+}
+
+inline AccountRow& AccountRow::clone_from(const AccountRow& other)
+{
+    *this = other;
+    id(-1);
+    return *this;
+}

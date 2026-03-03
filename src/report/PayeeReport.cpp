@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "model/CurrencyHistoryModel.h"
 #include "model/CurrencyModel.h"
 #include "model/PayeeModel.h"
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 #include "PayeeReport.h"
 #include "htmlbuilder.h"
@@ -49,9 +49,9 @@ PayeeReport::~PayeeReport()
 {
 }
 
-void PayeeReport::updateData(Data& data, TransactionModel::TYPE_ID type_id, double amount)
+void PayeeReport::updateData(Data& data, TrxModel::TYPE_ID type_id, double amount)
 {
-    double flow = (type_id == TransactionModel::TYPE_ID_DEPOSIT) ? amount : -amount;
+    double flow = (type_id == TrxModel::TYPE_ID_DEPOSIT) ? amount : -amount;
     if (flow > 0.0)
         data.flow_pos += flow;
     else if (flow < 0.0)
@@ -63,21 +63,21 @@ void PayeeReport::loadData()
 {
     m_id_data.clear();
 
-    const auto all_splits = TransactionSplitModel::instance().get_all_id();
-    const auto &trx_a = TransactionModel::instance().find(
-        TransactionModel::TRANSDATE(OP_GE, m_date_range2.rangeStart().value()),
-        TransactionModel::TRANSDATE(OP_LE, m_date_range2.rangeEnd().value()),
-        TransactionModel::DELETEDTIME(OP_EQ, wxEmptyString),
-        TransactionModel::STATUS(OP_NE, TransactionModel::STATUS_ID_VOID)
+    const auto all_splits = TrxSplitModel::instance().get_all_id();
+    const auto &trx_a = TrxModel::instance().find(
+        TrxModel::TRANSDATE(OP_GE, m_date_range2.rangeStart().value()),
+        TrxModel::TRANSDATE(OP_LE, m_date_range2.rangeEnd().value()),
+        TrxCol::DELETEDTIME(OP_EQ, wxEmptyString),
+        TrxModel::STATUS(OP_NE, TrxModel::STATUS_ID_VOID)
     );
     for (const auto& trx: trx_a) {
         // Do not include asset or stock transfers
-        if (TransactionModel::foreignTransactionAsTransfer(trx))
+        if (TrxModel::is_foreignAsTransfer(trx))
             continue;
 
-        TransactionModel::TYPE_ID type_id = TransactionModel::type_id(trx);
+        TrxModel::TYPE_ID type_id = TrxModel::type_id(trx);
         // Transfer transactions do not have a payee
-        if (type_id == TransactionModel::TYPE_ID_TRANSFER)
+        if (type_id == TrxModel::TYPE_ID_TRANSFER)
             continue;
 
         int64 payee_id = trx.PAYEEID;
@@ -86,8 +86,8 @@ void PayeeReport::loadData()
         auto [it, new_payee] = m_id_data.try_emplace(trx.PAYEEID, Data{});
         Data& data = it->second;
         if (new_payee) {
-            PayeeModel::Data* payee = PayeeModel::instance().get_id(payee_id);
-            data.payee_name = payee ? payee->PAYEENAME : "";
+            const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(payee_id);
+            data.payee_name = payee_n ? payee_n->m_name : "";
             data.flow_pos = 0.0;
             data.flow_neg = 0.0;
             data.flow = 0.0;
@@ -96,19 +96,19 @@ void PayeeReport::loadData()
         // NOTE: call to getDayRate() in every transaction is slow
         // if "Use historical currency" is enabled in settings
         const double convRate = CurrencyHistoryModel::getDayRate(
-            AccountModel::instance().get_id(trx.ACCOUNTID)->CURRENCYID,
+            AccountModel::instance().get_id_data_n(trx.ACCOUNTID)->m_currency_id_p,
             trx.TRANSDATE
         );
 
-        TransactionSplitModel::Data_Set splits;
+        TrxSplitModel::DataA tp_a;
         if (all_splits.count(trx.id()))
-            splits = all_splits.at(trx.id());
-        if (splits.empty()) {
+            tp_a = all_splits.at(trx.id());
+        if (tp_a.empty()) {
             updateData(data, type_id, trx.TRANSAMOUNT * convRate);
         }
         else {
-            for (const auto& split : splits) {
-                updateData(data, type_id, split.SPLITTRANSAMOUNT * convRate);
+            for (const auto& tp_d : tp_a) {
+                updateData(data, type_id, tp_d.m_amount * convRate);
             }
         }
     }

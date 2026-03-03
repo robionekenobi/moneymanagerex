@@ -22,8 +22,8 @@
 #include "FieldModel.h"
 #include "FieldValueModel.h"
 
-FieldValueModel::FieldValueModel()
-: Model<FieldValueTable>()
+FieldValueModel::FieldValueModel() :
+    TableFactory<FieldValueTable, FieldValueData>()
 {
 }
 
@@ -38,8 +38,8 @@ FieldValueModel::~FieldValueModel()
 FieldValueModel& FieldValueModel::instance(wxSQLite3Database* db)
 {
     FieldValueModel& ins = Singleton<FieldValueModel>::instance();
+    ins.reset_cache();
     ins.m_db = db;
-    ins.destroy_cache();
     ins.ensure_table();
 
     return ins;
@@ -51,22 +51,25 @@ FieldValueModel& FieldValueModel::instance()
     return Singleton<FieldValueModel>::instance();
 }
 
-FieldValueModel::Data* FieldValueModel::get_key(int64 FieldID, int64 RefID)
+const FieldValueData* FieldValueModel::get_key(int64 FieldID, int64 RefID)
 {
-    FieldValueModel::Data_Set items = this->find(FIELDID(FieldID), REFID(RefID));
+    FieldValueModel::DataA items = this->find(
+        FieldValueCol::FIELDID(FieldID),
+        FieldValueCol::REFID(RefID)
+    );
     if (!items.empty())
-        return this->get_id(items[0].FIELDATADID);
+        return get_id_data_n(items[0].FIELDATADID);
     return nullptr;
 }
 
-std::map<int64, FieldValueModel::Data_Set> FieldValueModel::get_all_id(const wxString& reftype)
+std::map<int64, FieldValueModel::DataA> FieldValueModel::get_all_id(const wxString& reftype)
 {
-    FieldModel::Data_Set custom_fields = FieldModel::instance().find(
-        FieldTable::REFTYPE(reftype)
+    FieldModel::DataA custom_fields = FieldModel::instance().find(
+        FieldCol::REFTYPE(reftype)
     );
-    std::map<int64, FieldValueModel::Data_Set> data;
+    std::map<int64, FieldValueModel::DataA> data;
     for (const auto& entry : custom_fields) {
-        for (const auto& custom_field : find(FieldValueModel::FIELDID(entry.FIELDID))) {
+        for (const auto& custom_field : find(FieldValueCol::FIELDID(entry.FIELDID))) {
             data[custom_field.REFID].push_back(custom_field);
         }
     }
@@ -79,8 +82,8 @@ wxArrayString FieldValueModel::allValue(const int64 FieldID)
     wxArrayString values;
     wxString PreviousValue;
 
-    FieldValueModel::Data_Set items = this->find(FIELDID(FieldID));
-    std::sort(items.begin(), items.end(), FieldValueRow::SorterByCONTENT());
+    FieldValueModel::DataA items = this->find(FieldValueCol::FIELDID(FieldID));
+    std::sort(items.begin(), items.end(), FieldValueData::SorterByCONTENT());
 
     for (const auto &item : items)
     {
@@ -95,13 +98,13 @@ wxArrayString FieldValueModel::allValue(const int64 FieldID)
 
 bool FieldValueModel::DeleteAllData(const wxString& RefType, int64 RefID)
 {
-    const auto& fields = FieldModel::instance().find(FieldModel::FieldTable::REFTYPE(RefType));
+    const auto& fields = FieldModel::instance().find(FieldCol::REFTYPE(RefType));
 
     for (const auto& field : fields)
     {
-        Data* data = FieldValueModel::instance().get_key(field.FIELDID, RefID);
+        const Data* data = FieldValueModel::instance().get_key(field.FIELDID, RefID);
         if (data)
-            FieldValueModel::instance().remove(data->FIELDATADID);
+            FieldValueModel::instance().purge_id(data->FIELDATADID);
     }
     return true;
 }

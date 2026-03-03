@@ -19,14 +19,14 @@
 #pragma once
 
 #include "base/defs.h"
-#include "_ModelBase.h"
+
 #include "table/FieldValueTable.h"
+#include "data/FieldValueData.h"
 
-class FieldValueModel : public Model<FieldValueTable>
+#include "_ModelBase.h"
+
+class FieldValueModel : public TableFactory<FieldValueTable, FieldValueData>
 {
-public:
-    using Model<FieldValueTable>::get_id;
-
 public:
     FieldValueModel();
     ~FieldValueModel();
@@ -47,8 +47,8 @@ public:
     static FieldValueModel& instance();
 
 public:
-    std::map<int64, Data_Set> get_all_id(const wxString& reftype);
-    Data* get_key(int64 FieldID, int64 RefID);
+    std::map<int64, DataA> get_all_id(const wxString& reftype);
+    const Data* get_key(int64 FieldID, int64 RefID);
     wxArrayString allValue(const int64 FieldID);
     static bool DeleteAllData(const wxString& RefType, int64 RefID);
 };

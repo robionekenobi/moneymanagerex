@@ -32,9 +32,27 @@ public:
 
 private:
     // structure for sorting of data
-    struct data_holder { wxString name; wxString symbol; wxString date; double qty; double purchase; double current; double commission; double realgainloss; double unrealgainloss; double value; };
-    struct account_holder { int64 id; wxString name; std::vector<data_holder> data; double realgainloss; double unrealgainloss; double total; };
-    std::vector<account_holder> m_stocks;
+    struct DataHolder {
+        wxString name;
+        wxString symbol;
+        wxString date;
+        double qty;
+        double purchase;
+        double current;
+        double commission;
+        double realgainloss;
+        double unrealgainloss;
+        double value;
+    };
+    struct AccountHolder {
+        int64 id;
+        wxString name;
+        std::vector<DataHolder> data;
+        double realgainloss;
+        double unrealgainloss;
+        double total;
+    };
+    std::vector<AccountHolder> m_stocks;
     double m_real_gain_loss_sum_total = 0.0;
     double m_unreal_gain_loss_sum_total = 0.0;
     double m_real_gain_loss_excl_forex = 0.0;

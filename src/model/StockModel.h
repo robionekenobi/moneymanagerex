@@ -20,85 +20,51 @@
 #pragma once
 
 #include "base/defs.h"
+
 #include "table/StockTable.h"
+#include "data/StockData.h"
+
 #include "_ModelBase.h"
 #include "AccountModel.h"
 
-class StockModel : public Model<StockTable>
+class StockModel : public TableFactory<StockTable, StockData>
 {
 public:
-    using Model<StockTable>::remove;
+    static const wxString refTypeName;
+
+public:
     StockModel();
     ~StockModel();
 
 public:
-    /**
-    Initialize the global StockModel table on initial call.
-    Resets the global table on subsequent calls.
-    * Return the static instance address for StockModel table
-    * Note: Assigning the address to a local variable can destroy the instance.
-    */
     static StockModel& instance(wxSQLite3Database* db);
-
-    /**
-    * Return the static instance address for StockModel table
-    * Note: Assigning the address to a local variable can destroy the instance.
-    */
     static StockModel& instance();
 
 public:
-    static wxString get_stock_name(int64 stock_id);
+    // override
+    bool purge_id(int64 id) override;
 
-    static wxDate PURCHASEDATE(const Data* stock);
-    static wxDate PURCHASEDATE(const Data& stock);
+    static wxString get_id_name(int64 stock_id);
 
-    /** Original value of Stocks */
-    static double InvestmentValue(const Data* r);
-    /** Original value of Stocks */
-    static double InvestmentValue(const Data& r);
+    static wxDate PURCHASEDATE(const Data& stock_d);
 
-    static double CurrentValue(const Data* r);
-    static double CurrentValue(const Data& r);
+    static double InvestmentValue(const Data& stock_d);
+    static double CurrentValue(const Data& stock_d);
 
-    /** Realized gain/loss from sales, optionally converted to base currency */
-    static double RealGainLoss(const Data* r, bool base_curr = false);
-    /** Realized gain/loss from sales, optionally converted to base currency */
-    static double RealGainLoss(const Data& r, bool base_curr = false);
+    static double RealGainLoss(const Data& stock_d, bool base_curr = false);
+    static double UnrealGainLoss(const Data& stock_d, bool base_curr = false);
 
-    /** The current unrealized gain/loss, optionally converted to base currency */
-    static double UnrealGainLoss(const Data* r, bool base_curr = false);
-    /** The current unrealized gain/loss, optionally converted to base currency */
-    static double UnrealGainLoss(const Data& r, bool base_curr = false);
-
-    /** Update current price across accounts */
     static void UpdateCurrentPrice(const wxString& symbol, const double price = -1);
 
-public:
-    /**
-    * Remove the Data record from memory and the database.
-    * Delete also all stock history
-    */
-    bool remove(int64 id);
-
-    /**
-    Returns the last price date of a given stock
-    */
-    wxString lastPriceDate(const Data* entity);
-
-    /**
-    Returns the total stock balance at a given date
-    */
-    double getDailyBalanceAt(const AccountModel::Data *account, const wxDate& date);
+    wxString lastPriceDate(const Data& stock_d);
+    double getDailyBalanceAt(const AccountData& account_d, const wxDate& date);
 
     /*
-    stock_entry.PURCHASEPRICE = avg price of shares purchased.
-    stock_entry.NUMSHARES = total amount of shares purchased.
+    stock_entry.m_purchase_price = avg price of shares purchased.
+    stock_entry.m_num_shares = total amount of shares purchased.
     stock_entry.VALUE     = value of shares based on:
     ... share_entry.SHARENUMBER * share_entry.SHAREPRICE
     */
-    static void UpdatePosition(StockModel::Data* stock_entry);
-
-public:
-    static const wxString refTypeName;
+    static void UpdatePosition(Data* stock_n);
 };
 

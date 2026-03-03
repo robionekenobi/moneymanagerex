@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "SettingTable.h"
+#include "data/SettingData.h"
 
-template class TableFactory<SettingRow>;
+template class TableFactory<SettingTable, SettingData>;
+template class mmCache<int64, SettingData>;
 
 // List of column names in database table SETTING_V1,
 // in the order of SettingCol::COL_ID.
@@ -39,22 +41,7 @@ SettingRow::SettingRow()
     SETTINGID = -1;
 }
 
-SettingRow::SettingRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool SettingRow::equals(const SettingRow* r) const
-{
-    if ( SETTINGID != r->SETTINGID) return false;
-    if (!SETTINGNAME.IsSameAs(r->SETTINGNAME)) return false;
-    if (!SETTINGVALUE.IsSameAs(r->SETTINGVALUE)) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void SettingRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, SETTINGNAME);
@@ -62,11 +49,13 @@ void SettingRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(3, id);
 }
 
-void SettingRow::from_select_result(wxSQLite3ResultSet& q)
+SettingRow& SettingRow::from_select_result(wxSQLite3ResultSet& q)
 {
     SETTINGID = q.GetInt64(0);
     SETTINGNAME = q.GetString(1);
     SETTINGVALUE = q.GetString(2);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -95,7 +84,7 @@ void SettingRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.String(SETTINGVALUE.utf8_str());
 }
 
-row_t SettingRow::to_row_t() const
+row_t SettingRow::to_html_row() const
 {
     row_t row;
 
@@ -106,22 +95,20 @@ row_t SettingRow::to_row_t() const
     return row;
 }
 
-void SettingRow::to_template(html_template& t) const
+void SettingRow::to_html_template(html_template& t) const
 {
     t(L"SETTINGID") = SETTINGID.GetValue();
     t(L"SETTINGNAME") = SETTINGNAME;
     t(L"SETTINGVALUE") = SETTINGVALUE;
 }
 
-SettingRow& SettingRow::operator=(const SettingRow& other)
+bool SettingRow::equals(const SettingRow* other) const
 {
-    if (this == &other) return *this;
+    if ( SETTINGID != other->SETTINGID) return false;
+    if (!SETTINGNAME.IsSameAs(other->SETTINGNAME)) return false;
+    if (!SETTINGVALUE.IsSameAs(other->SETTINGVALUE)) return false;
 
-    SETTINGID = other.SETTINGID;
-    SETTINGNAME = other.SETTINGNAME;
-    SETTINGVALUE = other.SETTINGVALUE;
-
-    return *this;
+    return true;
 }
 
 SettingTable::SettingTable()
@@ -143,17 +130,4 @@ SettingTable::SettingTable()
     m_delete_query = "DELETE FROM SETTING_V1 WHERE SETTINGID = ?";
 
     m_select_query = "SELECT SETTINGID, SETTINGNAME, SETTINGVALUE FROM SETTING_V1";
-}
-
-// Destructor: clears any data records stored in memory
-SettingTable::~SettingTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void SettingTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

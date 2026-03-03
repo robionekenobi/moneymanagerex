@@ -31,8 +31,8 @@
 #include "util/_util.h"
 
 #include "model/_all.h"
-#include "model/PreferencesModel.h"
-#include "model/TransactionFilter.h"
+#include "model/PrefModel.h"
+#include "model/TrxFilter.h"
 
 #include "mmframe.h"
 #include "ReportPanel.h"
@@ -40,8 +40,8 @@
 #include "manager/DateRangeManager.h"
 #include "dialog/AssetDialog.h"
 #include "dialog/AttachmentDialog.h"
-#include "dialog/TransactionDialog.h"
-#include "dialog/TransactionShareDialog.h"
+#include "dialog/TrxDialog.h"
+#include "dialog/TrxShareDialog.h"
 #include "dialog/BudgetEntryDialog.h"
 #include "report/htmlbuilder.h"
 #include "uicontrols/navigatortypes.h"
@@ -98,7 +98,7 @@ bool ReportPanel::Create(
     SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
     wxPanel::Create(parent, winid, pos, size, style, name);
 
-    m_use_account_specific_filter = PreferencesModel::instance().getUsePerAccountFilter();
+    m_use_account_specific_filter = PrefModel::instance().getUsePerAccountFilter();
 
     m_rb->restoreReportSettings();
 
@@ -256,7 +256,7 @@ void ReportPanel::saveFilterSettings() {
     else if (m_filter_id == JournalPanel::FILTER_ID_DATE_PICKER) {
         if (w_start_date_picker) {
             InfoModel::saveFilterString(j_doc, "FILTER_DATE_BEGIN",
-                mmDateDayN(w_start_date_picker->GetValue()).isoDateN()
+                mmDateN(w_start_date_picker->GetValue()).isoDateN()
             );
         }
         else {
@@ -264,7 +264,7 @@ void ReportPanel::saveFilterSettings() {
         }
         if (w_end_date_picker) {
             InfoModel::saveFilterString(j_doc, "FILTER_DATE_END",
-                mmDateDayN(w_end_date_picker->GetValue()).isoDateN()
+                mmDateN(w_end_date_picker->GetValue()).isoDateN()
             );
         }
         else {
@@ -290,8 +290,8 @@ void ReportPanel::updateFilter()
             mmBitmapButtonSize
         ));
         // TODO: calculate default start/end dates from model
-        m_date_range.setDefStartDateN(mmDateDay::min());
-        m_date_range.setDefEndDateN(mmDateDay::max());
+        m_date_range.setDefStartDateN(mmDate::min());
+        m_date_range.setDefEndDateN(mmDate::max());
         // copy from date range to start/end pickers
         w_start_date_picker->SetValue(
             m_date_range.rangeStart().value().getDateTime()
@@ -311,8 +311,8 @@ void ReportPanel::updateFilter()
         mmDateRange2::Range range = m_date_range.getRange();
         range.setName(_t("Date range"));
         m_date_range.setRange(range);
-        m_date_range.setDefStartDateN(mmDateDayN(w_start_date_picker->GetValue()));
-        m_date_range.setDefEndDateN(mmDateDayN(w_end_date_picker->GetValue()));
+        m_date_range.setDefStartDateN(mmDateN(w_start_date_picker->GetValue()));
+        m_date_range.setDefEndDateN(mmDateN(w_end_date_picker->GetValue()));
     }
 }
 
@@ -344,7 +344,7 @@ void ReportPanel::CreateControls()
             w_date_range_button = new wxButton(itemPanel3, ID_DATE_RANGE_BUTTON, _tu("Period…"));
             w_date_range_button->SetBitmap(mmBitmapBundle(png::TRANSFILTER, mmBitmapButtonSize));
             w_date_range_button->SetMinSize(
-                wxSize(200 + PreferencesModel::instance().getIconSize() * 2, -1)
+                wxSize(200 + PrefModel::instance().getIconSize() * 2, -1)
             );
             itemBoxSizerHeader->Add(w_date_range_button, g_flagsH);
             itemBoxSizerHeader->AddSpacer(5);
@@ -460,18 +460,18 @@ void ReportPanel::CreateControls()
 
             int64 sel_id = m_rb->getDateSelection();
             wxString sel_name;
-            for (const auto& e : BudgetPeriodModel::instance().get_all(
+            for (const auto& bp_d : BudgetPeriodModel::instance().find_all(
                 BudgetPeriodCol::COL_ID_BUDGETYEARNAME
             )) {
-                const wxString& name = e.BUDGETYEARNAME;
+                const wxString& name = bp_d.m_name;
 
                 // Only years for performance report
                 if (m_rb->getReportId() == ReportBase::REPORT_ID::BudgetCategorySummary ||
                     name.length() == 4
                 ) {
-                    w_year_choice->Append(name, new wxStringClientData(wxString::Format("%lld", e.BUDGETYEARID)));
-                    if (sel_id == e.BUDGETYEARID)
-                        sel_name = e.BUDGETYEARNAME;
+                    w_year_choice->Append(name, new wxStringClientData(wxString::Format("%lld", bp_d.m_id)));
+                    if (sel_id == bp_d.m_id)
+                        sel_name = bp_d.m_name;
                 }
             }
 
@@ -595,10 +595,10 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
             std::vector<int64> cats;
             // include all sub categories
             if (-2 == subCatID) {
-                for (const auto& subCategory :
-                    CategoryModel::sub_tree(CategoryModel::instance().get_id(catID))
+                for (const auto& subcat_d :
+                    CategoryModel::sub_tree(CategoryModel::instance().get_id_data_n(catID))
                 ) {
-                    cats.push_back(subCategory.CATEGID);
+                    cats.push_back(subcat_d.m_id);
                 }
             }
             cats.push_back(catID);
@@ -618,11 +618,11 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
     else if (uri.StartsWith("trxid:", &sData)) {
         long long transID = -1;
         if (sData.ToLongLong(&transID)) {
-            const TransactionModel::Data* transaction = TransactionModel::instance().get_id(transID);
+            const TrxData* transaction = TrxModel::instance().get_id_data_n(transID);
             if (transaction && transaction->TRANSID > -1) {
-                const AccountModel::Data* account = AccountModel::instance().get_id(transaction->ACCOUNTID);
+                const AccountData* account = AccountModel::instance().get_id_data_n(transaction->ACCOUNTID);
                 if (account) {
-                    w_frame->selectNavTreeItem(account->ACCOUNTNAME);
+                    w_frame->selectNavTreeItem(account->m_name);
                     w_frame->setGotoAccountID(transaction->ACCOUNTID, { transID, 0 });
                     wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED, MENU_GOTOACCOUNT);
                     w_frame->GetEventHandler()->AddPendingEvent(event);
@@ -633,12 +633,12 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
     else if (uri.StartsWith("trx:", &sData)) {
         long long transId = -1;
         if (sData.ToLongLong(&transId)) {
-            TransactionModel::Data* transaction = TransactionModel::instance().get_id(transId);
+            TrxData* transaction = TrxModel::instance().unsafe_get_id_data_n(transId);
             if (transaction && transaction->TRANSID > -1) {
-                if (TransactionModel::foreignTransaction(*transaction)) {
-                    TransactionLinkModel::Data translink = TransactionLinkModel::TranslinkRecord(transId);
+                if (TrxModel::is_foreign(*transaction)) {
+                    TrxLinkData translink = TrxLinkModel::TranslinkRecord(transId);
                     if (translink.LINKTYPE == StockModel::refTypeName) {
-                        TransactionShareDialog dlg(w_frame, &translink, transaction);
+                        TrxShareDialog dlg(w_frame, &translink, transaction);
                         if (dlg.ShowModal() == wxID_OK) {
                             m_rb->getHTMLText();
                             saveReportText();
@@ -653,7 +653,7 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
                     }
                 }
                 else {
-                    TransactionDialog dlg(w_frame, -1, {transId, false});
+                    TrxDialog dlg(w_frame, -1, {transId, false});
                     if (dlg.ShowModal() != wxID_CANCEL) {
                         m_rb->getHTMLText();
                         saveReportText();
@@ -669,7 +669,7 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
         long long refId;
         sData.AfterFirst('|').ToLongLong(&refId);
 
-        if (AttachmentModel::reftype_id(RefType) != -1 && refId > 0) {
+        if (ModelBase::reftype_id(RefType) != -1 && refId > 0) {
             mmAttachmentManage::OpenAttachmentFromPanelIcon(w_frame, RefType, refId);
             const auto name = getVFname4print("rep", getReportBase()->getHTMLText());
             w_browser->LoadURL(name);
@@ -691,7 +691,9 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
         std::string formattedMonth = oss.str();
 
         //get yearId from year_name
-        int64 budgetYearID = BudgetPeriodModel::instance().Get(parms[3] + "-" + formattedMonth);
+        int64 budgetYearID = BudgetPeriodModel::instance().get_name_id(
+            parms[3] + "-" + formattedMonth
+        );
 
         //if budgetYearID doesn't exist then return
         if (budgetYearID == -1) {
@@ -700,20 +702,21 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
         }
 
         //get model budget for yearID and catID
-        BudgetModel::Data_Set budget = BudgetModel::instance().find(BudgetModel::BUDGETYEARID(budgetYearID), BudgetModel::CATEGID(std::stoll(parms[2])));
+        BudgetModel::DataA budget = BudgetModel::instance().find(
+            BudgetCol::BUDGETYEARID(budgetYearID),
+            BudgetCol::CATEGID(std::stoll(parms[2]))
+        );
 
-        BudgetModel::Data* entry = 0;
+        BudgetData budget_d;
         if (budget.empty()) {
-            entry = BudgetModel::instance().create();
-            entry->BUDGETYEARID = budgetYearID;
-            entry->CATEGID = std::stoll(parms[2]);
-            entry->PERIOD = "";
-            entry->AMOUNT = 0.0;
-            entry->ACTIVE = 1;
-            BudgetModel::instance().save(entry);
+            budget_d = BudgetData();
+            budget_d.m_period_id   = budgetYearID;
+            budget_d.m_category_id = std::stoll(parms[2]);
+            budget_d.m_amount      = 0.0;
+            BudgetModel::instance().add_data_n(budget_d);
         }
         else
-            entry = &budget[0];
+            budget_d = budget[0];
 
         double estimated;
         CurrencyModel::fromString(parms[0], estimated, CurrencyModel::GetBaseCurrency());
@@ -721,12 +724,14 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
         CurrencyModel::fromString(parms[1], actual, CurrencyModel::GetBaseCurrency());
 
         //open budgetEntry dialog
-        BudgetEntryDialog dlg(w_frame, entry, CurrencyModel::toCurrency(estimated), CurrencyModel::toCurrency(actual));
+        BudgetEntryDialog dlg(w_frame, &budget_d,
+            CurrencyModel::toCurrency(estimated),
+            CurrencyModel::toCurrency(actual)
+        );
         if (dlg.ShowModal() == wxID_OK) {
             //refresh report
             saveReportText();
             m_rb ->saveReportSettings();
-
         }
     }
 
@@ -927,8 +932,8 @@ void ReportPanel::loadDateRanges(
     date_range_a->clear();
     *date_range_m = -1;
     int src_i = 0;
-    int src_m = PreferencesModel::instance().getReportingRangeM();
-    for (const auto& range : PreferencesModel::instance().getReportingRangeA()) {
+    int src_m = PrefModel::instance().getReportingRangeM();
+    for (const auto& range : PrefModel::instance().getReportingRangeA()) {
         if (date_range_a->size() > ID_DATE_RANGE_MAX - ID_DATE_RANGE_MIN) {
             break;
         }

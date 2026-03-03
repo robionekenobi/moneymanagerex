@@ -78,7 +78,11 @@ bool NavigatorTypes::DeleteEntry(NavigatorTypesInfo* info)
     for (int i = 0; i < static_cast<int>(m_navigator_entries.size()); i++) {
         if  (m_navigator_entries[i] == info) {
             // change account type of all affected accounts to Banking
-            AccountModel::instance().resetAccountType(info->dbaccid);
+            // FIXME: This is very dangerous; account types are significant
+            // in many parts of the application (e.g., reports).
+            // Changing the type of an account can break functionality.
+            // Not all account types are immediately convertible to Checking.
+            AccountModel::instance().dangerous_reset_type(info->dbaccid);
             m_navigator_entries.erase(m_navigator_entries.begin() + i);
             result = true;
             break;
@@ -372,7 +376,7 @@ wxArrayString NavigatorTypes::getAccountSelectionNames(wxString filter)
 wxArrayString NavigatorTypes::getUsedAccountTypeNames()
 {
     wxArrayString names;
-    wxArrayString usedtypes = AccountModel::instance().getUsedAccountTypes();
+    wxArrayString usedtypes = AccountModel::instance().find_all_type_a(true);
     for (NavigatorTypesInfo* entry : m_navigator_entries) {
         if (entry->navTyp > NAV_TYP_PANEL && entry->active) {
             if (usedtypes.Index(entry->dbaccid) != wxNOT_FOUND) {

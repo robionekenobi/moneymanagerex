@@ -266,7 +266,7 @@ public:
     mmSingleChoiceDialog(wxWindow *parent, const wxString& message,
         const wxString& caption, const wxArrayString& choices);
     mmSingleChoiceDialog(wxWindow* parent, const wxString& message,
-        const wxString& caption, const AccountModel::Data_Set& accounts);
+        const wxString& caption, const AccountModel::DataA& accounts);
     int ShowModal()
     {
         return wxSingleChoiceDialog::ShowModal();

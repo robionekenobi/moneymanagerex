@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "TagTable.h"
+#include "data/TagData.h"
 
-template class TableFactory<TagRow>;
+template class TableFactory<TagTable, TagData>;
+template class mmCache<int64, TagData>;
 
 // List of column names in database table TAG_V1,
 // in the order of TagCol::COL_ID.
@@ -40,22 +42,7 @@ TagRow::TagRow()
     ACTIVE = -1;
 }
 
-TagRow::TagRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool TagRow::equals(const TagRow* r) const
-{
-    if ( TAGID != r->TAGID) return false;
-    if (!TAGNAME.IsSameAs(r->TAGNAME)) return false;
-    if ( ACTIVE != r->ACTIVE) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void TagRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, TAGNAME);
@@ -63,11 +50,13 @@ void TagRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(3, id);
 }
 
-void TagRow::from_select_result(wxSQLite3ResultSet& q)
+TagRow& TagRow::from_select_result(wxSQLite3ResultSet& q)
 {
     TAGID = q.GetInt64(0);
     TAGNAME = q.GetString(1);
     ACTIVE = q.GetInt64(2);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -96,7 +85,7 @@ void TagRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.Int64(ACTIVE.GetValue());
 }
 
-row_t TagRow::to_row_t() const
+row_t TagRow::to_html_row() const
 {
     row_t row;
 
@@ -107,22 +96,20 @@ row_t TagRow::to_row_t() const
     return row;
 }
 
-void TagRow::to_template(html_template& t) const
+void TagRow::to_html_template(html_template& t) const
 {
     t(L"TAGID") = TAGID.GetValue();
     t(L"TAGNAME") = TAGNAME;
     t(L"ACTIVE") = ACTIVE.GetValue();
 }
 
-TagRow& TagRow::operator=(const TagRow& other)
+bool TagRow::equals(const TagRow* other) const
 {
-    if (this == &other) return *this;
+    if ( TAGID != other->TAGID) return false;
+    if (!TAGNAME.IsSameAs(other->TAGNAME)) return false;
+    if ( ACTIVE != other->ACTIVE) return false;
 
-    TAGID = other.TAGID;
-    TAGNAME = other.TAGNAME;
-    ACTIVE = other.ACTIVE;
-
-    return *this;
+    return true;
 }
 
 TagTable::TagTable()
@@ -144,17 +131,4 @@ TagTable::TagTable()
     m_delete_query = "DELETE FROM TAG_V1 WHERE TAGID = ?";
 
     m_select_query = "SELECT TAGID, TAGNAME, ACTIVE FROM TAG_V1";
-}
-
-// Destructor: clears any data records stored in memory
-TagTable::~TagTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void TagTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

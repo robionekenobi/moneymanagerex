@@ -19,13 +19,15 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #pragma once
 
 #include "base/defs.h"
-#include "_ModelBase.h"
-#include "table/CurrencyHistoryTable.h"
 
-class CurrencyHistoryModel : public Model<CurrencyHistoryTable>
+#include "table/CurrencyHistoryTable.h"
+#include "data/CurrencyHistoryData.h"
+
+#include "_ModelBase.h"
+
+class CurrencyHistoryModel : public TableFactory<CurrencyHistoryTable, CurrencyHistoryData>
 {
 public:
-    using Model<CurrencyHistoryTable>::get_id;
     enum UPDTYPE { ONLINE = 1, MANUAL };
 
 public:
@@ -48,10 +50,10 @@ public:
     static CurrencyHistoryModel& instance();
 
 public:
-    Data* get_key(const int64& currencyID, const wxDate& date);
+    const Data* get_key(const int64& currencyID, const wxDate& date);
     static wxDate CURRDATE(const Data& hist);
 
-    static CurrencyHistoryTable::CURRDATE CURRDATE(OP op, const wxDate& date);
+    static CurrencyHistoryCol::CURRDATE CURRDATE(OP op, const wxDate& date);
     
     /** Adds or updates an element in currency history */
     int64 addUpdate(const int64 currencyID, const wxDate& date, double price, UPDTYPE type);

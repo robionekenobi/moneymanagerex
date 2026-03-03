@@ -19,7 +19,6 @@
 #pragma once
 
 #include "base/defs.h"
-#include "util/_choices.h"
 
 struct NavigatorTypesInfo {
     int type;

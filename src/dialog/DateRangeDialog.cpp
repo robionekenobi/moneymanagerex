@@ -138,8 +138,8 @@ bool DateRangeDialog::checkRange() {
     bool rangeOk = false;
     mmDateRange2 date_range = mmDateRange2();
     if (date_range.parseRange(m_range_edit->GetValue())) {
-        mmDateDayN sN = date_range.rangeStart();
-        mmDateDayN eN = date_range.rangeEnd();
+        mmDateN sN = date_range.rangeStart();
+        mmDateN eN = date_range.rangeEnd();
         if (!sN.has_value() || !eN.has_value() || sN.value() <= eN.value()) {
             m_status->SetLabelText(_t("Range is ok:") + wxString::Format(" [%s .. %s]",
                 sN.isoDateN(), eN.isoDateN()

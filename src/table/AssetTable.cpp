@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "AssetTable.h"
+#include "data/AssetData.h"
 
-template class TableFactory<AssetRow>;
+template class TableFactory<AssetTable, AssetData>;
+template class mmCache<int64, AssetData>;
 
 // List of column names in database table ASSETS_V1,
 // in the order of AssetCol::COL_ID.
@@ -50,30 +52,7 @@ AssetRow::AssetRow()
     VALUECHANGERATE = 0.0;
 }
 
-AssetRow::AssetRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool AssetRow::equals(const AssetRow* r) const
-{
-    if ( ASSETID != r->ASSETID) return false;
-    if (!STARTDATE.IsSameAs(r->STARTDATE)) return false;
-    if (!ASSETNAME.IsSameAs(r->ASSETNAME)) return false;
-    if (!ASSETSTATUS.IsSameAs(r->ASSETSTATUS)) return false;
-    if ( CURRENCYID != r->CURRENCYID) return false;
-    if (!VALUECHANGEMODE.IsSameAs(r->VALUECHANGEMODE)) return false;
-    if ( VALUE != r->VALUE) return false;
-    if (!VALUECHANGE.IsSameAs(r->VALUECHANGE)) return false;
-    if (!NOTES.IsSameAs(r->NOTES)) return false;
-    if ( VALUECHANGERATE != r->VALUECHANGERATE) return false;
-    if (!ASSETTYPE.IsSameAs(r->ASSETTYPE)) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void AssetRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, STARTDATE);
@@ -89,7 +68,7 @@ void AssetRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(11, id);
 }
 
-void AssetRow::from_select_result(wxSQLite3ResultSet& q)
+AssetRow& AssetRow::from_select_result(wxSQLite3ResultSet& q)
 {
     ASSETID = q.GetInt64(0);
     STARTDATE = q.GetString(1);
@@ -102,6 +81,8 @@ void AssetRow::from_select_result(wxSQLite3ResultSet& q)
     NOTES = q.GetString(8);
     VALUECHANGERATE = q.GetDouble(9);
     ASSETTYPE = q.GetString(10);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -154,7 +135,7 @@ void AssetRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.String(ASSETTYPE.utf8_str());
 }
 
-row_t AssetRow::to_row_t() const
+row_t AssetRow::to_html_row() const
 {
     row_t row;
 
@@ -173,7 +154,7 @@ row_t AssetRow::to_row_t() const
     return row;
 }
 
-void AssetRow::to_template(html_template& t) const
+void AssetRow::to_html_template(html_template& t) const
 {
     t(L"ASSETID") = ASSETID.GetValue();
     t(L"STARTDATE") = STARTDATE;
@@ -188,23 +169,21 @@ void AssetRow::to_template(html_template& t) const
     t(L"ASSETTYPE") = ASSETTYPE;
 }
 
-AssetRow& AssetRow::operator=(const AssetRow& other)
+bool AssetRow::equals(const AssetRow* other) const
 {
-    if (this == &other) return *this;
+    if ( ASSETID != other->ASSETID) return false;
+    if (!STARTDATE.IsSameAs(other->STARTDATE)) return false;
+    if (!ASSETNAME.IsSameAs(other->ASSETNAME)) return false;
+    if (!ASSETSTATUS.IsSameAs(other->ASSETSTATUS)) return false;
+    if ( CURRENCYID != other->CURRENCYID) return false;
+    if (!VALUECHANGEMODE.IsSameAs(other->VALUECHANGEMODE)) return false;
+    if ( VALUE != other->VALUE) return false;
+    if (!VALUECHANGE.IsSameAs(other->VALUECHANGE)) return false;
+    if (!NOTES.IsSameAs(other->NOTES)) return false;
+    if ( VALUECHANGERATE != other->VALUECHANGERATE) return false;
+    if (!ASSETTYPE.IsSameAs(other->ASSETTYPE)) return false;
 
-    ASSETID = other.ASSETID;
-    STARTDATE = other.STARTDATE;
-    ASSETNAME = other.ASSETNAME;
-    ASSETSTATUS = other.ASSETSTATUS;
-    CURRENCYID = other.CURRENCYID;
-    VALUECHANGEMODE = other.VALUECHANGEMODE;
-    VALUE = other.VALUE;
-    VALUECHANGE = other.VALUECHANGE;
-    NOTES = other.NOTES;
-    VALUECHANGERATE = other.VALUECHANGERATE;
-    ASSETTYPE = other.ASSETTYPE;
-
-    return *this;
+    return true;
 }
 
 AssetTable::AssetTable()
@@ -226,17 +205,4 @@ AssetTable::AssetTable()
     m_delete_query = "DELETE FROM ASSETS_V1 WHERE ASSETID = ?";
 
     m_select_query = "SELECT ASSETID, STARTDATE, ASSETNAME, ASSETSTATUS, CURRENCYID, VALUECHANGEMODE, VALUE, VALUECHANGE, NOTES, VALUECHANGERATE, ASSETTYPE FROM ASSETS_V1";
-}
-
-// Destructor: clears any data records stored in memory
-AssetTable::~AssetTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void AssetTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

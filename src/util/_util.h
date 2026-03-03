@@ -30,7 +30,7 @@
 #include <rapidjson/document.h>
 
 #include "_primitive.h"
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 class mmGUIApp;
 
@@ -133,8 +133,8 @@ const wxRect GetDefaultMonitorRect();
 
 const wxDateTime getUserDefinedFinancialYear(bool prevDayRequired = false);
 const std::map<wxString, wxString> &date_formats_regex();
-const wxString mmGetDateTimeForDisplay(const wxString &datetime_iso, const wxString& format = PreferencesModel::instance().getDateFormat());
-const wxString mmGetDateForDisplay(const wxString &datetime_iso, const wxString& format = PreferencesModel::instance().getDateFormat());
+const wxString mmGetDateTimeForDisplay(const wxString &datetime_iso, const wxString& format = PrefModel::instance().getDateFormat());
+const wxString mmGetDateForDisplay(const wxString &datetime_iso, const wxString& format = PrefModel::instance().getDateFormat());
 const wxString mmGetTimeForDisplay(const wxString& datetime_iso);
 bool mmParseDisplayStringToDate(wxDateTime& date, const wxString& sDate, const wxString& sDateMask);
 extern const std::vector<std::pair<wxString, wxString> > g_date_formats_map();

@@ -62,21 +62,20 @@ bool PayeeMatchAndMerge::MatchPayee(const wxString& payeeName, PayeeMatchMode mo
 
 void PayeeMatchAndMerge::ExactMatch(const wxString& payeeName, std::vector<PayeeMatchResult>& results)
 {
-    PayeeModel::Data_Set payees = PayeeModel::instance().get_all(PayeeCol::COL_ID_PAYEENAME);
-    wxLogDebug("ExactMatch: Checking payeeName='%s' against %zu payees", payeeName, payees.size());
-    for (const auto& payee : payees)
-    {
-        wxLogDebug("ExactMatch: Comparing '%s' with '%s'", payeeName, payee.PAYEENAME);
-        if (payee.PAYEENAME.IsSameAs(payeeName, false)) // Case-insensitive
-        {
+    PayeeModel::DataA payee_a = PayeeModel::instance().find_all(PayeeCol::COL_ID_PAYEENAME);
+    wxLogDebug("ExactMatch: Checking payeeName='%s' against %zu payees", payeeName, payee_a.size());
+    for (const auto& payee_d : payee_a) {
+        wxLogDebug("ExactMatch: Comparing '%s' with '%s'", payeeName, payee_d.m_name);
+        if (payee_d.m_name.IsSameAs(payeeName, false)) {
+            // Case-insensitive
             PayeeMatchResult result;
-            result.PayeeID = payee.PAYEEID.GetValue();
-            result.Name = payee.PAYEENAME;
-            result.LastUsedCategoryID = payee.CATEGID.GetValue();
-            result.MatchConfidence = 100.0;
-            result.matchMethod = "Exact";
+            result.PayeeID            = payee_d.m_id.GetValue();
+            result.Name               = payee_d.m_name;
+            result.LastUsedCategoryID = payee_d.m_category_id_n.GetValue();
+            result.MatchConfidence    = 100.0;
+            result.matchMethod        = "Exact";
             results.push_back(result);
-            wxLogDebug("ExactMatch: Found exact match '%s'", payee.PAYEENAME);
+            wxLogDebug("ExactMatch: Found exact match '%s'", payee_d.m_name);
             return;
         }
     }
@@ -88,27 +87,24 @@ void PayeeMatchAndMerge::ExactMatch(const wxString& payeeName, std::vector<Payee
 
 void PayeeMatchAndMerge::RegexMatch(const wxString& payeeName, std::vector<PayeeMatchResult>& results)
 {
-    PayeeModel::Data_Set payees = PayeeModel::instance().get_all();
-    for (const auto& payee : payees)
-    {
-        if (payee.PATTERN.IsEmpty())
+    PayeeModel::DataA payee_a = PayeeModel::instance().find_all();
+    for (const auto& payee_d : payee_a) {
+        if (payee_d.m_pattern.IsEmpty())
             continue;
 
         std::vector<wxString> patterns;
-        LoadRegexPatterns(payee, patterns);
+        LoadRegexPatterns(payee_d, patterns);
 
-        for (const auto& pattern : patterns)
-        {
+        for (const auto& pattern : patterns) {
             wxRegEx re(pattern, wxRE_ADVANCED | wxRE_ICASE);
-            if (re.IsValid() && re.Matches(payeeName))
-            {
+            if (re.IsValid() && re.Matches(payeeName)) {
                 PayeeMatchResult result;
-                result.PayeeID = payee.PAYEEID.GetValue();
-                result.Name = payee.PAYEENAME;
-                result.LastUsedCategoryID = payee.CATEGID.GetValue();
-                result.MatchConfidence = 90.0;
-                result.matchMethod = "Regex"; // Set match method
-                result.regexPattern = pattern;
+                result.PayeeID            = payee_d.m_id.GetValue();
+                result.Name               = payee_d.m_name;
+                result.LastUsedCategoryID = payee_d.m_category_id_n.GetValue();
+                result.MatchConfidence    = 90.0;
+                result.matchMethod        = "Regex"; // Set match method
+                result.regexPattern       = pattern;
                 results.push_back(result);
                 break; // Move to next payee
             }
@@ -119,11 +115,10 @@ void PayeeMatchAndMerge::RegexMatch(const wxString& payeeName, std::vector<Payee
 
 void PayeeMatchAndMerge::FuzzyMatch(const wxString& payeeName, std::vector<PayeeMatchResult>& results)
 {
-    PayeeModel::Data_Set payees = PayeeModel::instance().get_all(PayeeCol::COL_ID_PAYEENAME);
-    for (const auto& payee : payees)
-    {
-        int distance = CalculateLevenshteinDistance(payeeName, payee.PAYEENAME);
-        int maxLen = std::max(payeeName.Length(), payee.PAYEENAME.Length());
+    PayeeModel::DataA payee_a = PayeeModel::instance().find_all(PayeeCol::COL_ID_PAYEENAME);
+    for (const auto& payee_d : payee_a) {
+        int distance = CalculateLevenshteinDistance(payeeName, payee_d.m_name);
+        int maxLen = std::max(payeeName.Length(), payee_d.m_name.Length());
         if (maxLen == 0)
             continue;
 
@@ -132,11 +127,11 @@ void PayeeMatchAndMerge::FuzzyMatch(const wxString& payeeName, std::vector<Payee
 
         // No hardcoded threshold here; let ImportTransactions handle it
         PayeeMatchResult result;
-        result.PayeeID = payee.PAYEEID.GetValue();
-        result.Name = payee.PAYEENAME;
-        result.LastUsedCategoryID = payee.CATEGID.GetValue();
-        result.MatchConfidence = confidence;
-        result.matchMethod = "Fuzzy";
+        result.PayeeID            = payee_d.m_id.GetValue();
+        result.Name               = payee_d.m_name;
+        result.LastUsedCategoryID = payee_d.m_category_id_n.GetValue();
+        result.MatchConfidence    = confidence;
+        result.matchMethod        = "Fuzzy";
         results.push_back(result);
     }
 }
@@ -166,21 +161,18 @@ int PayeeMatchAndMerge::CalculateLevenshteinDistance(const wxString& s1, const w
     return d[len1][len2];
 }
 
-void PayeeMatchAndMerge::LoadRegexPatterns(const PayeeModel::Data& payee, std::vector<wxString>& patterns)
-{
+void PayeeMatchAndMerge::LoadRegexPatterns(
+        const PayeeData& payee_n, std::vector<wxString>& patterns
+) {
     rapidjson::Document j_doc;
-    j_doc.Parse(payee.PATTERN.mb_str());
-    if (!j_doc.HasParseError() && j_doc.IsObject())
-    {
-        for (rapidjson::Value::ConstMemberIterator itr = j_doc.MemberBegin(); itr != j_doc.MemberEnd(); ++itr)
-        {
-            if (itr->value.IsString())
-            {
+    j_doc.Parse(payee_n.m_pattern.mb_str());
+    if (!j_doc.HasParseError() && j_doc.IsObject()) {
+        for (rapidjson::Value::ConstMemberIterator itr = j_doc.MemberBegin(); itr != j_doc.MemberEnd(); ++itr) {
+            if (itr->value.IsString()) {
                 wxString pattern = wxString::FromUTF8(itr->value.GetString());
-                if (!pattern.IsEmpty())
-                {
-                    if (pattern.Contains("*")) // May need to account for a wildcard mid-string.
-                    {
+                if (!pattern.IsEmpty()) {
+                    if (pattern.Contains("*")) {
+                        // May need to account for a wildcard mid-string.
                         pattern.Replace("*", ".*", true);
                         pattern.Replace("..*", ".*", true);
                     }
@@ -194,15 +186,17 @@ void PayeeMatchAndMerge::LoadRegexPatterns(const PayeeModel::Data& payee, std::v
 void PayeeMatchAndMerge::SortAndTrimResults(std::vector<PayeeMatchResult>& results, int maxResults)
 {
     // Sort by confidence (descending)
-    std::sort(results.begin(), results.end(), [](const PayeeMatchResult& a, const PayeeMatchResult& b) { return a.MatchConfidence > b.MatchConfidence; });
+    std::sort(results.begin(), results.end(),
+        [](const PayeeMatchResult& a, const PayeeMatchResult& b) {
+            return a.MatchConfidence > b.MatchConfidence;
+        }
+    );
 
     // Remove duplicates by PayeeID, keeping the highest confidence
     std::vector<PayeeMatchResult> uniqueResults;
     std::set<long long> seenIds;
-    for (const auto& result : results)
-    {
-        if (seenIds.find(result.PayeeID) == seenIds.end())
-        {
+    for (const auto& result : results) {
+        if (seenIds.find(result.PayeeID) == seenIds.end()) {
             uniqueResults.push_back(result);
             seenIds.insert(result.PayeeID);
         }

@@ -18,10 +18,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "CurrencyModel.h"
 #include "CurrencyHistoryModel.h"
-#include "PreferencesModel.h"
+#include "PrefModel.h"
 
-CurrencyHistoryModel::CurrencyHistoryModel()
-    : Model<CurrencyHistoryTable>()
+CurrencyHistoryModel::CurrencyHistoryModel() :
+    TableFactory<CurrencyHistoryTable, CurrencyHistoryData>()
 {
 }
 
@@ -48,138 +48,138 @@ CurrencyHistoryModel& CurrencyHistoryModel::instance()
     return Singleton<CurrencyHistoryModel>::instance();
 }
 
-CurrencyHistoryModel::Data* CurrencyHistoryModel::get_key(const int64& currencyID, const wxDate& date)
+const CurrencyHistoryData* CurrencyHistoryModel::get_key(const int64& currencyID, const wxDate& date)
 {
-    Data* hist = this->search_cache(
-        CURRENCYID(currencyID),
-        CurrencyHistoryTable::CURRDATE(date.FormatISODate())
+    const Data* ch_n = search_cache_n(
+        CurrencyHistoryCol::CURRENCYID(currencyID),
+        CurrencyHistoryCol::CURRDATE(date.FormatISODate())
     );
-    if (hist)
-        return hist;
+    if (ch_n)
+        return ch_n;
 
-    Data_Set items = this->find(
-        CURRENCYID(currencyID),
-        CurrencyHistoryTable::CURRDATE(date.FormatISODate())
+    DataA items = this->find(
+        CurrencyHistoryCol::CURRENCYID(currencyID),
+        CurrencyHistoryCol::CURRDATE(date.FormatISODate())
     );
     if (!items.empty())
-        hist = this->get_id(items[0].id());
-    return hist;
+        ch_n = get_id_data_n(items[0].id());
+    return ch_n;
 }
 
-wxDate CurrencyHistoryModel::CURRDATE(const Data& hist)
+wxDate CurrencyHistoryModel::CURRDATE(const Data& ch_d)
 {
-    return parseDateTime(hist.CURRDATE);
+    return parseDateTime(ch_d.m_date);
 }
 
-CurrencyHistoryTable::CURRDATE CurrencyHistoryModel::CURRDATE(OP op, const wxDate& date)
+CurrencyHistoryCol::CURRDATE CurrencyHistoryModel::CURRDATE(OP op, const wxDate& date)
 {
-    return CurrencyHistoryTable::CURRDATE(op, date.FormatISODate());
+    return CurrencyHistoryCol::CURRDATE(op, date.FormatISODate());
 }
 
-/**
-Adds or updates an element in stock history
-*/
-int64 CurrencyHistoryModel::addUpdate(const int64 currencyID, const wxDate& date, double price, UPDTYPE type)
-{
-    Data *currHist = this->get_key(currencyID, date);
-    if (!currHist) currHist = this->create();
-
-    currHist->CURRENCYID = currencyID;
-    currHist->CURRDATE = date.FormatISODate();
-    currHist->CURRVALUE = price;
-    currHist->CURRUPDTYPE = type;
-    return save(currHist);
+// Adds or updates an element in stock history
+int64 CurrencyHistoryModel::addUpdate(
+    const int64 currencyID,
+    const wxDate& date,
+    double price,
+    UPDTYPE type
+) {
+    const Data *ch_n = get_key(currencyID, date);
+    Data ch_d = ch_n ? *ch_n : Data();
+    ch_d.m_currency_id     = currencyID;
+    ch_d.m_date            = date.FormatISODate();
+    ch_d.m_base_conv_rate  = price;
+    ch_d.m_update_type_    = type;
+    save_data_n(ch_d);
+    return ch_d.id();
 }
 
 /** Return the rate for a specific currency in a specific day*/
-double CurrencyHistoryModel::getDayRate(int64 currencyID, const wxString& DateISO)
+double CurrencyHistoryModel::getDayRate(int64 currencyID, const wxString& iso_date)
 {
-    if (!PreferencesModel::instance().getUseCurrencyHistory()) {
-        auto c = CurrencyModel::instance().get_id(currencyID);
-        return c ? c->BASECONVRATE : 1.0;
+    if (!PrefModel::instance().getUseCurrencyHistory()) {
+        const CurrencyData* c = CurrencyModel::instance().get_id_data_n(currencyID);
+        return c ? c->m_base_conv_rate : 1.0;
     }
     wxDate Date;
-    if (Date.ParseDate(DateISO))
+    if (Date.ParseDate(iso_date))
         return CurrencyHistoryModel::getDayRate(currencyID, Date);
-    else
-    {
+    else {
         wxASSERT(false);
         return 1;
     }
 }
 
-double CurrencyHistoryModel::getDayRate(int64 currencyID, const wxDate& Date)
+double CurrencyHistoryModel::getDayRate(int64 currencyID, const wxDate& date)
 {
-    if (currencyID == CurrencyModel::GetBaseCurrency()->CURRENCYID || currencyID == -1)
+    if (currencyID == CurrencyModel::GetBaseCurrency()->m_id || currencyID == -1)
         return 1;
 
-    if (!PreferencesModel::instance().getUseCurrencyHistory())
-        return CurrencyModel::instance().get_id(currencyID)->BASECONVRATE;
+    if (!PrefModel::instance().getUseCurrencyHistory())
+        return CurrencyModel::instance().get_id_data_n(currencyID)->m_base_conv_rate;
 
-    CurrencyHistoryModel::Data_Set Data = CurrencyHistoryModel::instance().find(
-        CurrencyHistoryModel::CURRENCYID(OP_EQ, currencyID),
-        CurrencyHistoryModel::CURRDATE(OP_EQ, Date)
+    CurrencyHistoryModel::DataA ch_a = CurrencyHistoryModel::instance().find(
+        CurrencyHistoryCol::CURRENCYID(OP_EQ, currencyID),
+        CurrencyHistoryModel::CURRDATE(OP_EQ, date)
     );
-    if (!Data.empty())
-    {
+    if (!ch_a.empty()) {
         //Rate found for specified day
-        return Data.back().CURRVALUE;
+        return ch_a.back().m_base_conv_rate;
     }
-    else if (CurrencyHistoryModel::instance().find(CurrencyHistoryModel::CURRENCYID(currencyID)).size() > 0)
-    {
+    else if (CurrencyHistoryModel::instance().find(
+        CurrencyHistoryCol::CURRENCYID(currencyID)
+    ).size() > 0) {
         //Rate not found for specified day, look at previous and next
-        CurrencyHistoryModel::Data_Set DataPrevious = CurrencyHistoryModel::instance().find(
-            CurrencyHistoryModel::CURRENCYID(currencyID),
-            CurrencyHistoryModel::CURRDATE(OP_LE, Date)
+        CurrencyHistoryModel::DataA DataPrevious = CurrencyHistoryModel::instance().find(
+            CurrencyHistoryCol::CURRENCYID(currencyID),
+            CurrencyHistoryModel::CURRDATE(OP_LE, date)
         );
-        CurrencyHistoryModel::Data_Set DataNext = CurrencyHistoryModel::instance().find(
-            CurrencyHistoryModel::CURRENCYID(currencyID),
-            CurrencyHistoryModel::CURRDATE(OP_GE, Date)
+        CurrencyHistoryModel::DataA DataNext = CurrencyHistoryModel::instance().find(
+            CurrencyHistoryCol::CURRENCYID(currencyID),
+            CurrencyHistoryModel::CURRDATE(OP_GE, date)
         );
 
-        if (!DataPrevious.empty() && !DataNext.empty())
-        {
-            const wxTimeSpan spanPast = Date.Subtract(parseDateTime(DataPrevious.back().CURRDATE));
-            const wxTimeSpan spanFuture = parseDateTime(DataNext[0].CURRDATE).Subtract(Date);
+        if (!DataPrevious.empty() && !DataNext.empty()) {
+            const wxTimeSpan spanPast = date.Subtract(parseDateTime(DataPrevious.back().m_date));
+            const wxTimeSpan spanFuture = parseDateTime(DataNext[0].m_date).Subtract(date);
 
-            return spanPast <= spanFuture ? DataPrevious.back().CURRVALUE : DataNext[0].CURRVALUE;
+            return spanPast <= spanFuture ? DataPrevious.back().m_base_conv_rate : DataNext[0].m_base_conv_rate;
         }
-        else if (!DataPrevious.empty())
-        {
-            return DataPrevious.back().CURRVALUE;
+        else if (!DataPrevious.empty()) {
+            return DataPrevious.back().m_base_conv_rate;
         }
-        else if (!DataNext.empty())
-        {
-            return DataNext[0].CURRVALUE;
+        else if (!DataNext.empty()) {
+            return DataNext[0].m_base_conv_rate;
         }
     }
 
-    return CurrencyModel::instance().get_id(currencyID)->BASECONVRATE;
+    return CurrencyModel::instance().get_id_data_n(currencyID)->m_base_conv_rate;
 }
 
 /** Return the last rate for specified currency */
 double CurrencyHistoryModel::getLastRate(const int64& currencyID)
 {
-    if (!PreferencesModel::instance().getUseCurrencyHistory())
-        return CurrencyModel::instance().get_id(currencyID)->BASECONVRATE;
+    if (!PrefModel::instance().getUseCurrencyHistory())
+        return CurrencyModel::instance().get_id_data_n(currencyID)->m_base_conv_rate;
 
-    CurrencyHistoryModel::Data_Set histData = CurrencyHistoryModel::instance().find(CurrencyHistoryModel::CURRENCYID(currencyID));
-    std::stable_sort(histData.begin(), histData.end(), CurrencyHistoryRow::SorterByCURRDATE());
+    CurrencyHistoryModel::DataA histData = CurrencyHistoryModel::instance().find(
+        CurrencyHistoryCol::CURRENCYID(currencyID)
+    );
+    std::stable_sort(histData.begin(), histData.end(), CurrencyHistoryData::SorterByCURRDATE());
 
     if (!histData.empty())
-        return histData.back().CURRVALUE;
+        return histData.back().m_base_conv_rate;
     else
     {
-        CurrencyModel::Data* Currency = CurrencyModel::instance().get_id(currencyID);
-        return Currency->BASECONVRATE;
+        const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(currencyID);
+        return currency_n->m_base_conv_rate;
     }
 }
 
 void CurrencyHistoryModel::ResetCurrencyHistory()
 {
-    CurrencyHistoryModel::instance().Savepoint();
-    for (const auto& r : CurrencyHistoryModel::instance().get_all()) {
-        CurrencyHistoryModel::instance().remove(r.id());
+    CurrencyHistoryModel::instance().db_savepoint();
+    for (const auto& r : CurrencyHistoryModel::instance().find_all()) {
+        CurrencyHistoryModel::instance().purge_id(r.id());
     }
-    CurrencyHistoryModel::instance().ReleaseSavepoint();
+    CurrencyHistoryModel::instance().db_release_savepoint();
 }

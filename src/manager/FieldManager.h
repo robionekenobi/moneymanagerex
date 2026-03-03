@@ -20,13 +20,12 @@
 #pragma once
 
 #include "base/defs.h"
+#include "base/types.h"
 #include <wx/dialog.h>
 #include <map>
 
 class wxDataViewListCtrl;
 class wxDataViewEvent;
-
-typedef wxLongLong int64;
 
 class FieldManager : public wxDialog
 {

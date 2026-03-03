@@ -35,7 +35,7 @@ public:
     wxString purchaseDateStr;
     double   purchasePrice;
     double   numShares;
-    StockHistoryModel::Data_Set stockHist;
+    StockHistoryModel::DataA stockHist;
 };
 
 class BalanceReport : public ReportBase
@@ -58,9 +58,9 @@ public:
     wxString getHTMLText();
 
 private:
-    std::map<wxDate, double> loadCheckingDateBalance(const AccountModel::Data& account);
-    double getCheckingBalance(const AccountModel::Data* account, const wxDate& date);
-    std::pair<double, double> getBalance(const AccountModel::Data* account, const wxDate& date);
+    std::map<wxDate, double> loadCheckingDateBalance(const AccountData& account);
+    double getCheckingBalance(const AccountData* account, const wxDate& date);
+    std::pair<double, double> getBalance(const AccountData* account, const wxDate& date);
     double getCurrencyDateRate(int64 currencyid, const wxDate& date);
 };
 

@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "BudgetPeriodTable.h"
+#include "data/BudgetPeriodData.h"
 
-template class TableFactory<BudgetPeriodRow>;
+template class TableFactory<BudgetPeriodTable, BudgetPeriodData>;
+template class mmCache<int64, BudgetPeriodData>;
 
 // List of column names in database table BUDGETYEAR_V1,
 // in the order of BudgetPeriodCol::COL_ID.
@@ -38,31 +40,19 @@ BudgetPeriodRow::BudgetPeriodRow()
     BUDGETYEARID = -1;
 }
 
-BudgetPeriodRow::BudgetPeriodRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool BudgetPeriodRow::equals(const BudgetPeriodRow* r) const
-{
-    if ( BUDGETYEARID != r->BUDGETYEARID) return false;
-    if (!BUDGETYEARNAME.IsSameAs(r->BUDGETYEARNAME)) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void BudgetPeriodRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, BUDGETYEARNAME);
     stmt.Bind(2, id);
 }
 
-void BudgetPeriodRow::from_select_result(wxSQLite3ResultSet& q)
+BudgetPeriodRow& BudgetPeriodRow::from_select_result(wxSQLite3ResultSet& q)
 {
     BUDGETYEARID = q.GetInt64(0);
     BUDGETYEARNAME = q.GetString(1);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -88,7 +78,7 @@ void BudgetPeriodRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.String(BUDGETYEARNAME.utf8_str());
 }
 
-row_t BudgetPeriodRow::to_row_t() const
+row_t BudgetPeriodRow::to_html_row() const
 {
     row_t row;
 
@@ -98,20 +88,18 @@ row_t BudgetPeriodRow::to_row_t() const
     return row;
 }
 
-void BudgetPeriodRow::to_template(html_template& t) const
+void BudgetPeriodRow::to_html_template(html_template& t) const
 {
     t(L"BUDGETYEARID") = BUDGETYEARID.GetValue();
     t(L"BUDGETYEARNAME") = BUDGETYEARNAME;
 }
 
-BudgetPeriodRow& BudgetPeriodRow::operator=(const BudgetPeriodRow& other)
+bool BudgetPeriodRow::equals(const BudgetPeriodRow* other) const
 {
-    if (this == &other) return *this;
+    if ( BUDGETYEARID != other->BUDGETYEARID) return false;
+    if (!BUDGETYEARNAME.IsSameAs(other->BUDGETYEARNAME)) return false;
 
-    BUDGETYEARID = other.BUDGETYEARID;
-    BUDGETYEARNAME = other.BUDGETYEARNAME;
-
-    return *this;
+    return true;
 }
 
 BudgetPeriodTable::BudgetPeriodTable()
@@ -133,17 +121,4 @@ BudgetPeriodTable::BudgetPeriodTable()
     m_delete_query = "DELETE FROM BUDGETYEAR_V1 WHERE BUDGETYEARID = ?";
 
     m_select_query = "SELECT BUDGETYEARID, BUDGETYEARNAME FROM BUDGETYEAR_V1";
-}
-
-// Destructor: clears any data records stored in memory
-BudgetPeriodTable::~BudgetPeriodTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void BudgetPeriodTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

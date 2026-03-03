@@ -23,7 +23,7 @@
 #include <wx/frame.h>
 #include <rapidjson/document.h>
 
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 using namespace rapidjson;
 

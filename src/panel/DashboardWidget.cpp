@@ -23,22 +23,22 @@ Copyright (C) 2025 Klaus Wich
 #include <html_template.h>
 
 #include "base/constants.h"
-#include "util/mmDateDay.h"
+#include "util/mmDate.h"
 
 #include "model/AssetModel.h"
 #include "model/CategoryModel.h"
 #include "model/CurrencyHistoryModel.h"
 #include "model/CurrencyModel.h"
 #include "model/PayeeModel.h"
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 #include "model/SettingModel.h"
 #include "model/StockHistoryModel.h"
 #include "model/StockModel.h"
 
 #include "DashboardWidget.h"
-#include "ScheduledPanel.h"
+#include "SchedPanel.h"
 
-#include "preferences/DashboardPreferences.h"
+#include "pref/DashboardPref.h"
 #include "report/_ReportBase.h"
 #include "uicontrols/navigatortypes.h"
 
@@ -83,69 +83,81 @@ const wxString htmlWidgetStocks::getHTMLText()
     const wxDate today = wxDate::Today();
 
     wxString output = "";
-    AccountModel::Data_Set accounts = AccountModel::instance().find(
-        AccountModel::ACCOUNTTYPE(OP_EQ, NavigatorTypes::instance().getInvestmentAccountStr())
+    AccountModel::DataA account_a = AccountModel::instance().find(
+        AccountCol::ACCOUNTTYPE(OP_EQ, NavigatorTypes::instance().getInvestmentAccountStr())
     );
-    if (!accounts.empty())
-    {
-        std::stable_sort(accounts.begin(), accounts.end(), AccountRow::SorterByACCOUNTNAME());
+    if (account_a.empty())
+        return output;
 
-        output = R"(<div class="shadow">)";
-        output += "<table class ='sortable table'><col style='width: 50%'><col style='width: 12.5%'><col style='width: 12.5%'><col style='width: 12.5%'><col style='width: 12.5%'><thead><tr class='active'><th>\n";
-        output += _t("Stocks") + "</th><th class = 'text-right'>" + _t("Gain/Loss") + "</th>\n";
-        output += "<th class='text-right'>" + _t("Market Value") + "</th>\n";
-        output += "<th class='text-right'>" + _t("Cash Balance") + "</th>\n";
-        output += "<th class='text-right'>" + _t("Total") + "</th>\n";
-        output += wxString::Format("<th nowrap class='text-right sorttable_nosort'><a id='%s_label' onclick='toggleTable(\"%s\");' href='#%s' oncontextmenu='return false;'>[-]</a></th>\n"
-            , "INVEST", "INVEST", "INVEST");
-        output += "</tr></thead><tbody id='INVEST'>\n";
-        wxString body = "";
-        for (const auto& account : accounts)
-        {
-            if (AccountModel::status_id(account) != AccountModel::STATUS_ID_OPEN) continue;
+    std::stable_sort(account_a.begin(), account_a.end(), AccountData::SorterByACCOUNTNAME());
 
-            double conv_rate = CurrencyHistoryModel::getDayRate(account.CURRENCYID, today);
-            auto inv_bal = AccountModel::investment_balance(account);
-            double cash_bal = AccountModel::balance(account);
+    output = R"(<div class="shadow">)";
+    output += "<table class ='sortable table'><col style='width: 50%'><col style='width: 12.5%'><col style='width: 12.5%'><col style='width: 12.5%'><col style='width: 12.5%'><thead><tr class='active'><th>\n";
+    output += _t("Stocks") + "</th><th class = 'text-right'>" + _t("Gain/Loss") + "</th>\n";
+    output += "<th class='text-right'>" + _t("Market Value") + "</th>\n";
+    output += "<th class='text-right'>" + _t("Cash Balance") + "</th>\n";
+    output += "<th class='text-right'>" + _t("Total") + "</th>\n";
+    output += wxString::Format("<th nowrap class='text-right sorttable_nosort'><a id='%s_label' onclick='toggleTable(\"%s\");' href='#%s' oncontextmenu='return false;'>[-]</a></th>\n"
+        , "INVEST", "INVEST", "INVEST");
+    output += "</tr></thead><tbody id='INVEST'>\n";
+    wxString body = "";
+    for (const auto& account_d : account_a) {
+        if (!account_d.is_open())
+            continue;
 
-            grand_gain_lost    += (inv_bal.first - inv_bal.second) * conv_rate;
-            grand_market_value += inv_bal.first * conv_rate;
-            grand_cash_balance += cash_bal * conv_rate;
-            grand_total_       += (inv_bal.first + cash_bal) * conv_rate;
+        double conv_rate = CurrencyHistoryModel::getDayRate(account_d.m_currency_id_p, today);
+        auto inv_bal = AccountModel::instance().get_data_investment_balance(account_d);
+        double cash_bal = AccountModel::instance().get_data_balance(account_d);
 
-            body += "<tr>";
-            body += wxString::Format("<td sorttable_customkey='*%s*'><a href='stock:%lld' oncontextmenu='return false;' target='_blank'>%s</a>%s</td>\n"
-                , account.ACCOUNTNAME, account.ACCOUNTID, account.ACCOUNTNAME,
-                account.WEBSITE.empty() ? "" : wxString::Format("&nbsp;&nbsp;&nbsp;&nbsp;(<a href='%s' oncontextmenu='return false;' target='_blank'>WWW</a>)", account.WEBSITE));
-            body += wxString::Format("<td class='money' sorttable_customkey='%f'>%s</td>\n"
-                , inv_bal.first - inv_bal.second
-                , AccountModel::toCurrency(inv_bal.first - inv_bal.second, &account));
-            body += wxString::Format("<td class='money' sorttable_customkey='%f'>%s</td>\n"
-                , inv_bal.first
-                , AccountModel::toCurrency(inv_bal.first, &account));
-            body += wxString::Format("<td class='money' sorttable_customkey='%f'>%s</td>\n"
-                , cash_bal
-                , AccountModel::toCurrency(cash_bal, &account));
-            body += wxString::Format("<td colspan='2' class='money' sorttable_customkey='%f'>%s</td>"
-                , inv_bal.first + cash_bal
-                , AccountModel::toCurrency(inv_bal.first + cash_bal, &account));
-            body += "</tr>";
-        }
+        grand_gain_lost    += (inv_bal.first - inv_bal.second) * conv_rate;
+        grand_market_value += inv_bal.first * conv_rate;
+        grand_cash_balance += cash_bal * conv_rate;
+        grand_total_       += (inv_bal.first + cash_bal) * conv_rate;
 
-        if (!body.empty())
-        {
-            output += body;
-            output += "</tbody><tfoot><tr class = 'total'><td>" + _t("Total:") + "</td>";
-            output += wxString::Format("<td class='money'>%s</td>"
-                , CurrencyModel::toCurrency(grand_gain_lost));
-            output += wxString::Format("<td class='money'>%s</td>"
-                , CurrencyModel::toCurrency(grand_market_value));
-            output += wxString::Format("<td class='money'>%s</td>"
-                , CurrencyModel::toCurrency(grand_cash_balance));
-            output += wxString::Format("<td colspan='2' class='money'>%s</td></tr></tfoot></table>\n"
-                , CurrencyModel::toCurrency(grand_total_));
-            output += "</div>";
-        }
+        body += "<tr>";
+        body += wxString::Format("<td sorttable_customkey='*%s*'><a href='stock:%lld' oncontextmenu='return false;' target='_blank'>%s</a>%s</td>\n",
+            account_d.m_name, account_d.m_id, account_d.m_name,
+            account_d.m_website.empty() ? "" : wxString::Format("&nbsp;&nbsp;&nbsp;&nbsp;(<a href='%s' oncontextmenu='return false;' target='_blank'>WWW</a>)",
+                account_d.m_website
+            )
+        );
+        body += wxString::Format("<td class='money' sorttable_customkey='%f'>%s</td>\n",
+            inv_bal.first - inv_bal.second,
+            AccountModel::instance().value_number_currency(
+                account_d, inv_bal.first - inv_bal.second
+            )
+        );
+        body += wxString::Format("<td class='money' sorttable_customkey='%f'>%s</td>\n",
+            inv_bal.first,
+            AccountModel::instance().value_number_currency(account_d, inv_bal.first)
+        );
+        body += wxString::Format("<td class='money' sorttable_customkey='%f'>%s</td>\n",
+            cash_bal,
+            AccountModel::instance().value_number_currency(account_d, cash_bal)
+        );
+        body += wxString::Format("<td colspan='2' class='money' sorttable_customkey='%f'>%s</td>",
+            inv_bal.first + cash_bal,
+            AccountModel::instance().value_number_currency(account_d, inv_bal.first + cash_bal)
+        );
+        body += "</tr>";
+    }
+
+    if (!body.empty()) {
+        output += body;
+        output += "</tbody><tfoot><tr class = 'total'><td>" + _t("Total:") + "</td>";
+        output += wxString::Format("<td class='money'>%s</td>",
+            CurrencyModel::toCurrency(grand_gain_lost)
+        );
+        output += wxString::Format("<td class='money'>%s</td>",
+            CurrencyModel::toCurrency(grand_market_value)
+        );
+        output += wxString::Format("<td class='money'>%s</td>",
+            CurrencyModel::toCurrency(grand_cash_balance)
+        );
+        output += wxString::Format("<td colspan='2' class='money'>%s</td></tr></tfoot></table>\n",
+            CurrencyModel::toCurrency(grand_total_)
+        );
+        output += "</div>";
     }
     return output;
 }
@@ -203,49 +215,44 @@ void htmlWidgetTop7Categories::getTopCategoryStats(
     //Temporary map
     std::map<int64 /*category*/, double> stat;
 
-    const auto split = TransactionSplitModel::instance().get_all_id();
-    const auto &transactions = TransactionModel::instance().find(
-        TransactionModel::TRANSDATE(OP_GE, date_range->start_date()),
-        TransactionModel::TRANSDATE(OP_LE, date_range->end_date().FormatISOCombined()),
-        TransactionModel::STATUS(OP_NE, TransactionModel::STATUS_ID_VOID),
-        TransactionModel::TRANSCODE(OP_NE, TransactionModel::TYPE_ID_TRANSFER)
+    const auto split = TrxSplitModel::instance().get_all_id();
+    const auto& trx_a = TrxModel::instance().find(
+        TrxModel::TRANSDATE(OP_GE, date_range->start_date()),
+        TrxCol::TRANSDATE(OP_LE, date_range->end_date().FormatISOCombined()),
+        TrxModel::STATUS(OP_NE, TrxModel::STATUS_ID_VOID),
+        TrxModel::TRANSCODE(OP_NE, TrxModel::TYPE_ID_TRANSFER)
     );
 
-    for (const auto &trx : transactions)
-    {
+    for (const auto &trx : trx_a) {
         // Do not include asset or stock transfers or deleted transactions in income expense calculations.
-        if (TransactionModel::foreignTransactionAsTransfer(trx) || !trx.DELETEDTIME.IsEmpty())
+        if (TrxModel::is_foreignAsTransfer(trx) || !trx.DELETEDTIME.IsEmpty())
             continue;
 
-        bool withdrawal = TransactionModel::type_id(trx) == TransactionModel::TYPE_ID_WITHDRAWAL;
-        double convRate = CurrencyHistoryModel::getDayRate(AccountModel::instance().get_id(trx.ACCOUNTID)->CURRENCYID, trx.TRANSDATE);
+        bool withdrawal = TrxModel::type_id(trx) == TrxModel::TYPE_ID_WITHDRAWAL;
+        double convRate = CurrencyHistoryModel::getDayRate(
+            AccountModel::instance().get_id_data_n(trx.ACCOUNTID)->m_currency_id_p,
+            trx.TRANSDATE
+        );
 
-        if (const auto it = split.find(trx.TRANSID); it == split.end())
-        {
+        if (const auto it = split.find(trx.TRANSID); it == split.end()) {
             int64 category = trx.CATEGID;
             if (withdrawal)
                 stat[category] -= trx.TRANSAMOUNT * convRate;
             else
                 stat[category] += trx.TRANSAMOUNT * convRate;
         }
-        else
-        {
-            for (const auto& entry : it->second)
-            {
-                int64 category = entry.CATEGID;
-                double val = entry.SPLITTRANSAMOUNT
-                    * convRate
-                    * (withdrawal ? -1 : 1);
+        else {
+            for (const auto& tp_d : it->second) {
+                int64 category = tp_d.m_category_id_p;
+                double val = tp_d.m_amount * convRate * (withdrawal ? -1 : 1);
                 stat[category] += val;
             }
         }
     }
 
     categoryStats.clear();
-    for (const auto& i : stat)
-    {
-        if (i.second < 0)
-        {
+    for (const auto& i : stat) {
+        if (i.second < 0) {
             std::pair <wxString, double> stat_pair;
             stat_pair.first = CategoryModel::full_name(i.first);
             stat_pair.second = i.second;
@@ -253,15 +260,15 @@ void htmlWidgetTop7Categories::getTopCategoryStats(
         }
     }
 
-    std::stable_sort(categoryStats.begin(), categoryStats.end()
-        , [](const std::pair<wxString, double> x, const std::pair<wxString, double> y)
-    { return x.second < y.second; }
+    std::stable_sort(categoryStats.begin(), categoryStats.end(),
+        [](const std::pair<wxString, double> x, const std::pair<wxString, double> y) {
+            return x.second < y.second;
+        }
     );
 
     int counter = 0;
     std::vector<std::pair<wxString, double> >::iterator iter;
-    for (iter = categoryStats.begin(); iter != categoryStats.end(); )
-    {
+    for (iter = categoryStats.begin(); iter != categoryStats.end(); ) {
         counter++;
         if (counter > 7)
             iter = categoryStats.erase(iter);
@@ -289,21 +296,19 @@ const wxString htmlWidgetBillsAndDeposits::getHTMLText()
     wxDate today = wxDate::Today();
 
     //                    days, payee, description, amount, account, notes
-    std::vector< std::tuple<int, wxString, wxString, double, const AccountModel::Data*, wxString> > bd_days;
-    for (const auto& entry : ScheduledModel::instance().get_all(ScheduledCol::COL_ID_TRANSDATE))
-    {
-        int daysPayment = ScheduledModel::getTransDateTime(&entry)
+    std::vector< std::tuple<int, wxString, wxString, double, const AccountData*, wxString> > bd_days;
+    for (const auto& entry : SchedModel::instance().find_all(SchedCol::COL_ID_TRANSDATE)) {
+        int daysPayment = SchedModel::getTransDateTime(entry)
             .Subtract(today).GetDays();
         if (daysPayment > 14)
             break; // Done searching for all to include
 
-        int repeats = entry.REPEATS.GetValue() % BD_REPEATS_MULTIPLEX_BASE; // DeMultiplex the Auto Executable fields
-
-        // ignore inactive entries
-        if (repeats >= ScheduledModel::REPEAT_IN_X_DAYS && repeats <= ScheduledModel::REPEAT_EVERY_X_MONTHS && entry.NUMOCCURRENCES < 0)
+        // ignore invalid entries
+        SchedModel::RepeatNum rn;
+        if (!SchedModel::decode_repeat_num(entry, rn))
             continue;
 
-        int daysOverdue = ScheduledModel::NEXTOCCURRENCEDATE(&entry)
+        int daysOverdue = SchedModel::NEXTOCCURRENCEDATE(entry)
             .Subtract(today).GetDays();
         wxString daysRemainingStr = (daysPayment > 0
             ? wxString::Format(wxPLURAL("%d day", "%d days", daysPayment), daysPayment)
@@ -312,24 +317,23 @@ const wxString htmlWidgetBillsAndDeposits::getHTMLText()
             daysRemainingStr = "*" + wxString::Format(wxPLURAL("%d day overdue", "%d days overdue", std::abs(daysOverdue)), std::abs(daysOverdue));
 
         wxString accountStr = "";
-        const auto *account = AccountModel::instance().get_id(entry.ACCOUNTID);
-        if (account) accountStr = account->ACCOUNTNAME;
+        const auto *account = AccountModel::instance().get_id_data_n(entry.ACCOUNTID);
+        if (account) accountStr = account->m_name;
 
         wxString payeeStr = "";
-        if (ScheduledModel::type_id(entry) == TransactionModel::TYPE_ID_TRANSFER)
-        {
-            const AccountModel::Data *to_account = AccountModel::instance().get_id(entry.TOACCOUNTID);
-            if (to_account) payeeStr = to_account->ACCOUNTNAME;
+        if (SchedModel::type_id(entry) == TrxModel::TYPE_ID_TRANSFER) {
+            const AccountData *to_account = AccountModel::instance().get_id_data_n(entry.TOACCOUNTID);
+            if (to_account) payeeStr = to_account->m_name;
             payeeStr += " &larr; " + accountStr;
         }
-        else
-        {
-            const PayeeModel::Data* payee = PayeeModel::instance().get_id(entry.PAYEEID);
+        else {
+            const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(entry.PAYEEID);
             payeeStr = accountStr;
-            payeeStr += (ScheduledModel::type_id(entry) == TransactionModel::TYPE_ID_WITHDRAWAL ? " &rarr; " : " &larr; ");
-            if (payee) payeeStr += payee->PAYEENAME;
+            payeeStr += (SchedModel::type_id(entry) == TrxModel::TYPE_ID_WITHDRAWAL ? " &rarr; " : " &larr; ");
+            if (payee_n)
+                payeeStr += payee_n->m_name;
         }
-        double amount = (ScheduledModel::type_id(entry) == TransactionModel::TYPE_ID_WITHDRAWAL ? -entry.TRANSAMOUNT : entry.TRANSAMOUNT);
+        double amount = (SchedModel::type_id(entry) == TrxModel::TYPE_ID_WITHDRAWAL ? -entry.TRANSAMOUNT : entry.TRANSAMOUNT);
         wxString notes = HTMLEncode(entry.NOTES);
         bd_days.push_back(std::make_tuple(daysPayment, payeeStr, daysRemainingStr, amount, account, notes));
     }
@@ -364,8 +368,11 @@ const wxString htmlWidgetBillsAndDeposits::getHTMLText()
                 output += wxString::Format("<br><i>%s</i>", notes);
 
             output += "</td>";
-            output += wxString::Format("<td class='money'>%s</td>\n"
-                , AccountModel::toCurrency(std::get<3>(item), std::get<4>(item)));
+            output += wxString::Format("<td class='money'>%s</td>\n",
+                AccountModel::instance().value_number_currency(
+                    *(std::get<4>(item)), std::get<3>(item)
+                )
+            );
             output += "<td  class='money'>" + std::get<2>(item) + "</td></tr>\n";
         }
         output += "</table>\n";
@@ -379,39 +386,42 @@ const wxString htmlWidgetBillsAndDeposits::getHTMLText()
 //* Income vs Expenses *//
 const wxString htmlWidgetIncomeVsExpenses::getHTMLText()
 {
-    DashboardPreferences home_options;
+    DashboardPref home_options;
     wxSharedPtr<mmDateRange> date_range(home_options.get_inc_vs_exp_date_range());
 
     double tIncome = 0.0, tExpenses = 0.0;
     std::map<int64, std::pair<double, double> > incomeExpensesStats;
 
     //Calculations
-    const auto &transactions = TransactionModel::instance().find(
-        TransactionModel::TRANSDATE(OP_GE, date_range.get()->start_date()),
-        TransactionModel::TRANSDATE(OP_LE, date_range.get()->end_date().FormatISOCombined()),
-        TransactionModel::STATUS(OP_NE, TransactionModel::STATUS_ID_VOID),
-        TransactionModel::TRANSCODE(OP_NE, TransactionModel::TYPE_ID_TRANSFER)
+    const auto &transactions = TrxModel::instance().find(
+        TrxModel::TRANSDATE(OP_GE, date_range.get()->start_date()),
+        TrxCol::TRANSDATE(OP_LE, date_range.get()->end_date().FormatISOCombined()),
+        TrxModel::STATUS(OP_NE, TrxModel::STATUS_ID_VOID),
+        TrxModel::TRANSCODE(OP_NE, TrxModel::TYPE_ID_TRANSFER)
     );
 
     for (const auto& pBankTransaction : transactions)
     {
 
         // Do not include asset or stock transfers or deleted transactions in income expense calculations.
-        if (TransactionModel::foreignTransactionAsTransfer(pBankTransaction) || !pBankTransaction.DELETEDTIME.IsEmpty())
+        if (TrxModel::is_foreignAsTransfer(pBankTransaction) || !pBankTransaction.DELETEDTIME.IsEmpty())
             continue;
 
-        double convRate = CurrencyHistoryModel::getDayRate(AccountModel::instance().get_id(pBankTransaction.ACCOUNTID)->CURRENCYID, pBankTransaction.TRANSDATE);
+        double convRate = CurrencyHistoryModel::getDayRate(
+            AccountModel::instance().get_id_data_n(pBankTransaction.ACCOUNTID)->m_currency_id_p,
+            pBankTransaction.TRANSDATE
+        );
 
         int64 idx = pBankTransaction.ACCOUNTID;
-        if (TransactionModel::type_id(pBankTransaction) == TransactionModel::TYPE_ID_DEPOSIT)
+        if (TrxModel::type_id(pBankTransaction) == TrxModel::TYPE_ID_DEPOSIT)
             incomeExpensesStats[idx].first += pBankTransaction.TRANSAMOUNT * convRate;
         else
             incomeExpensesStats[idx].second += pBankTransaction.TRANSAMOUNT * convRate;
     }
 
-    for (const auto& account : AccountModel::instance().get_all())
+    for (const auto& account : AccountModel::instance().find_all())
     {
-        int64 idx = account.ACCOUNTID;
+        int64 idx = account.m_id;
         tIncome += incomeExpensesStats[idx].first;
         tExpenses += incomeExpensesStats[idx].second;
     }
@@ -466,20 +476,20 @@ const wxString htmlWidgetStatistics::getHTMLText()
     json_writer.String(_t("Transaction Statistics").utf8_str());
 
     wxSharedPtr<mmDateRange> date_range;
-    /*if (PreferencesModel::instance().getIgnoreFutureTransactions())
+    /*if (PrefModel::instance().getIgnoreFutureTransactions())
         date_range = new mmCurrentMonthToDate;
     else
         date_range = new mmCurrentMonth;*/
 
-    TransactionModel::Data_Set all_trans;
-    if (PreferencesModel::instance().getIgnoreFutureTransactionsHomePage()) {
+    TrxModel::DataA all_trans;
+    if (PrefModel::instance().getIgnoreFutureTransactionsHomePage()) {
         date_range = new mmCurrentMonthToDate;
-        all_trans = TransactionModel::instance().find(
-            TransactionModel::TRANSDATE(OP_LE, mmDateDay::today()));
+        all_trans = TrxModel::instance().find(
+            TrxModel::TRANSDATE(OP_LE, mmDate::today()));
     }
     else {
         date_range = new mmCurrentMonth;
-        all_trans = TransactionModel::instance().get_all();
+        all_trans = TrxModel::instance().find_all();
     }
     int countFollowUp = 0;
     int total_transactions = 0;
@@ -493,19 +503,19 @@ const wxString htmlWidgetStatistics::getHTMLText()
         total_transactions++;
 
         // Do not include asset or stock transfers in income expense calculations.
-        if (TransactionModel::foreignTransactionAsTransfer(trx))
+        if (TrxModel::is_foreignAsTransfer(trx))
             continue;
 
-        if (TransactionModel::status_id(trx) == TransactionModel::STATUS_ID_FOLLOWUP)
+        if (TrxModel::status_id(trx) == TrxModel::STATUS_ID_FOLLOWUP)
             countFollowUp++;
 
-        accountStats[trx.ACCOUNTID].first += TransactionModel::account_recflow(trx, trx.ACCOUNTID);
-        accountStats[trx.ACCOUNTID].second += TransactionModel::account_flow(trx, trx.ACCOUNTID);
+        accountStats[trx.ACCOUNTID].first += TrxModel::account_recflow(trx, trx.ACCOUNTID);
+        accountStats[trx.ACCOUNTID].second += TrxModel::account_flow(trx, trx.ACCOUNTID);
 
-        if (TransactionModel::type_id(trx) == TransactionModel::TYPE_ID_TRANSFER)
+        if (TrxModel::type_id(trx) == TrxModel::TYPE_ID_TRANSFER)
         {
-            accountStats[trx.TOACCOUNTID].first += TransactionModel::account_recflow(trx, trx.TOACCOUNTID);
-            accountStats[trx.TOACCOUNTID].second += TransactionModel::account_flow(trx, trx.TOACCOUNTID);
+            accountStats[trx.TOACCOUNTID].first += TrxModel::account_recflow(trx, trx.TOACCOUNTID);
+            accountStats[trx.TOACCOUNTID].second += TrxModel::account_flow(trx, trx.TOACCOUNTID);
         }
     }
 
@@ -575,11 +585,15 @@ htmlWidgetGrandTotals::~htmlWidgetGrandTotals()
 
 const wxString htmlWidgetAssets::getHTMLText()
 {
-    AccountModel::Data_Set asset_accounts = AccountModel::instance().find(AccountModel::ACCOUNTTYPE(NavigatorTypes::instance().getAssetAccountStr()));
-    if (asset_accounts.empty())
+    AccountModel::DataA asset_account_a = AccountModel::instance().find(
+        AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().getAssetAccountStr())
+    );
+    if (asset_account_a.empty())
         return wxEmptyString;
 
-    std::stable_sort(asset_accounts.begin(), asset_accounts.end(), AccountRow::SorterByACCOUNTNAME());
+    std::stable_sort(asset_account_a.begin(), asset_account_a.end(),
+        AccountData::SorterByACCOUNTNAME()
+    );
 
     static const int MAX_ASSETS = 10;
     wxString output;
@@ -612,12 +626,12 @@ const wxString htmlWidgetAssets::getHTMLText()
         return row;
     };
 
-    for (const auto& asset : asset_accounts)
-    {
-        if (AccountModel::status_id(asset) != AccountModel::STATUS_ID_OPEN) continue;
+    for (const auto& asset_account_d : asset_account_a) {
+        if (!asset_account_d.is_open())
+            continue;
 
-        double cash = AccountModel::balance(asset);
-        auto inv = AccountModel::investment_balance(asset);
+        double cash = AccountModel::instance().get_data_balance(asset_account_d);
+        auto inv = AccountModel::instance().get_data_investment_balance(asset_account_d);
         double current = inv.first;
         double initial = inv.second;
 
@@ -625,17 +639,15 @@ const wxString htmlWidgetAssets::getHTMLText()
         currentTotal += current;
         cashTotal += cash;
 
-        if (rows++ < MAX_ASSETS)
-        {
+        if (rows++ < MAX_ASSETS) {
             initialDisplayed += initial;
             currentDisplayed += current;
             cashDisplayed += cash;
-            output << renderRow(asset.ACCOUNTNAME, initial, current, cash);
+            output << renderRow(asset_account_d.m_name, initial, current, cash);
         }
     }
 
-    if (rows > MAX_ASSETS)
-    {
+    if (rows > MAX_ASSETS) {
         wxString otherAssets = _t("Other Assets");
         output << renderRow(wxString::Format("%s (%d)", otherAssets, rows - MAX_ASSETS),
                             initialTotal - initialDisplayed,
@@ -669,32 +681,35 @@ void htmlWidgetAccounts::get_account_stats()
 {
 
     wxSharedPtr<mmDateRange> date_range;
-    /*if (PreferencesModel::instance().getIgnoreFutureTransactions())
+    /*if (PrefModel::instance().getIgnoreFutureTransactions())
         date_range = new mmCurrentMonthToDate;
     else
         date_range = new mmCurrentMonth;*/
 
-    TransactionModel::Data_Set all_trans;
-    if (PreferencesModel::instance().getIgnoreFutureTransactionsHomePage()) {
+    TrxModel::DataA all_trans;
+    if (PrefModel::instance().getIgnoreFutureTransactionsHomePage()) {
         date_range = new mmCurrentMonthToDate;
-        all_trans = TransactionModel::instance().find(TransactionModel::TRANSDATE(OP_LE,
-            PreferencesModel::instance().UseTransDateTime() ? wxDateTime::Now() : wxDateTime(23, 59, 59, 999)
-        ));
+        all_trans = TrxModel::instance().find(
+            TrxModel::TRANSDATE(OP_LE, PrefModel::instance().UseTransDateTime()
+                ? wxDateTime::Now()
+                : wxDateTime(23, 59, 59, 999)
+            )
+        );
     }
     else {
         date_range = new mmCurrentMonth;
-        all_trans = TransactionModel::instance().get_all();
+        all_trans = TrxModel::instance().find_all();
     }
 
     for (const auto& trx : all_trans)
     {
-        accountStats_[trx.ACCOUNTID].first += TransactionModel::account_recflow(trx, trx.ACCOUNTID);
-        accountStats_[trx.ACCOUNTID].second += TransactionModel::account_flow(trx, trx.ACCOUNTID);
+        accountStats_[trx.ACCOUNTID].first += TrxModel::account_recflow(trx, trx.ACCOUNTID);
+        accountStats_[trx.ACCOUNTID].second += TrxModel::account_flow(trx, trx.ACCOUNTID);
 
-        if (TransactionModel::type_id(trx) == TransactionModel::TYPE_ID_TRANSFER)
+        if (TrxModel::type_id(trx) == TrxModel::TYPE_ID_TRANSFER)
         {
-            accountStats_[trx.TOACCOUNTID].first += TransactionModel::account_recflow(trx, trx.TOACCOUNTID);
-            accountStats_[trx.TOACCOUNTID].second += TransactionModel::account_flow(trx, trx.TOACCOUNTID);
+            accountStats_[trx.TOACCOUNTID].first += TrxModel::account_recflow(trx, trx.TOACCOUNTID);
+            accountStats_[trx.TOACCOUNTID].second += TrxModel::account_flow(trx, trx.TOACCOUNTID);
         }
     }
 
@@ -721,31 +736,36 @@ const wxString htmlWidgetAccounts::displayAccounts(double& tBalance, double& tRe
     const wxDate today = wxDate::Today();
     double tabBalance = 0.0, tabReconciled = 0.0;
     wxString vAccts = SettingModel::instance().getViewAccounts();
-    auto accounts = AccountModel::instance().find(
-        AccountModel::ACCOUNTTYPE(NavigatorTypes::instance().type_name(type)),
-        AccountModel::STATUS(OP_NE, AccountModel::STATUS_ID_CLOSED)
+    auto account_a = AccountModel::instance().find(
+        AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().type_name(type)),
+        AccountModel::STATUS(OP_NE, AccountStatus(AccountStatus::e_closed))
     );
-    std::stable_sort(accounts.begin(), accounts.end(), AccountRow::SorterByACCOUNTNAME());
-    for (const auto& account : accounts)
-    {
-        CurrencyModel::Data* currency = AccountModel::currency(account);
+    std::stable_sort(account_a.begin(), account_a.end(), AccountData::SorterByACCOUNTNAME());
+    for (const auto& account_d : account_a) {
+        const CurrencyData* currency = AccountModel::instance().get_data_currency_p(account_d);
 
-        double currency_rate = CurrencyHistoryModel::getDayRate(account.CURRENCYID, today);
-        double bal = account.INITIALBAL + accountStats_[account.ACCOUNTID].second; //AccountModel::balance(account);
-        double reconciledBal = account.INITIALBAL + accountStats_[account.ACCOUNTID].first;
+        double currency_rate = CurrencyHistoryModel::getDayRate(account_d.m_currency_id_p, today);
+        double bal = account_d.m_open_balance + accountStats_[account_d.m_id].second; //AccountModel::instance().get_data_balance(account_d);
+        double reconciledBal = account_d.m_open_balance + accountStats_[account_d.m_id].first;
         tabBalance += bal * currency_rate;
         tabReconciled += reconciledBal * currency_rate;
 
         // show the actual amount in that account
-        if (((vAccts == VIEW_ACCOUNTS_OPEN_STR && AccountModel::status_id(account) == AccountModel::STATUS_ID_OPEN) ||
-            (vAccts == VIEW_ACCOUNTS_FAVORITES_STR && AccountModel::FAVORITEACCT(account)) ||
-            (vAccts == VIEW_ACCOUNTS_ALL_STR)))
-        {
+        if ((vAccts == VIEW_ACCOUNTS_OPEN_STR && account_d.is_open()) ||
+            (vAccts == VIEW_ACCOUNTS_FAVORITES_STR && account_d.is_favorite()) ||
+            (vAccts == VIEW_ACCOUNTS_ALL_STR)
+        ) {
             body += "<tr>";
-            body += wxString::Format(R"(<td sorttable_customkey="*%s*" nowrap><a href="acct:%lld" oncontextmenu="return false;" target="_blank">%s</a>%s</td>)"
-                , account.ACCOUNTNAME, account.ACCOUNTID, account.ACCOUNTNAME,
-                account.WEBSITE.empty() ? "" : wxString::Format(R"(&nbsp;&nbsp;&nbsp;&nbsp;(<a href="%s" oncontextmenu="return false;" target="_blank">WWW</a>))", account.WEBSITE));
-            body += wxString::Format("\n<td class='money' sorttable_customkey='%f' nowrap>%s</td>\n", reconciledBal, CurrencyModel::toCurrency(reconciledBal, currency));
+            body += wxString::Format(R"(<td sorttable_customkey="*%s*" nowrap><a href="acct:%lld" oncontextmenu="return false;" target="_blank">%s</a>%s</td>)",
+                account_d.m_name, account_d.m_id, account_d.m_name,
+                account_d.m_website.empty() ? "" : wxString::Format(R"(&nbsp;&nbsp;&nbsp;&nbsp;(<a href="%s" oncontextmenu="return false;" target="_blank">WWW</a>))",
+                    account_d.m_website
+                )
+            );
+            body += wxString::Format("\n<td class='money' sorttable_customkey='%f' nowrap>%s</td>\n",
+                reconciledBal,
+                CurrencyModel::toCurrency(reconciledBal, currency)
+            );
             body += wxString::Format("<td class='money' sorttable_customkey='%f' colspan='2' nowrap>%s</td>\n", bal, CurrencyModel::toCurrency(bal, currency));
             body += "</tr>\n";
         }
@@ -803,15 +823,14 @@ const wxString htmlWidgetCurrency::getHtmlText()
 
     const wxString today = wxDate::Today().FormatISODate();
     std::map<wxString, double> usedRates;
-    const auto currencies = CurrencyModel::instance().get_all();
+    const auto currencies = CurrencyModel::instance().find_all();
 
-    for (const auto &currency : currencies)
-    {
-        if (AccountModel::is_used(currency)) {
+    for (const auto &currency : currencies) {
+        if (CurrencyModel::is_used(currency.m_id)) {
 
-            double convertionRate = CurrencyHistoryModel::getDayRate(currency.CURRENCYID
+            double convertionRate = CurrencyHistoryModel::getDayRate(currency.m_id
                 , today);
-            usedRates[currency.CURRENCY_SYMBOL] = convertionRate;
+            usedRates[currency.m_symbol] = convertionRate;
 
             if (usedRates.size() >= 10) {
                 break;

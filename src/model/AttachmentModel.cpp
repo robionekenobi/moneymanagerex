@@ -21,8 +21,8 @@
 
 #include "AttachmentModel.h"
 
-AttachmentModel::AttachmentModel()
-: Model<AttachmentTable>()
+AttachmentModel::AttachmentModel() :
+    TableFactory<AttachmentTable, AttachmentData>()
 {
 }
 
@@ -37,8 +37,8 @@ AttachmentModel::~AttachmentModel()
 AttachmentModel& AttachmentModel::instance(wxSQLite3Database* db)
 {
     AttachmentModel& ins = Singleton<AttachmentModel>::instance();
+    ins.reset_cache();
     ins.m_db = db;
-    ins.destroy_cache();
     ins.ensure_table();
 
     return ins;
@@ -51,10 +51,10 @@ AttachmentModel& AttachmentModel::instance()
 }
 
 /** Return a dataset with attachments linked to a specific object */
-const AttachmentModel::Data_Set AttachmentModel::FilterAttachments(const wxString& RefType, const int64 RefId)
+const AttachmentModel::DataA AttachmentModel::FilterAttachments(const wxString& RefType, const int64 RefId)
 {
-    Data_Set attachments;
-    for (const Data& attachment : get_all(Col::COL_ID_DESCRIPTION)) {
+    DataA attachments;
+    for (const Data& attachment : find_all(Col::COL_ID_DESCRIPTION)) {
         if (attachment.REFTYPE.Lower().Matches(RefType.Lower().Append("*")) && attachment.REFID == RefId)
             attachments.push_back(attachment);
     }
@@ -64,14 +64,17 @@ const AttachmentModel::Data_Set AttachmentModel::FilterAttachments(const wxStrin
 /** Return the number of attachments linked to a specific object */
 int AttachmentModel::NrAttachments(const wxString& RefType, const int64 RefId)
 {
-    return AttachmentModel::instance().find(AttachmentModel::AttachmentTable::REFTYPE(RefType), AttachmentModel::REFID(RefId)).size();
+    return AttachmentModel::instance().find(
+        AttachmentCol::REFTYPE(RefType),
+        AttachmentCol::REFID(RefId)
+    ).size();
 }
 
 /** Return the last attachment number linked to a specific object */
 int AttachmentModel::LastAttachmentNumber(const wxString& RefType, const int64 RefId)
 {
     int LastAttachmentNumber = 0;
-    AttachmentModel::Data_Set attachments = AttachmentModel::instance().FilterAttachments(RefType, RefId);
+    AttachmentModel::DataA attachments = AttachmentModel::instance().FilterAttachments(RefType, RefId);
 
     for (auto &attachment : attachments)
     {
@@ -85,11 +88,12 @@ int AttachmentModel::LastAttachmentNumber(const wxString& RefType, const int64 R
 }
 
 /** Return a dataset with attachments linked to a specific type*/
-std::map<int64, AttachmentModel::Data_Set> AttachmentModel::get_reftype(const wxString& reftype)
+std::map<int64, AttachmentModel::DataA> AttachmentModel::get_reftype(const wxString& reftype)
 {
-    std::map<int64, AttachmentModel::Data_Set> data;
-    for (const auto & attachment : this->find(AttachmentModel::AttachmentTable::REFTYPE(reftype)))
-    {
+    std::map<int64, AttachmentModel::DataA> data;
+    for (const auto & attachment : this->find(
+        AttachmentCol::REFTYPE(reftype)
+    )) {
         data[attachment.REFID].push_back(attachment);
     }
 
@@ -101,7 +105,7 @@ wxArrayString AttachmentModel::allDescriptions()
 {
     wxArrayString descriptions;
     wxString PreviousDescription;
-    for (const auto &attachment : this->get_all(Col::COL_ID_DESCRIPTION))
+    for (const auto &attachment : this->find_all(Col::COL_ID_DESCRIPTION))
     {
         if (attachment.DESCRIPTION != PreviousDescription)
         {

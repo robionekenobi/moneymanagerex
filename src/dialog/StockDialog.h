@@ -32,23 +32,66 @@ class StockDialog : public wxDialog
     wxDECLARE_DYNAMIC_CLASS(StockDialog);
     wxDECLARE_EVENT_TABLE();
 
+private:
+    enum
+    {
+        ID_DPC_STOCK_PDATE = wxID_HIGHEST + 800,
+        ID_TEXTCTRL_STOCKNAME,
+        ID_TEXTCTRL_STOCK_SYMBOL,
+        ID_TEXTCTRL_NUMBER_SHARES,
+        ID_TEXTCTRL_STOCK_PP,
+        ID_TEXTCTRL_STOCK_CP,
+        ID_STATIC_STOCK_VALUE,
+        ID_TEXTCTRL_STOCK_COMMISSION,
+        ID_TEXTCTRL_STOCK_CURR_PRICE,
+        ID_DIALOG_STOCKS,
+        ID_DPC_CP_PDATE,
+        ID_BUTTON_IMPORT,
+        ID_BUTTON_DOWNLOAD
+    };
+
+public:
+    int64 m_stock_id = -1;
+
+private:
+    StockData* m_stock_n = nullptr;
+    StockData m_stock_d;
+    bool m_edit = false;
+    int64 m_account_id = -1;
+
+    wxTextCtrl*       m_stock_name_ctrl     = nullptr;
+    wxTextCtrl*       m_stock_symbol_ctrl   = nullptr;
+    mmDatePickerCtrl* m_purchase_date_ctrl  = nullptr;
+    mmTextCtrl*       m_num_shares_ctrl     = nullptr;
+    mmTextCtrl*       m_purchase_price_ctrl = nullptr;
+    wxTextCtrl*       m_notes_ctrl          = nullptr;
+    mmTextCtrl*       m_history_price_ctrl  = nullptr;
+    mmDatePickerCtrl* m_history_date_ctrl   = nullptr;
+    wxStaticText*     m_value_investment    = nullptr;
+    mmTextCtrl*       m_commission_ctrl     = nullptr;
+    mmTextCtrl*       m_current_price_ctrl  = nullptr;
+    wxBitmapButton*   m_bAttachments        = nullptr;
+    wxListCtrl*       m_price_listbox       = nullptr;
+    wxButton*         m_itemButtonOK        = nullptr;
+    wxStaticText*     m_date_label          = nullptr;
+
 public:
     StockDialog();
-    StockDialog(wxWindow* parent
-        , StockModel::Data* stock
-        , int64 accountID
-        , const wxString& name = "StockDialog"
-        );
+    StockDialog(
+        wxWindow* parent,
+        StockData* stock,
+        int64 accountID,
+        const wxString& name = "StockDialog"
+    );
 
-    bool Create(wxWindow* parent, wxWindowID id
-        , const wxString& caption
-        , const wxPoint& pos
-        , const wxSize& size
-        , long style
-        , const wxString& name = "StockDialog"
-        );
-
-    int64 m_stock_id = -1;
+    bool Create(
+        wxWindow* parent, wxWindowID id,
+        const wxString& caption,
+        const wxPoint& pos,
+        const wxSize& size,
+        long style,
+        const wxString& name = "StockDialog"
+    );
 
 private:
     void OnQuit(wxCloseEvent& event);
@@ -67,43 +110,10 @@ private:
     void UpdateControls();
     void DataToControls();
     void ShowStockHistory();
-    void CreateShareAccount(AccountModel::Data* stock_account, const wxString& name
-                                    , const wxString& openingDate);
-
-    wxTextCtrl* m_stock_name_ctrl = nullptr;
-    wxTextCtrl* m_stock_symbol_ctrl = nullptr;
-    mmDatePickerCtrl* m_purchase_date_ctrl = nullptr;
-    mmTextCtrl* m_num_shares_ctrl = nullptr;
-    mmTextCtrl* m_purchase_price_ctrl = nullptr;
-    wxTextCtrl* m_notes_ctrl = nullptr;
-    mmTextCtrl* m_history_price_ctrl = nullptr;
-    mmDatePickerCtrl* m_history_date_ctrl = nullptr;
-    wxStaticText* m_value_investment = nullptr;
-    mmTextCtrl* m_commission_ctrl = nullptr;
-    mmTextCtrl* m_current_price_ctrl = nullptr;
-    wxBitmapButton* m_bAttachments = nullptr;
-    wxListCtrl* m_price_listbox = nullptr;
-    wxButton* m_itemButtonOK = nullptr;
-    wxStaticText* m_date_label = nullptr;
-
-    StockModel::Data* m_stock = nullptr;
-    bool m_edit = false;
-    int64 m_account_id = -1;
-    enum
-    {
-        ID_DPC_STOCK_PDATE = wxID_HIGHEST + 800,
-        ID_TEXTCTRL_STOCKNAME,
-        ID_TEXTCTRL_STOCK_SYMBOL,
-        ID_TEXTCTRL_NUMBER_SHARES,
-        ID_TEXTCTRL_STOCK_PP,
-        ID_TEXTCTRL_STOCK_CP,
-        ID_STATIC_STOCK_VALUE,
-        ID_TEXTCTRL_STOCK_COMMISSION,
-        ID_TEXTCTRL_STOCK_CURR_PRICE,
-        ID_DIALOG_STOCKS,
-        ID_DPC_CP_PDATE,
-        ID_BUTTON_IMPORT,
-        ID_BUTTON_DOWNLOAD
-    };
+    void CreateShareAccount(
+        const AccountData* stock_account,
+        const wxString& name,
+        const wxString& openingDate
+    );
 };
 

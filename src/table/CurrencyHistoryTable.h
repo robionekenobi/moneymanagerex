@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,14 +13,14 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #pragma once
 
-#include "_TableFactory.h"
+#include "_TableBase.h"
 
 // Columns in database table CURRENCYHISTORY_V1
 struct CurrencyHistoryCol
@@ -86,7 +86,6 @@ struct CurrencyHistoryCol
 struct CurrencyHistoryRow
 {
     using Col = CurrencyHistoryCol;
-    using COL_ID = Col::COL_ID;
 
     int64 CURRHISTID; // primary key
     int64 CURRENCYID;
@@ -100,17 +99,17 @@ struct CurrencyHistoryRow
 
     int64 id() const { return CURRHISTID; }
     void id(const int64 id) { CURRHISTID = id; }
-    void destroy() { delete this; }
-
-    bool equals(const CurrencyHistoryRow* r) const;
     void to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const;
-    void from_select_result(wxSQLite3ResultSet& q);
+    void to_update_stmt(wxSQLite3Statement& stmt) const;
+    CurrencyHistoryRow& from_select_result(wxSQLite3ResultSet& q);
     wxString to_json() const;
     void as_json(PrettyWriter<StringBuffer>& json_writer) const;
-    row_t to_row_t() const;
-    void to_template(html_template& t) const;
+    row_t to_html_row() const;
+    void to_html_template(html_template& t) const;
+    void destroy() { delete this; }
 
-    CurrencyHistoryRow& operator=(const CurrencyHistoryRow& other);
+    CurrencyHistoryRow& clone_from(const CurrencyHistoryRow& other);
+    bool equals(const CurrencyHistoryRow* other) const;
     bool operator< (const CurrencyHistoryRow& other) const { return id() < other.id(); }
     bool operator< (const CurrencyHistoryRow* other) const { return id() < other->id(); }
 
@@ -195,17 +194,28 @@ struct CurrencyHistoryRow
 };
 
 // Interface to database table CURRENCYHISTORY_V1
-struct CurrencyHistoryTable : public TableFactory<CurrencyHistoryRow>
+struct CurrencyHistoryTable : public TableBase
 {
-    // Use Col::(COLUMN_NAME) until model provides similar functionality based on Data.
-    using CURRHISTID = Col::CURRHISTID;
-    using CURRENCYID = Col::CURRENCYID;
-    using CURRDATE = Col::CURRDATE;
-    using CURRVALUE = Col::CURRVALUE;
-    using CURRUPDTYPE = Col::CURRUPDTYPE;
+    using Row = CurrencyHistoryRow;
+    using Col = typename Row::Col;
 
     CurrencyHistoryTable();
-    ~CurrencyHistoryTable();
-
-    void ensure_data() override;
+    ~CurrencyHistoryTable() {}
 };
+
+inline CurrencyHistoryRow::CurrencyHistoryRow(wxSQLite3ResultSet& q)
+{
+    from_select_result(q);
+}
+
+inline void CurrencyHistoryRow::to_update_stmt(wxSQLite3Statement& stmt) const
+{
+    to_insert_stmt(stmt, id());
+}
+
+inline CurrencyHistoryRow& CurrencyHistoryRow::clone_from(const CurrencyHistoryRow& other)
+{
+    *this = other;
+    id(-1);
+    return *this;
+}

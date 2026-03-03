@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "CurrencyTable.h"
+#include "data/CurrencyData.h"
 
-template class TableFactory<CurrencyRow>;
+template class TableFactory<CurrencyTable, CurrencyData>;
+template class mmCache<int64, CurrencyData>;
 
 // List of column names in database table CURRENCYFORMATS_V1,
 // in the order of CurrencyCol::COL_ID.
@@ -50,31 +52,7 @@ CurrencyRow::CurrencyRow()
     BASECONVRATE = 0.0;
 }
 
-CurrencyRow::CurrencyRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool CurrencyRow::equals(const CurrencyRow* r) const
-{
-    if ( CURRENCYID != r->CURRENCYID) return false;
-    if (!CURRENCYNAME.IsSameAs(r->CURRENCYNAME)) return false;
-    if (!PFX_SYMBOL.IsSameAs(r->PFX_SYMBOL)) return false;
-    if (!SFX_SYMBOL.IsSameAs(r->SFX_SYMBOL)) return false;
-    if (!DECIMAL_POINT.IsSameAs(r->DECIMAL_POINT)) return false;
-    if (!GROUP_SEPARATOR.IsSameAs(r->GROUP_SEPARATOR)) return false;
-    if (!UNIT_NAME.IsSameAs(r->UNIT_NAME)) return false;
-    if (!CENT_NAME.IsSameAs(r->CENT_NAME)) return false;
-    if ( SCALE != r->SCALE) return false;
-    if ( BASECONVRATE != r->BASECONVRATE) return false;
-    if (!CURRENCY_SYMBOL.IsSameAs(r->CURRENCY_SYMBOL)) return false;
-    if (!CURRENCY_TYPE.IsSameAs(r->CURRENCY_TYPE)) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void CurrencyRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, CURRENCYNAME);
@@ -91,7 +69,7 @@ void CurrencyRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(12, id);
 }
 
-void CurrencyRow::from_select_result(wxSQLite3ResultSet& q)
+CurrencyRow& CurrencyRow::from_select_result(wxSQLite3ResultSet& q)
 {
     CURRENCYID = q.GetInt64(0);
     CURRENCYNAME = q.GetString(1);
@@ -105,6 +83,8 @@ void CurrencyRow::from_select_result(wxSQLite3ResultSet& q)
     BASECONVRATE = q.GetDouble(9);
     CURRENCY_SYMBOL = q.GetString(10);
     CURRENCY_TYPE = q.GetString(11);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -160,7 +140,7 @@ void CurrencyRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.String(CURRENCY_TYPE.utf8_str());
 }
 
-row_t CurrencyRow::to_row_t() const
+row_t CurrencyRow::to_html_row() const
 {
     row_t row;
 
@@ -180,7 +160,7 @@ row_t CurrencyRow::to_row_t() const
     return row;
 }
 
-void CurrencyRow::to_template(html_template& t) const
+void CurrencyRow::to_html_template(html_template& t) const
 {
     t(L"CURRENCYID") = CURRENCYID.GetValue();
     t(L"CURRENCYNAME") = CURRENCYNAME;
@@ -196,24 +176,22 @@ void CurrencyRow::to_template(html_template& t) const
     t(L"CURRENCY_TYPE") = CURRENCY_TYPE;
 }
 
-CurrencyRow& CurrencyRow::operator=(const CurrencyRow& other)
+bool CurrencyRow::equals(const CurrencyRow* other) const
 {
-    if (this == &other) return *this;
+    if ( CURRENCYID != other->CURRENCYID) return false;
+    if (!CURRENCYNAME.IsSameAs(other->CURRENCYNAME)) return false;
+    if (!PFX_SYMBOL.IsSameAs(other->PFX_SYMBOL)) return false;
+    if (!SFX_SYMBOL.IsSameAs(other->SFX_SYMBOL)) return false;
+    if (!DECIMAL_POINT.IsSameAs(other->DECIMAL_POINT)) return false;
+    if (!GROUP_SEPARATOR.IsSameAs(other->GROUP_SEPARATOR)) return false;
+    if (!UNIT_NAME.IsSameAs(other->UNIT_NAME)) return false;
+    if (!CENT_NAME.IsSameAs(other->CENT_NAME)) return false;
+    if ( SCALE != other->SCALE) return false;
+    if ( BASECONVRATE != other->BASECONVRATE) return false;
+    if (!CURRENCY_SYMBOL.IsSameAs(other->CURRENCY_SYMBOL)) return false;
+    if (!CURRENCY_TYPE.IsSameAs(other->CURRENCY_TYPE)) return false;
 
-    CURRENCYID = other.CURRENCYID;
-    CURRENCYNAME = other.CURRENCYNAME;
-    PFX_SYMBOL = other.PFX_SYMBOL;
-    SFX_SYMBOL = other.SFX_SYMBOL;
-    DECIMAL_POINT = other.DECIMAL_POINT;
-    GROUP_SEPARATOR = other.GROUP_SEPARATOR;
-    UNIT_NAME = other.UNIT_NAME;
-    CENT_NAME = other.CENT_NAME;
-    SCALE = other.SCALE;
-    BASECONVRATE = other.BASECONVRATE;
-    CURRENCY_SYMBOL = other.CURRENCY_SYMBOL;
-    CURRENCY_TYPE = other.CURRENCY_TYPE;
-
-    return *this;
+    return true;
 }
 
 CurrencyTable::CurrencyTable()
@@ -235,13 +213,6 @@ CurrencyTable::CurrencyTable()
     m_delete_query = "DELETE FROM CURRENCYFORMATS_V1 WHERE CURRENCYID = ?";
 
     m_select_query = "SELECT CURRENCYID, CURRENCYNAME, PFX_SYMBOL, SFX_SYMBOL, DECIMAL_POINT, GROUP_SEPARATOR, UNIT_NAME, CENT_NAME, SCALE, BASECONVRATE, CURRENCY_SYMBOL, CURRENCY_TYPE FROM CURRENCYFORMATS_V1";
-}
-
-// Destructor: clears any data records stored in memory
-CurrencyTable::~CurrencyTable()
-{
-    delete fake_;
-    destroy_cache();
 }
 
 void CurrencyTable::ensure_data()

@@ -49,14 +49,14 @@ FieldValueDialog::FieldValueDialog(wxDialog* dialog, const wxString& ref_type, i
     , m_ref_id(ref_id)
 {
     m_dialog = dialog;
-    m_fields = FieldModel::instance().find(FieldModel::FieldTable::REFTYPE(m_ref_type));
-    std::sort(m_fields.begin(), m_fields.end(), FieldRow::SorterByDESCRIPTION());
+    m_fields = FieldModel::instance().find(FieldCol::REFTYPE(m_ref_type));
+    std::sort(m_fields.begin(), m_fields.end(), FieldData::SorterByDESCRIPTION());
     m_data_changed.clear();
 }
 
 mmCustomDataTransaction::mmCustomDataTransaction(wxDialog* dialog, int64 ref_id, wxWindowID base_id)
     : FieldValueDialog(dialog
-        , TransactionModel::refTypeName
+        , TrxModel::refTypeName
         , ref_id)
 {
     SetBaseID(base_id);
@@ -78,16 +78,18 @@ bool FieldValueDialog::FillCustomFields(wxBoxSizer* box_sizer)
     custom_sizer->Add(grid_sizer_custom, g_flagsExpand);
 
     int field_index = 0;
-    for (const auto &field : m_fields)
-    {
+    for (const auto &field : m_fields) {
         bool nonDefaultData = true;
-        FieldValueModel::Data* fieldData = FieldValueModel::instance().get_key(field.FIELDID, m_ref_id);
-        if (!fieldData)
-        {
-            fieldData = FieldValueModel::instance().create();
-            fieldData->FIELDID = field.FIELDID;
-            fieldData->REFID = m_ref_id;
-            fieldData->CONTENT = FieldModel::getDefault(field.PROPERTIES);
+        const FieldValueData* fv_n = FieldValueModel::instance().get_key(field.FIELDID, m_ref_id);
+        FieldValueData fv_data;
+        if (fv_n) {
+            fv_data = *fv_n;
+        }
+        else {
+            fv_data = FieldValueData();
+            fv_data.FIELDID = field.FIELDID;
+            fv_data.REFID = m_ref_id;
+            fv_data.CONTENT = FieldModel::getDefault(field.PROPERTIES);
             nonDefaultData = false;
         }
 
@@ -107,7 +109,7 @@ bool FieldValueDialog::FillCustomFields(wxBoxSizer* box_sizer)
         {
         case FieldModel::TYPE_ID_STRING:
         {
-            const auto& data = fieldData->CONTENT;
+            const auto& data = fv_data.CONTENT;
             wxTextCtrl* CustomString = new wxTextCtrl(scrolled_window, controlID, data, wxDefaultPosition, wxDefaultSize);
             mmToolTip(CustomString, FieldModel::getTooltip(field.PROPERTIES));
             if (FieldModel::getAutocomplete(field.PROPERTIES))
@@ -129,7 +131,7 @@ bool FieldValueDialog::FillCustomFields(wxBoxSizer* box_sizer)
         case FieldModel::TYPE_ID_DECIMAL:
         {
             int digitScale = FieldModel::getDigitScale(field.PROPERTIES);
-            wxString content = cleanseNumberString(fieldData->CONTENT, digitScale > 0);
+            wxString content = cleanseNumberString(fv_data.CONTENT, digitScale > 0);
 
             double value;
             if (!content.ToCDouble(&value)) {
@@ -160,7 +162,7 @@ bool FieldValueDialog::FillCustomFields(wxBoxSizer* box_sizer)
             wxRadioButton* CustomBooleanT = new wxRadioButton(scrolled_window, controlID + 1
                 , _t("True"), wxDefaultPosition, wxDefaultSize);
 
-            const auto& data = fieldData->CONTENT;
+            const auto& data = fv_data.CONTENT;
             if (!data.empty())
             {
                 data == "TRUE" ? CustomBooleanT->SetValue(true) : CustomBooleanF->SetValue(true);
@@ -183,7 +185,7 @@ bool FieldValueDialog::FillCustomFields(wxBoxSizer* box_sizer)
         case FieldModel::TYPE_ID_DATE:
         {
             wxDate value;
-            if (!value.ParseDate(fieldData->CONTENT)) {
+            if (!value.ParseDate(fv_data.CONTENT)) {
                 value = wxDate::Today();
             }
             else {
@@ -202,7 +204,7 @@ bool FieldValueDialog::FillCustomFields(wxBoxSizer* box_sizer)
         case FieldModel::TYPE_ID_TIME:
         {
             wxDateTime value;
-            if (!value.ParseTime(fieldData->CONTENT)) {
+            if (!value.ParseTime(fv_data.CONTENT)) {
                 value.ParseTime("00:00:00");
             }
             else {
@@ -233,7 +235,7 @@ bool FieldValueDialog::FillCustomFields(wxBoxSizer* box_sizer)
                 CustomChoice->Enable(false);
             }
 
-            const auto& data = fieldData->CONTENT;
+            const auto& data = fv_data.CONTENT;
             if (!data.empty())
             {
                 CustomChoice->SetStringSelection(data);
@@ -246,7 +248,7 @@ bool FieldValueDialog::FillCustomFields(wxBoxSizer* box_sizer)
         }
         case FieldModel::TYPE_ID_MULTICHOICE:
         {
-            const auto& content = fieldData->CONTENT;
+            const auto& content = fv_data.CONTENT;
             const auto& name = field.DESCRIPTION;
 
             wxButton* multi_choice_button = new wxButton(scrolled_window, controlID, content
@@ -271,8 +273,8 @@ bool FieldValueDialog::FillCustomFields(wxBoxSizer* box_sizer)
     scrolled_window->FitInside();
     scrolled_window->SetScrollRate(6, 6);
     box_sizer_right->Add(scrolled_window, g_flagsExpand);
-    TransactionModel::Data* refTxn = TransactionModel::instance().get_id(m_ref_id);
-    if (refTxn && !refTxn->DELETEDTIME.IsEmpty()) scrolled_window->Disable();
+    const TrxData* ref_trx_n = TrxModel::instance().get_id_data_n(m_ref_id);
+    if (ref_trx_n && !ref_trx_n->DELETEDTIME.IsEmpty()) scrolled_window->Disable();
     m_static_box->Hide();
     mmThemeAutoColour(scrolled_window);
     return true;
@@ -290,10 +292,11 @@ void FieldValueDialog::OnMultiChoice(wxCommandEvent& event)
     const auto& name = button->GetName();
     const wxString& type = FieldModel::type_name(FieldModel::TYPE_ID_MULTICHOICE);
 
-    FieldModel::Data_Set fields = FieldModel::instance()
-        .find(FieldModel::REFTYPE(m_ref_type)
-            , FieldModel::TYPE(type)
-            , FieldModel::DESCRIPTION(name));
+    FieldModel::DataA fields = FieldModel::instance().find(
+        FieldCol::REFTYPE(m_ref_type),
+        FieldCol::TYPE(type),
+        FieldCol::DESCRIPTION(name)
+    );
     wxArrayString all_choices = FieldModel::getChoices(fields.begin()->PROPERTIES);
 
     const wxString& label = button->GetLabelText();
@@ -327,19 +330,20 @@ void FieldValueDialog::OnMultiChoice(wxCommandEvent& event)
 
 size_t FieldValueDialog::GetActiveCustomFieldsCount() const
 {
-    const auto& data_set = FieldValueModel::instance().find(FieldValueModel::REFID(m_ref_id));
+    const auto& data_set = FieldValueModel::instance().find(
+        FieldValueCol::REFID(m_ref_id)
+    );
     return data_set.size();
 }
 
 std::map<int64, wxString> FieldValueDialog::GetActiveCustomFields() const
 {
     std::map<int64, wxString> values;
-    for (const auto& entry : m_data_changed)
-    {
+    for (const auto& entry : m_data_changed) {
         int id = (entry.first - GetBaseID()) / FIELDMULTIPLIER;
-        FieldModel::Data *item = FieldModel::instance().get_id(m_fields[id].FIELDID);
-        if (item) {
-            values[item->FIELDID] = entry.second;
+        const FieldData* data_n = FieldModel::instance().get_id_data_n(m_fields[id].FIELDID);
+        if (data_n) {
+            values[data_n->FIELDID] = entry.second;
         }
     }
 
@@ -471,57 +475,53 @@ const wxString FieldValueDialog::GetWidgetData(wxWindowID controlID) const
 
 bool FieldValueDialog::SaveCustomValues(int64 ref_id)
 {
-    bool updateTimestamp = false;
-    FieldValueModel::instance().Savepoint();
+    bool save_timestamp = false;
+    FieldValueModel::instance().db_savepoint();
     int field_index = 0;
-    for (const auto &field : m_fields)
-    {
+    for (const auto &field : m_fields) {
         wxWindowID controlID = GetBaseID() + field_index++ * FIELDMULTIPLIER;
         const auto& data = IsWidgetChanged(controlID) ? GetWidgetData(controlID) : "";
 
-        FieldValueModel::Data* fieldData = FieldValueModel::instance().get_key(field.FIELDID, ref_id);
-        FieldValueModel::Data oldData;
-        if(fieldData) oldData = *fieldData;
-        if (!data.empty())
-        {
-            if (!fieldData) {
-                fieldData = FieldValueModel::instance().create();
-            }
+        const FieldValueData* fv_n = FieldValueModel::instance().get_key(field.FIELDID, ref_id);
+        FieldValueData oldData;
+        if (fv_n)
+            oldData = *fv_n;
+        if (!data.empty()) {
+            FieldValueData fv_d = fv_n ? *fv_n : FieldValueData();
+            fv_d.REFID   = ref_id;
+            fv_d.FIELDID = field.FIELDID;
+            fv_d.CONTENT = data;
+            wxLogDebug("Control:%i Type:%s Value:%s",
+                controlID,
+                FieldModel::type_name(FieldModel::type_id(field)),
+                data
+            );
 
-            fieldData->REFID = ref_id;
-            fieldData->FIELDID = field.FIELDID;
-            fieldData->CONTENT = data;
-            wxLogDebug("Control:%i Type:%s Value:%s"
-                , controlID
-                , FieldModel::type_name(FieldModel::type_id(field))
-                , data);
+            if (!fv_d.equals(&oldData))
+                save_timestamp = true;
 
-            if (!fieldData->equals(&oldData)) updateTimestamp = true;
-
-            FieldValueModel::instance().save(fieldData);
+            FieldValueModel::instance().save_data_n(fv_d);
         }
-        else if (fieldData)
-        {
-            FieldValueModel::instance().remove(fieldData->FIELDATADID);
-            updateTimestamp = true;
+        else if (fv_n) {
+            FieldValueModel::instance().purge_id(fv_n->FIELDATADID);
+            save_timestamp = true;
         }
     }
 
-    FieldValueModel::instance().ReleaseSavepoint();
+    FieldValueModel::instance().db_release_savepoint();
 
-    if (updateTimestamp && m_ref_type == TransactionModel::refTypeName)
-        TransactionModel::instance().updateTimestamp(ref_id);        
+    if (save_timestamp && m_ref_type == TrxModel::refTypeName)
+        TrxModel::instance().save_timestamp(ref_id);        
 
     return true;
 }
 
 void FieldValueDialog::UpdateCustomValues(int64 ref_id)
 {
-    FieldValueModel::instance().Savepoint();
-    bool updateTimestamp = false;
+    FieldValueModel::instance().db_savepoint();
+    bool save_timestamp = false;
     int field_index = 0;
-    for (const auto& field : m_fields)
-    {
+    for (const auto& field : m_fields) {
         bool is_changed = false;
 
         wxWindowID controlID = GetBaseID() + field_index++ * FIELDMULTIPLIER;
@@ -531,37 +531,34 @@ void FieldValueDialog::UpdateCustomValues(int64 ref_id)
             is_changed = Description->GetValue();
         }
 
-        if (is_changed)
-        {
+        if (is_changed) {
             const auto& data = GetWidgetData(controlID);
-            FieldValueModel::Data* fieldData = FieldValueModel::instance().get_key(field.FIELDID, ref_id);
-            FieldValueModel::Data oldData;
-            if (fieldData) oldData = *fieldData;
-            if (!data.empty())
-            {
-                if (!fieldData) {
-                    fieldData = FieldValueModel::instance().create();
-                }
+            const FieldValueData* fv_n = FieldValueModel::instance().get_key(field.FIELDID, ref_id);
+            FieldValueData oldData;
+            if (fv_n)
+                oldData = *fv_n;
+            if (!data.empty()) {
+                FieldValueData fv_d = fv_n ? *fv_n : FieldValueData();
+                fv_d.REFID   = ref_id;
+                fv_d.FIELDID = field.FIELDID;
+                fv_d.CONTENT = data;
 
-                fieldData->REFID = ref_id;
-                fieldData->FIELDID = field.FIELDID;
-                fieldData->CONTENT = data;
+                if (!fv_d.equals(&oldData))
+                    save_timestamp = true;
 
-                if (!fieldData->equals(&oldData)) updateTimestamp = true;
-
-                FieldValueModel::instance().save(fieldData);
+                FieldValueModel::instance().save_data_n(fv_d);
             }
-            else if (fieldData) {
-                FieldValueModel::instance().remove(fieldData->FIELDATADID);
-                updateTimestamp = true;
+            else if (fv_n) {
+                FieldValueModel::instance().purge_id(fv_n->FIELDATADID);
+                save_timestamp = true;
             }
         }
     }
 
-    FieldValueModel::instance().ReleaseSavepoint();
+    FieldValueModel::instance().db_release_savepoint();
 
-    if (updateTimestamp && m_ref_type == TransactionModel::refTypeName)
-        TransactionModel::instance().updateTimestamp(ref_id);        
+    if (save_timestamp && m_ref_type == TrxModel::refTypeName)
+        TrxModel::instance().save_timestamp(ref_id);        
 }
 
 void FieldValueDialog::OnStringChanged(wxCommandEvent& event)
@@ -632,12 +629,12 @@ void FieldValueDialog::OnRadioButtonChanged(wxCommandEvent& event)
 
 int FieldValueDialog::GetWidgetType(wxWindowID controlID) const
 {
-    FieldModel::Data_Set fields = FieldModel::instance().find(FieldModel::FieldTable::REFTYPE(m_ref_type));
+    FieldModel::DataA fields = FieldModel::instance().find(
+        FieldCol::REFTYPE(m_ref_type)
+    );
     int control_id = (controlID - GetBaseID()) / FIELDMULTIPLIER;
-    for (const auto& entry : fields)
-    {
-        if (entry.FIELDID == m_fields[control_id].FIELDID)
-        {
+    for (const auto& entry : fields) {
+        if (entry.FIELDID == m_fields[control_id].FIELDID) {
             return FieldModel::type_id(entry);
         }
     }
@@ -712,15 +709,14 @@ void FieldValueDialog::SetWidgetChanged(wxWindowID id, const wxString& data)
     }
 }
 
-bool FieldValueDialog::IsDataFound(const TransactionModel::Full_Data &tran)
+bool FieldValueDialog::IsDataFound(const TrxModel::Full_Data &tran)
 {
-    const auto& data_set = FieldValueModel::instance().find(FieldValueModel::REFID(tran.TRANSID));
-    for (const auto& filter : m_data_changed)
-    {
-        for (const auto& item : data_set)
-        {
-            if (filter.second == item.CONTENT)
-            {
+    const auto& data_set = FieldValueModel::instance().find(
+        FieldValueCol::REFID(tran.TRANSID)
+    );
+    for (const auto& filter : m_data_changed) {
+        for (const auto& item : data_set) {
+            if (filter.second == item.CONTENT) {
                 return true;
             }
         }

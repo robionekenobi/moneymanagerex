@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,14 +13,14 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #pragma once
 
-#include "_TableFactory.h"
+#include "_TableBase.h"
 
 // Columns in database table CUSTOMFIELDDATA_V1
 struct FieldValueCol
@@ -77,7 +77,6 @@ struct FieldValueCol
 struct FieldValueRow
 {
     using Col = FieldValueCol;
-    using COL_ID = Col::COL_ID;
 
     int64 FIELDATADID; // primary key
     int64 FIELDID;
@@ -90,17 +89,17 @@ struct FieldValueRow
 
     int64 id() const { return FIELDATADID; }
     void id(const int64 id) { FIELDATADID = id; }
-    void destroy() { delete this; }
-
-    bool equals(const FieldValueRow* r) const;
     void to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const;
-    void from_select_result(wxSQLite3ResultSet& q);
+    void to_update_stmt(wxSQLite3Statement& stmt) const;
+    FieldValueRow& from_select_result(wxSQLite3ResultSet& q);
     wxString to_json() const;
     void as_json(PrettyWriter<StringBuffer>& json_writer) const;
-    row_t to_row_t() const;
-    void to_template(html_template& t) const;
+    row_t to_html_row() const;
+    void to_html_template(html_template& t) const;
+    void destroy() { delete this; }
 
-    FieldValueRow& operator=(const FieldValueRow& other);
+    FieldValueRow& clone_from(const FieldValueRow& other);
+    bool equals(const FieldValueRow* other) const;
     bool operator< (const FieldValueRow& other) const { return id() < other.id(); }
     bool operator< (const FieldValueRow* other) const { return id() < other->id(); }
 
@@ -172,16 +171,28 @@ struct FieldValueRow
 };
 
 // Interface to database table CUSTOMFIELDDATA_V1
-struct FieldValueTable : public TableFactory<FieldValueRow>
+struct FieldValueTable : public TableBase
 {
-    // Use Col::(COLUMN_NAME) until model provides similar functionality based on Data.
-    using FIELDATADID = Col::FIELDATADID;
-    using FIELDID = Col::FIELDID;
-    using REFID = Col::REFID;
-    using CONTENT = Col::CONTENT;
+    using Row = FieldValueRow;
+    using Col = typename Row::Col;
 
     FieldValueTable();
-    ~FieldValueTable();
-
-    void ensure_data() override;
+    ~FieldValueTable() {}
 };
+
+inline FieldValueRow::FieldValueRow(wxSQLite3ResultSet& q)
+{
+    from_select_result(q);
+}
+
+inline void FieldValueRow::to_update_stmt(wxSQLite3Statement& stmt) const
+{
+    to_insert_stmt(stmt, id());
+}
+
+inline FieldValueRow& FieldValueRow::clone_from(const FieldValueRow& other)
+{
+    *this = other;
+    id(-1);
+    return *this;
+}

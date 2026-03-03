@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "AttachmentTable.h"
+#include "data/AttachmentData.h"
 
-template class TableFactory<AttachmentRow>;
+template class TableFactory<AttachmentTable, AttachmentData>;
+template class mmCache<int64, AttachmentData>;
 
 // List of column names in database table ATTACHMENT_V1,
 // in the order of AttachmentCol::COL_ID.
@@ -42,24 +44,7 @@ AttachmentRow::AttachmentRow()
     REFID = -1;
 }
 
-AttachmentRow::AttachmentRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool AttachmentRow::equals(const AttachmentRow* r) const
-{
-    if ( ATTACHMENTID != r->ATTACHMENTID) return false;
-    if (!REFTYPE.IsSameAs(r->REFTYPE)) return false;
-    if ( REFID != r->REFID) return false;
-    if (!DESCRIPTION.IsSameAs(r->DESCRIPTION)) return false;
-    if (!FILENAME.IsSameAs(r->FILENAME)) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void AttachmentRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, REFTYPE);
@@ -69,13 +54,15 @@ void AttachmentRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(5, id);
 }
 
-void AttachmentRow::from_select_result(wxSQLite3ResultSet& q)
+AttachmentRow& AttachmentRow::from_select_result(wxSQLite3ResultSet& q)
 {
     ATTACHMENTID = q.GetInt64(0);
     REFTYPE = q.GetString(1);
     REFID = q.GetInt64(2);
     DESCRIPTION = q.GetString(3);
     FILENAME = q.GetString(4);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -110,7 +97,7 @@ void AttachmentRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.String(FILENAME.utf8_str());
 }
 
-row_t AttachmentRow::to_row_t() const
+row_t AttachmentRow::to_html_row() const
 {
     row_t row;
 
@@ -123,7 +110,7 @@ row_t AttachmentRow::to_row_t() const
     return row;
 }
 
-void AttachmentRow::to_template(html_template& t) const
+void AttachmentRow::to_html_template(html_template& t) const
 {
     t(L"ATTACHMENTID") = ATTACHMENTID.GetValue();
     t(L"REFTYPE") = REFTYPE;
@@ -132,17 +119,15 @@ void AttachmentRow::to_template(html_template& t) const
     t(L"FILENAME") = FILENAME;
 }
 
-AttachmentRow& AttachmentRow::operator=(const AttachmentRow& other)
+bool AttachmentRow::equals(const AttachmentRow* other) const
 {
-    if (this == &other) return *this;
+    if ( ATTACHMENTID != other->ATTACHMENTID) return false;
+    if (!REFTYPE.IsSameAs(other->REFTYPE)) return false;
+    if ( REFID != other->REFID) return false;
+    if (!DESCRIPTION.IsSameAs(other->DESCRIPTION)) return false;
+    if (!FILENAME.IsSameAs(other->FILENAME)) return false;
 
-    ATTACHMENTID = other.ATTACHMENTID;
-    REFTYPE = other.REFTYPE;
-    REFID = other.REFID;
-    DESCRIPTION = other.DESCRIPTION;
-    FILENAME = other.FILENAME;
-
-    return *this;
+    return true;
 }
 
 AttachmentTable::AttachmentTable()
@@ -164,17 +149,4 @@ AttachmentTable::AttachmentTable()
     m_delete_query = "DELETE FROM ATTACHMENT_V1 WHERE ATTACHMENTID = ?";
 
     m_select_query = "SELECT ATTACHMENTID, REFTYPE, REFID, DESCRIPTION, FILENAME FROM ATTACHMENT_V1";
-}
-
-// Destructor: clears any data records stored in memory
-AttachmentTable::~AttachmentTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void AttachmentTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

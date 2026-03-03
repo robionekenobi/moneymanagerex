@@ -104,10 +104,10 @@ void FieldManager::fillControls()
 {
     fieldListBox_->DeleteAllItems();
 
-    FieldModel::Data_Set fields = FieldModel::instance().get_all();
+    FieldModel::DataA fields = FieldModel::instance().find_all();
     if (fields.empty()) return;
 
-    std::sort(fields.begin(), fields.end(), FieldRow::SorterByDESCRIPTION());
+    std::sort(fields.begin(), fields.end(), FieldData::SorterByDESCRIPTION());
     int64 firstInTheListID = -1;
     for (const auto& entry : fields)
     {
@@ -149,37 +149,37 @@ void FieldManager::AddField()
 
 void FieldManager::EditField()
 {
-    FieldModel::Data *field = FieldModel::instance().get_id(m_field_id);
-    if (field)
-    {
-        FieldDialog dlg(this, field);
-        if (dlg.ShowModal() != wxID_OK)
-            return;
-        fillControls();
-    }
+    FieldData *field_n = FieldModel::instance().unsafe_get_id_data_n(m_field_id);
+    if (!field_n)
+        return;
+
+    FieldDialog dlg(this, field_n);
+    if (dlg.ShowModal() != wxID_OK)
+        return;
+    fillControls();
 }
 
 void FieldManager::DeleteField()
 {
-    FieldModel::Data *field = FieldModel::instance().get_id(m_field_id);
-    if (field)
-    {
-        int DeleteResponse = wxMessageBox(
-            _t("Do you want to delete the custom field and all its data?")
-            , _t("Confirm Custom Field Deletion")
-            , wxYES_NO | wxNO_DEFAULT | wxICON_ERROR);
-        if (DeleteResponse == wxYES)
-        {
-            FieldModel::instance().Delete(m_field_id);
-            m_field_id = -1;
-            fillControls();
-        }
+    const FieldData *field_n = FieldModel::instance().get_id_data_n(m_field_id);
+    if (!field_n)
+        return;
+
+    int DeleteResponse = wxMessageBox(
+        _t("Do you want to delete the custom field and all its data?"),
+        _t("Confirm Custom Field Deletion"),
+        wxYES_NO | wxNO_DEFAULT | wxICON_ERROR
+    );
+    if (DeleteResponse == wxYES) {
+        FieldModel::instance().Delete(m_field_id);
+        m_field_id = -1;
+        fillControls();
     }
 }
 
 void FieldManager::UpdateField()
 {
-    FieldModel::Data *field = FieldModel::instance().get_id(m_field_id);
+    const FieldData *field = FieldModel::instance().get_id_data_n(m_field_id);
     if (!field)
         return;
 
@@ -192,40 +192,53 @@ void FieldManager::UpdateField()
     if (UpdateResponse != wxYES)
         return;
 
-    const wxString txtSearch = wxGetTextFromUser(_t("Find what"), _t("Update Custom Field Content"));
-    if (txtSearch == "")
-    {
+    const wxString txtSearch = wxGetTextFromUser(
+        _t("Find what"),
+        _t("Update Custom Field Content")
+    );
+    if (txtSearch == "") {
         int Response = wxMessageBox(
             _t("Do you want to update blank custom field content?\n"
-                "Select No if you want to abort the replace procedure.")
-            , _t("Update Custom Field Content")
-            , wxYES_NO | wxNO_DEFAULT | wxICON_WARNING);
+                "Select No if you want to abort the replace procedure."),
+            _t("Update Custom Field Content"),
+            wxYES_NO | wxNO_DEFAULT | wxICON_WARNING
+        );
         if (Response != wxYES)
             return;
     }
 
-    const wxString txtReplace = wxGetTextFromUser(_t("Replace with"), _t("Update Custom Field Content"));
-    if (txtReplace == "")
-    {
+    const wxString txtReplace = wxGetTextFromUser(
+        _t("Replace with"),
+        _t("Update Custom Field Content")
+    );
+    if (txtReplace == "") {
         int Response = wxMessageBox(
             _t("Do you want to update blank custom field content?\n"
-                "Select No if you want to abort the replace procedure.")
-            , _t("Update Custom Field Content")
-            , wxYES_NO | wxNO_DEFAULT | wxICON_WARNING);
+                "Select No if you want to abort the replace procedure."),
+            _t("Update Custom Field Content"),
+            wxYES_NO | wxNO_DEFAULT | wxICON_WARNING
+        );
         if (Response != wxYES)
             return;
     }
 
-    auto data = FieldValueModel::instance().find(FieldValueModel::FIELDID(m_field_id),
-        FieldValueModel::CONTENT(txtSearch));
-    for (auto &d : data)
-    {
-        d.CONTENT = txtReplace;
+    auto fv_a = FieldValueModel::instance().find(
+        FieldValueCol::FIELDID(m_field_id),
+        FieldValueCol::CONTENT(txtSearch)
+    );
+    for (auto& fv_d : fv_a) {
+        fv_d.CONTENT = txtReplace;
     }
-    FieldValueModel::instance().save(data);
+    FieldValueModel::instance().save_data_a(fv_a);
 
-    wxMessageBox(wxString::Format(wxPLURAL("%zu occurrence founded and replaced!", "%zu occurrences founded and replaced!", data.size()), data.size())
-        , _t("Update Custom Field Content"), wxOK | wxICON_INFORMATION);
+    wxMessageBox(wxString::Format(
+        wxPLURAL(
+            "%zu occurrence founded and replaced!",
+            "%zu occurrences founded and replaced!",
+            fv_a.size()
+        ),
+        fv_a.size()
+    ), _t("Update Custom Field Content"), wxOK | wxICON_INFORMATION);
 }
 
 void FieldManager::OnMenuSelected(wxCommandEvent& event)
@@ -251,17 +264,17 @@ void FieldManager::OnItemRightClick(wxDataViewEvent& event)
     wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, wxID_ANY) ;
     evt.SetEventObject( this );
 
-    FieldModel::Data *field = FieldModel::instance().get_id(m_field_id);
+    const FieldData *field_n = FieldModel::instance().get_id_data_n(m_field_id);
 
     wxMenu* mainMenu = new wxMenu;
-    if (field) mainMenu->SetTitle(field->DESCRIPTION);
+    if (field_n)
+        mainMenu->SetTitle(field_n->DESCRIPTION);
     mainMenu->Append(new wxMenuItem(mainMenu, MENU_NEW_FIELD, _t("&Add ")));
     mainMenu->AppendSeparator();
     mainMenu->Append(new wxMenuItem(mainMenu, MENU_EDIT_FIELD, _t("&Edit ")));
     mainMenu->Append(new wxMenuItem(mainMenu, MENU_DELETE_FIELD, _t("&Remove ")));
     mainMenu->Append(new wxMenuItem(mainMenu, MENU_UPDATE_FIELD, _t("&Bulk content update ")));
-    if (!field)
-    {
+    if (!field_n) {
         mainMenu->Enable(MENU_EDIT_FIELD, false);
         mainMenu->Enable(MENU_DELETE_FIELD, false);
         mainMenu->Enable(MENU_UPDATE_FIELD, false);

@@ -19,7 +19,7 @@
 #include "base/constants.h"
 #include "base/images_list.h"
 
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 #include "dialog/DateRangeDialog.h"
 #include "generictreelistdialog.h"

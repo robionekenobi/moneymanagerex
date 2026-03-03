@@ -19,16 +19,16 @@
 #include "_ModelBase.h"
 #include "_all.h"
 
-ChoicesName ModelBase::REFTYPE_CHOICES = ChoicesName({
+mmChoiceNameA ModelBase::REFTYPE_CHOICES = mmChoiceNameA({
     { REFTYPE_ID_TRANSACTION,       _n("Transaction") },
     { REFTYPE_ID_STOCK,             _n("Stock") },
     { REFTYPE_ID_ASSET,             _n("Asset") },
     { REFTYPE_ID_BANKACCOUNT,       _n("BankAccount") },
     { REFTYPE_ID_BILLSDEPOSIT,      _n("RecurringTransaction") },
     { REFTYPE_ID_PAYEE,             _n("Payee") },
-    { REFTYPE_ID_TRANSACTIONSPLIT,  _n("TransactionSplit") },
+    { REFTYPE_ID_TRANSACTIONSPLIT,  _n("TrxSplit") },
     { REFTYPE_ID_BILLSDEPOSITSPLIT, _n("RecurringTransactionSplit") },
-});
+}, -1, true);
 
 const wxString ModelBase::REFTYPE_NAME_TRANSACTION       = reftype_name(REFTYPE_ID_TRANSACTION);
 const wxString ModelBase::REFTYPE_NAME_STOCK             = reftype_name(REFTYPE_ID_STOCK);
@@ -41,11 +41,12 @@ const wxString ModelBase::REFTYPE_NAME_BILLSDEPOSITSPLIT = reftype_name(REFTYPE_
 
 // *Model::refTypeName are initialized here because they depend on REFTYPE_NAME_,
 // which depend on REFTYPE_CHOICES.
-const wxString AccountModel::refTypeName          = REFTYPE_NAME_BANKACCOUNT;
-const wxString AssetModel::refTypeName            = REFTYPE_NAME_ASSET;
-const wxString StockModel::refTypeName            = REFTYPE_NAME_STOCK;
-const wxString PayeeModel::refTypeName            = REFTYPE_NAME_PAYEE;
-const wxString TransactionModel::refTypeName      = REFTYPE_NAME_TRANSACTION;
-const wxString TransactionSplitModel::refTypeName = REFTYPE_NAME_TRANSACTIONSPLIT;
-const wxString ScheduledModel::refTypeName        = REFTYPE_NAME_BILLSDEPOSIT;
-const wxString ScheduledSplitModel::refTypeName   = REFTYPE_NAME_BILLSDEPOSITSPLIT;
+const wxString AccountModel::refTypeName    = ModelBase::REFTYPE_NAME_BANKACCOUNT;
+const wxString AssetModel::refTypeName      = ModelBase::REFTYPE_NAME_ASSET;
+const wxString StockModel::refTypeName      = ModelBase::REFTYPE_NAME_STOCK;
+const wxString PayeeModel::refTypeName      = ModelBase::REFTYPE_NAME_PAYEE;
+const wxString TrxModel::refTypeName        = ModelBase::REFTYPE_NAME_TRANSACTION;
+const wxString TrxSplitModel::refTypeName   = ModelBase::REFTYPE_NAME_TRANSACTIONSPLIT;
+const wxString SchedModel::refTypeName      = ModelBase::REFTYPE_NAME_BILLSDEPOSIT;
+const wxString SchedSplitModel::refTypeName = ModelBase::REFTYPE_NAME_BILLSDEPOSITSPLIT;
+

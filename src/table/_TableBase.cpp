@@ -23,13 +23,6 @@ bool TableBase::ensure_table()
         }
     }
 
-    ensure_index();
-
-    return true;
-}
-
-bool TableBase::ensure_index()
-{
     try {
         for (const auto& query : m_index_query_a)
             m_db->ExecuteUpdate(query);

@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,14 +13,14 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #pragma once
 
-#include "_TableFactory.h"
+#include "_TableBase.h"
 
 // Columns in database table BUDGETTABLE_V1
 struct BudgetCol
@@ -104,7 +104,6 @@ struct BudgetCol
 struct BudgetRow
 {
     using Col = BudgetCol;
-    using COL_ID = Col::COL_ID;
 
     int64 BUDGETENTRYID; // primary key
     int64 BUDGETYEARID;
@@ -120,17 +119,17 @@ struct BudgetRow
 
     int64 id() const { return BUDGETENTRYID; }
     void id(const int64 id) { BUDGETENTRYID = id; }
-    void destroy() { delete this; }
-
-    bool equals(const BudgetRow* r) const;
     void to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const;
-    void from_select_result(wxSQLite3ResultSet& q);
+    void to_update_stmt(wxSQLite3Statement& stmt) const;
+    BudgetRow& from_select_result(wxSQLite3ResultSet& q);
     wxString to_json() const;
     void as_json(PrettyWriter<StringBuffer>& json_writer) const;
-    row_t to_row_t() const;
-    void to_template(html_template& t) const;
+    row_t to_html_row() const;
+    void to_html_template(html_template& t) const;
+    void destroy() { delete this; }
 
-    BudgetRow& operator=(const BudgetRow& other);
+    BudgetRow& clone_from(const BudgetRow& other);
+    bool equals(const BudgetRow* other) const;
     bool operator< (const BudgetRow& other) const { return id() < other.id(); }
     bool operator< (const BudgetRow* other) const { return id() < other->id(); }
 
@@ -241,19 +240,28 @@ struct BudgetRow
 };
 
 // Interface to database table BUDGETTABLE_V1
-struct BudgetTable : public TableFactory<BudgetRow>
+struct BudgetTable : public TableBase
 {
-    // Use Col::(COLUMN_NAME) until model provides similar functionality based on Data.
-    using BUDGETENTRYID = Col::BUDGETENTRYID;
-    using BUDGETYEARID = Col::BUDGETYEARID;
-    using CATEGID = Col::CATEGID;
-    using PERIOD = Col::PERIOD;
-    using AMOUNT = Col::AMOUNT;
-    using NOTES = Col::NOTES;
-    using ACTIVE = Col::ACTIVE;
+    using Row = BudgetRow;
+    using Col = typename Row::Col;
 
     BudgetTable();
-    ~BudgetTable();
-
-    void ensure_data() override;
+    ~BudgetTable() {}
 };
+
+inline BudgetRow::BudgetRow(wxSQLite3ResultSet& q)
+{
+    from_select_result(q);
+}
+
+inline void BudgetRow::to_update_stmt(wxSQLite3Statement& stmt) const
+{
+    to_insert_stmt(stmt, id());
+}
+
+inline BudgetRow& BudgetRow::clone_from(const BudgetRow& other)
+{
+    *this = other;
+    id(-1);
+    return *this;
+}

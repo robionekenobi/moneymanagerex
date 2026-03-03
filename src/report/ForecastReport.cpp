@@ -23,7 +23,7 @@
 #include "htmlbuilder.h"
 
 #include "mmframe.h"
-#include "model/TransactionModel.h"
+#include "model/TrxModel.h"
 #include "ForecastReport.h"
 
 class mm_html_template;
@@ -41,27 +41,27 @@ wxString ForecastReport::getHTMLText()
 {
     // Grab the data
     std::map<wxString, std::pair<double, double> > amount_by_day;
-    TransactionModel::Data_Set all_trans;
+    TrxModel::DataA all_trans;
     
     if (m_date_range && m_date_range->is_with_date()) {
-        all_trans = TransactionModel::instance().find(
-            TransactionModel::TRANSDATE(OP_GE, mmDateDay(m_date_range->start_date())),
-            TransactionModel::TRANSDATE(OP_LE, mmDateDay(m_date_range->end_date()))
+        all_trans = TrxModel::instance().find(
+            TrxModel::TRANSDATE(OP_GE, mmDate(m_date_range->start_date())),
+            TrxModel::TRANSDATE(OP_LE, mmDate(m_date_range->end_date()))
         );
     }
     else {
-        all_trans = TransactionModel::instance().get_all();
+        all_trans = TrxModel::instance().find_all();
     }
 
     for (const auto & trx : all_trans) {
-        if (TransactionModel::type_id(trx) == TransactionModel::TYPE_ID_TRANSFER || TransactionModel::foreignTransactionAsTransfer(trx))
+        if (TrxModel::type_id(trx) == TrxModel::TYPE_ID_TRANSFER || TrxModel::is_foreignAsTransfer(trx))
             continue;
         const double convRate = CurrencyHistoryModel::getDayRate(
-            AccountModel::instance().get_id(trx.ACCOUNTID)->CURRENCYID,
+            AccountModel::instance().get_id_data_n(trx.ACCOUNTID)->m_currency_id_p,
             trx.TRANSDATE
         );
-        amount_by_day[trx.TRANSDATE].first += TransactionModel::account_outflow(trx, trx.ACCOUNTID) * convRate;
-        amount_by_day[trx.TRANSDATE].second += TransactionModel::account_inflow(trx, trx.ACCOUNTID) * convRate;
+        amount_by_day[trx.TRANSDATE].first += TrxModel::account_outflow(trx, trx.ACCOUNTID) * convRate;
+        amount_by_day[trx.TRANSDATE].second += TrxModel::account_inflow(trx, trx.ACCOUNTID) * convRate;
     }
 
     // Build the report

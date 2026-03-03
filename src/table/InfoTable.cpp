@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "InfoTable.h"
+#include "data/InfoData.h"
 
-template class TableFactory<InfoRow>;
+template class TableFactory<InfoTable, InfoData>;
+template class mmCache<int64, InfoData>;
 
 // List of column names in database table INFOTABLE_V1,
 // in the order of InfoCol::COL_ID.
@@ -39,22 +41,7 @@ InfoRow::InfoRow()
     INFOID = -1;
 }
 
-InfoRow::InfoRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool InfoRow::equals(const InfoRow* r) const
-{
-    if ( INFOID != r->INFOID) return false;
-    if (!INFONAME.IsSameAs(r->INFONAME)) return false;
-    if (!INFOVALUE.IsSameAs(r->INFOVALUE)) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void InfoRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, INFONAME);
@@ -62,11 +49,13 @@ void InfoRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(3, id);
 }
 
-void InfoRow::from_select_result(wxSQLite3ResultSet& q)
+InfoRow& InfoRow::from_select_result(wxSQLite3ResultSet& q)
 {
     INFOID = q.GetInt64(0);
     INFONAME = q.GetString(1);
     INFOVALUE = q.GetString(2);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -95,7 +84,7 @@ void InfoRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.String(INFOVALUE.utf8_str());
 }
 
-row_t InfoRow::to_row_t() const
+row_t InfoRow::to_html_row() const
 {
     row_t row;
 
@@ -106,22 +95,20 @@ row_t InfoRow::to_row_t() const
     return row;
 }
 
-void InfoRow::to_template(html_template& t) const
+void InfoRow::to_html_template(html_template& t) const
 {
     t(L"INFOID") = INFOID.GetValue();
     t(L"INFONAME") = INFONAME;
     t(L"INFOVALUE") = INFOVALUE;
 }
 
-InfoRow& InfoRow::operator=(const InfoRow& other)
+bool InfoRow::equals(const InfoRow* other) const
 {
-    if (this == &other) return *this;
+    if ( INFOID != other->INFOID) return false;
+    if (!INFONAME.IsSameAs(other->INFONAME)) return false;
+    if (!INFOVALUE.IsSameAs(other->INFOVALUE)) return false;
 
-    INFOID = other.INFOID;
-    INFONAME = other.INFONAME;
-    INFOVALUE = other.INFOVALUE;
-
-    return *this;
+    return true;
 }
 
 InfoTable::InfoTable()
@@ -143,13 +130,6 @@ InfoTable::InfoTable()
     m_delete_query = "DELETE FROM INFOTABLE_V1 WHERE INFOID = ?";
 
     m_select_query = "SELECT INFOID, INFONAME, INFOVALUE FROM INFOTABLE_V1";
-}
-
-// Destructor: clears any data records stored in memory
-InfoTable::~InfoTable()
-{
-    delete fake_;
-    destroy_cache();
 }
 
 void InfoTable::ensure_data()

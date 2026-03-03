@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "AccountTable.h"
+#include "data/AccountData.h"
 
-template class TableFactory<AccountRow>;
+template class TableFactory<AccountTable, AccountData>;
+template class mmCache<int64, AccountData>;
 
 // List of column names in database table ACCOUNTLIST_V1,
 // in the order of AccountCol::COL_ID.
@@ -64,40 +66,7 @@ AccountRow::AccountRow()
     MINIMUMPAYMENT = 0.0;
 }
 
-AccountRow::AccountRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool AccountRow::equals(const AccountRow* r) const
-{
-    if ( ACCOUNTID != r->ACCOUNTID) return false;
-    if (!ACCOUNTNAME.IsSameAs(r->ACCOUNTNAME)) return false;
-    if (!ACCOUNTTYPE.IsSameAs(r->ACCOUNTTYPE)) return false;
-    if (!ACCOUNTNUM.IsSameAs(r->ACCOUNTNUM)) return false;
-    if (!STATUS.IsSameAs(r->STATUS)) return false;
-    if (!NOTES.IsSameAs(r->NOTES)) return false;
-    if (!HELDAT.IsSameAs(r->HELDAT)) return false;
-    if (!WEBSITE.IsSameAs(r->WEBSITE)) return false;
-    if (!CONTACTINFO.IsSameAs(r->CONTACTINFO)) return false;
-    if (!ACCESSINFO.IsSameAs(r->ACCESSINFO)) return false;
-    if ( INITIALBAL != r->INITIALBAL) return false;
-    if (!INITIALDATE.IsSameAs(r->INITIALDATE)) return false;
-    if (!FAVORITEACCT.IsSameAs(r->FAVORITEACCT)) return false;
-    if ( CURRENCYID != r->CURRENCYID) return false;
-    if ( STATEMENTLOCKED != r->STATEMENTLOCKED) return false;
-    if (!STATEMENTDATE.IsSameAs(r->STATEMENTDATE)) return false;
-    if ( MINIMUMBALANCE != r->MINIMUMBALANCE) return false;
-    if ( CREDITLIMIT != r->CREDITLIMIT) return false;
-    if ( INTERESTRATE != r->INTERESTRATE) return false;
-    if (!PAYMENTDUEDATE.IsSameAs(r->PAYMENTDUEDATE)) return false;
-    if ( MINIMUMPAYMENT != r->MINIMUMPAYMENT) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void AccountRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, ACCOUNTNAME);
@@ -123,7 +92,7 @@ void AccountRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(21, id);
 }
 
-void AccountRow::from_select_result(wxSQLite3ResultSet& q)
+AccountRow& AccountRow::from_select_result(wxSQLite3ResultSet& q)
 {
     ACCOUNTID = q.GetInt64(0);
     ACCOUNTNAME = q.GetString(1);
@@ -146,6 +115,8 @@ void AccountRow::from_select_result(wxSQLite3ResultSet& q)
     INTERESTRATE = q.GetDouble(18);
     PAYMENTDUEDATE = q.GetString(19);
     MINIMUMPAYMENT = q.GetDouble(20);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -228,7 +199,7 @@ void AccountRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.Double(MINIMUMPAYMENT);
 }
 
-row_t AccountRow::to_row_t() const
+row_t AccountRow::to_html_row() const
 {
     row_t row;
 
@@ -257,7 +228,7 @@ row_t AccountRow::to_row_t() const
     return row;
 }
 
-void AccountRow::to_template(html_template& t) const
+void AccountRow::to_html_template(html_template& t) const
 {
     t(L"ACCOUNTID") = ACCOUNTID.GetValue();
     t(L"ACCOUNTNAME") = ACCOUNTNAME;
@@ -282,33 +253,31 @@ void AccountRow::to_template(html_template& t) const
     t(L"MINIMUMPAYMENT") = MINIMUMPAYMENT;
 }
 
-AccountRow& AccountRow::operator=(const AccountRow& other)
+bool AccountRow::equals(const AccountRow* other) const
 {
-    if (this == &other) return *this;
+    if ( ACCOUNTID != other->ACCOUNTID) return false;
+    if (!ACCOUNTNAME.IsSameAs(other->ACCOUNTNAME)) return false;
+    if (!ACCOUNTTYPE.IsSameAs(other->ACCOUNTTYPE)) return false;
+    if (!ACCOUNTNUM.IsSameAs(other->ACCOUNTNUM)) return false;
+    if (!STATUS.IsSameAs(other->STATUS)) return false;
+    if (!NOTES.IsSameAs(other->NOTES)) return false;
+    if (!HELDAT.IsSameAs(other->HELDAT)) return false;
+    if (!WEBSITE.IsSameAs(other->WEBSITE)) return false;
+    if (!CONTACTINFO.IsSameAs(other->CONTACTINFO)) return false;
+    if (!ACCESSINFO.IsSameAs(other->ACCESSINFO)) return false;
+    if ( INITIALBAL != other->INITIALBAL) return false;
+    if (!INITIALDATE.IsSameAs(other->INITIALDATE)) return false;
+    if (!FAVORITEACCT.IsSameAs(other->FAVORITEACCT)) return false;
+    if ( CURRENCYID != other->CURRENCYID) return false;
+    if ( STATEMENTLOCKED != other->STATEMENTLOCKED) return false;
+    if (!STATEMENTDATE.IsSameAs(other->STATEMENTDATE)) return false;
+    if ( MINIMUMBALANCE != other->MINIMUMBALANCE) return false;
+    if ( CREDITLIMIT != other->CREDITLIMIT) return false;
+    if ( INTERESTRATE != other->INTERESTRATE) return false;
+    if (!PAYMENTDUEDATE.IsSameAs(other->PAYMENTDUEDATE)) return false;
+    if ( MINIMUMPAYMENT != other->MINIMUMPAYMENT) return false;
 
-    ACCOUNTID = other.ACCOUNTID;
-    ACCOUNTNAME = other.ACCOUNTNAME;
-    ACCOUNTTYPE = other.ACCOUNTTYPE;
-    ACCOUNTNUM = other.ACCOUNTNUM;
-    STATUS = other.STATUS;
-    NOTES = other.NOTES;
-    HELDAT = other.HELDAT;
-    WEBSITE = other.WEBSITE;
-    CONTACTINFO = other.CONTACTINFO;
-    ACCESSINFO = other.ACCESSINFO;
-    INITIALBAL = other.INITIALBAL;
-    INITIALDATE = other.INITIALDATE;
-    FAVORITEACCT = other.FAVORITEACCT;
-    CURRENCYID = other.CURRENCYID;
-    STATEMENTLOCKED = other.STATEMENTLOCKED;
-    STATEMENTDATE = other.STATEMENTDATE;
-    MINIMUMBALANCE = other.MINIMUMBALANCE;
-    CREDITLIMIT = other.CREDITLIMIT;
-    INTERESTRATE = other.INTERESTRATE;
-    PAYMENTDUEDATE = other.PAYMENTDUEDATE;
-    MINIMUMPAYMENT = other.MINIMUMPAYMENT;
-
-    return *this;
+    return true;
 }
 
 AccountTable::AccountTable()
@@ -330,17 +299,4 @@ AccountTable::AccountTable()
     m_delete_query = "DELETE FROM ACCOUNTLIST_V1 WHERE ACCOUNTID = ?";
 
     m_select_query = "SELECT ACCOUNTID, ACCOUNTNAME, ACCOUNTTYPE, ACCOUNTNUM, STATUS, NOTES, HELDAT, WEBSITE, CONTACTINFO, ACCESSINFO, INITIALBAL, INITIALDATE, FAVORITEACCT, CURRENCYID, STATEMENTLOCKED, STATEMENTDATE, MINIMUMBALANCE, CREDITLIMIT, INTERESTRATE, PAYMENTDUEDATE, MINIMUMPAYMENT FROM ACCOUNTLIST_V1";
-}
-
-// Destructor: clears any data records stored in memory
-AccountTable::~AccountTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void AccountTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

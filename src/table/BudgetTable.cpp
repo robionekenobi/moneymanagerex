@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "BudgetTable.h"
+#include "data/BudgetData.h"
 
-template class TableFactory<BudgetRow>;
+template class TableFactory<BudgetTable, BudgetData>;
+template class mmCache<int64, BudgetData>;
 
 // List of column names in database table BUDGETTABLE_V1,
 // in the order of BudgetCol::COL_ID.
@@ -47,26 +49,7 @@ BudgetRow::BudgetRow()
     ACTIVE = -1;
 }
 
-BudgetRow::BudgetRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool BudgetRow::equals(const BudgetRow* r) const
-{
-    if ( BUDGETENTRYID != r->BUDGETENTRYID) return false;
-    if ( BUDGETYEARID != r->BUDGETYEARID) return false;
-    if ( CATEGID != r->CATEGID) return false;
-    if (!PERIOD.IsSameAs(r->PERIOD)) return false;
-    if ( AMOUNT != r->AMOUNT) return false;
-    if (!NOTES.IsSameAs(r->NOTES)) return false;
-    if ( ACTIVE != r->ACTIVE) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void BudgetRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, BUDGETYEARID);
@@ -78,7 +61,7 @@ void BudgetRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(7, id);
 }
 
-void BudgetRow::from_select_result(wxSQLite3ResultSet& q)
+BudgetRow& BudgetRow::from_select_result(wxSQLite3ResultSet& q)
 {
     BUDGETENTRYID = q.GetInt64(0);
     BUDGETYEARID = q.GetInt64(1);
@@ -87,6 +70,8 @@ void BudgetRow::from_select_result(wxSQLite3ResultSet& q)
     AMOUNT = q.GetDouble(4);
     NOTES = q.GetString(5);
     ACTIVE = q.GetInt64(6);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -127,7 +112,7 @@ void BudgetRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.Int64(ACTIVE.GetValue());
 }
 
-row_t BudgetRow::to_row_t() const
+row_t BudgetRow::to_html_row() const
 {
     row_t row;
 
@@ -142,7 +127,7 @@ row_t BudgetRow::to_row_t() const
     return row;
 }
 
-void BudgetRow::to_template(html_template& t) const
+void BudgetRow::to_html_template(html_template& t) const
 {
     t(L"BUDGETENTRYID") = BUDGETENTRYID.GetValue();
     t(L"BUDGETYEARID") = BUDGETYEARID.GetValue();
@@ -153,19 +138,17 @@ void BudgetRow::to_template(html_template& t) const
     t(L"ACTIVE") = ACTIVE.GetValue();
 }
 
-BudgetRow& BudgetRow::operator=(const BudgetRow& other)
+bool BudgetRow::equals(const BudgetRow* other) const
 {
-    if (this == &other) return *this;
+    if ( BUDGETENTRYID != other->BUDGETENTRYID) return false;
+    if ( BUDGETYEARID != other->BUDGETYEARID) return false;
+    if ( CATEGID != other->CATEGID) return false;
+    if (!PERIOD.IsSameAs(other->PERIOD)) return false;
+    if ( AMOUNT != other->AMOUNT) return false;
+    if (!NOTES.IsSameAs(other->NOTES)) return false;
+    if ( ACTIVE != other->ACTIVE) return false;
 
-    BUDGETENTRYID = other.BUDGETENTRYID;
-    BUDGETYEARID = other.BUDGETYEARID;
-    CATEGID = other.CATEGID;
-    PERIOD = other.PERIOD;
-    AMOUNT = other.AMOUNT;
-    NOTES = other.NOTES;
-    ACTIVE = other.ACTIVE;
-
-    return *this;
+    return true;
 }
 
 BudgetTable::BudgetTable()
@@ -187,17 +170,4 @@ BudgetTable::BudgetTable()
     m_delete_query = "DELETE FROM BUDGETTABLE_V1 WHERE BUDGETENTRYID = ?";
 
     m_select_query = "SELECT BUDGETENTRYID, BUDGETYEARID, CATEGID, PERIOD, AMOUNT, NOTES, ACTIVE FROM BUDGETTABLE_V1";
-}
-
-// Destructor: clears any data records stored in memory
-BudgetTable::~BudgetTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void BudgetTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

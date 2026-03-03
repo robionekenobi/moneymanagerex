@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,15 +13,17 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #include "_TableFactory.tpp"
 #include "StockTable.h"
+#include "data/StockData.h"
 
-template class TableFactory<StockRow>;
+template class TableFactory<StockTable, StockData>;
+template class mmCache<int64, StockData>;
 
 // List of column names in database table STOCK_V1,
 // in the order of StockCol::COL_ID.
@@ -53,30 +55,7 @@ StockRow::StockRow()
     COMMISSION = 0.0;
 }
 
-StockRow::StockRow(wxSQLite3ResultSet& q)
-{
-    from_select_result(q);
-}
-
-bool StockRow::equals(const StockRow* r) const
-{
-    if ( STOCKID != r->STOCKID) return false;
-    if ( HELDAT != r->HELDAT) return false;
-    if (!PURCHASEDATE.IsSameAs(r->PURCHASEDATE)) return false;
-    if (!STOCKNAME.IsSameAs(r->STOCKNAME)) return false;
-    if (!SYMBOL.IsSameAs(r->SYMBOL)) return false;
-    if ( NUMSHARES != r->NUMSHARES) return false;
-    if ( PURCHASEPRICE != r->PURCHASEPRICE) return false;
-    if (!NOTES.IsSameAs(r->NOTES)) return false;
-    if ( CURRENTPRICE != r->CURRENTPRICE) return false;
-    if ( VALUE != r->VALUE) return false;
-    if ( COMMISSION != r->COMMISSION) return false;
-
-    return true;
-}
-
-// Bind a Row record to database statement.
-// Use the id argument instead of the row id.
+// Bind a Row record to database insert statement.
 void StockRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 {
     stmt.Bind(1, HELDAT);
@@ -92,7 +71,7 @@ void StockRow::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
     stmt.Bind(11, id);
 }
 
-void StockRow::from_select_result(wxSQLite3ResultSet& q)
+StockRow& StockRow::from_select_result(wxSQLite3ResultSet& q)
 {
     STOCKID = q.GetInt64(0);
     HELDAT = q.GetInt64(1);
@@ -105,6 +84,8 @@ void StockRow::from_select_result(wxSQLite3ResultSet& q)
     CURRENTPRICE = q.GetDouble(8);
     VALUE = q.GetDouble(9);
     COMMISSION = q.GetDouble(10);
+
+    return *this;
 }
 
 // Return the data record as a json string
@@ -157,7 +138,7 @@ void StockRow::as_json(PrettyWriter<StringBuffer>& json_writer) const
     json_writer.Double(COMMISSION);
 }
 
-row_t StockRow::to_row_t() const
+row_t StockRow::to_html_row() const
 {
     row_t row;
 
@@ -176,7 +157,7 @@ row_t StockRow::to_row_t() const
     return row;
 }
 
-void StockRow::to_template(html_template& t) const
+void StockRow::to_html_template(html_template& t) const
 {
     t(L"STOCKID") = STOCKID.GetValue();
     t(L"HELDAT") = HELDAT.GetValue();
@@ -191,23 +172,21 @@ void StockRow::to_template(html_template& t) const
     t(L"COMMISSION") = COMMISSION;
 }
 
-StockRow& StockRow::operator=(const StockRow& other)
+bool StockRow::equals(const StockRow* other) const
 {
-    if (this == &other) return *this;
+    if ( STOCKID != other->STOCKID) return false;
+    if ( HELDAT != other->HELDAT) return false;
+    if (!PURCHASEDATE.IsSameAs(other->PURCHASEDATE)) return false;
+    if (!STOCKNAME.IsSameAs(other->STOCKNAME)) return false;
+    if (!SYMBOL.IsSameAs(other->SYMBOL)) return false;
+    if ( NUMSHARES != other->NUMSHARES) return false;
+    if ( PURCHASEPRICE != other->PURCHASEPRICE) return false;
+    if (!NOTES.IsSameAs(other->NOTES)) return false;
+    if ( CURRENTPRICE != other->CURRENTPRICE) return false;
+    if ( VALUE != other->VALUE) return false;
+    if ( COMMISSION != other->COMMISSION) return false;
 
-    STOCKID = other.STOCKID;
-    HELDAT = other.HELDAT;
-    PURCHASEDATE = other.PURCHASEDATE;
-    STOCKNAME = other.STOCKNAME;
-    SYMBOL = other.SYMBOL;
-    NUMSHARES = other.NUMSHARES;
-    PURCHASEPRICE = other.PURCHASEPRICE;
-    NOTES = other.NOTES;
-    CURRENTPRICE = other.CURRENTPRICE;
-    VALUE = other.VALUE;
-    COMMISSION = other.COMMISSION;
-
-    return *this;
+    return true;
 }
 
 StockTable::StockTable()
@@ -229,17 +208,4 @@ StockTable::StockTable()
     m_delete_query = "DELETE FROM STOCK_V1 WHERE STOCKID = ?";
 
     m_select_query = "SELECT STOCKID, HELDAT, PURCHASEDATE, STOCKNAME, SYMBOL, NUMSHARES, PURCHASEPRICE, NOTES, CURRENTPRICE, VALUE, COMMISSION FROM STOCK_V1";
-}
-
-// Destructor: clears any data records stored in memory
-StockTable::~StockTable()
-{
-    delete fake_;
-    destroy_cache();
-}
-
-void StockTable::ensure_data()
-{
-    m_db->Begin();
-    m_db->Commit();
 }

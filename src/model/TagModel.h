@@ -19,16 +19,17 @@
 #pragma once
 
 #include "base/defs.h"
+
 #include "table/TagTable.h"
+#include "data/TagData.h"
+
 #include "_ModelBase.h"
 
-class TagModel : public Model<TagTable>
+class TagModel : public TableFactory<TagTable, TagData>
 {
 public:
     TagModel();
     ~TagModel();
-
-    using Model<TagTable>::get_id;
 
 public:
     /**
@@ -49,7 +50,7 @@ public:
     * Return the Data record pointer for the given tag name
     * Returns 0 when tag not found.
     */
-    Data* get_key(const wxString& name);
+    const Data* get_key(const wxString& name);
 
     /* Returns 0 if not used, 1 if used, and -1 if used only in deleted transactions */
     int is_used(int64 id);

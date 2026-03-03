@@ -17,14 +17,14 @@
  ********************************************************/
 #pragma once
 
-#include "model/PreferencesModel.h"
+#include "model/PrefModel.h"
 
 class CommitCallbackHook : public wxSQLite3Hook
 {
 public:
     virtual bool CommitCallback()
     {
-        PreferencesModel::instance().setDatabaseUpdated(true);
+        PrefModel::instance().setDatabaseUpdated(true);
         return false;
     }
 };

@@ -22,12 +22,12 @@
 #include "base/paths.h"
 
 #include "SettingModel.h"
-#include "PreferencesModel.h"
+#include "PrefModel.h"
 
 #include "panel/JournalPanel.h"
 
-SettingModel::SettingModel()
-: Model<SettingTable>()
+SettingModel::SettingModel() :
+    TableFactory<SettingTable, SettingData>()
 {
 }
 
@@ -40,10 +40,11 @@ SettingModel::~SettingModel()
 SettingModel& SettingModel::instance(wxSQLite3Database* db)
 {
     SettingModel& ins = Singleton<SettingModel>::instance();
+    ins.reset_cache();
     ins.m_db = db;
-    ins.destroy_cache();
     ins.ensure_table();
-    ins.preload();
+    ins.preload_cache();
+
     return ins;
 }
 
@@ -56,38 +57,39 @@ SettingModel& SettingModel::instance()
 // Returns true if key setting found
 bool SettingModel::contains(const wxString& key)
 {
-    return !find(SETTINGNAME(key)).empty();
+    return !find(SettingCol::SETTINGNAME(key)).empty();
 }
 
 // Raw
 void SettingModel::setRaw(const wxString& key, const wxString& newValue)
 {
     // search in cache
-    Data* setting = search_cache(SETTINGNAME(key));
-    if (!setting) {
+    const Data* setting_n = search_cache_n(SettingCol::SETTINGNAME(key));
+    if (!setting_n) {
         // not found in cache; search in db
-        Data_Set items = find(SETTINGNAME(key));
-        if (!items.empty())
-            setting = get_id(items[0].SETTINGID);
-        if (!setting) {
-            // not found; create
-            setting = create();
-            setting->SETTINGNAME = key;
-        }
+        const DataA setting_a = find(SettingCol::SETTINGNAME(key));
+        if (!setting_a.empty())
+            setting_n = get_id_data_n(setting_a[0].m_id);
     }
-    setting->SETTINGVALUE = newValue;
-    save(setting);
+
+    Data setting_d = setting_n ? *setting_n : Data();
+    if (!setting_n) {
+        setting_d.m_name = key;
+    }
+    setting_d.m_value = newValue;
+    save_data_n(setting_d);
 }
+
 const wxString SettingModel::getRaw(const wxString& key, const wxString& defaultValue)
 {
     // search in cache
-    Data* setting = search_cache(SETTINGNAME(key));
-    if (setting)
-        return setting->SETTINGVALUE;
+    const Data* setting_n = search_cache_n(SettingCol::SETTINGNAME(key));
+    if (setting_n)
+        return setting_n->m_value;
     // search in db
-    Data_Set items = find(SETTINGNAME(key));
-    if (!items.empty())
-        return items[0].SETTINGVALUE;
+    DataA setting_a = find(SettingCol::SETTINGNAME(key));
+    if (!setting_a.empty())
+        return setting_a[0].m_value;
     // not found
     return defaultValue;
 }
@@ -214,21 +216,24 @@ void SettingModel::prependArrayItem(const wxString& key, const wxString& value, 
 {
     if (value.IsEmpty())
         return;
-    Data* setting = search_cache(SETTINGNAME(key));
-    if (!setting) { // not cached
-        Data_Set items = find(SETTINGNAME(key));
-        if (!items.empty())
-        setting = get_id(items[0].SETTINGID);
-        if (!setting) {
-            setting = create();
-            setting->SETTINGNAME = key;
-        }
+
+    const Data* setting_n = search_cache_n(SettingCol::SETTINGNAME(key));
+    if (!setting_n) { // not cached
+        DataA setting_a = find(SettingCol::SETTINGNAME(key));
+        if (!setting_a.empty())
+            setting_n = get_id_data_n(setting_a[0].m_id);
     }
+
+    Data setting_d = setting_n ? *setting_n : Data();
+    if (!setting_n) {
+        setting_d.m_name = key;
+    }
+
     wxArrayString a;
     a.Add(value);
 
     Document j_doc;
-    if (!j_doc.Parse(setting->SETTINGVALUE.utf8_str()).HasParseError()
+    if (!j_doc.Parse(setting_d.m_value.utf8_str()).HasParseError()
         && j_doc.IsArray()
     ) {
         int i = 1;
@@ -252,8 +257,8 @@ void SettingModel::prependArrayItem(const wxString& key, const wxString& value, 
     }
     json_writer.EndArray();
 
-    setting->SETTINGVALUE = wxString::FromUTF8(json_buffer.GetString());
-    save(setting);
+    setting_d.m_value = wxString::FromUTF8(json_buffer.GetString());
+    save_data_n(setting_d);
 }
 
 //-------------------------------------------------------------------
@@ -318,10 +323,10 @@ void SettingModel::shrinkUsageTable()
     m_db->Vacuum();
 }
 
-row_t SettingModel::to_row_t()
+row_t SettingModel::to_html_row()
 {
     row_t row;
-    for (const auto &r: instance().get_all())
-        row(r.SETTINGNAME.ToStdWstring()) = r.SETTINGVALUE;
+    for (const auto& setting_a: instance().find_all())
+        row(setting_a.m_name.ToStdWstring()) = setting_a.m_value;
     return row;
 }

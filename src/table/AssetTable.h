@@ -1,4 +1,4 @@
-﻿// -*- C++ -*-
+// -*- C++ -*-
 //=============================================================================
 /**
  *      Copyright: (c) 2013-2026 Guan Lisheng (guanlisheng@gmail.com)
@@ -13,14 +13,14 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-16 15:07:22.405413.
+ *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
  *          DO NOT EDIT!
  */
 //=============================================================================
 
 #pragma once
 
-#include "_TableFactory.h"
+#include "_TableBase.h"
 
 // Columns in database table ASSETS_V1
 struct AssetCol
@@ -140,7 +140,6 @@ struct AssetCol
 struct AssetRow
 {
     using Col = AssetCol;
-    using COL_ID = Col::COL_ID;
 
     int64 ASSETID; // primary key
     wxString STARTDATE;
@@ -160,17 +159,17 @@ struct AssetRow
 
     int64 id() const { return ASSETID; }
     void id(const int64 id) { ASSETID = id; }
-    void destroy() { delete this; }
-
-    bool equals(const AssetRow* r) const;
     void to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const;
-    void from_select_result(wxSQLite3ResultSet& q);
+    void to_update_stmt(wxSQLite3Statement& stmt) const;
+    AssetRow& from_select_result(wxSQLite3ResultSet& q);
     wxString to_json() const;
     void as_json(PrettyWriter<StringBuffer>& json_writer) const;
-    row_t to_row_t() const;
-    void to_template(html_template& t) const;
+    row_t to_html_row() const;
+    void to_html_template(html_template& t) const;
+    void destroy() { delete this; }
 
-    AssetRow& operator=(const AssetRow& other);
+    AssetRow& clone_from(const AssetRow& other);
+    bool equals(const AssetRow* other) const;
     bool operator< (const AssetRow& other) const { return id() < other.id(); }
     bool operator< (const AssetRow* other) const { return id() < other->id(); }
 
@@ -333,23 +332,28 @@ struct AssetRow
 };
 
 // Interface to database table ASSETS_V1
-struct AssetTable : public TableFactory<AssetRow>
+struct AssetTable : public TableBase
 {
-    // Use Col::(COLUMN_NAME) until model provides similar functionality based on Data.
-    using ASSETID = Col::ASSETID;
-    using STARTDATE = Col::STARTDATE;
-    using ASSETNAME = Col::ASSETNAME;
-    using ASSETSTATUS = Col::ASSETSTATUS;
-    using CURRENCYID = Col::CURRENCYID;
-    using VALUECHANGEMODE = Col::VALUECHANGEMODE;
-    using VALUE = Col::VALUE;
-    using VALUECHANGE = Col::VALUECHANGE;
-    using NOTES = Col::NOTES;
-    using VALUECHANGERATE = Col::VALUECHANGERATE;
-    using ASSETTYPE = Col::ASSETTYPE;
+    using Row = AssetRow;
+    using Col = typename Row::Col;
 
     AssetTable();
-    ~AssetTable();
-
-    void ensure_data() override;
+    ~AssetTable() {}
 };
+
+inline AssetRow::AssetRow(wxSQLite3ResultSet& q)
+{
+    from_select_result(q);
+}
+
+inline void AssetRow::to_update_stmt(wxSQLite3Statement& stmt) const
+{
+    to_insert_stmt(stmt, id());
+}
+
+inline AssetRow& AssetRow::clone_from(const AssetRow& other)
+{
+    *this = other;
+    id(-1);
+    return *this;
+}
