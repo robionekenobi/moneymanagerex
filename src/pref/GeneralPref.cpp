@@ -184,7 +184,7 @@ void GeneralPref::Create()
 
         currencyBaseSizer2->Add(new wxStaticText(currencyStaticBox, wxID_STATIC, _("Days")), g_flagsH);
 
-        int days = PreferencesModel::instance().getCurrencyHistoryDays();
+        int days = PrefModel::instance().getCurrencyHistoryDays();
         wxSpinCtrl* textHistDay = new wxSpinCtrl(currencyStaticBox, ID_DIALOG_OPTIONS_CURRENCY_HIST_DAYS,
             wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 90, 99999, days);
         textHistDay->SetValue(days);
@@ -315,7 +315,7 @@ bool GeneralPref::SaveSettings()
     int day = hisDay->GetValue();
     if (day < 90)
         day = 90;
-    PreferencesModel::instance().setCurrencyHistoryDays(day);
+    PrefModel::instance().setCurrencyHistoryDays(day);
 
     PrefModel::instance().setDateFormat(m_date_format);
     SaveFinancialYearStart();

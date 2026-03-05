@@ -167,7 +167,7 @@ wxString StocksReport::getHTMLText()
                             hb.addCurrencyCell(entry.unrealgainloss, currency_p);
                             hb.addCurrencyCell(entry.value, currency_p);
                             _tot_purchase += entry.purchase;
-                            _tot_purchase_rate += entry.purchase * CurrencyHistoryModel::getDayRate(currency->CURRENCYID, entry.date);
+                            _tot_purchase_rate += entry.purchase * CurrencyHistoryModel::getDayRate(currency_p->m_id, entry.date);
                         }
                         hb.endTableRow();
                     }
@@ -175,7 +175,7 @@ wxString StocksReport::getHTMLText()
                     {
                         hb.addTableCell(_("Total:"));
                         hb.addEmptyTableCell(3);
-                        hb.addCurrencyCell(_tot_purchase, currency, 4);
+                        hb.addCurrencyCell(_tot_purchase, currency_p, 4);
                         hb.addEmptyTableCell(2);
                         hb.addCurrencyCell(acct.realgainloss, currency_p);
                         hb.addCurrencyCell(acct.unrealgainloss, currency_p);

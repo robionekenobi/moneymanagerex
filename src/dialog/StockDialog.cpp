@@ -580,8 +580,10 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
         }
     }
     const wxString fileName = _fileName;
-    AccountModel::Data *account = AccountModel::instance().get_id(m_stock->HELDAT);
-    CurrencyModel::Data *currency = AccountModel::currency(account);
+    const AccountData *account_n = AccountModel::instance().get_id_data_n(
+        m_stock_n->m_account_id_n
+    );
+    const CurrencyData *currency = AccountModel::instance().get_data_currency_p(*account_n);
 
     if (!fileName.IsEmpty()) {
         wxFileName csv_file(fileName);
@@ -602,6 +604,7 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
         double price;
         wxString dateStr, priceStr;
         StockHistoryModel::DataA new_sh_a;
+        StockHistoryData new_sh_d_;
 
         wxString line;
         std::vector<wxString> rows;
@@ -644,19 +647,28 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
             if (!CurrencyModel::fromString(priceStr, price, currency) || price <= 0.0)
                 continue;
 
-            data = StockHistoryModel::instance().get_key(m_stock->SYMBOL, dt);
-            if (!data)
-                data = StockHistoryModel::instance().create();
-            data->SYMBOL = m_stock->SYMBOL;
-            data->DATE = dateStr;
-            data->VALUE = price;
-            data->UPDTYPE = 2;
-            stockData.push_back(data);
+            // Check if entry exists
+            const StockHistoryData* existing_sh_d = StockHistoryModel::instance().get_key(m_stock_n->m_symbol, dt);
+            
+            // Create a new data object (not pointer)
+            if (existing_sh_d) {
+                // Copy from existing
+                new_sh_d_ = *existing_sh_d;
+            }
+            
+            // Set/update values
+            new_sh_d_.m_symbol = m_stock_n->m_symbol;
+            new_sh_d_.m_date_ = dateStr;
+            new_sh_d_.m_price = price;
+            new_sh_d_.m_update_type_ = 2;
+            new_sh_a.push_back(new_sh_d_);
 
-            if (rows.size()<10) {
-                wxString cp = wxString::FromDouble(data->VALUE, PreferencesModel::instance().getSharePrecision());
-                wxString lp = wxString::FromDouble(price, PreferencesModel::instance().getSharePrecision());
-                if (data->HISTID == -1 || (data->VALUE != price && ((data->DATE == "" && dateStr > m_stock->PURCHASEDATE) || data->DATE > m_stock->PURCHASEDATE)))
+            //if (rows.size() < 10)
+            //{
+                wxString cp = wxString::FromDouble(new_sh_d_.m_price, PrefModel::instance().getSharePrecision());
+                wxString lp = wxString::FromDouble(price, PrefModel::instance().getSharePrecision());
+                if (new_sh_d_.m_id == -1 || (new_sh_d_.m_price != price && ((new_sh_d_.m_date_ == "" && dateStr > m_stock_n->m_purchase_date_) ||
+                                                                            new_sh_d_.m_date_ > m_stock_n->m_purchase_date_)))
                 {
                     if (rows.size() < 10)
                     {
@@ -665,7 +677,9 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
                     }
                     countImported++;
                 }
-            }
+                else
+                    new_sh_a.pop_back();
+            //}
         }
 
         progressDlg->Destroy();
@@ -695,18 +709,23 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
             // show the data
             ShowStockHistory();
 
-            StockHistoryModel::Data_Set histData = StockHistoryModel::instance().find(StockHistoryModel::SYMBOL(m_stock->SYMBOL));
-            std::stable_sort(histData.begin(), histData.end(), StockHistoryRow::SorterByDATE());
-            wxString lp = wxString::FromDouble(histData.at(0).VALUE, PreferencesModel::instance().getSharePrecision());
-            wxString cp = wxString::FromDouble(m_stock->CURRENTPRICE, PreferencesModel::instance().getSharePrecision());
+            StockHistoryModel::DataA histData = StockHistoryModel::instance().find(
+                StockHistoryCol::SYMBOL(m_stock_n->m_symbol)
+            );
+            std::stable_sort(histData.begin(), histData.end(), StockHistoryData::SorterByDATE());
+            wxString lp = wxString::FromDouble(histData.at(0).m_price, PrefModel::instance().getSharePrecision());
+            wxString cp = wxString::FromDouble(m_stock_n->m_current_price, PrefModel::instance().getSharePrecision());
             std::reverse(histData.begin(), histData.end());
             if (lp != cp)
             {
-                m_stock->CURRENTPRICE = histData.at(0).VALUE;
-                m_current_price_ctrl->SetValue(m_stock->CURRENTPRICE, PreferencesModel::instance().getSharePrecision());
-                StockModel::instance().save(m_stock);
-                m_value_investment->SetLabelText(AccountModel::toCurrency(StockModel::instance().CurrentValue(m_stock), account));
-                StockModel::UpdateCurrentPrice(m_stock->SYMBOL, m_stock->CURRENTPRICE);
+                m_stock_n->m_current_price = histData.at(0).m_price;
+                m_current_price_ctrl->SetValue(m_stock_n->m_current_price, PrefModel::instance().getSharePrecision());
+                StockModel::instance().unsafe_save_data_n(m_stock_n);
+                m_value_investment->SetLabelText(AccountModel::instance().value_number_currency(
+                    *account_n,
+                    StockModel::instance().CurrentValue(*m_stock_n)
+                ));
+                StockModel::UpdateCurrentPrice(m_stock_n->m_symbol, m_stock_n->m_current_price);
             }
         }
         else
@@ -982,12 +1001,11 @@ void StockDialog::OnHistoryDeleteButton(wxCommandEvent& /*event*/)
     }
     StockHistoryModel::instance().db_release_savepoint();
     ShowStockHistory();
-    StockModel::UpdateCurrentPrice(m_stock->SYMBOL);
+    StockModel::UpdateCurrentPrice(m_stock_n->m_symbol);
     //refresh m_stock to get updated attributes
-    m_stock = StockModel::instance().get_id(m_stock->STOCKID);
-    m_current_price_ctrl->SetValue(m_stock->CURRENTPRICE, PreferencesModel::instance().getSharePrecision());
-    m_value_investment->SetLabelText(
-        AccountModel::toCurrency(StockModel::instance().CurrentValue(m_stock), AccountModel::instance().get_id(m_stock->HELDAT)));
+    m_stock_n = (StockData *)StockModel::instance().get_id_data_n(m_stock_n->m_id);
+    m_current_price_ctrl->SetValue(m_stock_n->m_current_price, PrefModel::instance().getSharePrecision());
+    m_value_investment->SetLabelText(AccountModel::instance().value_number_currency(*AccountModel::instance().get_id_data_n(m_stock_n->m_account_id_n), m_stock_n->m_purchase_price));
 }
 
 void StockDialog::ShowStockHistory()

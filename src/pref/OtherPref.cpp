@@ -32,8 +32,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 wxBEGIN_EVENT_TABLE(OtherPref, wxPanel)
     EVT_CHECKBOX(ID_DIALOG_OPTIONS_CHK_BACKUP, OtherPref::OnBackupChanged)
     EVT_CHECKBOX(ID_DIALOG_OPTIONS_CHK_BACKUP_UPDATE, OtherPref::OnBackupChanged)
-    EVT_BUTTON(ID_DIALOG_OPTIONS_BUTTON_IMPORTFOLDER, OtherPreferences::OnImportButton)
-    EVT_TEXT(ID_DIALOG_OPTIONS_TEXTCTRL_IMPORT, OtherPreferences::OnImportPathChanged)
+    EVT_BUTTON(ID_DIALOG_OPTIONS_BUTTON_IMPORTFOLDER, OtherPref::OnImportButton)
+    EVT_TEXT(ID_DIALOG_OPTIONS_TEXTCTRL_IMPORT, OtherPref::OnImportPathChanged)
 wxEND_EVENT_TABLE()
 /*******************************************************/
 
@@ -217,7 +217,7 @@ void OtherPref::Create()
     m_import_path->ChangeValue(importFolder);
 
     wxButton* importsFolderButton = new wxButton(misc_panel, ID_DIALOG_OPTIONS_BUTTON_IMPORTFOLDER, "..."
-        , wxDefaultPosition, wxSize(PreferencesModel::instance().getIconSize(), -1), 0);
+        , wxDefaultPosition, wxSize(PrefModel::instance().getIconSize(), -1), 0);
     mmToolTip(importsFolderButton, _("Browse for folder"));
 
     importDefinedSizer->Add(m_import_path, g_flagsExpand);
@@ -268,15 +268,11 @@ void OtherPref::Create()
     misc_panel->SetScrollRate(6, 6);
 }
 
-void OtherPref::OnBackupChanged(wxCommandEvent& WXUNUSED(event))
+void OtherPref::OnImportButton(wxCommandEvent& WXUNUSED(event))
 {
     wxString ImportFolder = mmex::getPathImport(m_import_path->GetValue());
 
-    wxDirDialog dlg(this
-        , _("Choose folder to set as import")
-        , ImportFolder
-        , wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST
-    );
+    wxDirDialog dlg(this, _("Choose folder to set as import"), ImportFolder, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
 
     if (dlg.ShowModal() != wxID_OK)
         return;
@@ -285,8 +281,6 @@ void OtherPref::OnBackupChanged(wxCommandEvent& WXUNUSED(event))
     m_import_path->SetValue(ImportFolder);
 }
 
-
-void OtherPref::OnImportButton(wxCommandEvent& WXUNUSED(event))
 void OtherPref::OnImportPathChanged(wxCommandEvent& WXUNUSED(event))
 {
     wxString ImportFolder = mmex::getPathImport(m_import_path->GetValue().Trim());
@@ -295,7 +289,7 @@ void OtherPref::OnImportPathChanged(wxCommandEvent& WXUNUSED(event))
 }
 
 
-void OtherPreferences::OnBackupChanged(wxCommandEvent& WXUNUSED(event))
+void OtherPref::OnBackupChanged(wxCommandEvent& WXUNUSED(event))
 {
     wxCheckBox* ChkBackup = static_cast<wxCheckBox*>(FindWindow(ID_DIALOG_OPTIONS_CHK_BACKUP));
     wxCheckBox* ChkBackupUpdate = static_cast<wxCheckBox*>(FindWindow(ID_DIALOG_OPTIONS_CHK_BACKUP_UPDATE));

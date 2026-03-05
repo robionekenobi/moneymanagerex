@@ -1438,14 +1438,14 @@ msgstr ""
 #: dialog/TransactionFilterDialog.cpp:924
 #: dialog/TransactionFilterDialog.cpp:2328 import_export/qif_export.cpp:78
 #: import_export/qif_export.cpp:79 import_export/qif_export.cpp:157
-#: manager/DateRangeManager.cpp:304 model/PreferencesModel.cpp:53
-#: model/PreferencesModel.cpp:87 panel/AssetPanel.cpp:425
+#: manager/DateRangeManager.cpp:304 model/PrefModel.cpp:53
+#: model/PrefModel.cpp:87 panel/AssetPanel.cpp:425
 #: panel/AssetPanel.cpp:702 panel/AssetPanel.cpp:719 panel/StockPanel.cpp:106
 msgid "All"
 msgstr ""
 
 #: dialog/DateRangeDialog.cpp:68 dialog/TransactionFilterDialog.cpp:67
-#: model/PreferencesModel.cpp:41
+#: model/PrefModel.cpp:41
 msgid "Year"
 msgstr ""
 
@@ -1454,16 +1454,16 @@ msgid "Quarter"
 msgstr ""
 
 #: dialog/DateRangeDialog.cpp:70 dialog/TransactionFilterDialog.cpp:67
-#: model/PreferencesModel.cpp:40
+#: model/PrefModel.cpp:40
 msgid "Month"
 msgstr ""
 
-#: dialog/DateRangeDialog.cpp:71 model/PreferencesModel.cpp:39
+#: dialog/DateRangeDialog.cpp:71 model/PrefModel.cpp:39
 msgid "Week"
 msgstr ""
 
-#: dialog/DateRangeDialog.cpp:72 model/PreferencesModel.cpp:62
-#: model/PreferencesModel.cpp:97 util/mmDateRange.cpp:83
+#: dialog/DateRangeDialog.cpp:72 model/PrefModel.cpp:62
+#: model/PrefModel.cpp:97 util/mmDateRange.cpp:83
 msgid "Today"
 msgstr ""
 
@@ -2695,7 +2695,7 @@ msgstr ""
 msgid "All Except Reconciled"
 msgstr ""
 
-#: dialog/TransactionFilterDialog.cpp:67 model/PreferencesModel.cpp:38
+#: dialog/TransactionFilterDialog.cpp:67 model/PrefModel.cpp:38
 msgid "Day"
 msgstr ""
 
@@ -6422,115 +6422,115 @@ msgstr ""
 msgid "Payee Error"
 msgstr ""
 
-#: model/PreferencesModel.cpp:54 model/PreferencesModel.cpp:88
+#: model/PrefModel.cpp:54 model/PrefModel.cpp:88
 msgid "All to week"
 msgstr ""
 
-#: model/PreferencesModel.cpp:55 model/PreferencesModel.cpp:89
+#: model/PrefModel.cpp:55 model/PrefModel.cpp:89
 msgid "All to month"
 msgstr ""
 
-#: model/PreferencesModel.cpp:56 model/PreferencesModel.cpp:91
+#: model/PrefModel.cpp:56 model/PrefModel.cpp:91
 msgid "All to year"
 msgstr ""
 
-#: model/PreferencesModel.cpp:57 model/PreferencesModel.cpp:92
+#: model/PrefModel.cpp:57 model/PrefModel.cpp:92
 msgid "Current year"
 msgstr ""
 
-#: model/PreferencesModel.cpp:58 model/PreferencesModel.cpp:93
+#: model/PrefModel.cpp:58 model/PrefModel.cpp:93
 msgid "Current financial year"
 msgstr ""
 
-#: model/PreferencesModel.cpp:59 model/PreferencesModel.cpp:94
+#: model/PrefModel.cpp:59 model/PrefModel.cpp:94
 msgid "Current quarter"
 msgstr ""
 
-#: model/PreferencesModel.cpp:60 model/PreferencesModel.cpp:95
+#: model/PrefModel.cpp:60 model/PrefModel.cpp:95
 msgid "Current month"
 msgstr ""
 
-#: model/PreferencesModel.cpp:61 model/PreferencesModel.cpp:96
+#: model/PrefModel.cpp:61 model/PrefModel.cpp:96
 msgid "Current week"
 msgstr ""
 
-#: model/PreferencesModel.cpp:63
+#: model/PrefModel.cpp:63
 msgid "From statement"
 msgstr ""
 
-#: model/PreferencesModel.cpp:64
+#: model/PrefModel.cpp:64
 msgid "From 1 day after statement"
 msgstr ""
 
-#: model/PreferencesModel.cpp:66 model/PreferencesModel.cpp:99
+#: model/PrefModel.cpp:66 model/PrefModel.cpp:99
 msgid "From current year to week"
 msgstr ""
 
-#: model/PreferencesModel.cpp:67 model/PreferencesModel.cpp:100
+#: model/PrefModel.cpp:67 model/PrefModel.cpp:100
 msgid "From current year to month"
 msgstr ""
 
-#: model/PreferencesModel.cpp:68 model/PreferencesModel.cpp:101
+#: model/PrefModel.cpp:68 model/PrefModel.cpp:101
 msgid "From current month to week"
 msgstr ""
 
-#: model/PreferencesModel.cpp:69 model/PreferencesModel.cpp:102
+#: model/PrefModel.cpp:69 model/PrefModel.cpp:102
 msgid "Previous year"
 msgstr ""
 
-#: model/PreferencesModel.cpp:70 model/PreferencesModel.cpp:103
+#: model/PrefModel.cpp:70 model/PrefModel.cpp:103
 msgid "Previous month"
 msgstr ""
 
-#: model/PreferencesModel.cpp:71 model/PreferencesModel.cpp:104
+#: model/PrefModel.cpp:71 model/PrefModel.cpp:104
 msgid "Previous week"
 msgstr ""
 
-#: model/PreferencesModel.cpp:72 model/PreferencesModel.cpp:105
+#: model/PrefModel.cpp:72 model/PrefModel.cpp:105
 msgid "From previous year"
 msgstr ""
 
-#: model/PreferencesModel.cpp:73 model/PreferencesModel.cpp:106
+#: model/PrefModel.cpp:73 model/PrefModel.cpp:106
 msgid "From previous year to month"
 msgstr ""
 
-#: model/PreferencesModel.cpp:74 model/PreferencesModel.cpp:107
+#: model/PrefModel.cpp:74 model/PrefModel.cpp:107
 msgid "From previous month"
 msgstr ""
 
-#: model/PreferencesModel.cpp:75 model/PreferencesModel.cpp:108
+#: model/PrefModel.cpp:75 model/PrefModel.cpp:108
 msgid "From previous month to week"
 msgstr ""
 
-#: model/PreferencesModel.cpp:76 model/PreferencesModel.cpp:109
+#: model/PrefModel.cpp:76 model/PrefModel.cpp:109
 msgid "From previous week"
 msgstr ""
 
-#: model/PreferencesModel.cpp:77 model/PreferencesModel.cpp:110
+#: model/PrefModel.cpp:77 model/PrefModel.cpp:110
 msgid "From previous to current week"
 msgstr ""
 
-#: model/PreferencesModel.cpp:78 model/PreferencesModel.cpp:111
+#: model/PrefModel.cpp:78 model/PrefModel.cpp:111
 msgid "From 1 year ago"
 msgstr ""
 
-#: model/PreferencesModel.cpp:79 model/PreferencesModel.cpp:112
+#: model/PrefModel.cpp:79 model/PrefModel.cpp:112
 msgid "From 1 quarter ago"
 msgstr ""
 
-#: model/PreferencesModel.cpp:80 model/PreferencesModel.cpp:113
+#: model/PrefModel.cpp:80 model/PrefModel.cpp:113
 msgid "From 1 month ago"
 msgstr ""
 
-#: model/PreferencesModel.cpp:81 model/PreferencesModel.cpp:114
+#: model/PrefModel.cpp:81 model/PrefModel.cpp:114
 msgid "From 1 week ago"
 msgstr ""
 
-#: model/PreferencesModel.cpp:82 model/PreferencesModel.cpp:115
+#: model/PrefModel.cpp:82 model/PrefModel.cpp:115
 msgid "Year before last"
 msgstr ""
 
-#: model/PreferencesModel.cpp:90
+#: model/PrefModel.cpp:90
 msgid "All to quarter"
 msgstr ""
 

@@ -620,7 +620,7 @@ void CurrencyChoiceDialog::ShowCurrencyHistory()
             const wxString& priceAmount = "* M"[ch_d.m_update_type_.GetValue()];
             valueListBox_->SetItem(idx, 2, priceAmount);
             idx++;
-            if (idx > PreferencesModel::instance().getCurrencyHistoryDays())
+            if (idx > PrefModel::instance().getCurrencyHistoryDays())
                 break;
         }
         valueListBox_->RefreshItems(0, --idx);
