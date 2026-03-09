@@ -636,58 +636,47 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
         }
 
         // date
-        wxDateTime dt;
+        mmDate dt = mmDate::today();
         dateStr = tokens[0];
-        mmParseDisplayStringToDate(dt, dateStr, PrefModel::instance().getDateFormat());
-        dateStr = dt.FormatISODate();
+        dt = mmDate(dateStr);
         // price
         priceStr = tokens[1];
         priceStr.Replace(" ", wxEmptyString);
         if (!CurrencyModel::fromString(priceStr, price, currency_p) || price <= 0.0)
             continue;
 
-            StockHistoryData new_sh_d = StockHistoryData();
-            new_sh_d.m_symbol      = m_stock_n->m_symbol;
-            new_sh_d.m_date        = mmDate(dateStr);
-            new_sh_d.m_price       = price;
-            new_sh_d.m_update_type = UpdateType(UpdateType::e_manual);
-            new_sh_a.push_back(new_sh_d);
+        StockHistoryData new_sh_d = StockHistoryData();
 
-            // Check if entry exists
-            const StockHistoryData* existing_sh_d = StockHistoryModel::instance().get_key(m_stock_n->m_symbol, dt);
+        // Check if entry exists
+        const StockHistoryData* existing_sh_d = StockHistoryModel::instance().get_key(m_stock_n->m_symbol, dt.getDateTime());
             
-            // Create a new data object (not pointer)
-            if (existing_sh_d) {
-                // Copy from existing
-                new_sh_d_ = *existing_sh_d;
-            }
-            
-            // Set/update values
-            new_sh_d_.m_symbol = m_stock_n->m_symbol;
-            new_sh_d_.m_date_ = dateStr;
-            new_sh_d_.m_price = price;
-            new_sh_d_.m_update_type_ = 2;
-            new_sh_a.push_back(new_sh_d_);
-
-            //if (rows.size() < 10)
-            //{
-                wxString cp = wxString::FromDouble(new_sh_d_.m_price, PrefModel::instance().getSharePrecision());
-                wxString lp = wxString::FromDouble(price, PrefModel::instance().getSharePrecision());
-                if (new_sh_d_.m_id == -1 || (new_sh_d_.m_price != price && ((new_sh_d_.m_date_ == "" && dateStr > m_stock_n->m_purchase_date_) ||
-                                                                            new_sh_d_.m_date_ > m_stock_n->m_purchase_date_)))
-                {
-                    if (rows.size() < 10)
-                    {
-                        dateStr << wxT("  ") << priceStr;
-                        rows.push_back(dateStr);
-                    }
-                    countImported++;
-                }
-                else
-                    new_sh_a.pop_back();
-            //}
+        // Create a new data object (not pointer)
+        if (existing_sh_d) {
+            // Copy from existing
+            new_sh_d_ = *existing_sh_d;
         }
-        countImported++;
+            
+        // Set/update values
+        new_sh_d_.m_symbol = m_stock_n->m_symbol;
+        new_sh_d_.m_date = dt;
+        new_sh_d_.m_price = price;
+        new_sh_d_.m_update_type = 2;
+        new_sh_a.push_back(new_sh_d_);
+
+        wxString cp = wxString::FromDouble(new_sh_d_.m_price, PrefModel::instance().getSharePrecision());
+        wxString lp = wxString::FromDouble(price, PrefModel::instance().getSharePrecision());
+        if (new_sh_d_.m_id == -1 || (new_sh_d_.m_price != price && ((new_sh_d_.m_date == mmDate("") && dt > m_stock_n->m_purchase_date) ||
+                                                                    new_sh_d_.m_date > m_stock_n->m_purchase_date)))
+        {
+            if (rows.size() < 10)
+            {
+                dateStr << wxT("  ") << priceStr;
+                rows.push_back(dateStr);
+            }
+            countImported++;
+        }
+        else
+            new_sh_a.pop_back();
     }
 
     progressDlg->Destroy();
@@ -709,36 +698,30 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
         canceledbyuser = true;
     }
 
-        // Since all database transactions are only in memory,
-        if (!canceledbyuser) {
-            // we need to save them to the database.
-            for (auto& new_sh_d : new_sh_a)
-                StockHistoryModel::instance().add_data_n(new_sh_d);
-            // show the data
-            ShowStockHistory();
+    // Since all database transactions are only in memory,
+    if (!canceledbyuser) {
+        // we need to save them to the database.
+        for (auto& new_sh_d : new_sh_a)
+            StockHistoryModel::instance().add_data_n(new_sh_d);
+        // show the data
+        ShowStockHistory();
 
-            StockHistoryModel::DataA histData = StockHistoryModel::instance().find(
-                StockHistoryCol::SYMBOL(m_stock_n->m_symbol)
-            );
-            std::stable_sort(histData.begin(), histData.end(), StockHistoryData::SorterByDATE());
-            wxString lp = wxString::FromDouble(histData.at(0).m_price, PrefModel::instance().getSharePrecision());
-            wxString cp = wxString::FromDouble(m_stock_n->m_current_price, PrefModel::instance().getSharePrecision());
-            std::reverse(histData.begin(), histData.end());
-            if (lp != cp)
-            {
-                m_stock_n->m_current_price = histData.at(0).m_price;
-                m_current_price_ctrl->SetValue(m_stock_n->m_current_price, PrefModel::instance().getSharePrecision());
-                StockModel::instance().unsafe_save_data_n(m_stock_n);
-                m_value_investment->SetLabelText(AccountModel::instance().value_number_currency(
-                    *account_n,
-                    StockModel::instance().CurrentValue(*m_stock_n)
-                ));
-                StockModel::UpdateCurrentPrice(m_stock_n->m_symbol, m_stock_n->m_current_price);
-            }
-        }
-        else
+        StockHistoryModel::DataA histData = StockHistoryModel::instance().find(
+            StockHistoryCol::SYMBOL(m_stock_n->m_symbol)
+        );
+        std::stable_sort(histData.begin(), histData.end(), StockHistoryData::SorterByDATE());
+        wxString lp = wxString::FromDouble(histData.at(0).m_price, PrefModel::instance().getSharePrecision());
+        wxString cp = wxString::FromDouble(m_stock_n->m_current_price, PrefModel::instance().getSharePrecision());
+        std::reverse(histData.begin(), histData.end());
+        if (lp != cp)
         {
-            //TODO: and discard the database changes.
+            m_stock_n->m_current_price = histData.at(0).m_price;
+            m_current_price_ctrl->SetValue(m_stock_n->m_current_price, PrefModel::instance().getSharePrecision());
+            StockModel::instance().unsafe_save_data_n(m_stock_n);
+            m_value_investment->SetLabelText(AccountModel::instance().value_number_currency(
+                *account_n, StockModel::instance().calculate_account_balance(*account_n, mmDate::today())
+            ));
+            StockModel::instance().update_symbol_current_price(m_stock_n->m_symbol, m_stock_n->m_current_price);
         }
     }
     else {
@@ -1001,7 +984,8 @@ void StockDialog::OnHistoryDeleteButton(wxCommandEvent& /*event*/)
 
     long item = -1;
     StockHistoryModel::instance().db_savepoint();
-    for (;;) {
+    for (;;)
+    {
         item = m_price_listbox->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 
         if (item == -1)
@@ -1010,11 +994,6 @@ void StockDialog::OnHistoryDeleteButton(wxCommandEvent& /*event*/)
     }
     StockHistoryModel::instance().db_release_savepoint();
     ShowStockHistory();
-    StockModel::UpdateCurrentPrice(m_stock_n->m_symbol);
-    //refresh m_stock to get updated attributes
-    m_stock_n = (StockData *)StockModel::instance().get_id_data_n(m_stock_n->m_id);
-    m_current_price_ctrl->SetValue(m_stock_n->m_current_price, PrefModel::instance().getSharePrecision());
-    m_value_investment->SetLabelText(AccountModel::instance().value_number_currency(*AccountModel::instance().get_id_data_n(m_stock_n->m_account_id_n), m_stock_n->m_purchase_price));
 }
 
 void StockDialog::ShowStockHistory()

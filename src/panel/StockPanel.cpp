@@ -597,19 +597,7 @@ void StockPanel::updateExtraStocksData(int selectedIndex)
 
 wxString StockList::getStockInfo(int selectedIndex, bool with_symbol) const
 {
-    int purchasedTime = 0;
-    double stocktotalnumShares = 0;
-    double stockavgPurchasePrice = 0;
-    for (const auto& s: StockModel::instance().find(
-        StockCol::SYMBOL(m_stocks[selectedIndex].m_symbol)
-    )) {
-        purchasedTime++;
-        stocktotalnumShares += s.m_num_shares;
-        stockavgPurchasePrice += s.m_purchase_value;
-    }
-    // If we do not have any shares, do not divide by 0
-    if (stocktotalnumShares != 0.0)
-        stockavgPurchasePrice /= stocktotalnumShares;
+    const StockData& stock_d = m_stocks[selectedIndex];
 
     // Short symbols
     // pur_m  : times purchased
@@ -655,20 +643,6 @@ wxString StockList::getStockInfo(int selectedIndex, bool with_symbol) const
             CurrencyModel::toStringNoFormatting(stock_gain_p, nullptr, 2)
         ) : "";
 
-    // Begin RGR
-    // If we do not have any Global Purchase Price, take purchaseprice of the current share
-    if (stockavgPurchasePrice == 0.0)
-        stockavgPurchasePrice = stockPurchasePrice;
-
-    double stocktotalDifference = stockCurrentPrice - stockavgPurchasePrice;
-    // Commission don't calculates here
-    const wxString& stockPercentage =
-        (stockPurchasePrice != 0.0)
-            ? wxString::Format("(%s %%)", CurrencyModel::toStringNoFormatting(((stockCurrentPrice / stockPurchasePrice - 1.0) * 100.0), nullptr, 2))
-            : "";
-    double stocktotalPercentage = (stockCurrentPrice / stockavgPurchasePrice - 1.0) * 100.0;
-    double stocktotalgainloss = stocktotalDifference * stocktotalnumShares;
-    // End RGR
     // Summary for selected symbol
     int    symbol_pur_m = 0;
     double symbol_pur_n = 0;
@@ -686,11 +660,6 @@ wxString StockList::getStockInfo(int selectedIndex, bool with_symbol) const
     double symbol_gain_q = (symbol_cur_p / symbol_pur_q - 1.0) * 100.0;
     double symbol_diff_v = symbol_diff_q * symbol_pur_n;
 
-    const wxString& sPurchasePrice = CurrencyModel::toCurrency(stockPurchasePrice, m_stock_panel->m_currency, 4);
-    const wxString& sAvgPurchasePrice = CurrencyModel::toCurrency(stockavgPurchasePrice, m_stock_panel->m_currency, 4);
-    const wxString& sCurrentPrice = CurrencyModel::toCurrency(stockCurrentPrice, m_stock_panel->m_currency, 4);
-    const wxString& sDifference = CurrencyModel::toCurrency(stockDifference, m_stock_panel->m_currency, 4);
-    const wxString& sTotalDifference = CurrencyModel::toCurrency(stocktotalDifference, m_stock_panel->m_currency, 4);
     wxString symbol_pur_n_str = wxString::Format("%i", static_cast<int>(symbol_pur_n));
     if (symbol_pur_n - static_cast<long>(symbol_pur_n) != 0.0)
         symbol_pur_n_str = wxString::Format("%.4f", symbol_pur_n);
