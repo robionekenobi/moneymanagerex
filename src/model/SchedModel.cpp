@@ -29,6 +29,8 @@
  // TODO: Move attachment management outside of AttachmentDialog
 #include "dialog/AttachmentDialog.h"
 
+const RefTypeN SchedModel::s_ref_type = RefTypeN(RefTypeN::e_sched);
+
 // -- static methods --
 
 // Initialize the global SchedModel table.
@@ -237,15 +239,15 @@ SchedCol::TRANSCODE SchedModel::TRANSCODE(OP op, TrxModel::TYPE_ID type)
 const SchedSplitModel::DataA SchedModel::split(const Data& sched_d)
 {
     return SchedSplitModel::instance().find(
-        SchedSplitCol::TRANSID(sched_d.BDID)
+        SchedSplitCol::TRANSID(sched_d.m_id)
     );
 }
 
 const TagLinkModel::DataA SchedModel::taglink(const Data& sched_d)
 {
     return TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(SchedModel::refTypeName),
-        TagLinkCol::REFID(sched_d.BDID)
+        TagLinkCol::REFTYPE(SchedModel::s_ref_type.name_n()),
+        TagLinkCol::REFID(sched_d.m_id)
     );
 }
 
@@ -264,19 +266,19 @@ SchedModel::~SchedModel()
 
 // Remove the Data record instance from memory and the database
 // including any splits associated with the Data Record.
-bool SchedModel::purge_id(int64 id)
+bool SchedModel::purge_id(int64 sched_id)
 {
-    // purge SchedSplitData owned by id
-    for (auto& qp_d : SchedModel::split(*get_id_data_n(id)))
+    // purge SchedSplitData owned by sched_id
+    for (auto& qp_d : SchedModel::split(*get_id_data_n(sched_id)))
         SchedSplitModel::instance().purge_id(qp_d.m_id);
 
-    // remove TagLinkData owned by id
-    TagLinkModel::instance().DeleteAllTags(this->refTypeName, id);
+    // remove TagLinkData owned by sched_id
+    TagLinkModel::instance().purge_ref(s_ref_type, sched_id);
 
-    // FIXME: remove FieldValueData owned by id
-    // FIXME: remove AttachmentData owned by id
+    // FIXME: remove FieldValueData owned by sched_id
+    // FIXME: remove AttachmentData owned by sched_id
 
-    return unsafe_remove_id(id);
+    return unsafe_remove_id(sched_id);
 }
 
 bool SchedModel::AllowTransaction(const Data& r)
@@ -286,14 +288,14 @@ bool SchedModel::AllowTransaction(const Data& r)
     if (r.TRANSCODE != TrxModel::TYPE_NAME_WITHDRAWAL && r.TRANSCODE != TrxModel::TYPE_NAME_TRANSFER)
         return true;
 
-    const int64 acct_id = r.ACCOUNTID;
+    const int64 acct_id = r.m_account_id;
     const AccountData* account_n = AccountModel::instance().get_id_data_n(acct_id);
 
     if (account_n->m_min_balance == 0 && account_n->m_credit_limit == 0)
         return true;
 
     double current_balance = AccountModel::instance().get_data_balance(*account_n);
-    double new_balance = current_balance - r.TRANSAMOUNT;
+    double new_balance = current_balance - r.m_amount;
 
     bool allow_transaction = true;
     wxString limitDescription;
@@ -316,7 +318,7 @@ bool SchedModel::AllowTransaction(const Data& r)
             "Transaction amount: %3$6.2f\n"
             "%4$s: %5$6.2f") + "\n\n" +
             _t("Do you want to continue?");
-        message.Printf(message, account_n->m_name, current_balance, r.TRANSAMOUNT, limitDescription, limitAmount);
+        message.Printf(message, account_n->m_name, current_balance, r.m_amount, limitDescription, limitAmount);
 
         if (wxMessageBox(message, _t("MMEX Scheduled Transaction Check"), wxYES_NO | wxICON_WARNING) == wxYES)
             allow_transaction = true;
@@ -325,16 +327,16 @@ bool SchedModel::AllowTransaction(const Data& r)
     return allow_transaction;
 }
 
-void SchedModel::completeBDInSeries(int64 bdID)
+void SchedModel::completeBDInSeries(int64 sched_id)
 {
-    Data* sched_n = unsafe_get_id_data_n(bdID);
+    Data* sched_n = unsafe_get_id_data_n(sched_id);
     if (!sched_n)
         return;
 
     RepeatNum rn;
     if (!decode_repeat_num(*sched_n, rn) || rn.num == 1) {
-        mmAttachmentManage::DeleteAllAttachments(this->refTypeName, bdID);
-        purge_id(bdID);
+        mmAttachmentManage::DeleteAllAttachments(s_ref_type, sched_id);
+        purge_id(sched_id);
         return;
     }
 
@@ -363,14 +365,14 @@ SchedModel::Full_Data::Full_Data(const Data& r) :
     Data(r),
     m_bill_splits(split(r)),
     m_tags(TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(SchedModel::refTypeName),
-        TagLinkCol::REFID(r.BDID)
+        TagLinkCol::REFTYPE(SchedModel::s_ref_type.name_n()),
+        TagLinkCol::REFID(r.m_id)
     ))
 {
     if (!m_tags.empty()) {
         wxArrayString tagnames;
         for (const auto& gl_d : m_tags)
-            tagnames.Add(TagModel::instance().get_id_data_n(gl_d.TAGID)->m_name);
+            tagnames.Add(TagModel::instance().get_id_data_n(gl_d.m_tag_id)->m_name);
         // Sort TAGNAMES
         tagnames.Sort();
         for (const auto& name : tagnames)
@@ -380,23 +382,26 @@ SchedModel::Full_Data::Full_Data(const Data& r) :
     if (!m_bill_splits.empty()) {
         for (const auto& qp_d : m_bill_splits) {
             CATEGNAME += (CATEGNAME.empty() ? " + " : ", ")
-                + CategoryModel::full_name(qp_d.m_category_id_p);
+                + CategoryModel::instance().full_name(qp_d.m_category_id);
 
             wxString splitTags;
-            for (const auto& tag : TagLinkModel::instance().get_ref(SchedSplitModel::refTypeName, qp_d.m_id))
-                splitTags.Append(tag.first + " ");
+            for (const auto& tag_name_id : TagLinkModel::instance().find_ref_tag_m(
+                SchedSplitModel::s_ref_type, qp_d.m_id
+            )) {
+                splitTags.Append(tag_name_id.first + " ");
+            }
             if (!splitTags.IsEmpty())
                 TAGNAMES.Append((TAGNAMES.IsEmpty() ? "" : ", ") + splitTags.Trim());
         }
     }
     else
-        CATEGNAME = CategoryModel::full_name(r.CATEGID);
+        CATEGNAME = CategoryModel::instance().full_name(r.m_category_id_n);
 
-    ACCOUNTNAME = AccountModel::instance().get_id_name(r.ACCOUNTID);
+    ACCOUNTNAME = AccountModel::instance().get_id_name(r.m_account_id);
 
-    PAYEENAME = PayeeModel::instance().get_id_name(r.PAYEEID);
+    PAYEENAME = PayeeModel::instance().get_id_name(r.m_payee_id_n);
     if (SchedModel::type_id(r) == TrxModel::TYPE_ID_TRANSFER) {
-        PAYEENAME = AccountModel::instance().get_id_name(r.TOACCOUNTID);
+        PAYEENAME = AccountModel::instance().get_id_name(r.m_to_account_id_n);
     }
 }
 

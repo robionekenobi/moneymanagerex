@@ -611,7 +611,7 @@ void mmGUIFrame::OnAutoRepeatTransactionsTimer(wxTimerEvent& /*event*/)
         if (rn.exec == SchedModel::REPEAT_EXEC_MANUAL) {
             if (allow) {
                 continueExecution = true;
-                SchedDialog repeatTransactionsDlg(this, q1.BDID, false, true);
+                SchedDialog repeatTransactionsDlg(this, q1.m_id, false, true);
                 repeatTransactionsDlg.SetDialogHeader(_t("Auto Repeat Transactions"));
                 if (repeatTransactionsDlg.ShowModal() == wxID_OK) {
                     refreshPanelData();
@@ -627,88 +627,92 @@ void mmGUIFrame::OnAutoRepeatTransactionsTimer(wxTimerEvent& /*event*/)
                 continueExecution = true;
                 TrxData new_trx_d = TrxData();
                 const wxDateTime payment_date = bills.getTransDateTime(q1);
-                new_trx_d.ACCOUNTID         = q1.ACCOUNTID;
-                new_trx_d.TOACCOUNTID       = q1.TOACCOUNTID;
-                new_trx_d.PAYEEID           = q1.PAYEEID;
+                new_trx_d.m_account_id      = q1.m_account_id;
+                new_trx_d.m_to_account_id_n = q1.m_to_account_id_n;
+                new_trx_d.m_payee_id_n      = q1.m_payee_id_n;
                 new_trx_d.TRANSCODE         = q1.TRANSCODE;
-                new_trx_d.TRANSAMOUNT       = q1.TRANSAMOUNT;
-                new_trx_d.TOTRANSAMOUNT     = q1.TOTRANSAMOUNT;
+                new_trx_d.m_amount          = q1.m_amount;
+                new_trx_d.m_to_amount       = q1.m_to_amount;
                 new_trx_d.STATUS            = q1.STATUS;
-                new_trx_d.TRANSACTIONNUMBER = q1.TRANSACTIONNUMBER;
-                new_trx_d.NOTES             = q1.NOTES;
-                new_trx_d.CATEGID           = q1.CATEGID;
-                new_trx_d.FOLLOWUPID        = q1.FOLLOWUPID;
+                new_trx_d.m_number          = q1.m_number;
+                new_trx_d.m_notes           = q1.m_notes;
+                new_trx_d.m_category_id_n   = q1.m_category_id_n;
+                new_trx_d.m_followup_id     = q1.m_followup_id;
                 new_trx_d.TRANSDATE         = payment_date.FormatISOCombined();
-                new_trx_d.COLOR             = q1.COLOR;
-                TrxModel::instance().save_trx(new_trx_d);
-                int64 transID = new_trx_d.id();
+                new_trx_d.m_color           = q1.m_color;
+                TrxModel::instance().save_trx_n(new_trx_d);
+                int64 new_trx_id = new_trx_d.id();
 
                 TrxSplitModel::DataA tp_a;
                 std::vector<wxArrayInt64> splitTags;
                 for (const auto& qp_d : SchedModel::split(q1)) {
                     TrxSplitData tp_d = TrxSplitData();
-                    tp_d.m_trx_id_p      = transID;
-                    tp_d.m_category_id_p = qp_d.m_category_id_p;
-                    tp_d.m_amount        = qp_d.m_amount;
-                    tp_d.m_notes         = qp_d.m_notes;
+                    tp_d.m_trx_id      = new_trx_id;
+                    tp_d.m_category_id = qp_d.m_category_id;
+                    tp_d.m_amount      = qp_d.m_amount;
+                    tp_d.m_notes       = qp_d.m_notes;
                     tp_a.push_back(tp_d);
 
                     wxArrayInt64 tags;
-                    for (const auto& tag_d : TagLinkModel::instance().find(
-                        TagLinkCol::REFTYPE(SchedSplitModel::refTypeName),
+                    for (const auto& gl_d : TagLinkModel::instance().find(
+                        TagLinkCol::REFTYPE(SchedSplitModel::s_ref_type.name_n()),
                         TagLinkCol::REFID(qp_d.m_id)
                     )) {
-                        tags.push_back(tag_d.TAGID);
+                        tags.push_back(gl_d.m_tag_id);
                     }
                     splitTags.push_back(tags);
                 }
                 TrxSplitModel::instance().save_data_a(tp_a);
 
                 // Save split tags
-                const wxString& splitRefType = TrxSplitModel::refTypeName;
-
                 for (size_t i = 0; i < tp_a.size(); i++) {
-                    TagLinkModel::DataA splitTaglinks;
+                    TagLinkModel::DataA new_gl_a;
                     for (const auto& tagId : splitTags.at(i)) {
                         TagLinkData new_gl_d = TagLinkData();
-                        new_gl_d.REFTYPE = splitRefType;
-                        new_gl_d.REFID   = tp_a[i].m_id;
-                        new_gl_d.TAGID   = tagId;
-                        splitTaglinks.push_back(new_gl_d);
+                        new_gl_d.m_tag_id   = tagId;
+                        new_gl_d.m_ref_type = TrxSplitModel::s_ref_type;
+                        new_gl_d.m_ref_id   = tp_a[i].m_id;
+                        new_gl_a.push_back(new_gl_d);
                     }
-                    TagLinkModel::instance().update(splitTaglinks, splitRefType, tp_a.at(i).m_id);
+                    TagLinkModel::instance().update(
+                        TrxSplitModel::s_ref_type, tp_a.at(i).m_id,
+                        new_gl_a
+                    );
                 }
 
                 // Copy the custom fields to the newly created transaction
                 const auto& fv_a = FieldValueModel::instance().find(
-                    FieldValueCol::REFID(-q1.BDID)
+                    FieldValueModel::REFTYPEID(SchedModel::s_ref_type, q1.m_id)
                 );
                 FieldValueModel::instance().db_savepoint();
                 for (const auto& fv_d : fv_a) {
                     FieldValueData new_fv_d = FieldValueData();
-                    new_fv_d.FIELDID = fv_d.FIELDID;
-                    new_fv_d.REFID   = transID;
-                    new_fv_d.CONTENT = fv_d.CONTENT;
+                    new_fv_d.m_field_id = fv_d.m_field_id;
+                    new_fv_d.m_ref_type = RefTypeN(RefTypeN::e_trx);
+                    new_fv_d.m_ref_id   = new_trx_id;
+                    new_fv_d.m_content = fv_d.m_content;
                     FieldValueModel::instance().add_data_n(new_fv_d);
                 }
                 FieldValueModel::instance().db_release_savepoint();
 
                 // Save base transaction tags
-                TagLinkModel::DataA taglinks;
-                const wxString& txnRefType = TrxModel::refTypeName;
+                TagLinkModel::DataA new_gl_a;
                 for (const auto& gl_d : TagLinkModel::instance().find(
-                    TagLinkCol::REFTYPE(SchedModel::refTypeName),
-                    TagLinkCol::REFID(q1.BDID)
+                    TagLinkCol::REFTYPE(SchedModel::s_ref_type.name_n()),
+                    TagLinkCol::REFID(q1.m_id)
                 )) {
                     TagLinkData new_gl_d = TagLinkData();
-                    new_gl_d.REFTYPE = txnRefType;
-                    new_gl_d.REFID   = transID;
-                    new_gl_d.TAGID   = gl_d.TAGID;
-                    taglinks.push_back(new_gl_d);
+                    new_gl_d.m_tag_id   = gl_d.m_tag_id;
+                    new_gl_d.m_ref_type = TrxModel::s_ref_type;
+                    new_gl_d.m_ref_id   = new_trx_id;
+                    new_gl_a.push_back(new_gl_d);
                 }
-                TagLinkModel::instance().update(taglinks, txnRefType, transID);
+                TagLinkModel::instance().update(
+                    TrxModel::s_ref_type, new_trx_id,
+                    new_gl_a
+                );
             }
-            SchedModel::instance().completeBDInSeries(q1.BDID);
+            SchedModel::instance().completeBDInSeries(q1.m_id);
         }
     }
 
@@ -1425,9 +1429,8 @@ void mmGUIFrame::OnAccountAttachments(wxCommandEvent& /*event*/)
     if (!selectedItemData_)
         return;
 
-    wxString refType = AccountModel::refTypeName;
-    int64 refId = selectedItemData_->getId();
-    AttachmentDialog dlg(this, refType, refId);
+    int64 ref_id = selectedItemData_->getId();
+    AttachmentDialog dlg(this, AccountModel::s_ref_type, ref_id);
     dlg.ShowModal();
 }
 //----------------------------------------------------------------------------
@@ -1598,7 +1601,7 @@ void mmGUIFrame::OnPopupDeleteAccount(wxCommandEvent& /*event*/)
     if (msgDlg.ShowModal() == wxID_YES) {
         AccountModel::instance().purge_id(account_n->m_id);
         mmAttachmentManage::DeleteAllAttachments(
-            AccountModel::refTypeName, account_n->m_id
+            AccountModel::s_ref_type, account_n->m_id
         );
         DoRecreateNavTreeControl(true);
     }
@@ -1955,23 +1958,15 @@ void mmGUIFrame::createMenu()
         _t("Change user interface language")
     );
     wxMenu* menuLang = new wxMenu;
-
-    wxArrayString lang_files = wxTranslations::Get()->GetAvailableTranslations("mmex");
-    std::map<wxString, std::pair<int, wxString>> langs;
-    menuLang->AppendRadioItem(MENU_LANG + 1 + wxLANGUAGE_DEFAULT, _t("System default"))
-        ->Check(m_app->getGUILanguage() == wxLANGUAGE_DEFAULT);
-    for (auto & file : lang_files) {
-        const wxLanguageInfo* info = wxLocale::FindLanguageInfo(file);
-        if (info) {
-            //wxString label = wxGetTranslation(info->Description);
-            wxString label = info->CanonicalName + " " + info->DescriptionNative;
-            langs[label] = std::make_pair(info->Language, info->CanonicalName);
-        }
-    }
-    langs[wxGetTranslation(wxLocale::GetLanguageName(wxLANGUAGE_ENGLISH_US))] = std::make_pair(wxLANGUAGE_ENGLISH_US, "en_US");
-    for (auto const& lang : langs) {
-        menuLang->AppendRadioItem(MENU_LANG + 1 + lang.second.first, lang.first, lang.second.second)
-            ->Check(lang.second.first == m_app->getGUILanguage());
+    for (auto const& lang : g_translations()) {
+        int            lang_id    = std::get<0>(lang);
+        const wxString lang_label = std::get<1>(lang);
+        const wxString lang_help  = std::get<2>(lang);
+        menuLang->AppendRadioItem(
+            MENU_LANG + 1 + lang_id, lang_label, lang_help
+        )->Check(
+            lang_id == m_app->getGUILanguage()
+        );
     }
     menuItemLanguage->SetSubMenu(menuLang);
     menuView->Append(menuItemLanguage);
@@ -3973,7 +3968,7 @@ void mmGUIFrame::OnDeleteAccount(wxCommandEvent& /*event*/)
         wxMessageDialog msgDlg(this, deletingAccountName, _t("Confirm Account Deletion"),
             wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION);
         if (msgDlg.ShowModal() == wxID_YES) {
-            mmAttachmentManage::DeleteAllAttachments(AccountModel::refTypeName, account->id());
+            mmAttachmentManage::DeleteAllAttachments(AccountModel::s_ref_type, account->id());
             AccountModel::instance().purge_id(account->id());
         }
     }
@@ -4213,31 +4208,28 @@ wxSizer* mmGUIFrame::cleanupHomePanel(bool new_sizer)
 void mmGUIFrame::autocleanDeletedTransactions() {
     wxDateSpan days = wxDateSpan::Days(SettingModel::instance().getInt("DELETED_TRANS_RETAIN_DAYS", 30));
     wxDateTime earliestDate = wxDateTime().Now().ToUTC().Subtract(days);
-    TrxModel::DataA deletedTransactions = TrxModel::instance().find(
+    TrxModel::DataA deleted_trx_a = TrxModel::instance().find(
         TrxCol::DELETEDTIME(OP_LE, earliestDate.FormatISOCombined()),
         TrxCol::DELETEDTIME(OP_NE, wxEmptyString)
     );
-    if (!deletedTransactions.empty()) {
-        TrxModel::instance().db_savepoint();
-        AttachmentModel::instance().db_savepoint();
-        TrxSplitModel::instance().db_savepoint();
-        FieldValueModel::instance().db_savepoint();
-        for (const auto& transaction : deletedTransactions) {
-            // removing the checking transaction also removes split, translink, and share entries
-            TrxModel::instance().purge_id(transaction.TRANSID);
+    if (deleted_trx_a.empty())
+        return;
 
-            // remove also any attachments for the transaction
-            const wxString& RefType = TrxModel::refTypeName;
-            mmAttachmentManage::DeleteAllAttachments(RefType, transaction.TRANSID);
+    TrxModel::instance().db_savepoint();
+    TrxSplitModel::instance().db_savepoint();
+    AttachmentModel::instance().db_savepoint();
+    FieldValueModel::instance().db_savepoint();
 
-            // remove also any custom fields for the transaction
-            FieldValueModel::DeleteAllData(RefType, transaction.TRANSID);
-        }
-        FieldValueModel::instance().db_release_savepoint();
-        TrxSplitModel::instance().db_release_savepoint();
-        AttachmentModel::instance().db_release_savepoint();
-        TrxModel::instance().db_release_savepoint();
+    for (const auto& trx_d : deleted_trx_a) {
+        FieldValueModel::instance().purge_ref(TrxModel::s_ref_type, trx_d.m_id);
+        mmAttachmentManage::DeleteAllAttachments(TrxModel::s_ref_type, trx_d.m_id);
+        TrxModel::instance().purge_id(trx_d.m_id);
     }
+
+    FieldValueModel::instance().db_release_savepoint();
+    AttachmentModel::instance().db_release_savepoint();
+    TrxSplitModel::instance().db_release_savepoint();
+    TrxModel::instance().db_release_savepoint();
 }
 
 void mmGUIFrame::SetDatabaseFile(const wxString& dbFileName, bool newDatabase)

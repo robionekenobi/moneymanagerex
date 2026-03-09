@@ -72,7 +72,7 @@ AccountDialog::AccountDialog(AccountData* account, wxWindow* parent) :
     m_account_n(account)
 {
     m_images = navtree_images_list();
-    m_currencyID = m_account_n->m_currency_id_p;
+    m_currencyID = m_account_n->m_currency_id;
     [[maybe_unused]] const CurrencyData* currency = CurrencyModel::instance().get_id_data_n(m_currencyID);
     wxASSERT(currency);
 
@@ -418,15 +418,14 @@ void AccountDialog::OnCurrency(wxCommandEvent& /*event*/)
             m_minimum_payment_ctrl->SetValue(value);
 
         if (m_account_n) {
-            m_account_n->m_currency_id_p = currency->m_id;
+            m_account_n->m_currency_id = currency->m_id;
         }
     }
 }
 
 void AccountDialog::OnAttachments(wxCommandEvent& /*event*/)
 {
-    wxString RefType = AccountModel::refTypeName;
-    AttachmentDialog dlg(this, RefType, m_account_n->m_id);
+    AttachmentDialog dlg(this, AccountModel::s_ref_type, m_account_n->m_id);
     dlg.ShowModal();
 }
 
@@ -601,7 +600,7 @@ void AccountDialog::OnOk(wxCommandEvent& /*event*/)
 
     // CHECK: m_type_ is missing
     m_account_n->m_name               = name;
-    m_account_n->m_currency_id_p      = m_currencyID;
+    m_account_n->m_currency_id        = m_currencyID;
     m_account_n->m_status             = AccountStatus(status_choice->GetSelection());
     m_account_n->m_favorite           = AccountFavorite(favorite_cb->IsChecked());
     m_account_n->m_num                = num_ctrl->GetValue();

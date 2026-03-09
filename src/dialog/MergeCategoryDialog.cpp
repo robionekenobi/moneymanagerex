@@ -96,7 +96,7 @@ void MergeCategoryDialog::CreateControls()
     cbSourceCategory_->SetMinSize(wxSize(200, -1));
     const CategoryData* category_n = CategoryModel::instance().get_id_data_n(m_sourceCatID);
     if (category_n)
-        cbSourceCategory_->SetValue(CategoryModel::full_name(m_sourceCatID));
+        cbSourceCategory_->SetValue(CategoryModel::instance().full_name(m_sourceCatID));
 
     cbDestCategory_ = new mmComboBoxCategory(this, wxID_NEW, wxDefaultSize, -1, true);
     cbDestCategory_->SetMinSize(wxSize(200, -1));
@@ -176,19 +176,19 @@ void MergeCategoryDialog::OnOk(wxCommandEvent& WXUNUSED(event))
             .find(PayeeCol::CATEGID(m_sourceCatID));
 
         for (auto& trx_d : trx_a) {
-            trx_d.CATEGID = m_destCatID;
+            trx_d.m_category_id_n = m_destCatID;
         }
         TrxModel::instance().save_trx_a(trx_a);
         m_changedRecords += trx_a.size();
 
         for (auto& sched_d : sched_a) {
-            sched_d.CATEGID = m_destCatID;
+            sched_d.m_category_id_n = m_destCatID;
         }
         SchedModel::instance().save_data_a(sched_a);
         m_changedRecords += sched_a.size();
 
         for (auto& tp_d : tp_a) {
-            tp_d.m_category_id_p = m_destCatID;
+            tp_d.m_category_id = m_destCatID;
         }
         TrxSplitModel::instance().save_data_a(tp_a);
         m_changedRecords += tp_a.size();
@@ -201,7 +201,7 @@ void MergeCategoryDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         mmWebApp::MMEX_WebApp_UpdatePayee();
 
         for (auto& qp_d : qp_a) {
-            qp_d.m_category_id_p = m_destCatID;
+            qp_d.m_category_id = m_destCatID;
         }
         SchedSplitModel::instance().save_data_a(qp_a);
         m_changedRecords += qp_a.size();
@@ -213,7 +213,8 @@ void MergeCategoryDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 
         if (cbDeleteSourceCategory_->IsChecked()) {
             if (m_sourceSubCatID == -1) {
-                if (CategoryModel::sub_category(CategoryModel::instance().get_id_data_n(m_sourceCatID)).empty())
+                const CategoryData* src_category_n = CategoryModel::instance().get_id_data_n(m_sourceCatID);
+                if (CategoryModel::instance().find_data_sub_a(*src_category_n).empty())
                     CategoryModel::instance().purge_id(m_sourceCatID);
             }
 
@@ -290,7 +291,7 @@ void MergeCategoryDialog::OnComboKey(wxKeyEvent& event)
                 dlg.ShowModal();
                 if (dlg.getRefreshRequested())
                     cbSourceCategory_->mmDoReInitialize();
-                category = CategoryModel::full_name(dlg.getCategId());
+                category = CategoryModel::instance().full_name(dlg.getCategId());
                 cbSourceCategory_->ChangeValue(category);
                 return;
             }
@@ -306,7 +307,7 @@ void MergeCategoryDialog::OnComboKey(wxKeyEvent& event)
                 dlg.ShowModal();
                 if (dlg.getRefreshRequested())
                     cbDestCategory_->mmDoReInitialize();
-                category = CategoryModel::full_name(dlg.getCategId());
+                category = CategoryModel::instance().full_name(dlg.getCategId());
                 cbDestCategory_->ChangeValue(category);
                 return;
             }

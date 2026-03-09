@@ -66,17 +66,17 @@ AssetDialog::AssetDialog(
 
 AssetDialog::AssetDialog(
     wxWindow* parent,
-    const TrxLinkData* transfer_entry,
+    const TrxLinkData* tl_d,
     TrxData* checking_entry
 ) :
-    m_transfer_entry(transfer_entry),
+    m_transfer_entry(tl_d),
     m_checking_entry(checking_entry),
     m_dialog_heading(_t("Add Asset Transaction")),
     m_hidden_trans_entry(false)
 {
-    if (transfer_entry) {
+    if (tl_d) {
         m_dialog_heading = _t("Edit Asset Transaction");
-        m_asset_n = AssetModel::instance().unsafe_get_id_data_n(transfer_entry->LINKRECORDID);
+        m_asset_n = AssetModel::instance().unsafe_get_id_data_n(tl_d->m_ref_id);
     }
 
     Create(parent, wxID_ANY, m_dialog_heading);
@@ -138,12 +138,14 @@ void AssetDialog::dataToControls()
 
     w_notes->SetValue(m_asset_n->m_notes);
 
-    TrxLinkModel::DataA translink = TrxLinkModel::TranslinkList<AssetModel>(m_asset_n->m_id);
-    if (!translink.empty())
+    TrxLinkModel::DataA tl_a = TrxLinkModel::instance().find_ref_data_a(
+        AssetModel::s_ref_type, m_asset_n->m_id
+    );
+    if (!tl_a.empty())
         w_value->Enable(false);
 
     // Set up the transaction if this is the first entry.
-    if (translink.empty())
+    if (tl_a.empty())
         w_transaction_panel->SetTransactionValue(bal.first);
 
     if (!m_hidden_trans_entry) {
@@ -184,7 +186,7 @@ void AssetDialog::CreateControls()
     wxStaticBoxSizer* details_frame_sizer = new wxStaticBoxSizer(details_frame, wxVERTICAL);
     left_sizer->Add(details_frame_sizer, g_flagsV);
 
-    wxPanel* asset_details_panel = new wxPanel(this, wxID_STATIC);
+    wxPanel* asset_details_panel = new wxPanel(details_frame, wxID_STATIC);
     details_frame_sizer->Add(asset_details_panel, g_flagsV);
 
     wxFlexGridSizer* itemFlexGridSizer6 = new wxFlexGridSizer(0, 2, 0, 0);
@@ -282,7 +284,7 @@ void AssetDialog::CreateControls()
     itemFlexGridSizer6->Add(w_attachments, wxSizerFlags(g_flagsV).Align(wxALIGN_RIGHT));
     mmToolTip(w_attachments, _t("Organize attachments of this asset"));
 
-    w_notes = new wxTextCtrl(this, IDC_NOTES, wxGetEmptyString(), wxDefaultPosition, wxSize(220, 170), wxTE_MULTILINE);
+    w_notes = new wxTextCtrl(details_frame, IDC_NOTES, wxGetEmptyString(), wxDefaultPosition, wxSize(220, 170), wxTE_MULTILINE);
     mmToolTip(w_notes, _t("Enter notes associated with this asset"));
     details_frame_sizer->Add(w_notes, 0, wxGROW | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
@@ -298,11 +300,11 @@ void AssetDialog::CreateControls()
     wxStaticBoxSizer* transaction_frame_sizer = new wxStaticBoxSizer(w_transaction_frame, wxVERTICAL);
     right_sizer->Add(transaction_frame_sizer, g_flagsV);
 
-    w_transaction_panel = new TrxLinkDialog(this, m_checking_entry, true, wxID_STATIC);
+    w_transaction_panel = new TrxLinkDialog(w_transaction_frame, m_checking_entry, true, wxID_STATIC);
     transaction_frame_sizer->Add(w_transaction_panel, g_flagsV);
     if (m_transfer_entry && m_checking_entry) {
         w_transaction_panel->CheckingType(
-            TrxLinkModel::type_checking(m_checking_entry->TOACCOUNTID)
+            TrxLinkModel::type_checking(m_checking_entry->m_to_account_id_n)
         );
     }
     else if (m_asset_n) {
@@ -440,17 +442,20 @@ void AssetDialog::OnOk(wxCommandEvent& /*event*/)
     int64 new_asset_id = m_asset_n->id();
 
     if (old_asset_id < 0) {
-        const wxString& RefType = AssetModel::refTypeName;
-        mmAttachmentManage::RelocateAllAttachments(RefType, 0, RefType, new_asset_id);
+        mmAttachmentManage::RelocateAllAttachments(
+            AssetModel::s_ref_type, 0,
+            AssetModel::s_ref_type, new_asset_id
+        );
     }
     if (w_transaction_panel->ValidCheckingAccountEntry()) {
-        int64 checking_id = w_transaction_panel->SaveChecking();
-        if (checking_id < 0)
+        int64 trx_id = w_transaction_panel->SaveChecking();
+        if (trx_id < 0)
             return;
 
         if (!m_transfer_entry) {
-            TrxLinkModel::SetAssetTranslink(
-                new_asset_id, checking_id, w_transaction_panel->CheckingType()
+            TrxLinkModel::instance().SetAssetTranslink(
+                trx_id, new_asset_id,
+                w_transaction_panel->CheckingType()
             );
         }
         TrxLinkModel::UpdateAssetValue(m_asset_n);
@@ -486,11 +491,11 @@ void AssetDialog::SetTransactionDate()
 void AssetDialog::CreateAssetAccount()
 {
     AccountData new_account_d = AccountData();
-    new_account_d.m_name          = m_asset_n->m_type.name();
-    new_account_d.m_type_         = NavigatorTypes::instance().getAssetAccountStr();
-    new_account_d.m_open_balance  = 0;
-    new_account_d.m_open_date     = m_asset_n->m_start_date;
-    new_account_d.m_currency_id_p = CurrencyModel::GetBaseCurrency()->m_id;
+    new_account_d.m_name         = m_asset_n->m_type.name();
+    new_account_d.m_type_        = NavigatorTypes::instance().getAssetAccountStr();
+    new_account_d.m_open_balance = 0;
+    new_account_d.m_open_date    = m_asset_n->m_start_date;
+    new_account_d.m_currency_id  = CurrencyModel::GetBaseCurrency()->m_id;
     AccountModel::instance().add_data_n(new_account_d);
 
     AssetDialog dlg(this, m_asset_n, true);
@@ -504,31 +509,24 @@ void AssetDialog::OnCancel(wxCommandEvent& /*event*/)
     if (m_asset_rich_text)
         return;
 
-    const wxString& RefType = AssetModel::refTypeName;
+    // FIXME: temporary records (with id <= 0) are not stored in database
     if (!m_asset_n)
-        mmAttachmentManage::DeleteAllAttachments(RefType, 0);
+        mmAttachmentManage::DeleteAllAttachments(AssetModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 
 void AssetDialog::OnQuit(wxCloseEvent& /*event*/)
 {
-    const wxString& RefType = AssetModel::refTypeName;
+    // FIXME: temporary records (with id <= 0) are not stored in database
     if (!m_asset_n)
-        mmAttachmentManage::DeleteAllAttachments(RefType, 0);
+        mmAttachmentManage::DeleteAllAttachments(AssetModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 
 void AssetDialog::OnAttachments(wxCommandEvent& /*event*/)
 {
-    const wxString& RefType = AssetModel::refTypeName;
-    int64 RefId;
-
-    if (!m_asset_n)
-        RefId = 0;
-    else
-        RefId= m_asset_n->m_id;
-
-    AttachmentDialog dlg(this, RefType, RefId);
+    int64 ref_id = m_asset_n ? m_asset_n->m_id : 0;
+    AttachmentDialog dlg(this, AssetModel::s_ref_type, ref_id);
     dlg.ShowModal();
 }
 

@@ -60,20 +60,22 @@ TrxUpdateDialog::~TrxUpdateDialog()
 // accelerator hints are shown which only occurs once.
 static bool altRefreshDone;
 
-TrxUpdateDialog::TrxUpdateDialog(wxWindow* parent
-    , std::vector<int64>& transaction_id)
-    : m_transaction_id(transaction_id)
+TrxUpdateDialog::TrxUpdateDialog(
+    wxWindow* parent,
+    std::vector<int64>& trx_id_a
+) :
+    m_trx_id_a(trx_id_a)
 {
-    m_currency = CurrencyModel::GetBaseCurrency(); // base currency if we need it
+    m_currency_n = CurrencyModel::GetBaseCurrency(); // base currency if we need it
 
     // Determine the mix of transaction that have been selected
-    for (const auto& id : m_transaction_id) {
-        const TrxData *trx = TrxModel::instance().get_id_data_n(id);
+    for (const auto& trx_id : m_trx_id_a) {
+        const TrxData *trx = TrxModel::instance().get_id_data_n(trx_id);
         const bool isTransfer = TrxModel::is_transfer(*trx);
 
         if (!m_hasSplits) {
             TrxSplitModel::DataA split = TrxSplitModel::instance().find(
-                TrxSplitCol::TRANSID(id)
+                TrxSplitCol::TRANSID(trx_id)
             );
             if (!split.empty())
                 m_hasSplits = true;
@@ -86,18 +88,19 @@ TrxUpdateDialog::TrxUpdateDialog(wxWindow* parent
             m_hasNonTransfers = true;
     }
 
-    m_custom_fields = new mmCustomDataTransaction(this, 0, ID_CUSTOMFIELDS);
+    m_custom_fields = new mmCustomDataTransaction(this, TrxModel::s_ref_type, 0, ID_CUSTOMFIELDS);
 
     this->SetFont(parent->GetFont());
     Create(parent);
 }
 
-bool TrxUpdateDialog::Create(wxWindow* parent
-    , wxWindowID id
-    , const wxString& caption
-    , const wxPoint& pos
-    , const wxSize& size, long style)
-{
+bool TrxUpdateDialog::Create(
+    wxWindow* parent,
+    wxWindowID id,
+    const wxString& caption,
+    const wxPoint& pos,
+    const wxSize& size, long style
+) {
     altRefreshDone = false; // reset the ALT refresh indicator on new dialog creation
     SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create(parent, id, wxGetTranslation(caption), pos, size, style);
@@ -387,12 +390,12 @@ void TrxUpdateDialog::OnOk(wxCommandEvent& WXUNUSED(event))
     std::vector<int64> skip_trx;
     TrxModel::instance().db_savepoint();
     TagLinkModel::instance().db_savepoint();
-    for (const auto& id : m_transaction_id) {
-        TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(id);
+    for (const auto& trx_id : m_trx_id_a) {
+        TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(trx_id);
         bool is_locked = TrxModel::is_locked(*trx_n);
 
         if (is_locked) {
-            skip_trx.push_back(trx_n->TRANSID);
+            skip_trx.push_back(trx_n->m_id);
             continue;
         }
 
@@ -401,25 +404,25 @@ void TrxUpdateDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         }
 
         if (m_payee_checkbox->IsChecked()) {
-            trx_n->PAYEEID = payee_id;
-            trx_n->TOACCOUNTID = -1;
+            trx_n->m_payee_id_n = payee_id;
+            trx_n->m_to_account_id_n = -1;
         }
 
         if (m_transferAcc_checkbox->IsChecked()) {
-            trx_n->TOACCOUNTID = cbAccount_->mmGetId();
-            trx_n->PAYEEID = -1;
+            trx_n->m_to_account_id_n = cbAccount_->mmGetId();
+            trx_n->m_payee_id_n = -1;
         }
 
         if (m_date_checkbox->IsChecked() || (m_time_ctrl && m_time_checkbox->IsChecked())) {
             wxString date = trx_n->TRANSDATE;
             if (m_date_checkbox->IsChecked()) {
                 date.replace(0, 10, m_dpc->GetValue().FormatISODate());
-                const AccountData* account = AccountModel::instance().get_id_data_n(trx_n->ACCOUNTID);
-                const AccountData* to_account = AccountModel::instance().get_id_data_n(trx_n->TOACCOUNTID);
+                const AccountData* account = AccountModel::instance().get_id_data_n(trx_n->m_account_id);
+                const AccountData* to_account = AccountModel::instance().get_id_data_n(trx_n->m_to_account_id_n);
                 if ((mmDate(date) < account->m_open_date) ||
                     (to_account && (mmDate(date) < to_account->m_open_date)))
                 {
-                    skip_trx.push_back(trx_n->TRANSID);
+                    skip_trx.push_back(trx_n->m_id);
                     continue;
                 }
             }
@@ -439,76 +442,77 @@ void TrxUpdateDialog::OnOk(wxCommandEvent& WXUNUSED(event))
             if (color_id < 0 || color_id > 7) {
                 return mmErrorDialogs::ToolTip4Object(bColours_, _t("Color"), _t("Invalid value"), wxICON_ERROR);
             }
-            trx_n->COLOR = color_id == 0 ? -1 : color_id ; 
+            trx_n->m_color = color_id == 0 ? -1 : color_id ; 
         }
 
         if (m_notes_checkbox->IsChecked()) {
             if (m_append_checkbox->IsChecked()) {
-                trx_n->NOTES += (trx_n->NOTES.Right(1) == "\n" || trx_n->NOTES.empty()
+                trx_n->m_notes += (trx_n->m_notes.Right(1) == "\n" || trx_n->m_notes.empty()
                     ? "" : "\n")
                     + m_notes_ctrl->GetValue();
             }
             else {
-                trx_n->NOTES = m_notes_ctrl->GetValue();
+                trx_n->m_notes = m_notes_ctrl->GetValue();
             }
         }
 
         // Update tags
         if (tag_checkbox_->IsChecked()) {
-            TagLinkModel::DataA taglinks;
-            const wxString& refType = TrxModel::refTypeName;
-            wxArrayInt64 tagIds = tagTextCtrl_->GetTagIDs();
+            TagLinkModel::DataA gl_a;
+            wxArrayInt64 tag_id_a = tagTextCtrl_->GetTagIDs();
 
             if (tag_append_checkbox_->IsChecked()) {
                 // Since we are appending, start with the existing tags
-                taglinks = TagLinkModel::instance().find(
-                    TagLinkCol::REFTYPE(refType),
-                    TagLinkCol::REFID(trx_n->TRANSID)
+                gl_a = TagLinkModel::instance().find(
+                    TagLinkCol::REFTYPE(TrxModel::s_ref_type.name_n()),
+                    TagLinkCol::REFID(trx_n->m_id)
                 );
                 // Remove existing tags from the new list to avoid duplicates
-                for (const auto& link : taglinks)
-                {
-                    auto index = std::find(tagIds.begin(), tagIds.end(), link.TAGID);
-                    if (index != tagIds.end())
-                        tagIds.erase(index);
+                for (const auto& gl_d : gl_a) {
+                    auto index = std::find(tag_id_a.begin(), tag_id_a.end(), gl_d.m_tag_id);
+                    if (index != tag_id_a.end())
+                        tag_id_a.erase(index);
                 }
             }
             // Create new taglinks for each tag ID
-            for (const auto& tagId : tagIds) {
+            for (const auto& tag_id : tag_id_a) {
                 TagLinkData new_gl_d = TagLinkData();
-                new_gl_d.REFTYPE = refType;
-                new_gl_d.REFID   = trx_n->TRANSID;
-                new_gl_d.TAGID   = tagId;
-                taglinks.push_back(new_gl_d);
+                new_gl_d.m_tag_id   = tag_id;
+                new_gl_d.m_ref_type = TrxModel::s_ref_type;
+                new_gl_d.m_ref_id   = trx_n->m_id;
+                gl_a.push_back(new_gl_d);
             }
             // Update the links for the transaction
-            TagLinkModel::instance().update(taglinks, refType, trx_n->TRANSID);
+            TagLinkModel::instance().update(
+                TrxModel::s_ref_type, trx_n->m_id,
+                gl_a
+            );
         }
 
         if (m_amount_checkbox->IsChecked()) {
-            trx_n->TRANSAMOUNT = amount;
+            trx_n->m_amount = amount;
         }
 
         if (m_categ_checkbox->IsChecked()) {
-            trx_n->CATEGID = categ_id;
+            trx_n->m_category_id_n = categ_id;
         }
 
         if (m_type_checkbox->IsChecked()) {
             trx_n->TRANSCODE = type;
         }
 
-        // Need to consider TOTRANSAMOUNT if material transaction change
+        // Need to consider m_to_amount if material transaction change
         if (m_amount_checkbox->IsChecked() || m_type_checkbox->IsChecked() || m_transferAcc_checkbox->IsChecked()) {
             if (!TrxModel::is_transfer(*trx_n)) {
-                trx_n->TOTRANSAMOUNT = trx_n->TRANSAMOUNT;
+                trx_n->m_to_amount = trx_n->m_amount;
             }
             else {
-                const auto acc = AccountModel::instance().get_id_data_n(trx_n->ACCOUNTID);
-                const auto curr = CurrencyModel::instance().get_id_data_n(acc->m_currency_id_p);
-                const auto to_acc = AccountModel::instance().get_id_data_n(trx_n->TOACCOUNTID);
-                const auto to_curr = CurrencyModel::instance().get_id_data_n(to_acc->m_currency_id_p);
+                const auto acc = AccountModel::instance().get_id_data_n(trx_n->m_account_id);
+                const auto curr = CurrencyModel::instance().get_id_data_n(acc->m_currency_id);
+                const auto to_acc = AccountModel::instance().get_id_data_n(trx_n->m_to_account_id_n);
+                const auto to_curr = CurrencyModel::instance().get_id_data_n(to_acc->m_currency_id);
                 if (curr == to_curr) {
-                    trx_n->TOTRANSAMOUNT = trx_n->TRANSAMOUNT;
+                    trx_n->m_to_amount = trx_n->m_amount;
                 }
                 else {
                     double exch = 1;
@@ -517,25 +521,28 @@ void TrxUpdateDialog::OnOk(wxCommandEvent& WXUNUSED(event))
                         const double convRate = CurrencyHistoryModel::getDayRate(curr->m_id, trx_n->TRANSDATE);
                         exch = convRate / convRateTo;
                     }
-                    trx_n->TOTRANSAMOUNT = trx_n->TRANSAMOUNT * exch;
+                    trx_n->m_to_amount = trx_n->m_amount * exch;
                 }
             }
         }
 
-        m_custom_fields->UpdateCustomValues(id);
+        m_custom_fields->UpdateCustomValues(TrxModel::s_ref_type, trx_id);
 
-        TrxModel::instance().unsafe_save_trx(trx_n);
+        TrxModel::instance().unsafe_save_trx_n(trx_n);
     }
     TagLinkModel::instance().db_release_savepoint();
     TrxModel::instance().db_release_savepoint();
     if (!skip_trx.empty()) {
-        const wxString detail = wxString::Format("%s\n%s: %zu\n%s: %zu"
-                        , _t("This is due to some elements of the transaction or account detail not allowing the update")
-                        , _t("Updated"), m_transaction_id.size() - skip_trx.size()
-                        , _t("Not updated"), skip_trx.size());
-        mmErrorDialogs::MessageWarning(this
-            , detail
-            , _t("Unable to update some transactions."));
+        const wxString detail = wxString::Format("%s\n%s: %zu\n%s: %zu",
+            _t("This is due to some elements of the transaction or account detail not allowing the update"),
+            _t("Updated"),
+            m_trx_id_a.size() - skip_trx.size(),
+            _t("Not updated"), skip_trx.size()
+        );
+        mmErrorDialogs::MessageWarning(this,
+            detail,
+            _t("Unable to update some transactions.")
+        );
     }
     //TODO: enable report to detail transactions that are unable to be updated
 
@@ -544,17 +551,18 @@ void TrxUpdateDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 
 void TrxUpdateDialog::SetPayeeTransferControls()
 {
-    wxStringClientData* trans_obj = static_cast<wxStringClientData*>(m_type_choice->GetClientObject(m_type_choice->GetSelection()));
+    wxStringClientData* trans_obj = static_cast<wxStringClientData*>(
+        m_type_choice->GetClientObject(m_type_choice->GetSelection())
+    );
     bool transfer = (TrxModel::TYPE_NAME_TRANSFER == trans_obj->GetData());
 
     m_payee_checkbox->Enable(!transfer);
     m_transferAcc_checkbox->Enable(transfer);
-    if (transfer)
-    {
+    if (transfer) {
         m_payee_checkbox->SetValue(false);
         cbPayee_->Enable(false);
-    } else
-    {
+    }
+    else {
         m_transferAcc_checkbox->SetValue(false);
         cbAccount_->Enable(false);
     }
@@ -600,17 +608,14 @@ void TrxUpdateDialog::onFocusChange(wxChildFocusEvent& event)
 
     int object_in_focus = -1;
     wxWindow *w = event.GetWindow();
-    if (w)
-    {
+    if (w) {
         object_in_focus = w->GetId();
     }
 
-    if (object_in_focus == m_amount_ctrl->GetId())
-    {
+    if (object_in_focus == m_amount_ctrl->GetId()) {
         m_amount_ctrl->SelectAll();
     }
-    else
-    {
+    else {
         m_amount_ctrl->Calculate();
     }
 
@@ -622,7 +627,12 @@ void TrxUpdateDialog::OnMoreFields(wxCommandEvent& WXUNUSED(event))
     wxBitmapButton* button = static_cast<wxBitmapButton*>(FindWindow(ID_BTN_CUSTOMFIELDS));
 
     if (button)
-        button->SetBitmap(mmBitmapBundle(m_custom_fields->IsCustomPanelShown() ? png::RIGHTARROW : png::LEFTARROW, mmBitmapButtonSize));
+        button->SetBitmap(mmBitmapBundle(
+            m_custom_fields->IsCustomPanelShown()
+                ? png::RIGHTARROW
+                : png::LEFTARROW,
+            mmBitmapButtonSize
+        ));
 
     m_custom_fields->ShowHideCustomPanel();
 
@@ -632,16 +642,13 @@ void TrxUpdateDialog::OnMoreFields(wxCommandEvent& WXUNUSED(event))
 
 void TrxUpdateDialog::OnComboKey(wxKeyEvent& event)
 {
-    if (event.GetKeyCode() == WXK_RETURN)
-    {
+    if (event.GetKeyCode() == WXK_RETURN) {
         auto id = event.GetId();
-        switch (id)
-        {
+        switch (id) {
         case mmID_PAYEE:
         {
             const auto payeeName = cbPayee_->GetValue();
-            if (payeeName.empty())
-            {
+            if (payeeName.empty()) {
                 mmPayeeDialog dlg(this, true);
                 dlg.ShowModal();
                 if (dlg.getRefreshRequested())
@@ -659,13 +666,12 @@ void TrxUpdateDialog::OnComboKey(wxKeyEvent& event)
         case mmID_CATEGORY:
         {
             auto category = cbCategory_->GetValue();
-            if (category.empty())
-            {
+            if (category.empty()) {
                 CategoryManager dlg(this, true, -1);
                 dlg.ShowModal();
                 if (dlg.getRefreshRequested())
                     cbCategory_->mmDoReInitialize();
-                category = CategoryModel::full_name(dlg.getCategId());
+                category = CategoryModel::instance().full_name(dlg.getCategId());
                 cbCategory_->ChangeValue(category);
                 cbCategory_->SelectAll();
                 return;
@@ -679,8 +685,7 @@ void TrxUpdateDialog::OnComboKey(wxKeyEvent& event)
 
     // The first time the ALT key is pressed accelerator hints are drawn, but custom painting on the tags button
     // is not applied. We need to refresh the tag ctrl to redraw the drop button with the correct image.
-    if (event.AltDown() && !altRefreshDone)
-    {
+    if (event.AltDown() && !altRefreshDone) {
         tagTextCtrl_->Refresh();
         altRefreshDone = true;
     }

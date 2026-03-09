@@ -189,7 +189,7 @@ void PayeeManager::fillControls()
             m_patternTable->SetCellValue(row++, 0, wxString::FromUTF8(member.value.GetString()));
         }
     }
-    const wxString category = CategoryModel::full_name(m_payee_n->m_category_id_n);
+    const wxString category = CategoryModel::instance().full_name(m_payee_n->m_category_id_n);
     m_category->ChangeValue(category);
     ResizeDialog();
 }
@@ -378,7 +378,7 @@ void PayeeManager::OnComboKey(wxKeyEvent& event)
             dlg.ShowModal();
             if (dlg.getRefreshRequested())
                 m_category->mmDoReInitialize();
-            category = CategoryModel::full_name(dlg.getCategId());
+            category = CategoryModel::instance().full_name(dlg.getCategId());
             m_category->ChangeValue(category);
             return;
         }
@@ -535,13 +535,13 @@ void mmPayeeDialog::Create(wxWindow* parent, const wxString &name)
     SetIcon(mmex::getProgramIcon());
 
     // Calculate payee usage
-    for (const auto& txn : TrxModel::instance().find_all()) {
-        if (txn.DELETEDTIME.IsEmpty()) {
-            m_payeeUsage[txn.PAYEEID]++;
+    for (const auto& trx_d : TrxModel::instance().find_all()) {
+        if (trx_d.DELETEDTIME.IsEmpty()) {
+            m_payeeUsage[trx_d.m_payee_id_n]++;
         }
     }
-    for (const auto &bills : SchedModel::instance().find_all()) {
-        m_payeeUsage[bills.PAYEEID]++;
+    for (const auto& sched_d : SchedModel::instance().find_all()) {
+        m_payeeUsage[sched_d.m_payee_id_n]++;
     }
     fillControls();
     mmSetSize(this);
@@ -753,9 +753,9 @@ void mmPayeeDialog::EditPayee()
 void mmPayeeDialog::DeletePayee()
 {
     FindSelectedPayees();
-    for(RowData* rdata : m_selectedItems) {
+    for (RowData* rdata : m_selectedItems) {
         const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(rdata->payeeId);
-        if (PayeeModel::instance().find_id_dep_cnt(rdata->payeeId) > 0) {
+        if (PayeeModel::instance().find_id_dep_c(rdata->payeeId) > 0) {
             wxString deletePayeeErrMsg = _t("Payee in use.");
             deletePayeeErrMsg
                 << "\n"
@@ -769,38 +769,37 @@ void mmPayeeDialog::DeletePayee()
             wxMessageBox(deletePayeeErrMsg, _t("Payee Manager: Delete Error"), wxOK | wxICON_ERROR);
             continue;
         }
-        TrxModel::DataA deletedTrans = TrxModel::instance().find(
+        TrxModel::DataA trx_a = TrxModel::instance().find(
             TrxCol::PAYEEID(rdata->payeeId)
         );
-        wxMessageDialog msgDlg(this
-            , _t("Deleted transactions exist which use this payee.")
-                + "\n\n" + _t("Deleting the payee will also automatically purge the associated deleted transactions.")
-                + "\n\n" + _t("Do you want to continue?")
-            , _t("Confirm Payee Deletion")
-            , wxYES_NO | wxNO_DEFAULT | wxICON_WARNING);
-        if (deletedTrans.empty() || msgDlg.ShowModal() == wxID_YES)
-        {
-            if (!deletedTrans.empty()) {
+        wxMessageDialog msgDlg(this,
+            _t("Deleted transactions exist which use this payee.") + "\n\n" +
+                _t("Deleting the payee will also automatically purge the associated deleted transactions.") + "\n\n" +
+                _t("Do you want to continue?"),
+            _t("Confirm Payee Deletion"),
+            wxYES_NO | wxNO_DEFAULT | wxICON_WARNING
+        );
+        if (trx_a.empty() || msgDlg.ShowModal() == wxID_YES) {
+            if (!trx_a.empty()) {
                 TrxModel::instance().db_savepoint();
                 TrxSplitModel::instance().db_savepoint();
                 AttachmentModel::instance().db_savepoint();
                 FieldValueModel::instance().db_savepoint();
-                const wxString& RefType = TrxModel::refTypeName;
 
-                for (auto& tran : deletedTrans) {
-                    TrxModel::instance().purge_id(tran.TRANSID);
-                    mmAttachmentManage::DeleteAllAttachments(RefType, tran.TRANSID);
-                    FieldValueModel::DeleteAllData(RefType, tran.TRANSID);
+                for (auto& trx_d : trx_a) {
+                    FieldValueModel::instance().purge_ref(TrxModel::s_ref_type, trx_d.m_id);
+                    mmAttachmentManage::DeleteAllAttachments(TrxModel::s_ref_type, trx_d.m_id);
+                    TrxModel::instance().purge_id(trx_d.m_id);
                 }
 
-                TrxModel::instance().db_release_savepoint();
-                TrxSplitModel::instance().db_release_savepoint();
-                AttachmentModel::instance().db_release_savepoint();
                 FieldValueModel::instance().db_release_savepoint();
+                AttachmentModel::instance().db_release_savepoint();
+                TrxSplitModel::instance().db_release_savepoint();
+                TrxModel::instance().db_release_savepoint();
             }
 
             PayeeModel::instance().purge_id(payee_n->m_id);
-            mmAttachmentManage::DeleteAllAttachments(PayeeModel::refTypeName, payee_n->m_id);
+            mmAttachmentManage::DeleteAllAttachments(PayeeModel::s_ref_type, payee_n->m_id);
             refreshRequested_ = true;
             fillControls();
         }
@@ -844,11 +843,10 @@ void mmPayeeDialog::RemoveDefaultCategory()
 
 void mmPayeeDialog::OnOrganizeAttachments()
 {
-    wxString RefType = PayeeModel::refTypeName;
     long sel = payeeListBox_->GetFocusedItem();
     if (sel > -1) {
         RowData* rdata = reinterpret_cast<RowData*>(payeeListBox_->GetItemData(sel));
-        AttachmentDialog dlg(this, RefType, rdata->payeeId);
+        AttachmentDialog dlg(this, PayeeModel::s_ref_type, rdata->payeeId);
         dlg.ShowModal();
         refreshRequested_ = true;
     }

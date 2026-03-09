@@ -20,7 +20,7 @@
 
 AccountData::AccountData() :
     m_id(-1),
-    m_currency_id_p(-1),
+    m_currency_id(-1),
     m_status(AccountStatus()),
     m_favorite(AccountFavorite()),
     m_open_date(mmDate::today()),
@@ -53,7 +53,7 @@ AccountRow AccountData::to_row() const
     row.INITIALBAL      = m_open_balance;
     row.INITIALDATE     = m_open_date.isoDate();
     row.FAVORITEACCT    = m_favorite.name();
-    row.CURRENCYID      = m_currency_id_p;
+    row.CURRENCYID      = m_currency_id;
     row.STATEMENTLOCKED = (m_stmt_locked ? 1 : 0);
     row.STATEMENTDATE   = m_stmt_date_n.isoDateN();
     row.MINIMUMBALANCE  = m_min_balance;
@@ -68,27 +68,27 @@ AccountRow AccountData::to_row() const
 // Convert AccountRow to AccountData
 AccountData& AccountData::from_row(const AccountRow& row)
 {
-    m_id                 = row.ACCOUNTID;                     // int64
-    m_name               = row.ACCOUNTNAME;                   // wxString
-    m_type_              = row.ACCOUNTTYPE;                   // wxString
-    m_currency_id_p      = row.CURRENCYID;                    // int64
-    m_status             = AccountStatus(row.STATUS);         // wxString
-    m_favorite           = AccountFavorite(row.FAVORITEACCT); // wxString
-    m_num                = row.ACCOUNTNUM;                    // wxString
-    m_notes              = row.NOTES;                         // wxString
-    m_held_at            = row.HELDAT;                        // wxString
-    m_website            = row.WEBSITE;                       // wxString
-    m_contact_info       = row.CONTACTINFO;                   // wxString
-    m_access_info        = row.ACCESSINFO;                    // wxString
-    m_open_date          = mmDate(row.INITIALDATE);           // wxString
-    m_open_balance       = row.INITIALBAL;                    // double
-    m_stmt_locked        = (row.STATEMENTLOCKED > 0);         // int64
-    m_stmt_date_n        = mmDateN(row.STATEMENTDATE);        // wxString
-    m_min_balance        = row.MINIMUMBALANCE;                // double
-    m_credit_limit       = row.CREDITLIMIT;                   // double
-    m_interest_rate      = row.INTERESTRATE;                  // double
-    m_payment_due_date_n = mmDateN(row.PAYMENTDUEDATE);       // wxString
-    m_min_payment        = row.MINIMUMPAYMENT;                // double
+    m_id                 = row.ACCOUNTID;
+    m_name               = row.ACCOUNTNAME;
+    m_type_              = row.ACCOUNTTYPE;
+    m_currency_id        = row.CURRENCYID;
+    m_status             = AccountStatus(row.STATUS);
+    m_favorite           = AccountFavorite(row.FAVORITEACCT);
+    m_num                = row.ACCOUNTNUM;
+    m_notes              = row.NOTES;
+    m_held_at            = row.HELDAT;
+    m_website            = row.WEBSITE;
+    m_contact_info       = row.CONTACTINFO;
+    m_access_info        = row.ACCESSINFO;
+    m_open_date          = mmDate(row.INITIALDATE);
+    m_open_balance       = row.INITIALBAL;
+    m_stmt_locked        = (row.STATEMENTLOCKED > 0);
+    m_stmt_date_n        = mmDateN(row.STATEMENTDATE);
+    m_min_balance        = row.MINIMUMBALANCE;
+    m_credit_limit       = row.CREDITLIMIT;
+    m_interest_rate      = row.INTERESTRATE;
+    m_payment_due_date_n = mmDateN(row.PAYMENTDUEDATE);
+    m_min_payment        = row.MINIMUMPAYMENT;
 
     return *this;
 }
@@ -98,7 +98,7 @@ bool AccountData::equals(const AccountData* other) const
     if ( m_id                  != other->m_id)                 return false;
     if (!m_name.IsSameAs(         other->m_name))              return false;
     if (!m_type_.IsSameAs(        other->m_type_))             return false;
-    if ( m_currency_id_p       != other->m_currency_id_p)      return false;
+    if ( m_currency_id         != other->m_currency_id)        return false;
     if ( m_status.id()         != other->m_status.id())        return false;
     if ( m_favorite.id()       != other->m_favorite.id())      return false;
     if (!m_num.IsSameAs(          other->m_num))               return false;

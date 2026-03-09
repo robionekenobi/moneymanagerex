@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "base/types.h"
 #include "util/mmChoice.h"
 
 struct AccountStatus
@@ -205,6 +206,9 @@ public:
         int a[size] = { 0, 52, 26, 12, 6, 4, 2, 1, 365 };
         return a[m_id];
     }
+    double times_per_month() const {
+        return double(times_per_year()) / 12.0;
+    }
 };
 
 struct CurrencyType
@@ -229,5 +233,118 @@ public:
 
     mmChoiceId id() const { return m_id; }
     const wxString name() const { return CurrencyType::s_choice_a.get_name(m_id); }
+};
+
+struct FieldTypeN
+{
+public:
+    enum
+    {
+        e_string = 0,
+        e_integer,
+        e_decimal,
+        e_boolean,
+        e_date,
+        e_time,
+        e_single_choice,
+        e_multi_choice,
+        size
+    };
+    static mmChoiceNameA s_choice_a;
+
+private:
+    mmChoiceIdN m_id_n;
+
+public:
+    FieldTypeN(mmChoiceIdN id_n = s_choice_a.default_id_n()) :
+        m_id_n(s_choice_a.valid_id_n(id_n)) {}
+    FieldTypeN(const wxString& name) :
+        m_id_n(FieldTypeN::s_choice_a.find_name_n(name)) {}
+
+    bool has_value() const { return m_id_n >= 0; }
+    mmChoiceIdN id_n() const { return m_id_n; }
+    const wxString name_n() const {
+        return has_value() ? FieldTypeN::s_choice_a.get_name(m_id_n) : "";
+    }
+};
+
+struct RefTypeN
+{
+public:
+    enum
+    {
+        e_trx = 0,
+        e_stock,
+        e_asset,
+        e_account,
+        e_sched,
+        e_payee,
+        e_trx_split,
+        e_sched_split,
+        size
+    };
+    static mmChoiceNameA s_choice_a;
+
+private:
+    mmChoiceIdN m_id_n;
+
+public:
+    RefTypeN(mmChoiceIdN id_n = s_choice_a.default_id_n()) :
+        m_id_n(s_choice_a.valid_id_n(id_n)) {}
+    RefTypeN(const wxString& name) :
+        m_id_n(RefTypeN::s_choice_a.find_name_n(name)) {}
+
+    static mmChoiceIdN field_id_n(mmChoiceIdN id_n) {
+        switch (id_n) {
+        case e_sched:
+        //case e_trx_split:
+        //case e_sched_split:
+            return e_trx;
+        default:
+            return id_n;
+        }
+    }
+    static RefTypeN field_ref_type_n(RefTypeN ref_type_n) {
+        return RefTypeN(RefTypeN::field_id_n(ref_type_n.m_id_n));
+    }
+
+    bool has_value() const { return m_id_n >= 0; }
+    mmChoiceIdN id_n() const { return m_id_n; }
+    const wxString name_n() const {
+        return has_value() ? RefTypeN::s_choice_a.get_name(m_id_n) : "";
+    }
+    bool operator== (const RefTypeN& other) const {
+        return id_n() == other.id_n();
+    }
+    bool operator< (const RefTypeN& other) const {
+        return id_n() < other.id_n();
+    }
+};
+
+struct UpdateType
+{
+public:
+    enum
+    {
+        e_none = 0,
+        e_online,
+        e_manual,
+        size
+    };
+    static mmChoiceCodeNameA s_choice_a;
+
+private:
+    mmChoiceId m_id;
+
+public:
+    UpdateType(mmChoiceId id = s_choice_a.default_id_n()) :
+        m_id(s_choice_a.valid_id_n(id)) {}
+    static UpdateType from_code(int code) {
+        return UpdateType(UpdateType::s_choice_a.find_code_n(code));
+    }
+
+    mmChoiceId id() const { return m_id; }
+    int code() const { return UpdateType::s_choice_a.get_code(m_id); }
+    const wxString name() const { return UpdateType::s_choice_a.get_name(m_id); }
 };
 
