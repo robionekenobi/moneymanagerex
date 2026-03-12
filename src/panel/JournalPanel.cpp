@@ -84,8 +84,8 @@ wxBEGIN_EVENT_TABLE(JournalPanel, wxPanel)
         ID_DATE_RANGE_MAX,
         JournalPanel::onFilterDate)
     EVT_MENU_RANGE(
-        TrxModel::TYPE_ID_WITHDRAWAL,
-        TrxModel::TYPE_ID_TRANSFER,
+        TrxType::e_withdrawal,
+        TrxType::e_transfer,
         JournalPanel::onNewTransaction
     )
     EVT_SEARCHCTRL_SEARCH_BTN(wxID_FIND,  JournalPanel::onSearchTxtEntered)
@@ -96,10 +96,10 @@ wxBEGIN_EVENT_TABLE(JournalPanel, wxPanel)
 //----------------------------------------------------------------------------
 
 JournalPanel::JournalPanel(
-    mmGUIFrame *frame,
-    wxWindow *parent,
+    mmGUIFrame* frame,
+    wxWindow* parent,
     int64 checking_id,
-    const std::vector<int64> &group_ids // = {}
+    const std::vector<int64>& group_ids // = {}
 ) :
     m_checking_id(checking_id),
     m_frame(frame)
@@ -139,12 +139,10 @@ bool JournalPanel::create(
         return false;
 
     this->windowsFreezeThaw();
-    createControls();
-    loadFilterSettings();
-    updateFilter(true);
-    updateFilterTooltip();
 
-    refreshList();
+    createControls();
+    setFilterAdvanced(true);
+
     this->windowsFreezeThaw();
     UsageModel::instance().pageview(this);
     return true;
@@ -221,9 +219,13 @@ void JournalPanel::createControls()
 
     // Filter for transaction details
     m_btnTransDetailFilter = new wxButton(this, ID_FILTER_TRANS, _tu("Filter…"));
-    m_btnTransDetailFilter->SetBitmap(mmBitmapBundle(png::TRANSFILTER, mmBitmapButtonSize));
     m_btnTransDetailFilter->SetMinSize(wxSize(150 + PrefModel::instance().getIconSize() * 2, -1));
-    sizerHCtrl->Add(m_btnTransDetailFilter, g_flagsH);
+    sizerHCtrl->Add(m_btnTransDetailFilter, 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxUP | wxDOWN | wxLEFT, 5);
+
+    m_btnTransDetailFilterCancel = new wxBitmapButton(this, wxID_ANY, mmBitmapBundle(png::CLEAR, mmBitmapButtonSize));
+    mmToolTip(m_btnTransDetailFilterCancel, _t("Reset filter"));
+    m_btnTransDetailFilterCancel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &JournalPanel::onFilterAdvancedCancel, this);
+    sizerHCtrl->Add(m_btnTransDetailFilterCancel, 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL, 2);
 
     if (!isDeletedTrans()) {
         sizerHCtrl->AddSpacer(15);
@@ -478,6 +480,8 @@ void JournalPanel::updateFilter(bool firstinit)
     m_btnTransDetailFilter->SetBitmap(mmBitmapBundle(m_filter_advanced ?
                                 png::TRANSFILTER_ACTIVE : png::TRANSFILTER, mmBitmapButtonSize));
 
+    m_btnTransDetailFilterCancel->Enable(m_filter_advanced);
+
     if (!isDeletedTrans()) {
         m_header_scheduled->SetValue(m_scheduled_selected);
         m_header_scheduled->Enable(m_scheduled_enable);
@@ -508,10 +512,10 @@ void JournalPanel::setFilterDate(mmDateRange2::Range& range)
     updateFilter();
 }
 
-void JournalPanel::setFilterAdvanced()
+void JournalPanel::setFilterAdvanced(bool firstinit)
 {
     loadFilterSettings();
-    updateFilter();
+    updateFilter(firstinit);
     updateFilterTooltip();
     refreshList();
 }
@@ -582,7 +586,7 @@ void JournalPanel::loadFilterSettings()
     wxString j_str = InfoModel::instance().getString(
             wxString::Format("CHECK_FILTER_ID_ADV_%lld", m_checking_id),"{}");
     m_trans_filter_dlg.reset(new TrxFilterDialog(this, m_account_id, false, j_str));
-    m_filter_advanced = m_trans_filter_dlg->mmIsSomethingChecked() ? true : false;
+    m_filter_advanced = m_trans_filter_dlg->mmIsSomethingChecked();
     updateScheduledEnable();
 }
 
@@ -764,7 +768,7 @@ void JournalPanel::filterList()
             // assertion: trx_n->DELETEDTIME.IsEmpty()
             account_flow = TrxModel::account_flow(*trx_n, m_account_id);
             m_balance += account_flow;
-            if (TrxModel::status_id(trx_n->STATUS) == TrxModel::STATUS_ID_RECONCILED) {
+            if (trx_n->is_reconciled()) {
                 m_reconciled_balance += account_flow;
                 if (tran_date <= today_date)
                     m_today_reconciled_balance += account_flow;
@@ -1010,7 +1014,7 @@ void JournalPanel::updateExtraTransactionData(bool single, int repeat_num, bool 
                 const CurrencyData* curr = AccountModel::instance().get_id_currency_p(
                     m_lc->m_journal_xa[item].m_account_id
                 );
-                if ((m_account_id < 0) && TrxModel::is_transfer(m_lc->m_journal_xa[item].TRANSCODE))
+                if (m_account_id < 0 && m_lc->m_journal_xa[item].is_transfer())
                     continue;
                 double convrate = (curr != m_currency_n)
                     ? CurrencyHistoryModel::getDayRate(curr->m_id, m_lc->m_journal_xa[item].TRANSDATE)
@@ -1207,18 +1211,24 @@ void JournalPanel::datePickProceed() {
 
 void JournalPanel::onFilterAdvanced(wxCommandEvent& WXUNUSED(event))
 {
-        wxString j_str = InfoModel::instance().getString(
-            wxString::Format("CHECK_FILTER_ID_ADV_%lld", m_checking_id),
-            "{}"
-        );
-        m_trans_filter_dlg.reset(
-            new TrxFilterDialog(this, m_checking_id, false, j_str)
-        );
+    wxString j_str = InfoModel::instance().getString(
+        wxString::Format("CHECK_FILTER_ID_ADV_%lld", m_checking_id),
+        "{}"
+    );
+    m_trans_filter_dlg.reset(
+        new TrxFilterDialog(this, m_checking_id, false, j_str)
+    );
     m_trans_filter_dlg->ShowModal();
-    loadFilterSettings();
-    updateFilter();
-    updateFilterTooltip();
-    refreshList();
+    setFilterAdvanced();
+}
+
+void JournalPanel::onFilterAdvancedCancel(wxCommandEvent& WXUNUSED(event))
+{
+    InfoModel::instance().setString(
+        wxString::Format("CHECK_FILTER_ID_ADV_%lld", m_checking_id),
+        ""
+    );
+    setFilterAdvanced();
 }
 
 void JournalPanel::onEditDateRanges(wxCommandEvent& WXUNUSED(event))
@@ -1335,9 +1345,9 @@ void JournalPanel::onButtonRightDown(wxMouseEvent& event)
     }
     case wxID_NEW: {
         wxMenu menu;
-        menu.Append(TrxModel::TYPE_ID_WITHDRAWAL, _tu("&New Withdrawal…"));
-        menu.Append(TrxModel::TYPE_ID_DEPOSIT, _tu("&New Deposit…"));
-        menu.Append(TrxModel::TYPE_ID_TRANSFER, _tu("&New Transfer…"));
+        menu.Append(TrxType::e_withdrawal, _tu("&New Withdrawal…"));
+        menu.Append(TrxType::e_deposit,    _tu("&New Deposit…"));
+        menu.Append(TrxType::e_transfer,   _tu("&New Transfer…"));
         PopupMenu(&menu);
     }
     default:
@@ -1348,19 +1358,15 @@ void JournalPanel::onButtonRightDown(wxMouseEvent& event)
 void JournalPanel::onInfoPanelClick(wxMouseEvent& event, wxStaticText* infoPanel)
 {
     wxString clipboardValue = "";
-    if (!m_info_panel_selectedbal.IsEmpty())
-    {
+    if (!m_info_panel_selectedbal.IsEmpty()) {
         clipboardValue = m_info_panel_selectedbal;
     }
-    else
-    {
+    else {
         clipboardValue = infoPanel->GetLabel();
     }
-    if (!clipboardValue.IsEmpty())
-    {
+    if (!clipboardValue.IsEmpty()) {
         // Copy to clipboard
-        if (wxTheClipboard->Open())
-        {
+        if (wxTheClipboard->Open()) {
             wxTheClipboard->SetData(new wxTextDataObject(clipboardValue));
             wxTheClipboard->Close();
             this->Layout();
@@ -1490,4 +1496,3 @@ void JournalPanel::loadDateRanges(
         *date_range_m = date_range_a->size();
     }
 }
-

@@ -327,7 +327,7 @@ void StockPanel::FillListRow(
 
     int precision = ts_d.m_number == floor(ts_d.m_number) ? 0 : PrefModel::instance().getSharePrecision();
     listCtrl->SetItem(index, 2, wxString::FromDouble(ts_d.m_number, precision));
-    listCtrl->SetItem(index, 3, wxGetTranslation(TrxModel::trade_type_name(TrxModel::type_id(trx_d.TRANSCODE))));
+    listCtrl->SetItem(index, 3, wxGetTranslation(trx_d.m_type.trade_name()));
     listCtrl->SetItem(index, 4, wxString::FromDouble(ts_d.m_price, PrefModel::instance().getSharePrecision()));
     listCtrl->SetItem(index, 5, wxString::FromDouble(ts_d.m_commission, 2));
     double total = ts_d.m_number * ts_d.m_price + ts_d.m_commission;
@@ -428,6 +428,7 @@ void StockPanel::updateHeader()
     double cashBalance = 0;
     double marketValue = 0;
     double InvestedVal = 0;
+    bool today = PrefModel::instance().getIgnoreFutureTransactionsHomePage();
     // + Transfered from other accounts - Transfered to other accounts
 
     //Get Stock Investment Account Balance as Init Amount + sum (Value) - sum (Purchase Price)
@@ -437,7 +438,13 @@ void StockPanel::updateHeader()
         const AccountData* account_n = AccountModel::instance().get_id_data_n(m_account_id);
         if (account_n) {
             header_text_->SetLabelText(GetPanelTitle(*account_n));
-            cashBalance = AccountModel::instance().get_data_balance(*account_n);
+
+            if (today) {
+                cashBalance = AccountModel::instance().get_data_balance_to_date(*account_n, mmDate::today());
+            }
+            else {
+                cashBalance = AccountModel::instance().get_data_balance(*account_n);
+            }
             std::pair<double, double> investment_balance = AccountModel::instance().get_data_investment_balance(*account_n);
             marketValue = investment_balance.first;
             InvestedVal = investment_balance.second;

@@ -49,7 +49,7 @@
 
 wxBEGIN_EVENT_TABLE(JournalList, ListBase)
     EVT_CHAR(JournalList::onChar)
-    EVT_LEFT_DOWN(JournalList::onListLeftClick)
+    //EVT_LEFT_DOWN(JournalList::onListLeftClick)
     EVT_RIGHT_DOWN(JournalList::onMouseRightClick)
 
     EVT_LIST_ITEM_ACTIVATED(wxID_ANY,  JournalList::onListItemActivated)
@@ -100,7 +100,7 @@ wxEND_EVENT_TABLE();
 const std::vector<ListColumnInfo> JournalList::LIST_INFO = {
     { LIST_ID_ICON,        true, _n("Icon"),         25,  _FC, false },
     { LIST_ID_ID,          true, _n("ID"),           _WA, _FR, true },
-    { LIST_ID_DATE,        true, _n("Date"),         112, _FL, true },
+    { LIST_ID_DATE,        true, _n("Date"),         80,  _FC, true },
     { LIST_ID_TIME,        true, _n("Time"),         70,  _FL, true },
     { LIST_ID_NUMBER,      true, _n("Number"),       70,  _FL, true },
     { LIST_ID_ACCOUNT,     true, _n("Account"),      100, _FL, true },
@@ -273,6 +273,8 @@ JournalList::JournalList(
         wxDateTime(23, 59, 59, 999).FormatISOCombined();
 
     SetSingleStyle(wxLC_SINGLE_SEL, false);
+
+    this->Bind(wxEVT_SIZE, &JournalList::OnSize, this);
 }
 
 JournalList::~JournalList()
@@ -365,7 +367,7 @@ int JournalList::getSortIcon(bool asc) const
 
 void JournalList::refreshVisualList(bool filter)
 {
-    wxLogDebug("refreshVisualList: %i selected, filter: %d", GetSelectedItemCount(), filter);
+    //wxLogDebug("refreshVisualList: %i selected, filter: %d", GetSelectedItemCount(), filter);
 
     // Grab the selected transactions unless we have freshly pasted transactions in which case use them
     if (m_pasted_id.empty()) {
@@ -571,16 +573,18 @@ int JournalList::OnGetItemColumnImage(long item, long col_nr) const
     if (col_id != LIST_ID_ICON)
         return -1;
 
-    wxString status = getItem(item, LIST_ID_STATUS);
-    if (status.length() > 1) status = status.Mid(2, 1);
+    wxString status_key = getItem(item, LIST_ID_STATUS);
+    if (status_key.length() > 1)
+        status_key = status_key.Mid(2, 1);
+    TrxStatus status = TrxStatus(status_key);
 
-    if (status == TrxModel::STATUS_KEY_FOLLOWUP)
+    if (status.id() == TrxStatus::e_followup)
         return JournalPanel::ICON_FOLLOWUP;
-    else if (status == TrxModel::STATUS_KEY_RECONCILED)
+    else if (status.id() == TrxStatus::e_reconciled)
         return JournalPanel::ICON_RECONCILED;
-    else if (status == TrxModel::STATUS_KEY_VOID)
+    else if (status.id() == TrxStatus::e_void)
         return JournalPanel::ICON_VOID;
-    else if (status == TrxModel::STATUS_KEY_DUPLICATE)
+    else if (status.id() == TrxStatus::e_duplicate)
         return JournalPanel::ICON_DUPLICATE;
     else
         return JournalPanel::ICON_UNRECONCILED;
@@ -597,14 +601,17 @@ wxListItemAttr* JournalList::OnGetItemAttr(long item) const
         return (item % 2 ? m_attr3.get() : m_attr4.get());
     }
 
-    bool mark_not_reconciled = PrefModel::instance().getDoSpecialColorReconciled() && !in_the_future && m_journal_xa[item].STATUS != TrxModel::STATUS_KEY_RECONCILED;
+    bool mark_not_reconciled = PrefModel::instance().getDoSpecialColorReconciled() &&
+        !in_the_future &&
+        !m_journal_xa[item].is_reconciled();
 
     // apply alternating background pattern
     int user_color_id = m_journal_xa[item].m_color.GetValue();
     if (user_color_id < 0 || user_color_id > 7) {
         user_color_id = 0;
     }
-    switch (user_color_id) {
+    switch (user_color_id)
+    {
     case 0:
         if (in_the_future) {
             return (item % 2 ? m_attr3.get() : m_attr4.get());
@@ -694,17 +701,17 @@ void JournalList::onChar(wxKeyEvent& event)
     }
 }
 
-void JournalList::onListLeftClick(wxMouseEvent& event)
+/*void JournalList::onListLeftClick(wxMouseEvent& event)
 {
-    wxLogDebug("onListLeftClick: %i selected", GetSelectedItemCount());
+    //wxLogDebug("onListLeftClick: %i selected", GetSelectedItemCount());
     event.Skip();
-}
+}*/
 
 void JournalList::onMouseRightClick(wxMouseEvent& event)
 {
     rightClickFilter_ = "";
     copyText_ = "";
-    wxLogDebug("onMouseRightClick: %i selected", GetSelectedItemCount());
+    //wxLogDebug("onMouseRightClick: %i selected", GetSelectedItemCount());
     int selected = GetSelectedItemCount();
 
     bool is_nothing_selected = (selected < 1);
@@ -714,15 +721,15 @@ void JournalList::onMouseRightClick(wxMouseEvent& event)
     bool is_foreign = false;
     if (selected == 1) {
         Journal::IdRepeat id = m_selected_id[0];
-        Journal::Full_Data tran = !id.second
+        Journal::Full_Data trx_xd = !id.second
             ? Journal::Full_Data(*TrxModel::instance().get_id_data_n(id.first))
             : Journal::Full_Data(*SchedModel::instance().get_id_data_n(id.first));
 
-        if (TrxModel::type_id(tran.TRANSCODE) == TrxModel::TYPE_ID_TRANSFER)
+        if (trx_xd.is_transfer())
             type_transfer = true;
-        if (!tran.has_split())
+        if (!trx_xd.has_split())
             have_category = true;
-        if (TrxModel::is_foreign(tran))
+        if (TrxModel::is_foreign(trx_xd))
             is_foreign = true;
     }
     wxMenu menu;
@@ -834,13 +841,13 @@ void JournalList::onMouseRightClick(wxMouseEvent& event)
             break;
         case LIST_ID_PAYEE_STR:
             copyText_ = m_journal_xa[row].PAYEENAME;
-            if (!TrxModel::is_transfer(m_journal_xa[row].TRANSCODE)) {
+            if (!m_journal_xa[row].is_transfer()) {
                 menuItemText = m_journal_xa[row].PAYEENAME;
                 rightClickFilter_ = "{\n\"PAYEE\": \"" + menuItemText + "\"\n}";
             }
             break;
         case LIST_ID_STATUS:
-            copyText_ = menuItemText = TrxModel::status_name(m_journal_xa[row].STATUS);
+            copyText_ = menuItemText = m_journal_xa[row].m_status.name();
             rightClickFilter_ = "{\n\"STATUS\": \"" + menuItemText + "\"\n}";
             break;
         case LIST_ID_CATEGORY:
@@ -1022,28 +1029,28 @@ void JournalList::onMouseRightClick(wxMouseEvent& event)
 
 void JournalList::onListItemActivated(wxListEvent& /*event*/)
 {
-    wxLogDebug("onListItemActivated: %i selected", GetSelectedItemCount());
+    //wxLogDebug("onListItemActivated: %i selected", GetSelectedItemCount());
     wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, MENU_TREEPOPUP_EDIT2);
     AddPendingEvent(evt);
 }
 
 void JournalList::onListItemSelected(wxListEvent&)
 {
-    wxLogDebug("onListItemSelected: %i selected", GetSelectedItemCount());
+    //wxLogDebug("onListItemSelected: %i selected", GetSelectedItemCount());
     findSelectedTransactions();
     setExtraTransactionData(GetSelectedItemCount() == 1);
 }
 
 void JournalList::onListItemDeSelected(wxListEvent&)
 {
-    wxLogDebug("onListItemDeSelected: %i selected", GetSelectedItemCount());
+    //wxLogDebug("onListItemDeSelected: %i selected", GetSelectedItemCount());
     findSelectedTransactions();
     setExtraTransactionData(GetSelectedItemCount() == 1);
 }
 
 void JournalList::onListItemFocused(wxListEvent& WXUNUSED(event))
 {
-    wxLogDebug("onListItemFocused: %i selected", GetSelectedItemCount());
+    //wxLogDebug("onListItemFocused: %i selected", GetSelectedItemCount());
     findSelectedTransactions();
     setExtraTransactionData(GetSelectedItemCount() == 1);
 }
@@ -1113,34 +1120,35 @@ void JournalList::onListKeyDown(wxListEvent& event)
 void JournalList::onNewTransaction(wxCommandEvent& event)
 {
     int id = event.GetId();
-    int type;
+    TrxType type = TrxType();
 
     switch (id) {
     case MENU_TREEPOPUP_WITHDRAWAL:
-        type = TrxModel::TYPE_ID_WITHDRAWAL;
+        type = TrxType(TrxType::e_withdrawal);
         break;
     case MENU_TREEPOPUP_DEPOSIT:
-        type = TrxModel::TYPE_ID_DEPOSIT;
+        type = TrxType(TrxType::e_deposit);
         break;
     case MENU_TREEPOPUP_TRANSFER:
-        type = TrxModel::TYPE_ID_TRANSFER;
+        type = TrxType(TrxType::e_transfer);
         break;
     default:
-        type = TrxModel::TYPE_ID_WITHDRAWAL;
+        type = TrxType(TrxType::e_withdrawal);
         break;
     }
 
     TrxDialog dlg(this, m_cp->m_account_id, {0, false}, false, type);
     int i = dlg.ShowModal();
-    if (i != wxID_CANCEL) {
-        m_selected_id.clear();
-        m_pasted_id.push_back({dlg.GetTransactionID(), 0});
-        m_cp->mmPlayTransactionSound();
-        refreshVisualList();
+    if (i == wxID_CANCEL)
+        return;
 
-        if (i == wxID_NEW) {
-            onNewTransaction(event);
-        }
+    m_selected_id.clear();
+    m_pasted_id.push_back({dlg.GetTransactionID(), 0});
+    m_cp->mmPlayTransactionSound();
+    refreshVisualList();
+
+    if (i == wxID_NEW) {
+        onNewTransaction(event);
     }
 }
 
@@ -1427,7 +1435,7 @@ void JournalList::onMoveTransaction(wxCommandEvent& /*event*/)
                     TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(id.first);
                     if (checkTransactionLocked(trx_n->m_account_id, trx_n->TRANSDATE) ||
                         TrxModel::is_foreign(*trx_n) ||
-                        TrxModel::type_id(trx_n->TRANSCODE) == TrxModel::TYPE_ID_TRANSFER ||
+                        trx_n->is_transfer() ||
                         mmDate(trx_n->TRANSDATE) < dest_account->m_open_date
                     ) {
                         skip_trx.push_back(trx_n->m_id);
@@ -1549,13 +1557,13 @@ void JournalList::onMarkTransaction(wxCommandEvent& event)
     findSelectedTransactions();
     int evt = event.GetId();
     //bool bRefreshRequired = false;
-    wxString status = "";
+    TrxStatus status = TrxStatus();
     switch (evt) {
-    case MENU_TREEPOPUP_MARKRECONCILED:         status = TrxModel::STATUS_KEY_RECONCILED; break;
-    case MENU_TREEPOPUP_MARKUNRECONCILED:       status = TrxModel::STATUS_KEY_NONE; break;
-    case MENU_TREEPOPUP_MARKVOID:               status = TrxModel::STATUS_KEY_VOID; break;
-    case MENU_TREEPOPUP_MARK_ADD_FLAG_FOLLOWUP: status = TrxModel::STATUS_KEY_FOLLOWUP; break;
-    case MENU_TREEPOPUP_MARKDUPLICATE:          status = TrxModel::STATUS_KEY_DUPLICATE; break;
+    case MENU_TREEPOPUP_MARKRECONCILED:         status = TrxStatus(TrxStatus::e_reconciled); break;
+    case MENU_TREEPOPUP_MARKUNRECONCILED:       status = TrxStatus(TrxStatus::e_unreconciled); break;
+    case MENU_TREEPOPUP_MARKVOID:               status = TrxStatus(TrxStatus::e_void); break;
+    case MENU_TREEPOPUP_MARK_ADD_FLAG_FOLLOWUP: status = TrxStatus(TrxStatus::e_followup); break;
+    case MENU_TREEPOPUP_MARKDUPLICATE:          status = TrxStatus(TrxStatus::e_duplicate); break;
     default: wxASSERT(false);
     }
 
@@ -1570,9 +1578,9 @@ void JournalList::onMarkTransaction(wxCommandEvent& event)
         mmDateN trx_date_n = mmDateN(TrxModel::getTransDateTime(m_journal_xa[row]));
         if (trx_date_n.has_value() && account_n->is_locked_for(trx_date_n.value()))
             continue;
-        //bRefreshRequired |= (status == TrxModel::STATUS_KEY_VOID) || (m_journal_xa[row].STATUS == TrxModel::STATUS_KEY_VOID);
+        //bRefreshRequired |= (status.id() == TrxStatus::e_void) || (m_journal_xa[row].is_void());
         if (!m_journal_xa[row].m_repeat_num) {
-            m_journal_xa[row].STATUS = status;
+            m_journal_xa[row].m_status = status;
             TrxModel::instance().save_trx_n(m_journal_xa[row]);
         }
     }
@@ -1597,30 +1605,37 @@ void JournalList::onDeleteViewedTransaction(wxCommandEvent& event)
             ? _t("Deleted transactions will be temporarily stored and can be restored from the Deleted Transactions view.")
             : _t("Unable to undo this action.");
 
-        wxMessageDialog msgDlg(this
-            , text
-            , _t("Confirm Transaction Deletion")
-            , wxYES_NO | wxNO_DEFAULT | (m_cp->isDeletedTrans() ? wxICON_ERROR : wxICON_WARNING));
+        wxMessageDialog msgDlg(this,
+            text,
+            _t("Confirm Transaction Deletion"),
+            wxYES_NO | wxNO_DEFAULT | (m_cp->isDeletedTrans() ? wxICON_ERROR : wxICON_WARNING)
+        );
         if (msgDlg.ShowModal() == wxID_YES) {
-            deleteTransactionsByStatus("");
+            deleteTransactionsByStatus(std::nullopt);
         }
     }
     else if (i == MENU_TREEPOPUP_DELETE_FLAGGED) {
-        wxMessageDialog msgDlg(this
-            , wxString::Format(_tu("Do you want to delete all the “%s” transactions shown?"), _t("Follow Up"))
-            , _t("Confirm Transaction Deletion")
-            , wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION);
+        wxMessageDialog msgDlg(this,
+            wxString::Format(_tu("Do you want to delete all the “%s” transactions shown?"),
+                _t("Follow Up")
+            ),
+            _t("Confirm Transaction Deletion"),
+            wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION
+        );
         if (msgDlg.ShowModal() == wxID_YES) {
-            deleteTransactionsByStatus(TrxModel::STATUS_NAME_FOLLOWUP);
+            deleteTransactionsByStatus(TrxStatus(TrxStatus::e_followup));
         }
     }
     else if (i == MENU_TREEPOPUP_DELETE_UNRECONCILED) {
-        wxMessageDialog msgDlg(this
-            , wxString::Format(_tu("Do you want to delete all the “%s” transactions shown?"), _t("Unreconciled"))
-            , _t("Confirm Transaction Deletion")
-            , wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION);
+        wxMessageDialog msgDlg(this,
+            wxString::Format(_tu("Do you want to delete all the “%s” transactions shown?"),
+                _t("Unreconciled")
+            ),
+            _t("Confirm Transaction Deletion"),
+            wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION
+        );
         if (msgDlg.ShowModal() == wxID_YES) {
-            deleteTransactionsByStatus(TrxModel::STATUS_NAME_NONE);
+            deleteTransactionsByStatus(TrxStatus(TrxStatus::e_unreconciled));
         }
     }
     refreshVisualList();
@@ -1710,13 +1725,14 @@ int64 JournalList::onPaste(const TrxData* tran)
         new_trx.TRANSDATE = wxDateTime::Now().FormatISOCombined();
     if (!useOriginalState) {
         // Use default status on copy insert
-        new_trx.STATUS = TrxModel::status_key(
+        new_trx.m_status = TrxStatus(
             PrefModel::instance().getTransStatusReconciled()
         );
     }
-    if (TrxModel::type_id(new_trx.TRANSCODE) != TrxModel::TYPE_ID_TRANSFER ||
-        (m_cp->m_account_id != new_trx.m_account_id && m_cp->m_account_id != new_trx.m_to_account_id_n)
-    )
+    if (!new_trx.is_transfer() || (
+        m_cp->m_account_id != new_trx.m_account_id &&
+        m_cp->m_account_id != new_trx.m_to_account_id_n
+    ))
     new_trx.m_account_id = m_cp->m_account_id;
     TrxModel::instance().save_trx_n(new_trx);
     int64 new_trx_id = new_trx.id();
@@ -1837,7 +1853,7 @@ void JournalList::onSetUserColour(wxCommandEvent& event)
     findSelectedTransactions();
     int user_color_id = event.GetId();
     user_color_id -= MENU_ON_SET_UDC0;
-    wxLogDebug("id: %i", user_color_id);
+    //wxLogDebug("id: %i", user_color_id);
 
     TrxModel::instance().db_savepoint();
     SchedModel::instance().db_savepoint();
@@ -1876,6 +1892,52 @@ void JournalList::onOpenAttachment(wxCommandEvent& WXUNUSED(event))
     mmAttachmentManage::OpenAttachmentFromPanelIcon(this, ref_type, id.first);
     refreshVisualList();
 }
+
+void JournalList::setAutomaticColumnSize()
+{
+    struct colInfo {
+        int id;
+        int width;
+    };
+
+    // get total column width:
+    int twidth = 0;
+    int rwidth = 0;
+    std::vector<colInfo> resizable_ids;
+    for (int i = 0; i < GetColumnCount(); i++) {
+        int col_id = getColId_Nr(i);
+        if (!isHiddenColId(col_id)) {
+            int cw = GetColumnWidth(i);
+            twidth += cw;
+
+            switch (col_id) {
+                case LIST_ID_PAYEE_STR:
+                case LIST_ID_TAGS:
+                case LIST_ID_NOTES:
+                case LIST_ID_CATEGORY:
+                    resizable_ids.push_back({i, cw});
+                    rwidth += cw;
+                    break;
+            }
+        }
+    }
+
+    // calculate and apply diff:
+    int diff = this->GetSize().GetWidth() - twidth;
+    if (abs(diff) > 5) {
+        int diffdelta = diff / resizable_ids.size();
+        for (colInfo col: resizable_ids) {
+            this->SetColumnWidth(col.id, col.width + diffdelta);
+        }
+    }
+}
+
+void JournalList::OnSize(wxSizeEvent& event)
+{
+    setAutomaticColumnSize();
+    event.Skip();
+}
+
 
 //----------------------------------------------------------------------------
 
@@ -1928,10 +1990,12 @@ const wxString JournalList::getItem(long item, int col_id) const
         return journal_xd.CATEGNAME;
     case LIST_ID_PAYEE_STR:
         return journal_xd.is_foreign_transfer() ?
-            (TrxModel::type_id(journal_xd.TRANSCODE) == TrxModel::TYPE_ID_DEPOSIT ? "< " : "> ") + journal_xd.PAYEENAME :
+            (journal_xd.is_deposit() ? "< " : "> ") + journal_xd.PAYEENAME :
             journal_xd.PAYEENAME;
     case LIST_ID_STATUS:
-        return journal_xd.is_foreign() ? "< " + journal_xd.STATUS : journal_xd.STATUS;
+        return journal_xd.is_foreign()
+            ? "< " + journal_xd.m_status.key()
+            : journal_xd.m_status.key();
     case LIST_ID_NOTES: {
         value = journal_xd.m_notes;
         if (!journal_xd.displayID.Contains(".")) {
@@ -1993,7 +2057,7 @@ const wxString JournalList::getItem(long item, int col_id) const
         else if (journal_xd.ACCOUNTID_W == m_cp->m_account_id) {
             value = CurrencyModel::toString(journal_xd.TRANSAMOUNT_W, m_cp->m_currency_n);
         }
-        if (!value.IsEmpty() && TrxModel::status_id(journal_xd.STATUS) == TrxModel::STATUS_ID_VOID)
+        if (!value.IsEmpty() && journal_xd.is_void())
             value = "* " + value;
         return value;
     case LIST_ID_DEPOSIT:
@@ -2007,7 +2071,7 @@ const wxString JournalList::getItem(long item, int col_id) const
         else if (journal_xd.ACCOUNTID_D == m_cp->m_account_id) {
             value = CurrencyModel::toString(journal_xd.TRANSAMOUNT_D, m_cp->m_currency_n);
         }
-        if (!value.IsEmpty() && TrxModel::status_id(journal_xd.STATUS) == TrxModel::STATUS_ID_VOID)
+        if (!value.IsEmpty() && journal_xd.is_void())
             value = "* " + value;
         return value;
     case LIST_ID_BALANCE:
@@ -2160,7 +2224,7 @@ void JournalList::doSearchText(const wxString& value)
 
     }
 
-    wxLogDebug("Searching finished");
+    //wxLogDebug("Searching finished");
     selectedItem = getSortAsc(0) ? last : 0;
     long cursel = GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
     SetItemState(cursel, 0, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED);
@@ -2199,33 +2263,34 @@ void JournalList::markSelectedTransaction()
     }
 }
 
-void JournalList::deleteTransactionsByStatus(const wxString& status)
+void JournalList::deleteTransactionsByStatus(std::optional<TrxStatus> status_n)
 {
     int retainDays = SettingModel::instance().getInt("DELETED_TRANS_RETAIN_DAYS", 30);
     wxString deletionTime = wxDateTime::Now().ToUTC().FormatISOCombined();
     std::set<std::pair<RefTypeN, int64>> assetStockAccts;
-    const auto s = TrxModel::status_key(status);
     TrxModel::instance().db_savepoint();
     AttachmentModel::instance().db_savepoint();
     TrxSplitModel::instance().db_savepoint();
     FieldValueModel::instance().db_savepoint();
-    for (const auto& tran : this->m_journal_xa) {
-        if (tran.m_repeat_num) continue;
-        if (tran.STATUS == s || (s.empty() && status.empty())) {
-            if (m_cp->isDeletedTrans() || retainDays == 0) {
-                // remove also removes any split transactions, translink entries, attachments, and custom field data
-                TrxModel::instance().purge_id(tran.m_id);
-            }
-            else {
-                TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(tran.m_id);
-                trx_n->DELETEDTIME = deletionTime;
-                TrxModel::instance().unsafe_save_trx_n(trx_n);
-                TrxLinkModel::DataA translink = TrxLinkModel::instance().find(
-                    TrxLinkCol::CHECKINGACCOUNTID(trx_n->m_id)
-                );
-                if (!translink.empty()) {
-                    assetStockAccts.emplace(translink.at(0).m_ref_type, translink.at(0).m_ref_id);
-                }
+    for (const auto& journal_xd : this->m_journal_xa) {
+        if (journal_xd.m_repeat_num)
+            continue;
+        if (status_n.has_value() && journal_xd.m_status.id() != status_n.value().id())
+            continue;
+        if (m_cp->isDeletedTrans() || retainDays == 0) {
+            // remove also removes any split transactions, translink entries, attachments,
+            // and custom field data
+            TrxModel::instance().purge_id(journal_xd.m_id);
+        }
+        else {
+            TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(journal_xd.m_id);
+            trx_n->DELETEDTIME = deletionTime;
+            TrxModel::instance().unsafe_save_trx_n(trx_n);
+            TrxLinkModel::DataA translink = TrxLinkModel::instance().find(
+                TrxLinkCol::CHECKINGACCOUNTID(trx_n->m_id)
+            );
+            if (!translink.empty()) {
+                assetStockAccts.emplace(translink.at(0).m_ref_type, translink.at(0).m_ref_id);
             }
         }
     }

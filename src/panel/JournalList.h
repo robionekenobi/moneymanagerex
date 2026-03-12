@@ -21,6 +21,7 @@ Copyright (C) 2021-2025 Mark Whalley (mark@ipx.co.uk)
 
 #pragma once
 
+#include <optional>
 #include "model/Journal.h"
 #include "_PanelBase.h"
 #include "JournalPanel.h"
@@ -177,7 +178,7 @@ protected:
 
 private:
     void onChar(wxKeyEvent& event);
-    void onListLeftClick(wxMouseEvent& event);
+    //void onListLeftClick(wxMouseEvent& event);
     void onMouseRightClick(wxMouseEvent& event);
 
     void onListItemActivated(wxListEvent& event);
@@ -223,9 +224,12 @@ private:
     void doSearchText(const wxString& value);
     void setVisibleItemIndex(long v);
     void markSelectedTransaction();
-    void deleteTransactionsByStatus(const wxString& status);
+    void deleteTransactionsByStatus(std::optional<TrxStatus> status_n);
     bool checkForClosedAccounts();
     bool checkTransactionLocked(int64 AccountID, const wxString& transdate);
+
+    void OnSize(wxSizeEvent& event);
+    void setAutomaticColumnSize();
 };
 
 //----------------------------------------------------------------------------

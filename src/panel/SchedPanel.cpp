@@ -452,13 +452,13 @@ wxString SchedPanel::getItem(long item, int col_id)
     case SchedList::LIST_ID_PAYMENT_DATE:
         return mmGetDateTimeForDisplay(sched_xd.TRANSDATE);
     case SchedList::LIST_ID_DUE_DATE:
-        return mmGetDateTimeForDisplay(sched_xd.NEXTOCCURRENCEDATE);
+        return mmGetDateTimeForDisplay(sched_xd.m_due_date.isoDate());
     case SchedList::LIST_ID_ACCOUNT:
         return sched_xd.ACCOUNTNAME;
     case SchedList::LIST_ID_PAYEE:
         return sched_xd.real_payee_name();
     case SchedList::LIST_ID_STATUS:
-        return sched_xd.STATUS;
+        return sched_xd.m_status.key();
     case SchedList::LIST_ID_CATEGORY:
         return sched_xd.CATEGNAME;
     case SchedList::LIST_ID_TAGS:
@@ -467,10 +467,10 @@ wxString SchedPanel::getItem(long item, int col_id)
         wxString value = wxEmptyString;
         int64 accountid;
         double transamount;
-        if (TrxModel::type_id(sched_xd.TRANSCODE) == TrxModel::TYPE_ID_WITHDRAWAL) {
+        if (sched_xd.is_withdrawal()) {
             accountid = sched_xd.m_account_id; transamount = sched_xd.m_amount;
         }
-        else if (TrxModel::type_id(sched_xd.TRANSCODE) == TrxModel::TYPE_ID_TRANSFER) {
+        else if (sched_xd.is_transfer()) {
             accountid = sched_xd.m_account_id; transamount = sched_xd.m_amount;
         }
         else
@@ -480,7 +480,7 @@ wxString SchedPanel::getItem(long item, int col_id)
             CurrencyModel::instance().get_id_data_n(account->m_currency_id) : nullptr;
         if (currency)
             value = CurrencyModel::toCurrency(transamount, currency);
-        if (!value.IsEmpty() && TrxModel::status_id(sched_xd.STATUS) == TrxModel::STATUS_ID_VOID)
+        if (!value.IsEmpty() && sched_xd.is_void())
             value = "* " + value;
         return value;
     }
@@ -488,10 +488,10 @@ wxString SchedPanel::getItem(long item, int col_id)
         wxString value = wxEmptyString;
         int64 accountid;
         double transamount;
-        if (TrxModel::type_id(sched_xd.TRANSCODE) == TrxModel::TYPE_ID_DEPOSIT) {
+        if (sched_xd.is_deposit()) {
             accountid = sched_xd.m_account_id; transamount = sched_xd.m_amount;
         }
-        else if (TrxModel::type_id(sched_xd.TRANSCODE) == TrxModel::TYPE_ID_TRANSFER) {
+        else if (sched_xd.is_transfer()) {
             accountid = sched_xd.m_to_account_id_n; transamount = sched_xd.m_to_amount;
         }
         else
@@ -501,7 +501,7 @@ wxString SchedPanel::getItem(long item, int col_id)
             CurrencyModel::instance().get_id_data_n(account->m_currency_id) : nullptr;
         if (currency)
             value = CurrencyModel::toCurrency(transamount, currency);
-        if (!value.IsEmpty() && TrxModel::status_id(sched_xd.STATUS) == TrxModel::STATUS_ID_VOID)
+        if (!value.IsEmpty() && sched_xd.is_void())
             value = "* " + value;
         return value;
     }
@@ -545,12 +545,12 @@ const wxString SchedPanel::GetFrequency(const SchedModel::RepeatNum& rn) const
     return text;
 }
 
-const wxString SchedPanel::GetRemainingDays(const SchedData& item) const
+const wxString SchedPanel::GetRemainingDays(const SchedData& sched_d) const
 {
-    int daysRemaining = SchedModel::getTransDateTime(item)
-        .Subtract(this->getToday()).GetSeconds().GetValue() / 86400;
-    int daysOverdue = SchedModel::NEXTOCCURRENCEDATE(item)
-        .Subtract(this->getToday()).GetSeconds().GetValue() / 86400;
+    int daysRemaining = SchedModel::getTransDateTime(sched_d).
+        Subtract(this->getToday()).GetSeconds().GetValue() / 86400;
+    int daysOverdue = sched_d.m_due_date.getDateTime().
+        Subtract(this->getToday()).GetSeconds().GetValue() / 86400;
 
     // add a warning marker (*) in front, such that it is visible
     // to the user even when the Remaining column is too narrow.
@@ -596,8 +596,9 @@ int SchedList::OnGetItemImage(long item) const
         return -1;
     }
 
-    int daysRemaining = SchedModel::NEXTOCCURRENCEDATE(m_bdp->bills_[item])
-        .Subtract(m_bdp->getToday()).GetSeconds().GetValue() / 86400;
+    int daysRemaining = m_bdp->bills_[item].m_due_date.getDateTime().
+        Subtract(m_bdp->getToday()).GetSeconds().GetValue()
+    / 86400;
 
     /* Returns the icon to be shown for each entry */
     if (daysRemaining < 0)
