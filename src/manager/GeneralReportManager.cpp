@@ -99,10 +99,9 @@ R"(<!DOCTYPE html>
 <body>
 <div class = "container">
 <h3><TMPL_VAR REPORTNAME></h3>
-<TMPL_VAR TODAY><hr>
 <div class = "row">
-<div class = "col-xs-2"></div>
-<div class = "col-xs-8">
+<div class = "col-xs-1"></div>
+<div class = "col-xs-10">
     <table class="table sortable">
         <thead>
             <tr>
@@ -132,7 +131,11 @@ R"(<!DOCTYPE html>
             </tr>
         </tfoot>
     </table>
-</div></div></div>
+</div>
+</div>
+</div>
+<hr>
+Report created: <TMPL_VAR TODAY>
 <TMPL_LOOP ERRORS>
     <hr> <TMPL_VAR ERROR>
 </TMPL_LOOP>
@@ -182,10 +185,11 @@ R"(<!DOCTYPE html>
 <body>
 <div class = "container">
 <h3><TMPL_VAR REPORTNAME></h3>
-<TMPL_VAR TODAY><hr>
+%s
+<hr>
 <div class = "row">
-<div class = "col-xs-2"></div>
-<div class = "col-xs-8">
+<div class = "col-xs-1"></div>
+<div class = "col-xs-10">
 <table class = "table sortable">
 <thead>
     <tr>
@@ -202,7 +206,8 @@ R"(<!DOCTYPE html>
 </table>
 </div>
 </div>
-%s
+<hr>
+<div class="text-right">%s <TMPL_VAR TODAY></div>
 </div>
 <TMPL_LOOP ERRORS>
     <TMPL_VAR ERROR>
@@ -226,6 +231,16 @@ R"(<!DOCTYPE html>
             element.style.color="#f75e5e";
         }
         element.innerHTML = '<TMPL_VAR PFX_SYMBOL>' + currency(element.innerHTML) +'<TMPL_VAR SFX_SYMBOL>';
+    }
+    <!-- Format double to percent -->
+    elements = document.getElementsByClassName("percent");
+    for (var i = 0; i < elements.length; i++) {
+        var element = elements[i];
+        element.style.textAlign='right';
+        if (element.innerHTML.indexOf("-") > -1) {
+            element.style.color="#f75e5e";
+        }
+        element.innerHTML = "" + currency(element.innerHTML) +' %';
     }
 </script>
 </html>
@@ -679,7 +694,7 @@ void GeneralReportManager::importReport()
     report_d.m_description      = txt;
     report_d.m_active           = true;
     ReportModel::instance().save_data_n(report_d);
-    m_selectedReportID = report_d.id();
+    m_selectedReportID = report_d.m_id;
 
     fillControls();
 }
@@ -1034,7 +1049,7 @@ void GeneralReportManager::duplicateReport(int64 id)
         new_report_d.m_description      = report_n->m_description;
         new_report_d.m_active           = report_n->m_active;
         ReportModel::instance().add_data_n(new_report_d);
-        m_selectedReportID = new_report_d.id();
+        m_selectedReportID = new_report_d.m_id;
     }
 }
 
@@ -1196,7 +1211,7 @@ void GeneralReportManager::newReport(int sample)
     new_report_d.m_template_content = httContent;
     new_report_d.m_description      = description;
     ReportModel::instance().add_data_n(new_report_d);
-    m_selectedReportID = new_report_d.id();
+    m_selectedReportID = new_report_d.m_id;
 }
 
 void GeneralReportManager::OnExportReport(wxCommandEvent& WXUNUSED(event))
@@ -1401,7 +1416,7 @@ const wxString GeneralReportManager::getTemplate(wxString& sql)
         }
     }
     wxString htt = HTT_CONTAINER;
-    return wxString::Format(formatHTML(htt), header.length() > 0 ? header.RemoveLast() : header, body.length() > 0 ? body.RemoveLast() : body, params);
+    return wxString::Format(formatHTML(htt), params, header.length() > 0 ? header.RemoveLast() : header, body.length() > 0 ? body.RemoveLast() : body, _t("created:"));
 }
 
 #if wxUSE_DRAG_AND_DROP
@@ -1534,7 +1549,7 @@ void GeneralReportManager::DownloadAndStoreReport(const wxString& groupName, con
     report_d.description        = txt;
     report_d.m_active           = true;
     ReportModel::instance().save_data_n(report_d);
-    m_selectedReportID = report_d.id();
+    m_selectedReportID = report_d.m_id;
 }
 #endif
 
