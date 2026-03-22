@@ -49,18 +49,19 @@ public:
     TrxDialog(
         wxWindow* parent,
         int64 account_id,
-        Journal::IdB journal_id,
+        JournalKey journal_key,
         bool duplicate = false,
         TrxType type = TrxType(TrxType::e_withdrawal)
     );
 
-    bool Create(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , const wxString& caption = _t("Transactions Dialog")
-        , const wxPoint& pos = wxDefaultPosition
-        , const wxSize& size = wxDefaultSize
-        , long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX
-        , const wxString& name = "Transactions Dialog"
+    bool Create(
+        wxWindow* parent,
+        wxWindowID id = wxID_ANY,
+        const wxString& caption = _t("Transactions Dialog"),
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX,
+        const wxString& name = "Transactions Dialog"
     );
 
     void SetDialogTitle(const wxString& title);
@@ -102,7 +103,7 @@ private:
     mmTextCtrl* m_textAmount = nullptr;
     mmTextCtrl* toTextAmount_ = nullptr;
     wxTextCtrl* textNotes_ = nullptr;
-    wxButton* bAttachments_ = nullptr;
+    wxBitmapButton* bAttachments_ = nullptr;
     mmColorButton* bColours_ = nullptr;
     wxStaticText* account_label_ = nullptr;
     wxStaticText* categ_label_ = nullptr;
@@ -121,8 +122,8 @@ private:
     wxChoice* transaction_type_ = nullptr;
     mmDatePickerCtrl* dpc_ = nullptr;
     mmTagTextCtrl* tagTextCtrl_ = nullptr;
-    wxButton* bCalc_ = nullptr;
-    wxButton* bSwitch_ = nullptr;
+    wxBitmapButton* bCalc_ = nullptr;
+    wxBitmapButton* bSwitch_ = nullptr;
     mmCalculatorPopup* calcPopup_ = nullptr;
     mmTextCtrl* calcTarget_ = nullptr;
 
@@ -183,4 +184,3 @@ private:
         ID_CUSTOMFIELDS      // must be last in the list
     };
 };
-

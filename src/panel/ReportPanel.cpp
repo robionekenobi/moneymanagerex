@@ -616,7 +616,13 @@ void ReportPanel::CreateControls()
             if (map.count("default") > 0) {
                 w_filter->SetValue(removeQuotes(map["default"]));
             }
+            w_filter->Bind(wxEVT_TEXT, &ReportPanel::onFilterTextChanged, this);
             itemBoxSizerHeader->Add(w_filter, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+
+            w_filter_cancel = new wxBitmapButton(itemPanel3, wxID_ANY, mmBitmapBundle(png::CLEAR, mmBitmapButtonSize));
+            mmToolTip(w_filter_cancel, _t("Reset filter"));
+            w_filter_cancel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ReportPanel::onFilterCancel, this);
+            itemBoxSizerHeader->Add(w_filter_cancel, 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL, 2);
             itemBoxSizerHeader->AddSpacer(30);
         }
 
@@ -735,7 +741,7 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
                 const AccountData* account = AccountModel::instance().get_id_data_n(trx_n->m_account_id);
                 if (account) {
                     w_frame->selectNavTreeItem(account->m_name);
-                    w_frame->setGotoAccountID(trx_n->m_account_id, { transID, 0 });
+                    w_frame->setGotoAccountID(trx_n->m_account_id, JournalKey(-1, transID));
                     wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED, MENU_GOTOACCOUNT);
                     w_frame->GetEventHandler()->AddPendingEvent(event);
                 }
@@ -767,7 +773,7 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
                     }
                 }
                 else {
-                    TrxDialog dlg(w_frame, -1, {transId, false});
+                    TrxDialog dlg(w_frame, -1, JournalKey(-1, transId));
                     if (dlg.ShowModal() != wxID_CANCEL) {
                         m_rb->getHTMLText();
                         saveReportText();
@@ -899,6 +905,19 @@ void ReportPanel::onFilterChanged(wxCommandEvent& WXUNUSED(event))
         saveReportText();
         saveFilterSettings();
         m_rb->saveReportSettings();
+    }
+}
+
+void ReportPanel::onFilterTextChanged(wxCommandEvent& WXUNUSED(event))
+{
+    w_filter_cancel->Enable(!w_filter->GetValue().IsEmpty());
+}
+
+void ReportPanel::onFilterCancel(wxCommandEvent& event)
+{
+    if (m_rb) {
+        w_filter->SetValue("");
+        onFilterChanged(event);
     }
 }
 

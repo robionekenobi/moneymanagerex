@@ -65,6 +65,15 @@ mmReconcileDialog::mmReconcileDialog(wxWindow* parent, const AccountData* accoun
     FillControls(true);
     UpdateAll();
 
+    const wxAcceleratorEntry entries[] = {
+        wxAcceleratorEntry(wxACCEL_NORMAL, WXK_F9, wxID_NEW),
+        wxAcceleratorEntry(wxACCEL_CTRL, static_cast<int>('S'), wxID_SAVE),
+    };
+    wxAcceleratorTable tab(sizeof(entries) / sizeof(*entries), entries);
+    SetAcceleratorTable(tab);
+    Bind(wxEVT_MENU, &mmReconcileDialog::OnNew, this, wxID_NEW);
+    Bind(wxEVT_MENU, &mmReconcileDialog::OnClose, this, wxID_SAVE);
+
     SetIcon(mmex::getProgramIcon());
     applyColumnSettings();
     Fit();
@@ -638,11 +647,11 @@ void mmReconcileDialog::OnEdit(wxCommandEvent& WXUNUSED(event))
 
 void mmReconcileDialog::editTransaction(wxListCtrl* list, long item)
 {
-    int64 transid = m_itemDataMap[list->GetItemData(item)];
-    TrxDialog dlg(this, transid, {transid, false});
+    int64 trx_id = m_itemDataMap[list->GetItemData(item)];
+    TrxDialog dlg(this, trx_id, JournalKey(-1, trx_id));
     if (dlg.ShowModal() == wxID_OK) {
         m_checkingPanel->refreshList();
-        const TrxData* trx_n = TrxModel::instance().get_id_data_n(transid);
+        const TrxData* trx_n = TrxModel::instance().get_id_data_n(trx_id);
         setListItemData(trx_n, list, item);
         long idx = getListIndexByDate(trx_n, list);
         if (idx != item) {
