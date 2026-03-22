@@ -224,17 +224,17 @@ void mmWebAppDialog::fillControls()
         data.emplace_back(wxGetTranslation(WebTran.Type)); //WEBTRAN_TYPE
 
         wxString Payee = WebTran.Type != "Transfer" ? WebTran.Payee : "> " + WebTran.ToAccount;
-        data.push_back(Payee); //WEBTRAN_PAYEE
+        data.emplace_back(Payee); //WEBTRAN_PAYEE
 
         wxString Category = WebTran.Category;
         if (WebTran.SubCategory != wxEmptyString) Category += ":" + WebTran.SubCategory;
-        data.push_back(Category); //WEBTRAN_CATEGORY
+        data.emplace_back(Category); //WEBTRAN_CATEGORY
 
         const CurrencyData* currency_n = CurrencyModel::instance().get_base_data_n();
         wxString Amount = CurrencyModel::instance().toStringNoFormatting(
             WebTran.Amount, currency_n, currency_n->precision()
         );
-        data.push_back(Amount); //WEBTRAN_AMOUNT
+        data.emplace_back(Amount); //WEBTRAN_AMOUNT
 
         data.emplace_back(WebTran.Notes); //WEBTRAN_NOTES
         data.emplace_back(WebTran.Attachments); //WEBTRAN_ATTACHMENTS
