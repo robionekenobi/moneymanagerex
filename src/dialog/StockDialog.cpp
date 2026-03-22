@@ -648,7 +648,7 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
         StockHistoryData new_sh_d = StockHistoryData();
 
         // Check if entry exists
-        const StockHistoryData* existing_sh_d = StockHistoryModel::instance().get_key(m_stock_n->m_symbol, dt.getDateTime());
+        const StockHistoryData* existing_sh_d = StockHistoryModel::instance().get_key_data_n(m_stock_n->m_symbol, dt.getDateTime());
             
         // Create a new data object (not pointer)
         if (existing_sh_d) {
