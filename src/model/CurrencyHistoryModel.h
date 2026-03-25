@@ -29,7 +29,7 @@ class CurrencyHistoryModel : public TableFactory<CurrencyHistoryTable, CurrencyH
 // -- static
 
 public:
-    static CurrencyHistoryCol::CURRDATE CURRDATE(OP op, const mmDate& date) {
+    static CurrencyHistoryCol::CURRDATE DATE(OP op, const mmDate& date) {
         return CurrencyHistoryCol::CURRDATE(op, date.isoDate());
     }
 

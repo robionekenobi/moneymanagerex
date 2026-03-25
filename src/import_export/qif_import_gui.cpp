@@ -1006,7 +1006,7 @@ void mmQIFImportDialog::compilePayeeRegEx() {
 
     // only look at payees that have a match pattern set
     PayeeModel::DataA payee_a = PayeeModel::instance().find(
-        PayeeCol::PATTERN(OP_NE, wxEmptyString)
+        PayeeCol::PATTERN(OP_NEN, "")
     );
     for (const auto& payee_d : payee_a) {
         Document json_doc;

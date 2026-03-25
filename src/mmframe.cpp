@@ -4233,7 +4233,7 @@ void mmGUIFrame::autocleanDeletedTransactions() {
     );
     wxDateTime earliestDate = wxDateTime().Now().ToUTC().Subtract(days);
     TrxModel::DataA deleted_trx_a = TrxModel::instance().find(
-        TrxCol::DELETEDTIME(OP_NE, wxEmptyString),
+        TrxModel::IS_DELETED(true),
         TrxCol::DELETEDTIME(OP_LE, earliestDate.FormatISOCombined())
     );
     if (deleted_trx_a.empty())

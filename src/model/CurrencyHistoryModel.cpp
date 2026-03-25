@@ -48,14 +48,14 @@ const CurrencyHistoryData* CurrencyHistoryModel::get_key_data_n(
 ) {
     const Data* uh_n = search_cache_n(
         CurrencyHistoryCol::CURRENCYID(currency_id),
-        CurrencyHistoryModel::CURRDATE(OP_EQ, date)
+        CurrencyHistoryModel::DATE(OP_EQ, date)
     );
     if (uh_n)
         return uh_n;
 
     const DataA uh_a = find(
         CurrencyHistoryCol::CURRENCYID(currency_id),
-        CurrencyHistoryModel::CURRDATE(OP_EQ, date)
+        CurrencyHistoryModel::DATE(OP_EQ, date)
     );
     if (!uh_a.empty())
         uh_n = get_id_data_n(uh_a[0].m_id);
@@ -75,7 +75,7 @@ double CurrencyHistoryModel::get_id_date_rate(int64 currency_id_n, const mmDate&
 
     const DataA uh_a = CurrencyHistoryModel::instance().find(
         CurrencyHistoryCol::CURRENCYID(OP_EQ, currency_id_n),
-        CurrencyHistoryModel::CURRDATE(OP_EQ, date)
+        CurrencyHistoryModel::DATE(OP_EQ, date)
     );
     if (!uh_a.empty()) {
         // Rate found for specified day
@@ -91,11 +91,11 @@ double CurrencyHistoryModel::get_id_date_rate(int64 currency_id_n, const mmDate&
     // FIXME: sort by date
     const CurrencyHistoryModel::DataA prev_uh_a = find(
         CurrencyHistoryCol::CURRENCYID(currency_id_n),
-        CurrencyHistoryModel::CURRDATE(OP_LE, date)
+        CurrencyHistoryModel::DATE(OP_LE, date)
     );
     CurrencyHistoryModel::DataA next_uh_a = find(
         CurrencyHistoryCol::CURRENCYID(currency_id_n),
-        CurrencyHistoryModel::CURRDATE(OP_GE, date)
+        CurrencyHistoryModel::DATE(OP_GE, date)
     );
 
     if (!prev_uh_a.empty() && !next_uh_a.empty()) {

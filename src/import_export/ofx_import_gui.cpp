@@ -1458,6 +1458,7 @@ bool mmOFXImportDialog::ImportTransactions(wxXmlNode* banktranlist, wxLongLong a
             }
             // Check if this FITID exists in the current account first
             if (!TrxModel::instance().find(
+                // CHECK: fitid may be empty and TRANSACTIONNUMBER may be NULL
                 TrxCol::TRANSACTIONNUMBER(OP_EQ, fitid),
                 TrxCol::ACCOUNTID(OP_EQ, account->m_id.GetValue())
             ).empty())
@@ -1527,6 +1528,7 @@ bool mmOFXImportDialog::ImportTransactions(wxXmlNode* banktranlist, wxLongLong a
         // Check for existing transaction in the current account first
         TrxModel::DataA same_account_trx_d =
             TrxModel::instance().find(
+                // CHECK: fitid may be empty and TRANSACTIONNUMBER may be NULL
                 TrxCol::TRANSACTIONNUMBER(OP_EQ, fitid),
                 TrxCol::ACCOUNTID(OP_EQ, account->m_id)
             );
@@ -1541,6 +1543,7 @@ bool mmOFXImportDialog::ImportTransactions(wxXmlNode* banktranlist, wxLongLong a
 
         // Only check other accounts if no duplicate in current account
         TrxModel::DataA allExistingTrans = TrxModel::instance().find(
+            // CHECK: fitid may be empty and TRANSACTIONNUMBER may be NULL
             TrxCol::TRANSACTIONNUMBER(OP_EQ, fitid)
         );
         if (!allExistingTrans.empty()) {

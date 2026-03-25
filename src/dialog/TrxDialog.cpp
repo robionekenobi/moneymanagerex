@@ -1101,7 +1101,7 @@ void TrxDialog::OnAutoTransNum(wxCommandEvent& WXUNUSED(event))
     const auto numbers = TrxModel::instance().find(
         TrxModel::DATE(OP_GE, date),
         TrxCol::ACCOUNTID(OP_EQ, m_journal_data.m_account_id),
-        TrxCol::TRANSACTIONNUMBER(OP_NE, "")
+        TrxCol::TRANSACTIONNUMBER(OP_NEN, "")
     );
     for (const auto &num : numbers) {
         if (!num.m_number.IsNumber()) continue;

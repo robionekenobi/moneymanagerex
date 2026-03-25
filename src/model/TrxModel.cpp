@@ -43,9 +43,11 @@ TrxCol::TRANSDATE TrxModel::DATE(OP op, const mmDate& date)
     // OP_EQ and OP_NE should not be used for date comparisons.
     // if needed, create an equivalent AND/OR combination of two other operators.
     wxString bound =
-        (op == OP_GE || op == OP_LT) ? date.isoStart()
-        : (op == OP_LE || op == OP_GT) ? date.isoEnd()
-        : date.isoDate();
+        (op == OP_GE || op == OP_LT)
+            ? date.isoStart()
+        : (op == OP_LE || op == OP_GT)
+            ? date.isoEnd()
+            : date.isoDate();
     return TrxCol::TRANSDATE(op, bound);
 }
 
@@ -66,7 +68,7 @@ TrxCol::STATUS TrxModel::IS_VOID(bool value)
 
 TrxCol::DELETEDTIME TrxModel::IS_DELETED(bool value)
 {
-    return TrxCol::DELETEDTIME(value ? OP_NE : OP_EQ, wxEmptyString);
+    return TrxCol::DELETEDTIME(value ? OP_NEN : OP_EQN, "");
 }
 
 void TrxModel::copy_from_trx(Data *this_n, const Data& other_d)
@@ -256,7 +258,7 @@ void TrxModel::getFrequentUsedNotes(std::vector<wxString>& frequentNotes, int64 
     size_t max = 20;
 
     const auto trx_a = instance().find(
-        TrxCol::NOTES(OP_NE, ""),
+        TrxCol::NOTES(OP_NEN, ""),
         account_id > 0 ? TrxCol::ACCOUNTID(account_id) : TrxCol::ACCOUNTID(OP_NE, -1)
     );
 
