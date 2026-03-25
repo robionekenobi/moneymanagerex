@@ -44,7 +44,7 @@ AccountRow AccountData::to_row() const
     row.ACCOUNTNAME     = m_name;
     row.ACCOUNTTYPE     = m_type_;
     row.ACCOUNTNUM      = m_num;
-    row.STATUS          = m_status.name();
+    row.STATUS          = m_status.key();
     row.NOTES           = m_notes;
     row.HELDAT          = m_held_at;
     row.WEBSITE         = m_website;
@@ -52,7 +52,7 @@ AccountRow AccountData::to_row() const
     row.ACCESSINFO      = m_access_info;
     row.INITIALBAL      = m_open_balance;
     row.INITIALDATE     = m_open_date.isoDate();
-    row.FAVORITEACCT    = m_favorite.name();
+    row.FAVORITEACCT    = m_favorite.key();
     row.CURRENCYID      = m_currency_id;
     row.STATEMENTLOCKED = (m_stmt_locked ? 1 : 0);
     row.STATEMENTDATE   = m_stmt_date_n.isoDateN();

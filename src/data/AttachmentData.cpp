@@ -31,7 +31,7 @@ AttachmentRow AttachmentData::to_row() const
     AttachmentRow row;
 
     row.ATTACHMENTID = m_id;
-    row.REFTYPE      = m_ref_type_n.name_n();
+    row.REFTYPE      = m_ref_type_n.key_n();
     row.REFID        = m_ref_id;
     row.DESCRIPTION  = m_description;
     row.FILENAME     = m_filename;

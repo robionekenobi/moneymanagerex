@@ -21,82 +21,82 @@
 
 #include "_DataEnum.h"
 
-mmChoiceNameA AccountStatus::s_choice_a = mmChoiceNameA({
-    { e_open,   _n("Open") },
-    { e_closed, _n("Closed") },
+mmChoiceKeyNameA AccountStatus::s_choice_a = mmChoiceKeyNameA({
+    { e_open,   "Open",   _n("Open") },
+    { e_closed, "Closed", _n("Closed") },
 }, e_open, true);
 
-mmChoiceNameA AccountFavorite::s_choice_a = mmChoiceNameA({
-    { e_false, _n("FALSE") },
-    { e_true,  _n("TRUE") },
+mmChoiceKeyA AccountFavorite::s_choice_a = mmChoiceKeyA({
+    { e_false, "FALSE" },
+    { e_true,  "TRUE" },
 }, e_false, true);
 
-mmChoiceNameA AssetType::s_choice_a = mmChoiceNameA({
-    { e_property,   _n("Property") },
-    { e_automobile, _n("Automobile") },
-    { e_household,  _n("Household Object") },
-    { e_art,        _n("Art") },
-    { e_jewellery,  _n("Jewellery") },
-    { e_cash,       _n("Cash") },
-    { e_other,      _n("Other") },
+mmChoiceKeyNameA AssetType::s_choice_a = mmChoiceKeyNameA({
+    { e_property,   "Property",         _n("Property") },
+    { e_automobile, "Automobile",       _n("Automobile") },
+    { e_household,  "Household Object", _n("Household Object") },
+    { e_art,        "Art",              _n("Art") },
+    { e_jewellery,  "Jewellery",        _n("Jewellery") },
+    { e_cash,       "Cash",             _n("Cash") },
+    { e_other,      "Other",            _n("Other") },
 }, e_property, true );
 
-mmChoiceNameA AssetStatus::s_choice_a = mmChoiceNameA({
-    { e_closed, _n("Closed") },
-    { e_open,   _n("Open") },
+mmChoiceKeyNameA AssetStatus::s_choice_a = mmChoiceKeyNameA({
+    { e_closed, "Closed", _n("Closed") },
+    { e_open,   "Open",   _n("Open") },
 }, e_open, true);
 
-mmChoiceNameA AssetChange::s_choice_a = mmChoiceNameA({
-    { e_none,        _n("None") },
-    { e_appreciates, _n("Appreciates") },
-    { e_depreciates, _n("Depreciates") },
+mmChoiceKeyNameA AssetChange::s_choice_a = mmChoiceKeyNameA({
+    { e_none,        "None",        _n("None") },
+    { e_appreciates, "Appreciates", _n("Appreciates") },
+    { e_depreciates, "Depreciates", _n("Depreciates") },
 }, e_none, true);
 
-mmChoiceNameA AssetChangeMode::s_choice_a = mmChoiceNameA({
-    { e_percentage, _n("Percentage") },
-    { e_linear,     _n("Linear") },
+mmChoiceKeyNameA AssetChangeMode::s_choice_a = mmChoiceKeyNameA({
+    { e_percentage, "Percentage", _n("Percentage") },
+    { e_linear,     "Linear",     _n("Linear") },
 }, e_percentage, true);
 
-mmChoiceNameA BudgetFreq::s_choice_a = mmChoiceNameA({
-    { e_none,       _n("None") },
-    { e_weekly,     _n("Weekly") },
-    { e_biweekly,   _n("Fortnightly") },
-    { e_monthly,    _n("Monthly") },
-    { e_bimonthly,  _n("Every 2 Months") },
-    { e_quarterly,  _n("Quarterly") },
-    { e_halfyearly, _n("Half-Yearly") },
-    { e_yearly,     _n("Yearly") },
-    { e_daily,      _n("Daily") },
+mmChoiceKeyNameA BudgetFreq::s_choice_a = mmChoiceKeyNameA({
+    { e_none,       "None",           _n("None") },
+    { e_weekly,     "Weekly",         _n("Weekly") },
+    { e_biweekly,   "Fortnightly",    _n("Fortnightly") },
+    { e_monthly,    "Monthly",        _n("Monthly") },
+    { e_bimonthly,  "Every 2 Months", _n("Every 2 Months") },
+    { e_quarterly,  "Quarterly",      _n("Quarterly") },
+    { e_halfyearly, "Half-Yearly",    _n("Half-Yearly") },
+    { e_yearly,     "Yearly",         _n("Yearly") },
+    { e_daily,      "Daily",          _n("Daily") },
 }, e_none, true);
 
-mmChoiceNameA CurrencyType::s_choice_a = mmChoiceNameA({
-    { e_fiat,   _n("Fiat") },
-    { e_crypto, _n("Crypto") },
+mmChoiceKeyNameA CurrencyType::s_choice_a = mmChoiceKeyNameA({
+    { e_fiat,   "Fiat",   _n("Fiat") },
+    { e_crypto, "Crypto", _n("Crypto") },
 }, e_fiat, true);
 
-mmChoiceNameA FieldTypeN::s_choice_a = mmChoiceNameA({
-    { e_string,        _n("String") },
-    { e_integer,       _n("Integer") },
-    { e_decimal,       _n("Decimal") },
-    { e_boolean,       _n("Boolean") },
-    { e_date,          _n("Date") },
-    { e_time,          _n("Time") },
-    { e_single_choice, _n("SingleChoice") },
-    { e_multi_choice,  _n("MultiChoice") },
+mmChoiceKeyNameA FieldTypeN::s_choice_a = mmChoiceKeyNameA({
+    { e_string,        "String",       _n("String") },
+    { e_integer,       "Integer",      _n("Integer") },
+    { e_decimal,       "Decimal",      _n("Decimal") },
+    { e_boolean,       "Boolean",      _n("Boolean") },
+    { e_date,          "Date",         _n("Date") },
+    { e_time,          "Time",         _n("Time") },
+    { e_single_choice, "SingleChoice", _n("Single Choice") },
+    { e_multi_choice,  "MultiChoice",  _n("Multi Choice") },
 }, -1, true);
 
-mmChoiceNameA TrxType::s_choice_a = mmChoiceNameA({
-    { e_withdrawal, _n("Withdrawal") },
-    { e_deposit,    _n("Deposit") },
-    { e_transfer,   _n("Transfer") },
+mmChoiceKeyNameA TrxType::s_choice_a = mmChoiceKeyNameA({
+    { e_withdrawal, "Withdrawal", _n("Withdrawal") },
+    { e_deposit,    "Deposit",    _n("Deposit") },
+    { e_transfer,   "Transfer",   _n("Transfer") },
 }, e_withdrawal, true);
 
-mmChoiceKeyNameA TrxStatus::s_choice_a = mmChoiceKeyNameA({
-    { e_unreconciled, "",  _n("Unreconciled") },
-    { e_reconciled,   "R", _n("Reconciled") },
-    { e_void,         "V", _n("Void") },
-    { e_followup,     "F", _n("Follow Up") },
-    { e_duplicate,    "D", _n("Duplicate") },
+mmChoiceKeyKeyNameA TrxStatus::s_choice_a = mmChoiceKeyKeyNameA({
+    { e_unreconciled, "",  "Unreconciled", _n("Unreconciled") },
+    { e_reconciled,   "R", "Reconciled",   _n("Reconciled") },
+    { e_void,         "V", "Void",         _n("Void") },
+    { e_followup,     "F", "Follow Up",    _n("Follow Up") },
+    { e_duplicate,    "D", "Duplicate",    _n("Duplicate") },
 }, e_unreconciled, true);
 
 mmChoiceCodeNameA RepeatMode::s_choice_a = mmChoiceCodeNameA({
@@ -125,15 +125,15 @@ mmChoiceCodeNameA RepeatFreq::s_choice_a = mmChoiceCodeNameA({
     { e_every_x_months,          14, _n("Every %s Months") },
 }, e_once, true);
 
-mmChoiceNameA RefTypeN::s_choice_a = mmChoiceNameA({
-    { e_trx,         _n("Transaction") },
-    { e_stock,       _n("Stock") },
-    { e_asset,       _n("Asset") },
-    { e_account,     _n("BankAccount") },
-    { e_sched,       _n("RecurringTransaction") },
-    { e_payee,       _n("Payee") },
-    { e_trx_split,   _n("TransactionSplit") },
-    { e_sched_split, _n("RecurringTransactionSplit") },
+mmChoiceKeyNameA RefTypeN::s_choice_a = mmChoiceKeyNameA({
+    { e_trx,         "Transaction",               _n("Transaction") },
+    { e_stock,       "Stock",                     _n("Stock") },
+    { e_asset,       "Asset",                     _n("Asset") },
+    { e_account,     "BankAccount",               _n("Account") },
+    { e_sched,       "RecurringTransaction",      _n("Schedule") },
+    { e_payee,       "Payee",                     _n("Payee") },
+    { e_trx_split,   "TransactionSplit",          _n("Transaction Split") },
+    { e_sched_split, "RecurringTransactionSplit", _n("Schedule Split") },
 }, -1, true);
 
 mmChoiceCodeNameA UpdateType::s_choice_a = mmChoiceCodeNameA({
