@@ -23,10 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "dialog/AttachmentDialog.h"
 #include "report/htmlbuilder.h"
 
-TrxFilter::TrxFilter()
-{
-    this->clear();
-}
+// -- methods
 
 void TrxFilter::clear()
 {

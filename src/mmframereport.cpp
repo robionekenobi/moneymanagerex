@@ -339,7 +339,7 @@ void mmGUIFrame::mmDoHideReportsDialog()
 
     if (reports.ShowModal() == wxID_OK)
     {
-        InfoModel::instance().setString("HIDDEN_REPORTS", "[]");
+        InfoModel::instance().saveString("HIDDEN_REPORTS", "[]");
         const auto sel = reports.GetSelections();
         for (const auto& i : sel)
         {

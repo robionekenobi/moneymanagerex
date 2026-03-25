@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 James Higley
  Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -27,14 +28,7 @@
 #include "CategoryModel.h"
 #include "PrefModel.h"
 
-BudgetModel::BudgetModel() :
-    TableFactory<BudgetTable, BudgetData>()
-{
-}
-
-BudgetModel::~BudgetModel()
-{
-}
+// -- constructor
 
 // Initialize the global BudgetModel table.
 // Reset the BudgetModel table or create the table if it does not exist.
@@ -54,10 +48,7 @@ BudgetModel& BudgetModel::instance()
     return Singleton<BudgetModel>::instance();
 }
 
-BudgetCol::PERIOD BudgetModel::FREQUENCY(OP op, BudgetFreq freq)
-{
-    return BudgetCol::PERIOD(op, freq.name());
-}
+// -- methods
 
 void BudgetModel::getBudgetEntry(
     int64 bp_id,

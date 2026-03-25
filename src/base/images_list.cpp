@@ -489,7 +489,7 @@ bool checkThemeContents(wxArrayString *filesinTheme)
 
 void reverttoDefaultTheme()
 {
-    SettingModel::instance().setTheme("default");
+    SettingModel::instance().saveTheme("default");
     darkFound = false;
     processThemes(mmex::getPathResource(mmex::THEMESDIR), SettingModel::instance().getTheme(), true);
     processThemes(mmex::getPathResource(mmex::THEMESDIR), SettingModel::instance().getTheme(), false);

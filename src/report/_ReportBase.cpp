@@ -227,7 +227,7 @@ void ReportBase::saveReportSettings()
     if (isActive) {
         const wxString& rj_key = wxString::Format("REPORT_%d", report_id);
         const wxString& rj_value = wxString::FromUTF8(json_buffer.GetString());
-        InfoModel::instance().setString(rj_key, rj_value);
+        InfoModel::instance().saveString(rj_key, rj_value);
         m_settings = rj_value;
     }
 }

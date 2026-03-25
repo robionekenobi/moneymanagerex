@@ -48,7 +48,7 @@ MergeTagDialog::MergeTagDialog( )
 
 MergeTagDialog::~MergeTagDialog()
 {
-    InfoModel::instance().setSize("RELOCATETAG_DIALOG_SIZE", GetSize());
+    InfoModel::instance().saveSize("RELOCATETAG_DIALOG_SIZE", GetSize());
 }
 
 MergeTagDialog::MergeTagDialog(wxWindow* parent, int64 source_tag_id)

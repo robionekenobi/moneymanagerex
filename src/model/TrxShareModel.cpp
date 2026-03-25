@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2016 Stefano Giorgio
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -20,14 +21,7 @@
 #include "TrxModel.h"
 #include "TrxShareModel.h"
 
-TrxShareModel::TrxShareModel() :
-    TableFactory<TrxShareTable, TrxShareData>()
-{
-}
-
-TrxShareModel::~TrxShareModel()
-{
-}
+// -- constructor
 
 // Initialize the global TrxShareModel table.
 // Reset the TrxShareModel table or create the table if it does not exist.
@@ -46,6 +40,8 @@ TrxShareModel& TrxShareModel::instance()
 {
     return Singleton<TrxShareModel>::instance();
 }
+
+// -- methods
 
 void TrxShareModel::purge_trxId(const int64 trx_id)
 {

@@ -83,7 +83,7 @@ SchedDialog::~SchedDialog()
             GetSize().GetWidth() - m_custom_fields->GetMinWidth(),
             GetSize().GetHeight()
         );
-    InfoModel::instance().setSize("RECURRINGTRANS_DIALOG_SIZE", size);
+    InfoModel::instance().saveSize("RECURRINGTRANS_DIALOG_SIZE", size);
 }
 
 SchedDialog::SchedDialog(

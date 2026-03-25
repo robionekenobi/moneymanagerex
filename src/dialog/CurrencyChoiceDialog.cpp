@@ -62,7 +62,7 @@ wxBEGIN_EVENT_TABLE(CurrencyChoiceDialog, wxDialog)
 
 CurrencyChoiceDialog::~CurrencyChoiceDialog()
 {
-    InfoModel::instance().setSize("CURRENCY_DIALOG_SIZE", GetSize());
+    InfoModel::instance().saveSize("CURRENCY_DIALOG_SIZE", GetSize());
 }
 
 CurrencyChoiceDialog::CurrencyChoiceDialog(
@@ -592,7 +592,7 @@ void CurrencyChoiceDialog::OnItemRightClick(wxDataViewEvent& event)
 
 void CurrencyChoiceDialog::OnShowHiddenChbClick(wxCommandEvent& WXUNUSED(event))
 {
-    InfoModel::instance().setBool("SHOW_HIDDEN_CURRENCIES", w_show_all_cb->IsChecked());
+    InfoModel::instance().saveBool("SHOW_HIDDEN_CURRENCIES", w_show_all_cb->IsChecked());
     fillControls();
 }
 
@@ -845,7 +845,7 @@ bool CurrencyChoiceDialog::SetBaseCurrency(int64& baseCurrencyID)
         return true;
     }
 
-    PrefModel::instance().setBaseCurrencyID(baseCurrencyID);
+    PrefModel::instance().saveBaseCurrencyID(baseCurrencyID);
 
     // Update base_conv_rate
     CurrencyModel::instance().db_savepoint();

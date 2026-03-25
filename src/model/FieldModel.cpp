@@ -1,5 +1,6 @@
 /*******************************************************
  Copyright (C) 2016 Gabriele-V
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -23,32 +24,7 @@
 #include "FieldValueModel.h"
 #include "TrxModel.h"
 
-FieldModel::FieldModel() :
-    TableFactory<FieldTable, FieldData>()
-{
-}
-
-FieldModel::~FieldModel()
-{
-}
-
-// Initialize the global FieldModel table.
-// Reset the FieldModel table or create the table if it does not exist.
-FieldModel& FieldModel::instance(wxSQLite3Database* db)
-{
-    FieldModel& ins = Singleton<FieldModel>::instance();
-    ins.reset_cache();
-    ins.m_db = db;
-    ins.ensure_table();
-
-    return ins;
-}
-
-// Return the static instance of FieldModel table
-FieldModel& FieldModel::instance()
-{
-    return Singleton<FieldModel>::instance();
-}
+// -- static
 
 const wxArrayString FieldModel::UDFC_FIELDS()
 {
@@ -207,6 +183,28 @@ const wxString FieldModel::formatProperties(
     return wxString::FromUTF8(json_buffer.GetString());
 }
 
+// -- constructor
+
+// Initialize the global FieldModel table.
+// Reset the FieldModel table or create the table if it does not exist.
+FieldModel& FieldModel::instance(wxSQLite3Database* db)
+{
+    FieldModel& ins = Singleton<FieldModel>::instance();
+    ins.reset_cache();
+    ins.m_db = db;
+    ins.ensure_table();
+
+    return ins;
+}
+
+// Return the static instance of FieldModel table
+FieldModel& FieldModel::instance()
+{
+    return Singleton<FieldModel>::instance();
+}
+
+// -- override
+
 // Delete a field and all his data
 bool FieldModel::purge_id(int64 field_id)
 {
@@ -219,6 +217,8 @@ bool FieldModel::purge_id(int64 field_id)
     db_release_savepoint();
     return unsafe_remove_id(field_id);
 }
+
+// -- methods
 
 // Return all values
 // CHECK: chenge wxArrayString to std::set<wxString>

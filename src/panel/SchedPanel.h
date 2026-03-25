@@ -32,10 +32,8 @@ class SchedPanel : public PanelBase
 {
     friend class SchedList;
 
-    wxDECLARE_EVENT_TABLE();
-
 public:
-    enum EIcons
+    enum
     {
         ICON_FOLLOWUP,
         ICON_RUN_AUTO,
@@ -43,6 +41,9 @@ public:
         ICON_UPARROW,
         ICON_DOWNARROW
     };
+
+private:
+    wxDECLARE_EVENT_TABLE();
 
 private:
     SchedModel::DataExtA m_sched_xa;

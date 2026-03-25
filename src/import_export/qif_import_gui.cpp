@@ -86,7 +86,7 @@ mmQIFImportDialog::mmQIFImportDialog(
 
 mmQIFImportDialog::~mmQIFImportDialog()
 {
-    InfoModel::instance().setSize(DIALOG_SIZE, GetSize());
+    InfoModel::instance().saveSize(DIALOG_SIZE, GetSize());
 }
 
 wxString mmQIFImportDialog::OnGetItemText(long item, long column) const

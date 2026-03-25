@@ -299,7 +299,7 @@ void JournalList::setColumnsInfo()
     m_col_disabled_id.clear();
     m_col_id_nr.clear();
 
-    if (!PrefModel::instance().UseTransDateTime())
+    if (!PrefModel::instance().getUseTransDateTime())
         m_col_disabled_id.insert(LIST_ID_TIME);
     if (w_panel->isAccount() && w_panel->m_account_n->m_credit_limit == 0)
         m_col_disabled_id.insert(LIST_ID_CREDIT);
@@ -428,7 +428,7 @@ void JournalList::sortList()
     w_panel->w_header_sortOrder->SetLabelText(sortText);
     m_balance_valid = (getSortColId(0) == LIST_ID_SN)
         ? true
-        : (getSortColId(0) == LIST_ID_DATE && PrefModel::instance().TreatDateAsSN())
+        : (getSortColId(0) == LIST_ID_DATE && PrefModel::instance().getTreatDateAsSN())
         ? true
         : false;
 
@@ -496,7 +496,7 @@ void JournalList::sortTransactions(int col_id, bool ascend)
         sortBy(TrxData::SorterByNotes(), ascend);
         break;
     case JournalList::LIST_ID_DATE:
-        if (PrefModel::instance().TreatDateAsSN())
+        if (PrefModel::instance().getTreatDateAsSN())
             sortBy(Journal::SorterByJOURNALSN(), ascend);
         else
             sortBy(TrxData::SorterByDate(), ascend);
@@ -1589,7 +1589,7 @@ void JournalList::onFind(wxCommandEvent&)
         return;
 
     // save the filter as the "Advanced" filter for All Transactions
-    InfoModel::instance().setString("CHECK_FILTER_ID_ADV_-1", m_filter);
+    InfoModel::instance().saveString("CHECK_FILTER_ID_ADV_-1", m_filter);
 
     // Navigate to the All Transactions panel
     wxTreeItemId currentId = w_panel->w_frame->GetNavTreeSelection();

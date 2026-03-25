@@ -82,7 +82,7 @@ TrxDialog::~TrxDialog()
     wxSize size = GetSize();
     if (m_custom_fields->IsCustomPanelShown())
         size = wxSize(GetSize().GetWidth() - m_custom_fields->GetMinWidth(), GetSize().GetHeight());
-    InfoModel::instance().setSize("TRANSACTION_DIALOG_SIZE", size);
+    InfoModel::instance().saveSize("TRANSACTION_DIALOG_SIZE", size);
 }
 
 void TrxDialog::SetEventHandlers()
@@ -237,7 +237,7 @@ void TrxDialog::dataToControls()
             trx_date = previousDate;
         }
         else {
-            bool is_time_used = PrefModel::instance().UseTransDateTime();
+            bool is_time_used = PrefModel::instance().getUseTransDateTime();
             trx_date = is_time_used
                 ? m_journal_data.m_date_time.getDateTime()
                 : m_journal_data.m_date().getDateTime();

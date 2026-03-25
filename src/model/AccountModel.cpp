@@ -2,6 +2,7 @@
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2014, 2020 - 2022 Nikolay Akimov
  Copyright (C) 2025 Klaus Wich
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -26,16 +27,11 @@
 #include "TrxLinkModel.h"
 #include "TrxShareModel.h"
 
+// -- static
+
 const RefTypeN AccountModel::s_ref_type = RefTypeN(RefTypeN::e_account);
 
-AccountModel::AccountModel() :
-    TableFactory<AccountTable, AccountData>()
-{
-}
-
-AccountModel::~AccountModel()
-{
-}
+// -- constructor
 
 // Initialize the global AccountModel table.
 // Reset the AccountModel table or create the table if it does not exist.
@@ -56,10 +52,7 @@ AccountModel& AccountModel::instance()
     return Singleton<AccountModel>::instance();
 }
 
-AccountCol::STATUS AccountModel::STATUS(OP op, AccountStatus status)
-{
-    return AccountCol::STATUS(op, status.name());
-}
+// -- override
 
 // Remove the Data record of a given id, including its auxiliary records
 bool AccountModel::purge_id(int64 account_id)
@@ -99,6 +92,8 @@ bool AccountModel::purge_id(int64 account_id)
 
     return unsafe_remove_id(account_id);
 }
+
+// -- methods
 
 const CurrencyData* AccountModel::get_data_currency_p(const Data& account_d)
 {
@@ -190,7 +185,7 @@ const TrxModel::DataA AccountModel::find_id_trx_aBySN(int64 account_id)
         TrxCol::TOACCOUNTID(account_id)
     );
     std::sort(trx_a.begin(), trx_a.end());
-    if (PrefModel::instance().UseTransDateTime())
+    if (PrefModel::instance().getUseTransDateTime())
         std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTime());
     else
         std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDate());
@@ -321,6 +316,23 @@ int AccountModel::find_money_type_c()
         ).size();
 }
 
+const wxString AccountModel::value_number(const Data& account_d, double value, int precision)
+{
+    return CurrencyModel::instance().toString(
+        value,
+        AccountModel::get_data_currency_p(account_d),
+        precision
+    );
+}
+
+const wxString AccountModel::value_number_currency(const Data& account_d, double value)
+{
+    return CurrencyModel::instance().toCurrency(
+        value,
+        AccountModel::get_data_currency_p(account_d)
+    );
+}
+
 // FIXME: see comments in NavigatorTypes::DeleteEntry()
 void AccountModel::dangerous_reset_type(wxString old_type)
 {
@@ -348,21 +360,4 @@ void AccountModel::dangerous_reset_unknown_types()
             save_data_n(acc_d);
         }
     }
-}
-
-const wxString AccountModel::value_number(const Data& account_d, double value, int precision)
-{
-    return CurrencyModel::instance().toString(
-        value,
-        AccountModel::get_data_currency_p(account_d),
-        precision
-    );
-}
-
-const wxString AccountModel::value_number_currency(const Data& account_d, double value)
-{
-    return CurrencyModel::instance().toCurrency(
-        value,
-        AccountModel::get_data_currency_p(account_d)
-    );
 }

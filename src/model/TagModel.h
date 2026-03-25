@@ -1,5 +1,6 @@
 /*******************************************************
  Copyright (C) 2016 Guan Lisheng (guanlisheng@gmail.com)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -25,16 +26,20 @@
 
 class TagModel : public TableFactory<TagTable, TagData>
 {
+// -- constructor
+
 public:
-    TagModel();
-    ~TagModel();
+    TagModel() :
+        TableFactory<TagTable, TagData>() {}
+    ~TagModel() {}
 
 public:
     static TagModel& instance(wxSQLite3Database* db);
     static TagModel& instance();
 
+// -- methods
+
 public:
     int  is_used(int64 tag_id);
     auto get_name_data_n(const wxString& name) -> const Data*;
 };
-

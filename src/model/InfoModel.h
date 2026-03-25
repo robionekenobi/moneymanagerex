@@ -2,6 +2,7 @@
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
  Copyright (C) 2025 Klaus Wich
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -29,46 +30,51 @@
 
 class InfoModel : public TableFactory<InfoTable, InfoData>
 {
+// -- constructor
+
 public:
-    InfoModel();
-    ~InfoModel();
+    InfoModel() :
+        TableFactory<InfoTable, InfoData>() {}
+    ~InfoModel() {}
 
 public:
     static InfoModel& instance(wxSQLite3Database* db);
     static InfoModel& instance();
 
+// -- methods
+
 public:
     bool contains(const wxString& key);
 
-    void setRaw(const wxString& key, const wxString& newValue);
     wxString getRaw(const wxString& key, const wxString& defaultValue);
+    void saveRaw(const wxString& key, const wxString& newValue);
 
-    void setString(const wxString& key, const wxString& newValue);
     wxString getString(const wxString& key, const wxString& defaultValue);
+    void saveString(const wxString& key, const wxString& newValue);
 
-    void setBool(const wxString& key, bool newValue);
     bool getBool(const wxString& key, bool defaultValue);
+    void saveBool(const wxString& key, bool newValue);
 
-    void setInt(const wxString& key, int newValue);
     int getInt(const wxString& key, int defaultValue);
+    void saveInt(const wxString& key, int newValue);
 
-    void setInt64(const wxString& key, int64 newValue);
     int64 getInt64(const wxString& key, int64 defaultValue);
+    void saveInt64(const wxString& key, int64 newValue);
 
-    void setSize(const wxString& key, const wxSize& newValue);
     const wxSize getSize(const wxString& key);
+    void saveSize(const wxString& key, const wxSize& newValue);
 
-    void setColour(const wxString& key, const wxColour& newValue);
     const wxColour getColour(const wxString& key, const wxColour& defaultValue = wxColour(255, 255, 255));
+    void saveColour(const wxString& key, const wxColour& newValue);
 
     void setDate(const wxString& key, const mmDate& newValue);
 
-    void setJdoc(const wxString& key, Document& newValue);
-    void setJdoc(const wxString& key, StringBuffer& newValue);
     Document getJdoc(const wxString& key, const wxString& defaultValue);
+    void saveJdoc(const wxString& key, Document& newValue);
+    void saveJdoc(const wxString& key, StringBuffer& newValue);
 
-    void setArrayString(const wxString& key, const wxArrayString& a);
     const wxArrayString getArrayString(const wxString& key, bool sort = false);
+    void saveArrayString(const wxString& key, const wxArrayString& a);
 
     int findArrayItem(const wxString& key, const wxString& label);
     void updateArrayItem(const wxString& key, int i, const wxString& newValue);
@@ -76,11 +82,11 @@ public:
     void eraseArrayItem(const wxString& key, int i);
 
 public:
-    void setOpenCustomDialog(const wxString& refType, bool newValue);
     bool getOpenCustomDialog(const wxString& refType);
+    void saveOpenCustomDialog(const wxString& refType, bool newValue);
 
-    void setCustomDialogSize(const wxString& refType, const wxSize& newValue);
     wxSize getCustomDialogSize(const wxString& refType);
+    void saveCustomDialogSize(const wxString& refType, const wxSize& newValue);
 
 public:
     bool checkDBVersion();
@@ -92,4 +98,3 @@ public:
     static void saveFilterBool(Document &sdoc, const char* skey, bool bvalue);
     static void saveFilterInt(Document &sdoc, const char* skey, int ivalue);
 };
-

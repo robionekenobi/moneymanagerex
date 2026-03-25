@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -28,21 +29,31 @@
 
 class StockModel : public TableFactory<StockTable, StockData>
 {
+// -- static
+
 public:
     static const RefTypeN s_ref_type;
 
+// -- constructor
+
 public:
-    StockModel();
-    ~StockModel();
+    StockModel() :
+        TableFactory<StockTable, StockData>() {}
+    ~StockModel() {}
 
 public:
     static StockModel& instance(wxSQLite3Database* db);
     static StockModel& instance();
 
+// -- override
+
 public:
     // override TableFactory
     virtual bool purge_id(int64 id) override;
 
+// -- methods
+
+public:
     auto get_id_name(int64 stock_id) -> const wxString;
     auto find_last_hist_date(const Data& stock_d) -> const mmDate;
 
@@ -53,4 +64,3 @@ public:
     void update_symbol_current_price(const wxString& symbol, double price = -1);
     void update_data_position(Data* stock_n);
 };
-

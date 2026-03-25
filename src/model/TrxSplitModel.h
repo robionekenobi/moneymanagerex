@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -37,21 +38,31 @@ struct Split
 
 class TrxSplitModel : public TableFactory<TrxSplitTable, TrxSplitData>
 {
+// -- static
+
 public:
     static const RefTypeN s_ref_type;
 
+// -- constructor
+
 public:
-    TrxSplitModel();
-    ~TrxSplitModel();
+    TrxSplitModel() :
+        TableFactory<TrxSplitTable, TrxSplitData>() {}
+    ~TrxSplitModel() {}
 
 public:
     static TrxSplitModel& instance(wxSQLite3Database* db);
     static TrxSplitModel& instance();
 
+// -- override
+
 public:
     // override TableFactory
     virtual bool purge_id(int64 tp_id) override;
 
+// -- methods
+
+public:
     auto find_id_gl_a(int64 tp_id) -> const TagLinkModel::DataA;
     auto find_all_mTrxId() -> std::map<int64, DataA>;
 

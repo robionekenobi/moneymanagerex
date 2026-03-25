@@ -459,7 +459,7 @@ void AccountDialog::OnCustonImage(wxCommandEvent& event)
     int selectedImage = (event.GetId() - wxID_HIGHEST) - img::LAST_NAVTREE_PNG + 1;
     int image_id = PrefModel::instance().AccountImageId(m_account_n->m_id, true);
 
-    InfoModel::instance().setInt(
+    InfoModel::instance().saveInt(
         wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id),
         selectedImage
     );

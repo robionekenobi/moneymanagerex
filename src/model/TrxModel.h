@@ -1,5 +1,6 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -30,6 +31,8 @@
 
 class TrxModel : public TableFactory<TrxTable, TrxData>
 {
+// -- static
+
 public:
     using SplitDataA = TrxSplitModel::DataA;
 
@@ -91,14 +94,6 @@ public:
     static const RefTypeN s_ref_type;
 
 public:
-    TrxModel();
-    ~TrxModel();
-
-public:
-    static TrxModel& instance(wxSQLite3Database* db);
-    static TrxModel& instance();
-
-public:
     static auto DATE(OP op, const mmDate& date) -> TrxCol::TRANSDATE;
     static auto TYPE(OP op, TrxType trx_type) -> TrxCol::TRANSCODE;
     static auto STATUS(OP op, TrxStatus trx_status) -> TrxCol::STATUS;
@@ -111,9 +106,24 @@ public:
     static bool is_foreign(const Data& this_d);
     static bool is_foreignAsTransfer(const Data& this_d);
 
+// -- constructor
+
+public:
+    TrxModel() :
+        TableFactory<TrxTable, TrxData>() {}
+    ~TrxModel() {}
+
+public:
+    static TrxModel& instance(wxSQLite3Database* db);
+    static TrxModel& instance();
+
+// -- override
+
 public:
     // override TableFactory
     virtual bool purge_id(int64 id) override;
+
+// -- methods
 
     void save_timestamp(int64 id);
     void update_timestamp(Data& trx_d);
@@ -128,6 +138,8 @@ public:
     void getFrequentUsedNotes(std::vector<wxString> &frequentNotes, int64 accountID = -1);
     void setEmptyData(Data& trx_d, int64 account_id);
     bool is_locked(const Data& trx_d);
+
+// -- sorter
 
 public:
     struct SorterByACCOUNTNAME

@@ -54,6 +54,8 @@ struct JournalKey
 
 class Journal
 {
+// -- static
+
 public:
     struct Data: public TrxData
     {
@@ -106,6 +108,8 @@ public:
     static auto split(Data& journal_d) -> const TrxSplitModel::DataA;
     static auto get_id_data(JournalKey journal_key) -> Journal::Data;
     static auto get_id_data_x(JournalKey journal_key) -> Journal::DataExt;
+
+// -- sorter
 
     struct SorterByJOURNALID
     { 

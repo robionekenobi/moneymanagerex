@@ -35,7 +35,7 @@ mmToolbarDialog::mmToolbarDialog()
 
 mmToolbarDialog::~mmToolbarDialog()
 {
-    InfoModel::instance().setSize(DIALOG_SIZE, GetSize());
+    InfoModel::instance().saveSize(DIALOG_SIZE, GetSize());
 }
 
 mmToolbarDialog::mmToolbarDialog(wxWindow* parent):genericTreeListDialog(parent, _t("Toolbar configuration"))

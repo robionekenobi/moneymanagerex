@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -29,18 +30,26 @@ class mmDateRange;
 
 class CategoryModel : public TableFactory<CategoryTable, CategoryData>
 {
+// -- constructor
+
 public:
-    CategoryModel();
-    ~CategoryModel();
+    CategoryModel() :
+        TableFactory<CategoryTable, CategoryData>() {}
+    ~CategoryModel() {}
 
 public:
     static CategoryModel& instance(wxSQLite3Database* db);
     static CategoryModel& instance();
 
+// -- override
+
 public:
     // TODO: change to find_id_dep_c
     bool is_used(int64 cat_id);
 
+// -- methods
+
+public:
     auto get_data_fullname(const Data* cat_n, wxString delimiter = "") -> const wxString;
     bool get_id_active(int64 cat_id);
     auto get_id_fullname(int64 cat_id, wxString delimiter = "") -> const wxString;
@@ -63,6 +72,8 @@ public:
         bool fin_months = false
     );
 
+// -- sorter
+
 public:
     struct SorterByFULLNAME
     {
@@ -74,4 +85,3 @@ public:
         }
     };
 };
-

@@ -152,13 +152,13 @@ void DashboardPref::Create()
 bool DashboardPref::SaveSettings()
 {
     int sel_id = m_incExpChoice->GetSelection();
-    PrefModel::instance().setHomePageIncExpRange(sel_id);
+    PrefModel::instance().saveHomePageIncExpRange(sel_id);
     if (sel_id == static_cast<int>(m_all_date_ranges.size() - 1))
-        InfoModel::instance().setInt("HOMEPAGE_INCEXP_DAYS", nDays_->GetValue());
-    PrefModel::instance().setIgnoreFutureTransactionsHomePage(
+        InfoModel::instance().saveInt("HOMEPAGE_INCEXP_DAYS", nDays_->GetValue());
+    PrefModel::instance().saveIgnoreFutureTransactionsHomePage(
         m_ignore_future_transactions_home->GetValue()
     );
-    PrefModel::instance().setShowReconciledInHomePage(m_show_reconciled->GetValue());
+    PrefModel::instance().saveShowReconciledInHomePage(m_show_reconciled->GetValue());
     return true;
 }
 

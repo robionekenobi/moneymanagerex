@@ -690,8 +690,7 @@ wxBoxSizer* mmDatePickerCtrl::mmGetLayout(bool showTimeCtrl)
     date_sizer->Add(this->getSpinButton(), g_flagsH);
 #endif
     // If time picker is requested and turned on in Options, add it to the layout
-    if (showTimeCtrl && PrefModel::instance().UseTransDateTime())
-    {
+    if (showTimeCtrl && PrefModel::instance().getUseTransDateTime()) {
         timePicker_ = new wxTimePickerCtrl(parent_, GetId(), dt_, wxDefaultPosition, wxDefaultSize);
         timePicker_->Bind(wxEVT_TIME_CHANGED, &mmDatePickerCtrl::OnDateChanged, this);
         date_sizer->Add(timePicker_, g_flagsH);
@@ -706,8 +705,7 @@ wxBoxSizer* mmDatePickerCtrl::mmGetLayoutWithTime()
 {
     wxBoxSizer* date_sizer = new wxBoxSizer(wxHORIZONTAL);
     date_sizer->Add(this, g_flagsH);
-    if (PrefModel::instance().UseTransDateTime())
-    {
+    if (PrefModel::instance().getUseTransDateTime()) {
         timePicker_ = new wxTimePickerCtrl(parent_, GetId(), dt_, wxDefaultPosition, wxDefaultSize);
         timePicker_->Bind(wxEVT_TIME_CHANGED, &mmDatePickerCtrl::OnDateChanged, this);
         date_sizer->Add(timePicker_, g_flagsH);

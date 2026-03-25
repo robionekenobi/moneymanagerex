@@ -74,7 +74,7 @@ int mmCategDialogTreeCtrl::OnCompareItems(const wxTreeItemId& item1, const wxTre
 
 CategoryManager::~CategoryManager()
 {
-    InfoModel::instance().setSize("CATEGORIES_DIALOG_SIZE", GetSize());
+    InfoModel::instance().saveSize("CATEGORIES_DIALOG_SIZE", GetSize());
 }
 
 CategoryManager::CategoryManager()
@@ -755,14 +755,14 @@ void CategoryManager::OnExpandOrCollapseToggle(wxCommandEvent& event)
         m_treeCtrl->SelectItem(m_selectedItemId);
     }
     m_treeCtrl->EnsureVisible(m_selectedItemId);
-    SettingModel::instance().setBool("EXPAND_CATEGS_TREE", event.GetId() == ID_EXPAND);
+    SettingModel::instance().saveBool("EXPAND_CATEGS_TREE", event.GetId() == ID_EXPAND);
     saveCurrentCollapseState();
     m_processExpandCollapse = true;
 }
 
 void CategoryManager::OnShowHiddenToggle(wxCommandEvent& /*event*/)
 {
-    SettingModel::instance().setBool("SHOW_HIDDEN_CATEGS", m_tbShowAll->GetValue());
+    SettingModel::instance().saveBool("SHOW_HIDDEN_CATEGS", m_tbShowAll->GetValue());
     fillControls();
 }
 

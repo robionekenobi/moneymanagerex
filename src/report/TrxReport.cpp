@@ -646,7 +646,7 @@ void TrxReport::Run(wxSharedPtr<TrxFilterDialog>& dlg)
 
 bool TrxReport::showColumnById(int num)
 {
-    if (num == TrxFilterDialog::COL_TIME && !PrefModel::instance().UseTransDateTime())
+    if (num == TrxFilterDialog::COL_TIME && !PrefModel::instance().getUseTransDateTime())
         return false;
 
     if (m_transDialog->mmIsHideColumnsChecked()) {

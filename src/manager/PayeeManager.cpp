@@ -68,7 +68,7 @@ PayeeManager::PayeeManager(wxWindow *parent, PayeeData* payee_n, const wxString 
 
 PayeeManager::~PayeeManager()
 {
-    InfoModel::instance().setSize("EDITPAYEE_DIALOG_SIZE", GetSize());
+    InfoModel::instance().saveSize("EDITPAYEE_DIALOG_SIZE", GetSize());
     m_patternTable->GetGridWindow()->Unbind(wxEVT_SIZE, &PayeeManager::OnPatternTableSize, this);
 }
 
@@ -475,7 +475,7 @@ mmPayeeDialog::mmPayeeDialog(
 
 mmPayeeDialog::~mmPayeeDialog()
 {
-    InfoModel::instance().setSize("PAYEES_DIALOG_SIZE", GetSize());
+    InfoModel::instance().saveSize("PAYEES_DIALOG_SIZE", GetSize());
 }
 
 int64 mmPayeeDialog::getPayeeId() const
@@ -920,7 +920,7 @@ void mmPayeeDialog::OnMenuSelected(wxCommandEvent& event)
         case MENU_SHOW_HIDDEN:
         {
             m_showHiddenPayees = m_tbShowAll->GetValue();
-            SettingModel::instance().setBool("SHOW_HIDDEN_PAYEES", m_showHiddenPayees);
+            SettingModel::instance().saveBool("SHOW_HIDDEN_PAYEES", m_showHiddenPayees);
             fillControls();
             break;
         }
@@ -1014,7 +1014,7 @@ void mmPayeeDialog::OnSort(wxListEvent& event)
 void mmPayeeDialog::OnShowHiddenToggle(wxCommandEvent& WXUNUSED(event))
 {
     m_showHiddenPayees = m_tbShowAll->GetValue();
-    SettingModel::instance().setBool("SHOW_HIDDEN_PAYEES", m_showHiddenPayees);
+    SettingModel::instance().saveBool("SHOW_HIDDEN_PAYEES", m_showHiddenPayees);
     fillControls();
 }
 

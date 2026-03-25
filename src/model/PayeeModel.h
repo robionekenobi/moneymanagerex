@@ -2,6 +2,7 @@
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
  Copyright (C) 2025 Klaus Wich
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -28,16 +29,23 @@
 
 class PayeeModel : public TableFactory<PayeeTable, PayeeData>
 {
+// -- static
+
 public:
     static const RefTypeN s_ref_type;
 
+// -- constructor
+
 public:
-    PayeeModel();
-    ~PayeeModel();
+    PayeeModel() :
+        TableFactory<PayeeTable, PayeeData>() {}
+    ~PayeeModel() {}
 
 public:
     static PayeeModel& instance(wxSQLite3Database* db);
     static PayeeModel& instance();
+
+// -- override
 
 public:
     // TODO: add to virtual methods in TableFactory
@@ -46,6 +54,8 @@ public:
 
     // override TableFactory
     virtual bool purge_id(int64 payee_id) override;
+
+// -- methods
 
     // lookup for given id
     auto get_id_name(int64 payee_id) -> const wxString;

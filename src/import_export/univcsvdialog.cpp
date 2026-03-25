@@ -1327,7 +1327,7 @@ void mmUnivCSVDialog::OnSettingsSave(wxCommandEvent& WXUNUSED(event))
 
     const wxString json_data = wxString::FromUTF8(json_buffer.GetString());
 
-    SettingModel::instance().setString(setting_id, json_data);
+    SettingModel::instance().saveString(setting_id, json_data);
 }
 
 void mmUnivCSVDialog::saveAccountPresets()
@@ -1343,7 +1343,7 @@ void mmUnivCSVDialog::saveAccountPresets()
     }
     json_writer.EndObject();
 
-    InfoModel::instance().setString(
+    InfoModel::instance().saveString(
         (IsCSV() ? "CSV_ACCOUNT_PRESETS" : "XML_ACCOUNT_PRESETS"),
         wxString::FromUTF8(json_buffer.GetString())
     );

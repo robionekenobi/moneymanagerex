@@ -49,7 +49,7 @@ TagManager::TagManager() : isSelection_(false)
 
 TagManager::~TagManager()
 {
-    InfoModel::instance().setSize("TAG_DIALOG_SIZE", GetSize());
+    InfoModel::instance().saveSize("TAG_DIALOG_SIZE", GetSize());
 }
 
 TagManager::TagManager(wxWindow* parent, bool isSelection, const wxArrayString& selectedTags) : isSelection_(isSelection), selectedTags_(selectedTags)

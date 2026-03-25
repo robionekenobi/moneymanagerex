@@ -2,6 +2,7 @@
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
  Copyright (C) 2025 Klaus Wich
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -23,14 +24,7 @@
 
 #include "InfoModel.h"
 
-InfoModel::InfoModel() :
-    TableFactory<InfoTable, InfoData>()
-{
-}
-
-InfoModel::~InfoModel()
-{
-}
+// -- constructor
 
 // Initialize the global InfoModel.
 // Reset the InfoModel or create the table if it does not exist.
@@ -43,10 +37,10 @@ InfoModel& InfoModel::instance(wxSQLite3Database* db)
     ins.preload_cache();
 
     if (!ins.contains("MMEXVERSION")) {
-        ins.setString("MMEXVERSION", mmex::version::string);
-        ins.setString("DATAVERSION", mmex::DATAVERSION);
+        ins.saveString("MMEXVERSION", mmex::version::string);
+        ins.saveString("DATAVERSION", mmex::DATAVERSION);
         ins.setDate("CREATEDATE", mmDate::today());
-        ins.setString("DATEFORMAT", mmex::DEFDATEFORMAT);
+        ins.saveString("DATEFORMAT", mmex::DEFDATEFORMAT);
     }
     return ins;
 }
@@ -57,6 +51,8 @@ InfoModel& InfoModel::instance()
     return Singleton<InfoModel>::instance();
 }
 
+// -- methods
+
 // Returns true if key setting found
 bool InfoModel::contains(const wxString& key)
 {
@@ -64,7 +60,7 @@ bool InfoModel::contains(const wxString& key)
 }
 
 // Raw (the raw value stored in Infotable is always string)
-void InfoModel::setRaw(const wxString& key, const wxString& newValue)
+void InfoModel::saveRaw(const wxString& key, const wxString& newValue)
 {
     // search in cache
     const Data* info_n = search_cache_n(InfoCol::INFONAME(key));
@@ -97,9 +93,9 @@ wxString InfoModel::getRaw(const wxString& key, const wxString& defaultValue)
 }
 
 // String
-void InfoModel::setString(const wxString& key, const wxString& newValue)
+void InfoModel::saveString(const wxString& key, const wxString& newValue)
 {
-    setRaw(key, newValue);
+    saveRaw(key, newValue);
 }
 wxString InfoModel::getString(const wxString& key, const wxString& defaultValue)
 {
@@ -107,9 +103,9 @@ wxString InfoModel::getString(const wxString& key, const wxString& defaultValue)
 }
 
 // Bool
-void InfoModel::setBool(const wxString& key, bool newValue)
+void InfoModel::saveBool(const wxString& key, bool newValue)
 {
-    setRaw(key, wxString::Format("%s", newValue ? "TRUE" : "FALSE"));
+    saveRaw(key, wxString::Format("%s", newValue ? "TRUE" : "FALSE"));
 }
 bool InfoModel::getBool(const wxString& key, bool defaultValue)
 {
@@ -123,9 +119,9 @@ bool InfoModel::getBool(const wxString& key, bool defaultValue)
 }
 
 // Int
-void InfoModel::setInt(const wxString& key, int newValue)
+void InfoModel::saveInt(const wxString& key, int newValue)
 {
-    setRaw(key, wxString::Format("%d", newValue));
+    saveRaw(key, wxString::Format("%d", newValue));
 }
 int InfoModel::getInt(const wxString& key, int defaultValue)
 {
@@ -136,9 +132,9 @@ int InfoModel::getInt(const wxString& key, int defaultValue)
 }
 
 // Int64
-void InfoModel::setInt64(const wxString& key, int64 newValue)
+void InfoModel::saveInt64(const wxString& key, int64 newValue)
 {
-    setRaw(key, wxString::Format("%lld", newValue));
+    saveRaw(key, wxString::Format("%lld", newValue));
 }
 int64 InfoModel::getInt64(const wxString& key, int64 defaultValue)
 {
@@ -149,9 +145,9 @@ int64 InfoModel::getInt64(const wxString& key, int64 defaultValue)
 }
 
 // Size
-void InfoModel::setSize(const wxString& key, const wxSize& newValue)
+void InfoModel::saveSize(const wxString& key, const wxSize& newValue)
 {
-    setRaw(key, wxString::Format("%i,%i", newValue.GetWidth(), newValue.GetHeight()));
+    saveRaw(key, wxString::Format("%i,%i", newValue.GetWidth(), newValue.GetHeight()));
 }
 const wxSize InfoModel::getSize(const wxString& key)
 {
@@ -168,9 +164,9 @@ const wxSize InfoModel::getSize(const wxString& key)
 }
 
 // Colour
-void InfoModel::setColour(const wxString& key, const wxColour& newValue)
+void InfoModel::saveColour(const wxString& key, const wxColour& newValue)
 {
-    setRaw(key, wxString::Format("%d,%d,%d",
+    saveRaw(key, wxString::Format("%d,%d,%d",
         newValue.Red(), newValue.Green(), newValue.Blue()
     ));
 }
@@ -195,20 +191,20 @@ const wxColour InfoModel::getColour(const wxString& key, const wxColour& default
 // Date
 void InfoModel::setDate(const wxString& key, const mmDate& newValue)
 {
-    setRaw(key, newValue.isoDate());
+    saveRaw(key, newValue.isoDate());
 }
 
 //-------------------------------------------------------------------
 // Jdoc
-void InfoModel::setJdoc(const wxString& key, Document& newValue)
+void InfoModel::saveJdoc(const wxString& key, Document& newValue)
 {
     wxString j_str = JSON_PrettyFormated(newValue);
-    setRaw(key, j_str);
+    saveRaw(key, j_str);
 }
-void InfoModel::setJdoc(const wxString& key, StringBuffer& newValue)
+void InfoModel::saveJdoc(const wxString& key, StringBuffer& newValue)
 {
     wxString j_str = wxString::FromUTF8(newValue.GetString());
-    setRaw(key, j_str);
+    saveRaw(key, j_str);
 }
 Document InfoModel::getJdoc(const wxString& key, const wxString& defaultValue)
 {
@@ -223,7 +219,7 @@ Document InfoModel::getJdoc(const wxString& key, const wxString& defaultValue)
 
 
 // ArrayString
-void InfoModel::setArrayString(const wxString& key, const wxArrayString& a)
+void InfoModel::saveArrayString(const wxString& key, const wxArrayString& a)
 {
     StringBuffer json_buffer;
     PrettyWriter<StringBuffer> json_writer(json_buffer);
@@ -233,8 +229,8 @@ void InfoModel::setArrayString(const wxString& key, const wxArrayString& a)
     }
     json_writer.EndArray();
     const wxString& json_string = wxString::FromUTF8(json_buffer.GetString());
-    setRaw(key, json_string);
-    wxLogDebug("InfoModel::setArrayString(%s): %s", key, json_string);
+    saveRaw(key, json_string);
+    wxLogDebug("InfoModel::saveArrayString(%s): %s", key, json_string);
 }
 
 const wxArrayString InfoModel::getArrayString(const wxString& key, bool sort)
@@ -304,7 +300,7 @@ void InfoModel::updateArrayItem(const wxString& key, int i, const wxString& newV
     json_writer.EndArray();
     const wxString& json_string = wxString::FromUTF8(json_buffer.GetString());
 
-    setRaw(key, json_string);
+    saveRaw(key, json_string);
     wxLogDebug("InfoModel::updateArrayItem(%s, %d): %s", key, i, json_string);
 }
 
@@ -370,15 +366,15 @@ void InfoModel::eraseArrayItem(const wxString& key, int i)
     j_doc.Accept(json_writer);
 
     const wxString json_string = wxString::FromUTF8(json_buffer.GetString());
-    setRaw(key, json_string);
+    saveRaw(key, json_string);
     wxLogDebug("InfoModel::eraseArrayItem(%s, %d): %s", key, i, json_string);
 }
 
 //-------------------------------------------------------------------
 // CUSTOMDIALOG_OPEN
-void InfoModel::setOpenCustomDialog(const wxString& refType, bool newValue)
+void InfoModel::saveOpenCustomDialog(const wxString& refType, bool newValue)
 {
-    setBool("CUSTOMDIALOG_OPEN:" + refType, newValue);
+    saveBool("CUSTOMDIALOG_OPEN:" + refType, newValue);
 }
 bool InfoModel::getOpenCustomDialog(const wxString& refType)
 {
@@ -386,11 +382,11 @@ bool InfoModel::getOpenCustomDialog(const wxString& refType)
 }
 
 // CUSTOMDIALOG_SIZE
-void InfoModel::setCustomDialogSize(const wxString& refType, const wxSize& newValue)
+void InfoModel::saveCustomDialogSize(const wxString& refType, const wxSize& newValue)
 {
     wxString rawValue;
     rawValue << newValue.GetWidth() << ";" << newValue.GetHeight();
-    setRaw("CUSTOMDIALOG_SIZE:" + refType, rawValue);
+    saveRaw("CUSTOMDIALOG_SIZE:" + refType, rawValue);
 }
 wxSize InfoModel::getCustomDialogSize(const wxString& refType)
 {

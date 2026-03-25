@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -33,34 +34,9 @@
 
 #include "dialog/AttachmentDialog.h"
 
+// -- static
+
 const RefTypeN TrxModel::s_ref_type = RefTypeN(RefTypeN::e_trx);
-
-TrxModel::TrxModel() :
-    TableFactory<TrxTable, TrxData>()
-{
-}
-
-TrxModel::~TrxModel()
-{
-}
-
-// Initialize the global TrxModel table.
-// Reset the TrxModel table or create the table if it does not exist.
-TrxModel& TrxModel::instance(wxSQLite3Database* db)
-{
-    TrxModel& ins = Singleton<TrxModel>::instance();
-    ins.reset_cache();
-    ins.m_db = db;
-    ins.ensure_table();
-
-    return ins;
-}
-
-// Return the static instance of TrxModel table
-TrxModel& TrxModel::instance()
-{
-    return Singleton<TrxModel>::instance();
-}
 
 TrxCol::TRANSDATE TrxModel::DATE(OP op, const mmDate& date)
 {
@@ -125,6 +101,28 @@ bool TrxModel::is_foreignAsTransfer(const Data& this_d)
     );
 }
 
+// -- constructor
+
+// Initialize the global TrxModel table.
+// Reset the TrxModel table or create the table if it does not exist.
+TrxModel& TrxModel::instance(wxSQLite3Database* db)
+{
+    TrxModel& ins = Singleton<TrxModel>::instance();
+    ins.reset_cache();
+    ins.m_db = db;
+    ins.ensure_table();
+
+    return ins;
+}
+
+// Return the static instance of TrxModel table
+TrxModel& TrxModel::instance()
+{
+    return Singleton<TrxModel>::instance();
+}
+
+// -- override
+
 bool TrxModel::purge_id(int64 trx_id)
 {
     // TODO: remove all split at once
@@ -156,6 +154,8 @@ bool TrxModel::purge_id(int64 trx_id)
     TagLinkModel::instance().purge_ref(s_ref_type, trx_id);
     return unsafe_remove_id(trx_id);
 }
+
+// -- methods
 
 void TrxModel::save_timestamp(int64 trx_id)
 {
@@ -229,7 +229,7 @@ const TrxModel::DataA TrxModel::find_all_aDateTimeId()
     DataA trx_a = TrxModel::instance().find_all();
     // first sort by id, then stable sort by datetime or date only
     std::sort(trx_a.begin(), trx_a.end());
-    if (PrefModel::instance().UseTransDateTime())
+    if (PrefModel::instance().getUseTransDateTime())
         std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTime());
     else
         std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDate());
@@ -323,6 +323,8 @@ bool TrxModel::is_locked(const Data& trx_d)
     const AccountData* account_n = AccountModel::instance().get_id_data_n(trx_d.m_account_id);
     return account_n && account_n->is_locked_for(trx_d.m_date());
 }
+
+// -- DataExt
 
 TrxModel::DataExt::DataExt() :
     Data(), TAGNAMES(""),
@@ -523,4 +525,3 @@ const wxString TrxModel::DataExt::to_json()
 
     return wxString::FromUTF8(json_buffer.GetString());
 }
-

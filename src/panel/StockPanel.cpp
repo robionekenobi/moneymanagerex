@@ -577,7 +577,7 @@ bool StockPanel::onlineQuoteRefresh(wxString& msg)
         m_last_refresh.FormatTime(),
         mmGetDateTimeForDisplay(m_last_refresh.FormatISODate())
     );
-    InfoModel::instance().setString("STOCKS_LAST_REFRESH_DATETIME", m_last_update);
+    InfoModel::instance().saveString("STOCKS_LAST_REFRESH_DATETIME", m_last_update);
 
     return true;
 }

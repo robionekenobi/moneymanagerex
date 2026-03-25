@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022,2025 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -23,16 +24,11 @@
 #include "TrxShareModel.h"
 #include "CurrencyHistoryModel.h"
 
+// -- static
+
 const RefTypeN StockModel::s_ref_type = RefTypeN(RefTypeN::e_stock);
 
-StockModel::StockModel() :
-    TableFactory<StockTable, StockData>()
-{
-}
-
-StockModel::~StockModel()
-{
-}
+// -- constructor
 
 // Initialize the global StockModel table.
 // Reset the StockModel table or create the table if it does not exist.
@@ -51,6 +47,8 @@ StockModel& StockModel::instance()
 {
     return Singleton<StockModel>::instance();
 }
+
+// -- override
 
 // Remove the Data record from memory and the database.
 // Delete also all stock history
@@ -73,6 +71,8 @@ bool StockModel::purge_id(int64 id)
 
     return unsafe_remove_id(id);
 }
+
+// -- methods
 
 const wxString StockModel::get_id_name(int64 stock_id)
 {

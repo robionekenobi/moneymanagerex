@@ -91,14 +91,6 @@ struct TrxData
         }
     };
 
-    struct SorterByDateTime
-    {
-        bool operator()(const TrxData& x, const TrxData& y)
-        {
-            return x.m_date_time < y.m_date_time;
-        }
-    };
-
     struct SorterByDate
     {
         bool operator()(const TrxData& x, const TrxData& y)
@@ -114,6 +106,34 @@ struct TrxData
             return
                 x.m_date_time.getDateTime().FormatISOTime() <
                 y.m_date_time.getDateTime().FormatISOTime();
+        }
+    };
+
+    struct SorterByDateTime
+    {
+        bool operator()(const TrxData& x, const TrxData& y)
+        {
+            return x.m_date_time < y.m_date_time;
+        }
+    };
+
+    struct SorterByDateId
+    {
+        bool operator()(const TrxData& x, const TrxData& y)
+        {
+            return x.m_date() < y.m_date() || (
+                x.m_date() == y.m_date() && x.m_id < y.m_id
+            );
+        }
+    };
+
+    struct SorterByDateTimeId
+    {
+        bool operator()(const TrxData& x, const TrxData& y)
+        {
+            return x.m_date_time < y.m_date_time || (
+                x.m_date_time == y.m_date_time && x.m_id < y.m_id
+            );
         }
     };
 

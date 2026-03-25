@@ -2,6 +2,7 @@
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
  Copyright (C) 2025 Klaus Wich
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -23,16 +24,11 @@
 #include "TrxModel.h"
 #include "SchedModel.h"
 
+// -- static
+
 const RefTypeN PayeeModel::s_ref_type = RefTypeN(RefTypeN::e_payee);
 
-PayeeModel::PayeeModel() :
-    TableFactory<PayeeTable, PayeeData>()
-{
-}
-
-PayeeModel::~PayeeModel()
-{
-}
+// -- constructor
 
 // Initialize the global PayeeModel table.
 // Reset the PayeeModel table or create the table if it does not exist.
@@ -52,6 +48,8 @@ PayeeModel& PayeeModel::instance()
 {
     return Singleton<PayeeModel>::instance();
 }
+
+// -- override
 
 int PayeeModel::find_id_aux_c(int64 payee_id)
 {
@@ -82,6 +80,8 @@ bool PayeeModel::purge_id(int64 payee_id)
 
     return unsafe_remove_id(payee_id);
 }
+
+// -- methods
 
 const wxString PayeeModel::get_id_name(int64 payee_id)
 {
@@ -151,4 +151,3 @@ const PayeeModel::DataA PayeeModel::find_pattern_data_a(
     }
     return payee_a;
 }
-

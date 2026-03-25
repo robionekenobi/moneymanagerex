@@ -125,7 +125,7 @@ void BudgetPanel::onViewPopupSelected(wxCommandEvent& event)
         wxASSERT(false);
     }
 
-    InfoModel::instance().setString("BUDGET_FILTER", m_current_view);
+    InfoModel::instance().saveString("BUDGET_FILTER", m_current_view);
 
     refreshList();
 }

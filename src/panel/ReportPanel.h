@@ -31,12 +31,15 @@
 
 class mmGUIFrame;
 class mmDateRange;
+
 class ReportPanel : public PanelBase
 {
+// -- static
+
     wxDECLARE_EVENT_TABLE();
 
 public:
-    enum RepPanel
+    enum
     {
         ID_UNUSED = wxID_HIGHEST + 555,
         ID_ACCOUNT_CHOICE,
@@ -57,6 +60,16 @@ public:
         ID_DATE_RANGE_EDIT,
     };
 
+public:
+    static void loadDateRanges(
+        std::vector<mmDateRange2::Range>* date_range_a,
+        int* date_range_m,
+        bool all_ranges = false
+    );
+    static void setOwnFont(wxStaticText* w, const wxFont& font);
+
+// -- state
+
 private:
     ReportBase* m_rb = nullptr;
     std::vector<mmDateRange2::Range> m_date_range_a = {};
@@ -68,21 +81,26 @@ private:
     bool m_use_account_specific_filter;
 
 private:
-    mmGUIFrame*       w_frame              = nullptr;
-    wxWebView*        w_browser            = nullptr;
-    wxButton*         w_date_range_button  = nullptr;
-    mmDatePickerCtrl* w_single_date_picker = nullptr;
-    mmDatePickerCtrl* w_start_date_picker  = nullptr;
-    mmDatePickerCtrl* w_end_date_picker    = nullptr;
-    wxTimePickerCtrl* w_time_picker        = nullptr;
-    wxChoice*         w_year_choice        = nullptr;
-    wxSpinCtrl*       w_forward_months     = nullptr;
-    wxChoice*         w_account_choice     = nullptr;
-    wxChoice*         w_stocks_choice      = nullptr;
-    wxChoice*         w_chart_choice       = nullptr;
-    wxTextCtrl*       w_filter             = nullptr;
-    wxBitmapButton*   w_filter_cancel      = nullptr;
-    wxChoice*         w_selection_choice   = nullptr;
+    mmGUIFrame*       w_frame            = nullptr;
+    wxWebView*        w_browser          = nullptr;
+    wxButton*         w_range_btn        = nullptr;
+    mmDatePickerCtrl* w_single_date      = nullptr;
+    mmDatePickerCtrl* w_start_date       = nullptr;
+    mmDatePickerCtrl* w_end_date         = nullptr;
+    wxTimePickerCtrl* w_time             = nullptr;
+    wxChoice*         w_year_choice      = nullptr;
+    wxSpinCtrl*       w_forward_months   = nullptr;
+    wxChoice*         w_account_choice   = nullptr;
+    wxChoice*         w_stocks_choice    = nullptr;
+    wxChoice*         w_chart_choice     = nullptr;
+    wxTextCtrl*       w_filter           = nullptr;
+    wxBitmapButton*   w_filter_cancel    = nullptr;
+    wxChoice*         w_selection_choice = nullptr;
+
+public:
+    auto getReportBase() -> ReportBase* { return m_rb; }
+
+// -- constructor
 
 public:
     ReportPanel(
@@ -98,17 +116,14 @@ public:
     );
     ~ReportPanel();
 
-    static void loadDateRanges(
-        std::vector<mmDateRange2::Range>* date_range_a,
-        int* date_range_m,
-        bool all_ranges = false
-    );
+// -- override
 
+public:
     // override PanelBase
-    virtual void printPage() override;
+    virtual void printPage() override { w_browser->Print(); }
     virtual void sortList() override {}
 
-    auto getReportBase() -> ReportBase* { return m_rb; }
+// -- methods
 
 private:
     bool create(
@@ -122,25 +137,28 @@ private:
     void createControls();
     void loadFilterSettings();
     void saveFilterSettings();
-    bool saveReportText();
     void updateFilter();
+    bool saveReportText();
 
-    void onNewWindow(wxWebViewEvent& evt);
-    void onYearChanged(wxCommandEvent& event);
-    void onBudgetChanged(wxCommandEvent & event);
-    void onStartEndDateChanged(wxDateEvent& event);
-    void onSingleDateChanged(wxDateEvent& event);
-    void onAccountChanged(wxCommandEvent& event);
-    void onStockChanged(wxCommandEvent& event);
-    void onChartChanged(wxCommandEvent& event);
-    void onForwardMonthsChangedSpin(wxSpinEvent& event);
-    void onForwardMonthsChangedText(wxCommandEvent& event);
-    void onShiftPressed(wxCommandEvent& event);
-    void onDateRangePopup(wxCommandEvent& event);
-    void onDateRangeSelect(wxCommandEvent& event);
-    void onDateRangeEdit(wxCommandEvent& event);
-    void onFilterChanged(wxCommandEvent& event);
-    void onFilterTextChanged(wxCommandEvent& event);
-    void onFilterCancel(wxCommandEvent& event);
-    void onSelectionChanged(wxCommandEvent& event);
+// -- event handlers
+
+private:
+    void onNewWindow(                wxWebViewEvent& event);
+    void onYearChanged(              wxCommandEvent& event);
+    void onBudgetChanged(            wxCommandEvent& event);
+    void onStartEndDateChanged(      wxDateEvent&    event);
+    void onSingleDateChanged(        wxDateEvent&    event);
+    void onAccountChanged(           wxCommandEvent& event);
+    void onStockChanged(             wxCommandEvent& event);
+    void onChartChanged(             wxCommandEvent& event);
+    void onForwardMonthsChangedSpin( wxSpinEvent&    event);
+    void onForwardMonthsChangedText( wxCommandEvent& event);
+    void onShiftPressed(             wxCommandEvent& event);
+    void onDateRangePopup(           wxCommandEvent& event);
+    void onDateRangeSelect(          wxCommandEvent& event);
+    void onDateRangeEdit(            wxCommandEvent& event);
+    void onFilterChanged(            wxCommandEvent& event);
+    void onFilterTextChanged(        wxCommandEvent& event);
+    void onFilterCancel(             wxCommandEvent& event);
+    void onSelectionChanged(         wxCommandEvent& event);
 };

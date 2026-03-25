@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 class TrxFilter
 {
+// -- state
+
 private:
     bool m_filter_date;
     bool m_filter_account;
@@ -34,8 +36,12 @@ private:
     wxArrayInt64 m_category_id_a;
     TrxModel::DataExtA m_trx_xa;
 
+// -- constructor
+
 public:
-    TrxFilter();
+    TrxFilter() { clear(); }
+
+// -- methods
 
     // Filter setup methods
     void clear();
@@ -59,4 +65,3 @@ public:
 
     wxString getHTML();
 };
-

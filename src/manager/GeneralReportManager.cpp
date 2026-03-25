@@ -305,7 +305,7 @@ GeneralReportManager::GeneralReportManager(wxWindow* parent, wxSQLite3Database* 
 GeneralReportManager::~GeneralReportManager()
 {
     clearVFprintedFiles("grm");
-    InfoModel::instance().setSize("GRM_DIALOG_SIZE", GetSize());
+    InfoModel::instance().saveSize("GRM_DIALOG_SIZE", GetSize());
 }
 
 bool GeneralReportManager::Create(wxWindow* parent

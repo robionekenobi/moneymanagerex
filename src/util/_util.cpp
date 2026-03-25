@@ -1543,8 +1543,8 @@ CURLcode getYahooFinanceQuotes(const wxString& URL, wxString& output) {
                                 curl_slist_free_all(cookies);
                             }
 
-                            SettingModel::instance().setString("YAHOO_FINANCE_COOKIE", cookieJar);
-                            SettingModel::instance().setString("YAHOO_FINANCE_CRUMB", wxString::FromUTF8(crumb.memory));
+                            SettingModel::instance().saveString("YAHOO_FINANCE_COOKIE", cookieJar);
+                            SettingModel::instance().saveString("YAHOO_FINANCE_CRUMB", wxString::FromUTF8(crumb.memory));
                         }
                         free(newQuote.memory);
                     }

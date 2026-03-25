@@ -226,7 +226,7 @@ void AttachmentPref::OnAttachmentsPathChanged(wxCommandEvent& WXUNUSED(event))
 
 void AttachmentPref::OnAttachmentsSubfolderChanged(wxCommandEvent& event)
 {
-    InfoModel::instance().setBool(
+    InfoModel::instance().saveBool(
         "ATTACHMENTSSUBFOLDER",
         m_attachments_subfolder->GetValue()
     );
@@ -275,13 +275,13 @@ bool AttachmentPref::SaveSettings()
         }
     }
 
-    InfoModel::instance().setString(
+    InfoModel::instance().saveString(
         "ATTACHMENTSFOLDER:" + mmPlatformType(),
         m_attachments_path->GetValue().Trim()
     );
-    InfoModel::instance().setBool("ATTACHMENTSDELETE", m_delete_attachments->GetValue());
-    InfoModel::instance().setBool("ATTACHMENTSTRASH", m_trash_attachments->GetValue());
-    InfoModel::instance().setBool("ATTACHMENTSDUPLICATE", m_duplicate_attachments->GetValue());
+    InfoModel::instance().saveBool("ATTACHMENTSDELETE", m_delete_attachments->GetValue());
+    InfoModel::instance().saveBool("ATTACHMENTSTRASH", m_trash_attachments->GetValue());
+    InfoModel::instance().saveBool("ATTACHMENTSDUPLICATE", m_duplicate_attachments->GetValue());
 
     return true;
 }

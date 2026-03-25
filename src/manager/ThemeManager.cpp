@@ -132,7 +132,7 @@ void ThemeManager::addThemes(const wxString& themeDir, bool isSystem)
 
 ThemeManager::~ThemeManager()
 {
-    InfoModel::instance().setSize("THEMES_DIALOG_SIZE", GetSize());
+    InfoModel::instance().saveSize("THEMES_DIALOG_SIZE", GetSize());
 }
 
 ThemeManager::ThemeManager(wxWindow *parent, const wxString &name)
@@ -353,7 +353,7 @@ void ThemeManager::OnUse(wxCommandEvent&)
         wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION);
     if (msgDlg.ShowModal() == wxID_YES)
     {
-        SettingModel::instance().setTheme(thisTheme.name);
+        SettingModel::instance().saveTheme(thisTheme.name);
         for (auto it = begin(m_themes); it != end(m_themes); ++it)
             it->isChosen = (it->name == thisTheme.name);
     }

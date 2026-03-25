@@ -1,5 +1,6 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -19,15 +20,6 @@
 #include "BudgetPeriodModel.h"
 #include "BudgetModel.h"
 
-BudgetPeriodModel::BudgetPeriodModel() :
-    TableFactory<BudgetPeriodTable, BudgetPeriodData>()
-{
-}
-
-BudgetPeriodModel::~BudgetPeriodModel()
-{
-}
-
 // Initialize the global BudgetPeriodModel table.
 // Reset the BudgetPeriodModel table or create the table if it does not exist.
 BudgetPeriodModel& BudgetPeriodModel::instance(wxSQLite3Database* db)
@@ -46,6 +38,8 @@ BudgetPeriodModel& BudgetPeriodModel::instance()
     return Singleton<BudgetPeriodModel>::instance();
 }
 
+// -- override
+
 bool BudgetPeriodModel::purge_id(int64 bp_id)
 {
     for (const BudgetData& budget_d : BudgetModel::instance().find(
@@ -54,6 +48,8 @@ bool BudgetPeriodModel::purge_id(int64 bp_id)
         BudgetModel::instance().purge_id(budget_d.m_period_id);
     return unsafe_remove_id(bp_id);
 }
+
+// -- methods
 
 const wxString BudgetPeriodModel::get_id_name_n(int64 bp_id)
 {

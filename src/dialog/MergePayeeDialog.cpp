@@ -47,7 +47,7 @@ MergePayeeDialog::MergePayeeDialog( )
 
 MergePayeeDialog::~MergePayeeDialog()
 {
-    InfoModel::instance().setSize("RELOCATEPAYEE_DIALOG_SIZE", GetSize());
+    InfoModel::instance().saveSize("RELOCATEPAYEE_DIALOG_SIZE", GetSize());
 }
 
 MergePayeeDialog::MergePayeeDialog(wxWindow* parent, int64 source_payee_id)

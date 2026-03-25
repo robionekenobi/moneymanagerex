@@ -143,7 +143,7 @@ void TrxUpdateDialog::CreateControls()
     grid_sizer->Add(m_dpc->mmGetLayout(false), wxSizerFlags(g_flagsH).Border(wxLEFT, 0));
     m_dpc->Enable(false);
 
-    if (PrefModel::instance().UseTransDateTime())
+    if (PrefModel::instance().getUseTransDateTime())
     {
         // Time --------------------------------------------
         m_time_checkbox = new wxCheckBox(this, wxID_ANY, _t("Time"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
