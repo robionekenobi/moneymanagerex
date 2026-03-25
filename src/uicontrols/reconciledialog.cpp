@@ -41,26 +41,46 @@ mmReconcileDialog::~mmReconcileDialog()
 {
     wxSize size = GetSize();
     InfoModel::instance().setSize("RECONCILE_DIALOG_SIZE", size);
-    InfoModel::instance().setBool("RECONCILE_DIALOG_SHOW_STATE_COL", m_settings[SETTING_SHOW_STATE_COL]);
-    InfoModel::instance().setBool("RECONCILE_DIALOG_SHOW_NUMBER_COL", m_settings[SETTING_SHOW_NUMBER_COL]);
-    InfoModel::instance().setBool("RECONCILE_DIALOG_INCLUDE_VOID", m_settings[SETTING_INCLUDE_VOID]);
-    InfoModel::instance().setBool("RECONCILE_DIALOG_INCLUDE_DUPLICATED", m_settings[SETTING_INCLUDE_DUPLICATED]);
+    InfoModel::instance().setBool("RECONCILE_DIALOG_SHOW_STATE_COL",
+        m_settings[SETTING_SHOW_STATE_COL]
+    );
+    InfoModel::instance().setBool("RECONCILE_DIALOG_SHOW_NUMBER_COL",
+        m_settings[SETTING_SHOW_NUMBER_COL]
+    );
+    InfoModel::instance().setBool("RECONCILE_DIALOG_INCLUDE_VOID",
+        m_settings[SETTING_INCLUDE_VOID]
+    );
+    InfoModel::instance().setBool("RECONCILE_DIALOG_INCLUDE_DUPLICATED",
+        m_settings[SETTING_INCLUDE_DUPLICATED]
+    );
 }
 
-mmReconcileDialog::mmReconcileDialog(wxWindow* parent, const AccountData* account, JournalPanel* cp)
-{
-    m_account = account;
+mmReconcileDialog::mmReconcileDialog(
+    wxWindow* parent,
+    const AccountData* account_n,
+    JournalPanel* cp
+) {
+    m_account = account_n;
     m_checkingPanel = cp;
-    m_reconciledBalance = cp->GetTodayReconciledBalance();
-    m_currency = CurrencyModel::instance().get_id_data_n(account->m_currency_id);
+    m_reconciledBalance = cp->getTodayReconciledBalance();
+    m_currency = CurrencyModel::instance().get_id_data_n(account_n->m_currency_id);
     m_ignore  = false;
     this->SetFont(parent->GetFont());
 
-    Create(parent, -1, _t("Reconcile account") + " '" + m_account->m_name + "'", wxDefaultPosition, wxDefaultSize, wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCLOSE_BOX, "");
+    Create(parent, -1,
+        _t("Reconcile account") + " '" + m_account->m_name + "'",
+        wxDefaultPosition, wxDefaultSize,
+        wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCLOSE_BOX,
+        ""
+    );
     CreateControls();
 
-    m_settings[SETTING_INCLUDE_VOID] = InfoModel::instance().getBool("RECONCILE_DIALOG_INCLUDE_VOID", false);
-    m_settings[SETTING_INCLUDE_DUPLICATED] =  InfoModel::instance().getBool("RECONCILE_DIALOG_INCLUDE_DUPLICATED", true);
+    m_settings[SETTING_INCLUDE_VOID] = InfoModel::instance().getBool(
+        "RECONCILE_DIALOG_INCLUDE_VOID", false
+    );
+    m_settings[SETTING_INCLUDE_DUPLICATED] =  InfoModel::instance().getBool(
+        "RECONCILE_DIALOG_INCLUDE_DUPLICATED", true
+    );
 
     FillControls(true);
     UpdateAll();
@@ -93,7 +113,6 @@ void mmReconcileDialog::CreateControls()
 
     topSizer->Add(m_amountCtrl, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 
-#ifndef __WXOSX__   // Issue https://github.com/moneymanagerex/moneymanagerex/issues/8000
     m_btnCalc = new wxBitmapButton(topPanel, wxID_ANY, mmBitmapBundle(png::CALCULATOR, mmBitmapButtonSize));
     m_btnCalc->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &mmReconcileDialog::OnCalculator, this);
     m_btnCalc->SetCanFocus(false);
@@ -101,7 +120,6 @@ void mmReconcileDialog::CreateControls()
     topSizer->Add(m_btnCalc, 0, wxRIGHT, 20);
     m_calculaterPopup = new mmCalculatorPopup(m_btnCalc, m_amountCtrl, true);
     m_calculaterPopup->SetCanFocus(false);
-#endif
 
     topSizer->AddStretchSpacer();
     m_btnEdit = new wxButton(topPanel, wxID_ANY, _t("&Edit"));
