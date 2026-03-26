@@ -25,7 +25,7 @@
 #include "_primitive.h"
 #include "mmDateTime.h"
 
-// mmDate represents a date without time information.
+// mmDate represents the date part of a datetime (without time information).
 // wxWidgets does not have a dedicated type for this purpose.
 // The underlying data structure is wxDateTime, with the time part set
 // to noon (12:00), in order to avoid rounding errors around midnight.

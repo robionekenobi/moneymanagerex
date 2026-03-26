@@ -106,6 +106,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     util/mmSingleton.h
     util/mmTextCtrl.cpp
     util/mmTextCtrl.h
+    util/mmTime.cpp
+    util/mmTime.h
     util/mmTips.h
     util/mmTreeItemData.cpp
     util/mmTreeItemData.h
