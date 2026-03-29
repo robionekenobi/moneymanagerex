@@ -427,7 +427,7 @@ wxString mmReportCashFlowTransactions::getHTMLText()
     bool rowType = false;
     runningBalance = m_balance;
     for (TrxData& trx_d : m_forecastVector) {
-        int rowDate = trx_d.m_datetime.date_dateTime().GetMonth();
+        int rowDate = trx_d.m_datetime.dateTime(false).GetMonth();
         if (rowDate != lastRowDate) {
             lastRowDate = rowDate;
             rowType = !rowType;

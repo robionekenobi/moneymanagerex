@@ -247,10 +247,9 @@ void TrxDialog::dataToControls()
             trx_date = m_previousDate;
         }
         else {
-            bool is_time_used = PrefModel::instance().getUseTransDateTime();
-            trx_date = is_time_used
-                ? m_journal_d.m_datetime.dateTime()
-                : m_journal_d.m_datetime.date_dateTime();
+            trx_date = m_journal_d.m_datetime.dateTime(
+                PrefModel::instance().getUseTransDateTime()
+            );
         }
         dpc_->SetValue(trx_date);
         dpc_->SetFocus();
