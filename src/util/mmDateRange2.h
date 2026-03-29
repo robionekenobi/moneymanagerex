@@ -51,44 +51,25 @@ private:
     static MapLabelId makeLabelId();
 
 private:
-    Id id;
+    Id m_id;
 
 public:
-    mmDatePeriod(Id id_new = _A);
+    mmDatePeriod(Id id = _A);
     mmDatePeriod(char label);
 
 public:
     static wxDateSpan span(int offset, mmDatePeriod period);
 
 public:
-    int  toInt() const;
-    auto label() const -> const wxString;
+    int  toInt() const { return static_cast<int>(m_id); }
+    auto label() const -> const wxString { return mapIdLabel[toInt()].label; }
 
 public:
-    bool operator== (mmDatePeriod other) const;
-    bool operator== (Id other_id) const;
+    bool operator== (mmDatePeriod other) const { return m_id == other.m_id; }
+    bool operator== (Id other_id) const { return m_id == other_id; }
 };
 
 using mmDatePeriodN = std::optional<mmDatePeriod>;
-
-inline int mmDatePeriod::toInt() const
-{
-    return static_cast<int>(id);
-}
-
-inline const wxString mmDatePeriod::label() const
-{
-    return mapIdLabel[toInt()].label;
-}
-
-inline bool mmDatePeriod::operator== (mmDatePeriod other) const
-{
-    return id == other.id;
-}
-inline bool mmDatePeriod::operator== (mmDatePeriod::Id other_id) const
-{
-    return id == other_id;
-}
 
 // mmDateRange2 represents a date range relative to today.
 // The range specification consists of the following:
@@ -107,43 +88,43 @@ public:
     {
         friend class mmDateRange2;
 
-    protected:
-        int so1 = 0;                          // start offset of first subrange
-        int eo1 = 0;                          // end   offset of first subrange
-        mmDatePeriod sp1 = mmDatePeriod::_A;  // start period of first subrange
-        mmDatePeriod ep1 = mmDatePeriod::_A;  // end   period of first subrange
-        int so2 = 0;                          // start offset of second subrange
-        int eo2 = 0;                          // end   offset of second subrange
-        mmDatePeriodN sp2 = mmDatePeriodN();  // start period of second subrange
-        mmDatePeriodN ep2 = mmDatePeriodN();  // end   period of second subrange
-        int f = 0;                            // index in first*[] (0=calendar, 1=financial)
-        wxString name = "";                   // specification name
+    private:
+        int m_so1 = 0;                          // start offset of first subrange
+        int m_eo1 = 0;                          // end   offset of first subrange
+        mmDatePeriod m_sp1 = mmDatePeriod::_A;  // start period of first subrange
+        mmDatePeriod m_ep1 = mmDatePeriod::_A;  // end   period of first subrange
+        int m_so2 = 0;                          // start offset of second subrange
+        int m_eo2 = 0;                          // end   offset of second subrange
+        mmDatePeriodN m_sp2 = mmDatePeriodN();  // start period of second subrange
+        mmDatePeriodN m_ep2 = mmDatePeriodN();  // end   period of second subrange
+        int m_f = 0;                            // index in first*[] (0=calendar, 1=financial)
+        wxString m_name = "";                   // specification name
 
     public:
         Range(
-            int so1_new = 0, mmDatePeriod  sp1_new = mmDatePeriod::_A,
-            int eo1_new = 0, mmDatePeriod  ep1_new = mmDatePeriod::_A,
-            int so2_new = 0, mmDatePeriodN sp2_new = mmDatePeriodN(),
-            int eo2_new = 0, mmDatePeriodN ep2_new = mmDatePeriodN(),
-            int f_new = 0, wxString name_new = ""
+            int so1 = 0, mmDatePeriod  sp1 = mmDatePeriod::_A,
+            int eo1 = 0, mmDatePeriod  ep1 = mmDatePeriod::_A,
+            int so2 = 0, mmDatePeriodN sp2 = mmDatePeriodN(),
+            int eo2 = 0, mmDatePeriodN ep2 = mmDatePeriodN(),
+            int f = 0, wxString name = ""
         );
 
     public:
-        void setName(const wxString &name_new);
-        bool parseLabel(StringIt &buffer_i, StringIt buffer_end);
-        void parseName(StringIt &buffer_i, StringIt buffer_end);
-        bool parseLabelName(const wxString &buffer, const wxString &name_new = "");
-        int  getF() const;
+        void setName(const wxString& name) { m_name = name; }
+        bool parseLabel(StringIt& buffer_i, StringIt buffer_end);
+        void parseName(StringIt& buffer_i, StringIt buffer_end);
+        bool parseLabelName(const wxString& buffer, const wxString& name = "");
+        int  getF() const { return m_f; }
         auto getLabel() const -> const wxString;
-        auto getName() const -> const wxString;
+        auto getName() const -> const wxString { return m_name; }
         auto getLabelName() const -> const wxString;
         auto checkingName() const -> const wxString;
         auto checkingDescription() const -> const wxString;
         bool hasPeriodS() const;
 
     private:
-        static void scanWhiteSpace(StringIt &buffer_i, StringIt buffer_end);
-        static char scanToken(StringIt &buffer_i, StringIt buffer_end, int &token_o, mmDatePeriod &token_p);
+        static void scanWhiteSpace(StringIt& buffer_i, StringIt buffer_end);
+        static char scanToken(StringIt& buffer_i, StringIt buffer_end, int& token_o, mmDatePeriod& token_p);
         static auto offsetStr(int offset, bool show_zero = false) -> const wxString;
         static auto offsetRangeStr(int so, int eo, bool show_zero = false) -> const wxString;
     };
@@ -153,83 +134,83 @@ public:
     {
         friend class mmDateRange2;
 
-    protected:
-        int m;           // multiplier
-        mmDatePeriod p;  // reporting period
+    private:
+        int m_m;           // multiplier
+        mmDatePeriod m_p;  // reporting period
 
     public:
-        Reporting(int m_new = 1, mmDatePeriod p_new = mmDatePeriod::_A);
+        Reporting(int m = 1, mmDatePeriod p = mmDatePeriod::_A);
 
     public:
-        bool parseLabel(StringIt &buffer_i, StringIt buffer_end);
+        bool parseLabel(StringIt& buffer_i, StringIt buffer_end);
         auto getLabel() const -> const wxString;
 
     private:
         static auto multiplierStr(int m, bool show_one = false) -> const wxString;
     };
 
-protected:
-    int firstDay[2];                  // first day in PERIOD::[YQM] (1..28)
-    wxDateTime::Month firstMonth[2];  // first month in PERIOD::[YQ] (0..11)
-    wxDateTime::WeekDay firstWeekday; // first weekday in PERIOD::W (0=Sun, 1=Mon)
-    mmDateN sDateN;                   // the date of PERIOD::S (account statement date)
-    mmDate  tDate;                    // the date of PERIOD::T (today)
-    mmDateN defStartDateN;            // default start date (if range start is open)
-    mmDateN defEndDateN;              // default end date (if range end is open)
-    Range range;                      // range specification
-    Reporting reporting;              // reporting multiplier/period
+private:
+    int m_firstDay[2];                  // first day in PERIOD::[YQM] (1..28)
+    wxDateTime::Month m_firstMonth[2];  // first month in PERIOD::[YQ] (0..11)
+    wxDateTime::WeekDay m_firstWeekday; // first weekday in PERIOD::W (0=Sun, 1=Mon)
+    mmDateN m_sDateN;                   // the date of PERIOD::S (account statement date)
+    mmDate  m_tDate;                    // the date of PERIOD::T (today)
+    mmDateN m_defStartDateN;            // default start date (if range start is open)
+    mmDateN m_defEndDateN;              // default end date (if range end is open)
+    Range m_range;                      // range specification
+    Reporting m_reporting;              // reporting multiplier/period
 
 public:
     mmDateRange2(
-        mmDateN sDateN_new = mmDateN(),
-        mmDate  tDate_new = mmDate::today(),
-        mmDateN defStartDateN_new = mmDateN(),
-        mmDateN defEndDateN_new = mmDateN()
+        mmDateN sDateN = mmDateN(),
+        mmDate  tDate = mmDate::today(),
+        mmDateN defStartDateN = mmDateN(),
+        mmDateN defEndDateN = mmDateN()
     );
 
 #ifndef NDEBUG
 private:
     mmDateRange2(
-        int firstDay_new_0, int firstDay_new_1,
-        wxDateTime::Month firstMonth_new_0, wxDateTime::Month firstMonth_new_1,
-        wxDateTime::WeekDay firstWeekday_new,
-        mmDateN sDateN_new = mmDateN(),
-        mmDate  tDate_new = mmDate::today(),
-        mmDateN defStartDateN_new = mmDateN(),
-        mmDateN defEndDateN_new = mmDateN()
+        int firstDay_0, int firstDay_1,
+        wxDateTime::Month firstMonth_0, wxDateTime::Month firstMonth_1,
+        wxDateTime::WeekDay firstWeekday,
+        mmDateN sDateN = mmDateN(),
+        mmDate  tDate = mmDate::today(),
+        mmDateN defStartDateN = mmDateN(),
+        mmDateN defEndDateN = mmDateN()
     );
 #endif
 
 public:
-    void setSDateN(mmDateN sDateN_new = mmDateN());
-    void setTDate(mmDate tDate_new = mmDate::today());
-    void setDefStartDateN(mmDateN defStartDateN_new = mmDateN());
-    void setDefEndDateN(mmDateN defEndDateN_new = mmDateN());
-    void setRange(const Range &range_new);
-    void setReporting(const Reporting &reporting_new);
-    int  getFirstDay() const;
-    auto getFirstMonth() const -> wxDateTime::Month;
-    auto getFirstWeekday() const -> wxDateTime::WeekDay;
-    auto getSDateN() const -> mmDateN;
-    auto getTDate() const -> mmDate;
-    auto getDefStartDateN() const -> mmDateN;
-    auto getDefEndDateN() const -> mmDateN;
-    auto getRange() const -> Range;
-    auto getReporting() const -> Reporting;
-    auto parseRange(const wxString &buffer, const wxString &name = "") -> bool;
-    auto parseReporting(const wxString &buffer) -> bool;
-    auto rangeLabel() const -> const wxString;
-    auto rangeName() const -> const wxString;
-    auto rangeLabelName() const -> const wxString;
-    auto reportingLabel() const -> const wxString;
+    void setSDateN(mmDateN dateN = mmDateN()) { m_sDateN = dateN; }
+    void setTDate(mmDate date = mmDate::today()) { m_tDate = date; }
+    void setDefStartDateN(mmDateN dateN = mmDateN()) { m_defStartDateN = dateN; }
+    void setDefEndDateN(mmDateN dateN = mmDateN()) { m_defEndDateN = dateN; }
+    void setRange(const Range& range) { m_range = range; }
+    void setReporting(const Reporting& reporting) { m_reporting = reporting; }
+    int  getFirstDay() const { return m_firstDay[m_range.m_f]; }
+    auto getFirstMonth() const -> wxDateTime::Month { return m_firstMonth[m_range.m_f]; }
+    auto getFirstWeekday() const -> wxDateTime::WeekDay { return m_firstWeekday; }
+    auto getSDateN() const -> mmDateN { return m_sDateN; }
+    auto getTDate() const -> mmDate { return m_tDate; }
+    auto getDefStartDateN() const -> mmDateN { return m_defStartDateN; }
+    auto getDefEndDateN() const -> mmDateN { return m_defEndDateN; }
+    auto getRange() const -> Range { return m_range; }
+    auto getReporting() const -> Reporting { return m_reporting; }
+    auto parseRange(const wxString& buffer, const wxString& name = "") -> bool;
+    auto parseReporting(const wxString& buffer) -> bool;
+    auto rangeLabel() const -> const wxString { return m_range.getLabel(); }
+    auto rangeName() const -> const wxString { return m_range.getName(); }
+    auto rangeLabelName() const -> const wxString { return m_range.getLabelName(); }
+    auto reportingLabel() const -> const wxString { return m_reporting.getLabel(); }
     auto periodStartN(mmDate date, mmDatePeriod period) const -> mmDateN;
     auto periodEndN(mmDate date, mmDatePeriod period) const -> mmDateN;
     auto rangeStartN() const -> mmDateN;
     auto rangeEndN() const -> mmDateN;
     auto reportingNextN() const -> mmDateN;
-    auto rangeStartIsoStartN() const -> const wxString;
-    auto rangeEndIsoEndN() const -> const wxString;
-    auto reportingNextIsoEndN() const -> const wxString;
+    auto rangeStartIsoStartN() const -> const wxString { return rangeStartN().isoStartN(); }
+    auto rangeEndIsoEndN() const -> const wxString { return rangeEndN().isoEndN(); }
+    auto reportingNextIsoEndN() const -> const wxString { return reportingNextN().isoEndN(); }
     auto checkingTooltip() const -> const wxString;
     auto reportingTooltip() const -> const wxString;
 
@@ -245,29 +226,29 @@ public:
         friend class mmDateRange2;
 
     private:
-        const mmDateRange2* a;
-        int count;
-        mmDateN nextDateN, lastDateN;
+        const mmDateRange2* m_a;
+        int m_count;
+        mmDateN m_nextDateN, m_lastDateN;
 
     public:
-        ReportingIterator(const mmDateRange2* a_new);
+        ReportingIterator(const mmDateRange2* a);
 
     public:
-        const mmDateN& operator*();
-        const mmDateN* operator->();
+        const mmDateN& operator*() { return m_nextDateN; }
+        const mmDateN* operator->() { return &m_nextDateN; }
         ReportingIterator& operator++();
         ReportingIterator operator++(int);
-        bool operator== (const ReportingIterator& other);
-        bool operator!= (const ReportingIterator& other);
-        bool operator== (int other_count);
-        bool operator!= (int other_count);
+        bool operator== (const ReportingIterator& other) { return m_count == other.m_count; }
+        bool operator!= (const ReportingIterator& other) { return m_count != other.m_count; }
+        bool operator== (int other_count) { return m_count == other_count; }
+        bool operator!= (int other_count) { return m_count != other_count; }
 
     private:
         void increment();
     };
 
-    ReportingIterator cbegin() const;
-    int cend() const;
+    ReportingIterator cbegin() const { return ReportingIterator(this); }
+    int cend() const { return -1; }
 
 #ifndef NDEBUG
 public:
@@ -275,26 +256,11 @@ public:
 #endif
 };
 
-inline void mmDateRange2::Range::setName(const wxString &name_new)
-{
-    name = name_new;
-}
-
-inline int mmDateRange2::Range::getF() const
-{
-    return f;
-}
-
-inline const wxString mmDateRange2::Range::getName() const
-{
-    return name;
-}
-
 inline bool mmDateRange2::Range::hasPeriodS() const
 {
     return
-        sp1 == mmDatePeriod::_S || ep1 == mmDatePeriod::_S ||
-        sp2 == mmDatePeriod::_S || ep2 == mmDatePeriod::_S;
+        m_sp1 == mmDatePeriod::_S || m_ep1 == mmDatePeriod::_S ||
+        m_sp2 == mmDatePeriod::_S || m_ep2 == mmDatePeriod::_S;
 }
 
 inline const wxString mmDateRange2::Range::offsetStr(int offset, bool show_zero)
@@ -306,106 +272,6 @@ inline const wxString mmDateRange2::Reporting::multiplierStr(int m, bool show_on
     return (m != 1 || show_one) ? wxString::Format("%+d", m) : "";
 }
 
-inline void mmDateRange2::setSDateN(mmDateN sDateN_new)
-{
-    sDateN = sDateN_new;
-}
-inline void mmDateRange2::setTDate(mmDate tDate_new)
-{
-    tDate = tDate_new;
-}
-inline void mmDateRange2::setDefStartDateN(mmDateN defStartDateN_new)
-{
-    defStartDateN = defStartDateN_new;
-}
-inline void mmDateRange2::setDefEndDateN(mmDateN defEndDateN_new)
-{
-    defEndDateN = defEndDateN_new;
-}
-inline void mmDateRange2::setRange(const mmDateRange2::Range &range_new)
-{
-    range = range_new;
-}
-inline void mmDateRange2::setReporting(const mmDateRange2::Reporting &reporting_new)
-{
-    reporting = reporting_new;
-}
-
-inline int mmDateRange2::getFirstDay() const
-{
-    return firstDay[range.f];
-}
-inline wxDateTime::Month mmDateRange2::getFirstMonth() const
-{
-    return firstMonth[range.f];
-}
-inline wxDateTime::WeekDay mmDateRange2::getFirstWeekday() const
-{
-    return firstWeekday;
-}
-inline mmDateN mmDateRange2::getSDateN() const
-{
-    return sDateN;
-}
-inline mmDate mmDateRange2::getTDate() const
-{
-    return tDate;
-}
-inline mmDateN mmDateRange2::getDefStartDateN() const
-{
-    return defStartDateN;
-}
-inline mmDateN mmDateRange2::getDefEndDateN() const
-{
-    return defEndDateN;
-}
-inline mmDateRange2::Range mmDateRange2::getRange() const
-{
-    return range;
-}
-inline mmDateRange2::Reporting mmDateRange2::getReporting() const
-{
-    return reporting;
-}
-
-inline const wxString mmDateRange2::rangeLabel() const
-{
-    return range.getLabel();
-}
-inline const wxString mmDateRange2::rangeName() const
-{
-    return range.getName();
-}
-inline const wxString mmDateRange2::rangeLabelName() const
-{
-    return range.getLabelName();
-}
-inline const wxString mmDateRange2::reportingLabel() const
-{
-    return reporting.getLabel();
-}
-
-inline const wxString mmDateRange2::rangeStartIsoStartN() const
-{
-    return rangeStartN().isoStartN();
-}
-inline const wxString mmDateRange2::rangeEndIsoEndN() const
-{
-    return rangeEndN().isoEndN();
-}
-inline const wxString mmDateRange2::reportingNextIsoEndN() const
-{
-    return reportingNextN().isoEndN();
-}
-
-inline const mmDateN& mmDateRange2::ReportingIterator::operator*()
-{
-    return nextDateN;
-}
-inline const mmDateN* mmDateRange2::ReportingIterator::operator->()
-{
-    return &nextDateN;
-}
 inline mmDateRange2::ReportingIterator& mmDateRange2::ReportingIterator::operator++()
 {
     increment();
@@ -417,30 +283,3 @@ inline mmDateRange2::ReportingIterator mmDateRange2::ReportingIterator::operator
     ++(*this);
     return tmp;
 }
-inline bool mmDateRange2::ReportingIterator::operator== (const ReportingIterator& other)
-{
-    return count == other.count;
-}
-inline bool mmDateRange2::ReportingIterator::operator!= (const ReportingIterator& other)
-{
-    return count != other.count;
-}
-inline bool mmDateRange2::ReportingIterator::operator== (int other_count)
-{
-    return count == other_count;
-}
-inline bool mmDateRange2::ReportingIterator::operator!= (int other_count)
-{
-    return count != other_count;
-}
-
-inline mmDateRange2::ReportingIterator mmDateRange2::cbegin() const
-{
-    return ReportingIterator(this);
-}
-
-inline int mmDateRange2::cend() const
-{
-    return -1;
-}
-
