@@ -18,11 +18,11 @@
 
 #include "Journal.h"
 
-TrxData Journal::execute_bill(const SchedData& sched_d, mmDateTime date_time)
+TrxData Journal::execute_bill(const SchedData& sched_d, mmDateTime datetime)
 {
     TrxData trx_d;
     trx_d.m_id              = -1;
-    trx_d.m_date_time       = date_time;
+    trx_d.m_datetime        = datetime;
     trx_d.m_type            = sched_d.m_type;
     trx_d.m_status          = sched_d.m_status;
     trx_d.m_account_id      = sched_d.m_account_id;
@@ -38,11 +38,11 @@ TrxData Journal::execute_bill(const SchedData& sched_d, mmDateTime date_time)
     return trx_d;
 }
 
-TrxModel::DataExt Journal::execute_bill_full(const SchedData& sched_d, mmDateTime date_time)
+TrxModel::DataExt Journal::execute_bill_full(const SchedData& sched_d, mmDateTime datetime)
 {
     TrxModel::DataExt trx_dx;
     trx_dx.m_id              = -1;
-    trx_dx.m_date_time       = date_time;
+    trx_dx.m_datetime        = datetime;
     trx_dx.m_type            = sched_d.m_type;
     trx_dx.m_status          = sched_d.m_status;
     trx_dx.m_account_id      = sched_d.m_account_id;
@@ -87,12 +87,12 @@ Journal::Data::Data(const TrxData& trx_d) :
 }
 
 Journal::Data::Data(const SchedData& sched_d) :
-    Data(sched_d, sched_d.m_date_time, 1)
+    Data(sched_d, sched_d.m_datetime, 1)
 {
 }
 
-Journal::Data::Data(const SchedData& sched_d, mmDateTime date, int repeat_id) :
-    TrxData(execute_bill(sched_d, date)),
+Journal::Data::Data(const SchedData& sched_d, mmDateTime datetime, int repeat_id) :
+    TrxData(execute_bill(sched_d, datetime)),
     m_sched_id(sched_d.m_id), m_repeat_id(repeat_id)
 {
     if (m_repeat_id < 1) {
@@ -121,14 +121,14 @@ Journal::DataExt::DataExt(
 }
 
 Journal::DataExt::DataExt(const SchedData& sched_d) :
-    DataExt(sched_d, sched_d.m_date_time.isoDateTime(), 1)
+    DataExt(sched_d, sched_d.m_datetime.isoDateTime(), 1)
 {
 }
 
 Journal::DataExt::DataExt(
-    const SchedData& sched_d, mmDateTime date, int repeat_id
+    const SchedData& sched_d, mmDateTime datetime, int repeat_id
 ) :
-    TrxModel::DataExt(execute_bill_full(sched_d, date), {}, {}),
+    TrxModel::DataExt(execute_bill_full(sched_d, datetime), {}, {}),
     m_sched_id(sched_d.m_id), m_repeat_id(repeat_id)
 {
     if (m_repeat_id < 1) {
@@ -143,11 +143,11 @@ Journal::DataExt::DataExt(
 }
 
 Journal::DataExt::DataExt(
-    const SchedData& sched_d, mmDateTime date, int repeat_id,
+    const SchedData& sched_d, mmDateTime datetime, int repeat_id,
     const std::map<int64, SchedSplitModel::DataA>& schedId_qpA_m,
     const std::map<int64, TagLinkModel::DataA>& schedId_glA_m)
 :
-    TrxModel::DataExt(execute_bill_full(sched_d, date), {}, {}),
+    TrxModel::DataExt(execute_bill_full(sched_d, datetime), {}, {}),
     m_sched_id(sched_d.m_id), m_repeat_id(repeat_id)
 {
     if (m_repeat_id < 1) {
@@ -188,7 +188,7 @@ bool Journal::setJournalData(Journal::Data& journal_d, JournalKey journal_key)
         journal_d.m_id              = trx_n->m_id;
         journal_d.m_sched_id        = -1;
         journal_d.m_repeat_id       = -1;
-        journal_d.m_date_time       = trx_n->m_date_time;
+        journal_d.m_datetime        = trx_n->m_datetime;
         journal_d.m_type            = trx_n->m_type;
         journal_d.m_status          = trx_n->m_status;
         journal_d.m_account_id      = trx_n->m_account_id;
@@ -201,8 +201,8 @@ bool Journal::setJournalData(Journal::Data& journal_d, JournalKey journal_key)
         journal_d.m_notes           = trx_n->m_notes;
         journal_d.m_followup_id     = trx_n->m_followup_id;
         journal_d.m_color           = trx_n->m_color;
-        journal_d.m_updated_time_n  = trx_n->m_updated_time_n;
-        journal_d.m_deleted_time_n  = trx_n->m_deleted_time_n;
+        journal_d.m_updated_utc_n   = trx_n->m_updated_utc_n;
+        journal_d.m_deleted_utc_n   = trx_n->m_deleted_utc_n;
     }
     else {
         const SchedData *sched_n = SchedModel::instance().get_id_data_n(journal_key.sid());
@@ -211,7 +211,7 @@ bool Journal::setJournalData(Journal::Data& journal_d, JournalKey journal_key)
         journal_d.m_id              = -1;
         journal_d.m_sched_id        = sched_n->m_id;
         journal_d.m_repeat_id       = 1;
-        journal_d.m_date_time       = sched_n->m_date_time;
+        journal_d.m_datetime        = sched_n->m_datetime;
         journal_d.m_type            = sched_n->m_type;
         journal_d.m_status          = sched_n->m_status;
         journal_d.m_account_id      = sched_n->m_account_id;
@@ -224,8 +224,8 @@ bool Journal::setJournalData(Journal::Data& journal_d, JournalKey journal_key)
         journal_d.m_notes           = sched_n->m_notes;
         journal_d.m_followup_id     = sched_n->m_followup_id;
         journal_d.m_color           = sched_n->m_color;
-        journal_d.m_updated_time_n  = mmDateTimeN();
-        journal_d.m_deleted_time_n  = mmDateTimeN();
+        journal_d.m_updated_utc_n   = mmDateTimeN();
+        journal_d.m_deleted_utc_n   = mmDateTimeN();
     }
     return true;
 }

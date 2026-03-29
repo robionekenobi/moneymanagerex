@@ -29,7 +29,9 @@ class StockHistoryModel : public TableFactory<StockHistoryTable, StockHistoryDat
 // -- static
 
 public:
-    static StockHistoryCol::DATE DATE(OP op, const mmDate& date);
+    static StockHistoryCol::DATE DATE(OP op, const mmDate& date) {
+        return StockHistoryCol::DATE(op, date.isoDate());
+    }
 
 // -- constructor
 

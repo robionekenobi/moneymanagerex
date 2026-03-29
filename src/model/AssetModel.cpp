@@ -116,8 +116,10 @@ const std::pair<double, double> AssetModel::get_data_value_date(
     if (!tl_a.empty()) {
         mmDateN last_n = mmDateN();
         for (const auto& trx_d : trx_a) {
-            const mmDate trx_date = trx_d.m_date();
-            const AccountData* account_n = AccountModel::instance().get_id_data_n(trx_d.m_account_id);
+            mmDate trx_date = trx_d.m_date();
+            const AccountData* account_n = AccountModel::instance().get_id_data_n(
+                trx_d.m_account_id
+            );
             int64 currency_id_n = account_n ? account_n->m_currency_id : -1;
             double currency_rate = CurrencyHistoryModel::instance().get_id_date_rate(
                 currency_id_n,

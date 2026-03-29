@@ -36,6 +36,7 @@
 #include "util/mmCalcValidator.h"
 
 #include "model/_all.h"
+#include "model/PrefModel.h"
 #include "model/Journal.h"
 
 #include "mmframe.h"
@@ -254,7 +255,7 @@ void JournalPanel::createControls()
         wxDP_DROPDOWN | wxDP_ALLOWNONE
     );
     w_start_date->SetValue(
-        tmprange.rangeStartN().value_or(mmDate::min()).getDateTime()
+        tmprange.rangeStartN().value_or(mmDate::min()).dateTime()
     );
     w_start_date->SetRange(wxInvalidDateTime, wxDateTime::Now());
     sizerHCtrl->Add(w_start_date, g_flagsH);
@@ -264,7 +265,7 @@ void JournalPanel::createControls()
         wxDP_DROPDOWN | wxDP_ALLOWNONE
     );
     w_end_date->SetValue(
-        tmprange.rangeEndN().value_or(mmDate::today()).getDateTime()
+        tmprange.rangeEndN().value_or(mmDate::today()).dateTime()
     );
     sizerHCtrl->Add(w_end_date, g_flagsH);
 
@@ -667,9 +668,6 @@ void JournalPanel::filterList()
     );
 
     bool ignore_future = PrefModel::instance().getIgnoreFutureTransactions();
-    const wxString today_date = PrefModel::instance().getUseTransDateTime()
-        ?  wxDateTime::Now().FormatISOCombined()
-        : wxDateTime(23, 59, 59, 999).FormatISOCombined();
 
     // TODO: fetch transactions until range_end_n
     TrxModel::DataA trx_a =
@@ -724,11 +722,11 @@ void JournalPanel::filterList()
     std::map<int64, AttachmentModel::DataA> schedId_attA_m;
     SchedModel::DataA sched_a;
     typedef std::tuple<
-        int      /* index into sched_a */,
-        wxString /* date; TODO: mmDateTime */,
-        int      /* repeat_id */
-    > bills_index_t;
-    std::vector<bills_index_t> bills_index;
+        int    /* sched_i: index into sched_a */,
+        mmDate /* date */,
+        int    /* repeat_id */
+    > SchedIndex;
+    std::vector<SchedIndex> sched_index_a;
     if (m_scheduled_enable && m_scheduled_selected) {
         schedId_qpA_m = SchedSplitModel::instance().find_all_mSchedId();
         schedId_glA_m = TagLinkModel::instance().find_refType_mRefId(
@@ -740,44 +738,73 @@ void JournalPanel::filterList()
         sched_a = m_account_n
             ? AccountModel::instance().find_id_sched_a(m_account_n->m_id)
             : SchedModel::instance().find_all();
-        for (unsigned int i = 0; i < sched_a.size(); ++i) {
+        for (unsigned int sched_i = 0; sched_i < sched_a.size(); ++sched_i) {
             int limit = 1000;  // this is enough for daily repetitions for one year
-            auto date_time_a = sched_a[i].unroll(range_end_n.value(), limit);
-            for (unsigned int repeat_id = 1; repeat_id <= date_time_a.size(); ++repeat_id)
-                bills_index.push_back({i, date_time_a[repeat_id-1].isoDateTime(), repeat_id});
-        }
-        std::stable_sort(
-            bills_index.begin(), bills_index.end(),
-            [](const bills_index_t& a, const bills_index_t& b) -> bool {
-                return std::get<1>(a) < std::get<1>(b);
+            std::vector<mmDate> date_a = sched_a[sched_i].unroll(range_end_n.value(), limit);
+            for (unsigned int repeat_id = 1; repeat_id <= date_a.size(); ++repeat_id) {
+                sched_index_a.push_back({
+                    sched_i, date_a[repeat_id-1], repeat_id
+                });
             }
-        );
+        }
+        if (PrefModel::instance().getUseTransDateTime()) {
+            std::sort(sched_index_a.begin(), sched_index_a.end(),
+                [sched_a](const SchedIndex& a, const SchedIndex& b) -> bool {
+                    int a_sched_i = std::get<0>(a);
+                    int b_sched_i = std::get<0>(b);
+                    const wxString a_date = std::get<1>(a).isoDate();
+                    const wxString b_date = std::get<1>(b).isoDate();
+                    const wxString a_isoTime = sched_a[a_sched_i].m_isoTime();
+                    const wxString b_isoTime = sched_a[b_sched_i].m_isoTime();
+                    return a_date < b_date || (a_date == b_date && (
+                        a_isoTime < b_isoTime || (a_isoTime == b_isoTime &&
+                            a_sched_i < b_sched_i
+                        )
+                    ));
+                }
+            );
+        }
+        else {
+            std::sort(sched_index_a.begin(), sched_index_a.end(),
+                [](const SchedIndex& a, const SchedIndex& b) -> bool {
+                    int a_sched_i = std::get<0>(a);
+                    int b_sched_i = std::get<0>(b);
+                    const wxString a_date = std::get<1>(a).isoDate();
+                    const wxString b_date = std::get<1>(b).isoDate();
+                    return a_date < b_date || (a_date == b_date &&
+                        a_sched_i < b_sched_i
+                    );
+                }
+            );
+        }
     }
 
     auto trx_it = trx_a.begin();
-    auto bills_it = bills_index.begin();
-    while (trx_it != trx_a.end() || bills_it != bills_index.end()) {
-        int bill_i = 0;
-        wxString tran_date;
+    auto sched_index_it = sched_index_a.begin();
+    while (trx_it != trx_a.end() || sched_index_it != sched_index_a.end()) {
+        int sched_i = -1;
+        mmDateTime trx_dateTime = mmDateTime::invalid();
         int repeat_id = -1;
-        TrxData bill_tran;
+        TrxData sched_trx_d;
         const TrxData* trx_n = nullptr;
 
-        if (trx_it != trx_a.end())
-            tran_date = trx_it->m_date_time.isoDateTime();
-        if (trx_it != trx_a.end() &&
-            (bills_it == bills_index.end() || tran_date.Left(10) <= std::get<1>(*bills_it).Left(10))
-        ) {
+        if (trx_it != trx_a.end() && (sched_index_it == sched_index_a.end() ||
+            trx_it->m_date() <= std::get<1>(*sched_index_it)
+        )) {
+            trx_dateTime = trx_it->m_datetime;
             trx_n = &(*trx_it);
             trx_it++;
         }
         else {
-            bill_i = std::get<0>(*bills_it);
-            tran_date = std::get<1>(*bills_it);
-            repeat_id = std::get<2>(*bills_it);
-            bill_tran = Journal::execute_bill(sched_a[bill_i], mmDateTime(tran_date));
-            trx_n = &bill_tran;
-            bills_it++;
+            sched_i = std::get<0>(*sched_index_it);
+            mmDate trx_date = std::get<1>(*sched_index_it);
+            trx_dateTime = PrefModel::instance().getUseTransDateTime()
+                ? mmDateTime(trx_date, sched_a[sched_i].m_isoTime())
+                : mmDateTime(trx_date);
+            repeat_id = std::get<2>(*sched_index_it);
+            sched_trx_d = Journal::execute_bill(sched_a[sched_i], trx_dateTime);
+            trx_n = &sched_trx_d;
+            sched_index_it++;
         }
 
         if (isGroup() &&
@@ -787,7 +814,12 @@ void JournalPanel::filterList()
             continue;
         if (isDeletedTrans() != trx_n->is_deleted())
             continue;
-        if (ignore_future && tran_date > today_date)
+
+        bool is_future = PrefModel::instance().getUseTransDateTime()
+            ? trx_n->m_datetime > mmDateTime::now()
+            : trx_n->m_date() > mmDate::today();
+
+        if (ignore_future && is_future)
             break;
 
         // update m_balance even if tran is filtered out
@@ -798,19 +830,23 @@ void JournalPanel::filterList()
             m_balance += account_flow;
             if (trx_n->is_reconciled()) {
                 m_reconciled_balance += account_flow;
-                if (tran_date <= today_date)
+                if (!is_future)
                     m_today_reconciled_balance += account_flow;
             }
             else
                 m_show_reconciled = true;
         }
 
-        if (tran_date < range_start_n.isoStartN() || tran_date > range_end_n.isoEndN())
+        if ((range_start_n.has_value() && trx_dateTime.date() < range_start_n.value()) ||
+            (range_end_n.has_value() && trx_dateTime.date() > range_end_n.value())
+        )
             continue;
 
-        Journal::DataExt journal_dx = (repeat_id < 0) ?
-            Journal::DataExt(*trx_n, trxId_tpA_m, trxId_glA_m) :
-            Journal::DataExt(sched_a[bill_i], tran_date, repeat_id, schedId_qpA_m, schedId_glA_m);
+        Journal::DataExt journal_dx = (repeat_id < 0)
+            ? Journal::DataExt(*trx_n, trxId_tpA_m, trxId_glA_m)
+            : Journal::DataExt(sched_a[sched_i], trx_dateTime, repeat_id,
+                schedId_qpA_m, schedId_glA_m
+            );
 
         bool expandSplits = false;
         if (m_filter_advanced) {
@@ -1026,10 +1062,10 @@ void JournalPanel::updateFilter(bool firstinit)
             mmBitmapButtonSize
         ));
         w_start_date->SetValue(
-            m_date_range.rangeStartN().value_or(mmDate::min()).getDateTime()
+            m_date_range.rangeStartN().value_or(mmDate::min()).dateTime()
         );
         w_end_date->SetValue(
-            m_date_range.rangeEndN().value_or(mmDate::today()).getDateTime()
+            m_date_range.rangeEndN().value_or(mmDate::today()).dateTime()
         );
     }
     else if (m_filter_id == FILTER_ID_DATE_PICKER) {
@@ -1038,10 +1074,10 @@ void JournalPanel::updateFilter(bool firstinit)
         if (firstinit) {
             // FIXME: get[ST]Date are not the start and end date
             w_start_date->SetValue(
-                m_date_range.getSDateN().getDateTimeN()
+                m_date_range.getSDateN().dateTimeN()
             );
             w_end_date->SetValue(
-                m_date_range.getTDate().getDateTime()
+                m_date_range.getTDate().dateTime()
             );
         }
     }
@@ -1210,8 +1246,8 @@ void JournalPanel::updateExtraTransactionData(bool single, int repeat_id, bool f
             );
 
             double flow = 0;
-            mmDateN min_date;
-            mmDateN max_date;
+            mmDateN min_dateN;
+            mmDateN max_dateN;
             long item = -1;
             while (true) {
                 item = w_list->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
@@ -1231,13 +1267,14 @@ void JournalPanel::updateExtraTransactionData(bool single, int repeat_id, bool f
                     (m_account_id < 0) ? w_list->m_journal_xa[item].m_account_id : m_account_id
                 );
                 mmDate date = w_list->m_journal_xa[item].m_date();
-                if (!min_date.has_value() || date < min_date.value())
-                    min_date = date;
-                if (!max_date.has_value() || max_date.value() < date)
-                    max_date = date;
+                if (!min_dateN.has_value() || date < min_dateN.value())
+                    min_dateN = date;
+                if (!max_dateN.has_value() || max_dateN.value() < date)
+                    max_dateN = date;
             }
 
-            int days = max_date.value().daysSince(min_date.value());
+            mmDate min_date = min_dateN.value();
+            int days = max_dateN.value().daysSince(min_date);
 
             wxString msg;
             wxString selectedBal = CurrencyModel::instance().toCurrency(flow, m_currency_n);
@@ -1403,10 +1440,10 @@ void JournalPanel::onFilterDate(wxCommandEvent& event)
     w_range_btn->SetBitmap(mmBitmapBundle((i > 0 ? png::TRANSFILTER_ACTIVE : png::TRANSFILTER), mmBitmapButtonSize));
 
     w_start_date->SetValue(
-        m_date_range.rangeStartN().value_or(mmDate::min()).getDateTime()
+        m_date_range.rangeStartN().value_or(mmDate::min()).dateTime()
     );
     w_end_date->SetValue(
-        m_date_range.rangeEndN().value_or(mmDate::today()).getDateTime()
+        m_date_range.rangeEndN().value_or(mmDate::today()).dateTime()
     );
 
     refreshList();

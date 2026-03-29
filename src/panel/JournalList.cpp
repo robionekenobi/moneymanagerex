@@ -835,7 +835,7 @@ void JournalList::onMouseRightClick(wxMouseEvent& event)
             break;
         case LIST_ID_DATE: {
             m_copy_text = menuItemText = mmGetDateTimeForDisplay(
-                m_journal_xa[row].m_date_time.isoDateTime()
+                m_journal_xa[row].m_isoDateTime()
             );
             wxString strDate = m_journal_xa[row].m_date().isoDate();
             m_filter = "{\n\"DATE1\": \"" + strDate +
@@ -937,7 +937,8 @@ void JournalList::onMouseRightClick(wxMouseEvent& event)
             m_filter = "{\n\"NOTES\": \"" + menuItemText + "\"\n}";
             break;
         case LIST_ID_DELETEDTIME:
-            dateTimeN = m_journal_xa[row].m_deleted_time_n;
+            // TODO: add m_deleted_local_n into Journal::DataExt
+            dateTimeN = m_journal_xa[row].m_deleted_utc_n.fromUtcToLocalN();
             if (dateTimeN.has_value())
                 m_copy_text = mmGetDateTimeForDisplay(
                     dateTimeN.value().isoDateTime(),
@@ -945,7 +946,8 @@ void JournalList::onMouseRightClick(wxMouseEvent& event)
                 );
             break;
         case LIST_ID_UPDATEDTIME:
-            dateTimeN = m_journal_xa[row].m_updated_time_n;
+            // TODO: add m_updated_local_n into Journal::DataExt
+            dateTimeN = m_journal_xa[row].m_updated_utc_n.fromUtcToLocalN();
             if (dateTimeN.has_value())
                 m_copy_text = mmGetDateTimeForDisplay(
                     dateTimeN.value().isoDateTime(),
@@ -1247,7 +1249,7 @@ void JournalList::onDeleteTrx(wxCommandEvent& WXUNUSED(event))
                 TrxModel::instance().purge_id(journal_key.rid());
             }
             else {
-                trx_n->m_deleted_time_n = mmDateTime::now();
+                trx_n->m_deleted_utc_n = mmDateTime::now().fromLocalToUtc();
                 TrxModel::instance().unsafe_save_trx_n(trx_n);
                 TrxLinkModel::DataA tl_a = TrxLinkModel::instance().find(
                     TrxLinkCol::CHECKINGACCOUNTID(trx_n->m_id)
@@ -1314,7 +1316,7 @@ void JournalList::onRestoreTrx(wxCommandEvent& WXUNUSED(event))
         for (const auto& journal_key : m_select_key_a) {
             if (journal_key.is_realized()) {
                 TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(journal_key.rid());
-                trx_n->m_deleted_time_n = mmDateTimeN();
+                trx_n->m_deleted_utc_n = mmDateTimeN();
                 TrxModel::instance().unsafe_save_trx_n(trx_n);
                 TrxLinkModel::DataA tl_a = TrxLinkModel::instance().find(
                     TrxLinkCol::CHECKINGACCOUNTID(trx_n->m_id)
@@ -1356,7 +1358,7 @@ void JournalList::onRestoreViewedTrx(wxCommandEvent&)
             if (!journal_dx.key().is_realized())
                 continue;
             TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(journal_dx.m_id);
-            trx_n->m_deleted_time_n = mmDateTimeN();
+            trx_n->m_deleted_utc_n = mmDateTimeN();
             TrxModel::instance().unsafe_save_trx_n(trx_n);
             TrxLinkModel::DataA tl_a = TrxLinkModel::instance().find(
                 TrxLinkCol::CHECKINGACCOUNTID(trx_n->m_id)
@@ -1790,7 +1792,7 @@ int64 JournalList::pasteTrx(const TrxData* trx_n)
     TrxData new_trx;
     new_trx.clone_from(*trx_n);
     if (!useOriginalDate)
-        new_trx.m_date_time = mmDateTime::now();
+        new_trx.m_datetime = mmDateTime::now();
     if (!useOriginalState) {
         // Use default status on copy insert
         new_trx.m_status = TrxStatus(
@@ -2052,9 +2054,9 @@ const wxString JournalList::getItem(long item, int col_id) const
     case LIST_ID_ACCOUNT:
         return journal_dx.ACCOUNTNAME;
     case LIST_ID_DATE:
-        return mmGetDateForDisplay(journal_dx.m_date_time.isoDateTime());
+        return mmGetDateForDisplay(journal_dx.m_isoDateTime());
     case LIST_ID_TIME:
-        return mmGetTimeForDisplay(journal_dx.m_date_time.isoDateTime());
+        return mmGetTimeForDisplay(journal_dx.m_isoDateTime());
     case LIST_ID_NUMBER:
         return journal_dx.m_number;
     case LIST_ID_CATEGORY:
@@ -2086,7 +2088,9 @@ const wxString JournalList::getItem(long item, int col_id) const
                 std::map<wxString, int64> tag_name_id_m = TagLinkModel::instance().find_ref_mTagName(
                     TrxSplitModel::s_ref_type, tp_d.m_id
                 );
-                std::map<wxString, int64, caseInsensitiveComparator> sortedTags(tag_name_id_m.begin(), tag_name_id_m.end());
+                std::map<wxString, int64, caseInsensitiveComparator> sortedTags(
+                    tag_name_id_m.begin(), tag_name_id_m.end()
+                );
                 for (const auto& tag_name_id : sortedTags)
                     tagnames.Append(tag_name_id.first + " ");
                 if (!tagnames.IsEmpty())
@@ -2095,10 +2099,11 @@ const wxString JournalList::getItem(long item, int col_id) const
         }
         return value.Trim();
     case LIST_ID_DELETEDTIME:
-        dateTimeN = journal_dx.m_deleted_time_n;
+        // TODO: add m_deleted_local_n into Journal::DataExt
+        dateTimeN = journal_dx.m_deleted_utc_n;
         return dateTimeN.has_value()
             ? mmGetDateTimeForDisplay(
-                dateTimeN.value().isoDateTime(),
+                dateTimeN.value().fromUtcToLocal().isoDateTime(),
                 dateFormat + " %H:%M:%S"
             )
             : wxString("");
@@ -2113,9 +2118,11 @@ const wxString JournalList::getItem(long item, int col_id) const
     case LIST_ID_UDFC05:
         return UDFCFormatHelper(journal_dx.UDFC_type[4], journal_dx.UDFC_content[4]);
     case LIST_ID_UPDATEDTIME:
-        return journal_dx.m_updated_time_n.has_value()
+        // TODO: add m_updated_local_n into Journal::DataExt
+        dateTimeN = journal_dx.m_updated_utc_n;
+        return dateTimeN.has_value()
             ? mmGetDateTimeForDisplay(
-                journal_dx.m_updated_time_n.value().isoDateTime(),
+                dateTimeN.value().fromUtcToLocal().isoDateTime(),
                 dateFormat + " %H:%M:%S"
             )
             : wxString("");
@@ -2124,14 +2131,19 @@ const wxString JournalList::getItem(long item, int col_id) const
     switch (col_id) {
     case LIST_ID_WITHDRAWAL:
         if (!w_panel->isAccount()) {
-            const AccountData* account = AccountModel::instance().get_id_data_n(journal_dx.m_account_w_id_n);
+            const AccountData* account = AccountModel::instance().get_id_data_n(
+                journal_dx.m_account_w_id_n
+            );
             const CurrencyData* currency = account ?
                 CurrencyModel::instance().get_id_data_n(account->m_currency_id) : nullptr;
             if (currency)
                 value = CurrencyModel::instance().toCurrency(journal_dx.m_amount_w, currency);
         }
         else if (journal_dx.m_account_w_id_n == w_panel->m_account_id) {
-            value = CurrencyModel::instance().toString(journal_dx.m_amount_w, w_panel->m_currency_n);
+            value = CurrencyModel::instance().toString(
+                journal_dx.m_amount_w,
+                w_panel->m_currency_n
+            );
         }
         if (!value.IsEmpty() && journal_dx.is_void())
             value = "* " + value;
@@ -2364,7 +2376,7 @@ void JournalList::deleteTransactionsByStatus(std::optional<TrxStatus> status_n)
         }
         else {
             TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(journal_dx.m_id);
-            trx_n->m_deleted_time_n = mmDateTime::now();
+            trx_n->m_deleted_utc_n = mmDateTime::now().fromLocalToUtc();
             TrxModel::instance().unsafe_save_trx_n(trx_n);
             TrxLinkModel::DataA translink = TrxLinkModel::instance().find(
                 TrxLinkCol::CHECKINGACCOUNTID(trx_n->m_id)
@@ -2434,14 +2446,16 @@ bool JournalList::checkForClosedAccounts()
 
 bool JournalList::checkTransactionLocked(int64 account_id, mmDate date)
 {
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(account_id);
+    const AccountData* account_n = AccountModel::instance().get_id_data_n(
+        account_id
+    );
     if (!account_n->is_locked_for(date))
         return false;
 
     wxMessageBox(
         wxString::Format(
             _t("Locked transaction to date: %s\n\n" "Reconciled transactions."),
-            mmGetDateTimeForDisplay(account_n->m_stmt_date_n.value().isoDate())
+            mmGetDateTimeForDisplay(account_n->m_stmt_date_n.isoDateN())
         ),
         _t("MMEX Transaction Check"),
         wxOK | wxICON_WARNING

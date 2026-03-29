@@ -55,7 +55,7 @@ public:
 
 public:
     auto get_id_name(int64 stock_id) -> const wxString;
-    auto find_last_hist_date(const Data& stock_d) -> const mmDate;
+    auto find_last_hist_date(const Data& stock_d) -> mmDate;
 
     auto calculate_account_balance(const AccountData& account_d, const mmDate& date) -> double;
     auto calculate_realized_gain(const Data& stock_d, bool base_curr = false) -> double;

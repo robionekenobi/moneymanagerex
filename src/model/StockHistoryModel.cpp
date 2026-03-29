@@ -20,13 +20,6 @@
 #include "StockModel.h"
 #include "StockHistoryModel.h"
 
-// -- static
-
-StockHistoryCol::DATE StockHistoryModel::DATE(OP op, const mmDate& date)
-{
-    return StockHistoryCol::DATE(op, date.isoDate());
-}
-
 // -- constructor
 
 // Initialize the global StockHistoryModel table.

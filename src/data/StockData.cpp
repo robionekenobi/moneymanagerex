@@ -22,7 +22,7 @@ StockData::StockData() :
     m_id(-1),
     m_account_id_n(-1),
     m_num_shares(0.0),
-    m_purchase_date(mmDate::today()),
+    m_purchase_date(mmDate::invalid()),
     m_purchase_price(0.0),
     m_current_price(0.0),
     m_purchase_value(0.0),

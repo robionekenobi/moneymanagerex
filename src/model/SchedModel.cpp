@@ -170,12 +170,14 @@ void SchedModel::reschedule_id(int64 sched_id)
         return;
     }
 
-    sched_n->m_date_time = mmDateTime(sched_n->m_repeat.next_datetime(
-        sched_n->m_date_time.getDateTime()
-    ));
-    sched_n->m_due_date = mmDate(sched_n->m_repeat.next_datetime(
-        sched_n->m_due_date.getDateTime()
-    ));
+    mmDate date = sched_n->m_date();
+    sched_n->m_datetime = mmDateTime(
+        sched_n->m_repeat.next_date(date),
+        sched_n->m_isoTime()
+    );
+    sched_n->m_due_date = sched_n->m_repeat.next_date(
+        sched_n->m_due_date
+    );
     sched_n->m_repeat.next_repeat();
     unsafe_save_data_n(sched_n);
 }

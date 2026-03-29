@@ -89,7 +89,8 @@ double BalanceReport::getCurrencyDateRate(int64 currency_id, const mmDate& date)
         return (*i).second;
 
     double rate = CurrencyHistoryModel::instance().get_id_date_rate(
-        currency_id, date
+        currency_id,
+        date
     );
     m_currencyDateRateCache[key] = rate;
 
@@ -148,7 +149,7 @@ wxString BalanceReport::getHTMLText()
         }
     }
 
-    wxDateTime end_datetime = mmDate::today().getDateTime();
+    wxDateTime end_datetime = mmDate::today().dateTime();
     wxDateSpan span;
     if (m_period_id == PERIOD_ID::MONTH) {
         end_datetime.SetToLastMonthDay(end_datetime.GetMonth(), end_datetime.GetYear());
@@ -244,14 +245,15 @@ wxString BalanceReport::getHTMLText()
         }
         // create Labels:
         for (unsigned int i = 0; i < date_balanceA_a.size(); ++i) {
+            wxDateTime dateTime = date_balanceA_a[i].date.dateTime();
             gd.labels.push_back(m_period_id == PERIOD_ID::MONTH
                 ? wxString::Format("%s %i",
                     wxGetTranslation(wxDateTime::GetEnglishMonthName(
-                        date_balanceA_a[i].date.getDateTime().GetMonth())
-                    ),
-                    date_balanceA_a[i].date.getDateTime().GetYear()
+                        dateTime.GetMonth()
+                    )),
+                    dateTime.GetYear()
                 )
-                : wxString::Format("%i", date_balanceA_a[i].date.getDateTime().GetYear())
+                : wxString::Format("%i", dateTime.GetYear())
             );
         }
 
@@ -279,13 +281,13 @@ wxString BalanceReport::getHTMLText()
 
             hb.startTbody();
             {
-                for (const auto& date_balanceA : date_balanceA_a) {
-                    wxDateTime dt = date_balanceA.date.getDateTime();
+                for (auto& date_balanceA : date_balanceA_a) {
+                    wxDateTime dateTime = date_balanceA.date.dateTime();
                     hb.startTableRow();
                     if (m_period_id == PERIOD_ID::MONTH)
-                        hb.addTableCellMonth(dt.GetMonth(), dt.GetYear());
+                        hb.addTableCellMonth(dateTime.GetMonth(), dateTime.GetYear());
                     else
-                        hb.addTableCell(wxString::Format("%d", dt.GetYear()));
+                        hb.addTableCell(wxString::Format("%d", dateTime.GetYear()));
                     for (int i = 0; i < acc_size + 1; i++) {
                         if (is_visible_a[i])
                             hb.addMoneyCell(date_balanceA.balance_a[i]);

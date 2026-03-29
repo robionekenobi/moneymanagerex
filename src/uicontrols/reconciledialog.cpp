@@ -814,7 +814,7 @@ void mmReconcileDialog::setListItemData(const TrxData* trx_n, wxListCtrl* list, 
             : trx_n->m_to_account_id_n
         )
         : PayeeModel::instance().get_id_name(trx_n->m_payee_id_n);
-    list->SetItem(item, 1, mmGetDateTimeForDisplay(trx_n->m_date_time.isoDateTime()));
+    list->SetItem(item, 1, mmGetDateTimeForDisplay(trx_n->m_isoDateTime()));
     list->SetItem(item, 2, trx_n->m_number);
     list->SetItem(item, 3, prefix + payeeName);
     list->SetItem(item, 4, CurrencyModel::instance().toString(trx_n->m_amount,m_currency_n));

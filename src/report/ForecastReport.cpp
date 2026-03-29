@@ -61,9 +61,9 @@ wxString ForecastReport::getHTMLText()
             trx_d.m_date()
         );
         // FIXME: use only the date part
-        amount_by_day[trx_d.m_date_time.isoDateTime()].first +=
+        amount_by_day[trx_d.m_isoDateTime()].first +=
             trx_d.account_outflow(trx_d.m_account_id) * convRate;
-        amount_by_day[trx_d.m_date_time.isoDateTime()].second +=
+        amount_by_day[trx_d.m_isoDateTime()].second +=
             trx_d.account_inflow(trx_d.m_account_id) * convRate;
     }
 

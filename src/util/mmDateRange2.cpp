@@ -494,7 +494,7 @@ mmDateN mmDateRange2::periodStartN(mmDate date, mmDatePeriod period) const
 {
     if (period == mmDatePeriod::_A)
         return mmDateN();
-    wxDateTime s = date.getDateTime();
+    wxDateTime s = date.dateTime();
     if (period == mmDatePeriod::_Y || period == mmDatePeriod::_Q || period == mmDatePeriod::_M) {
         if (s.GetDay() < firstDay[range.f])
             s -= wxDateSpan::Months(1);
@@ -515,14 +515,14 @@ mmDateN mmDateRange2::periodStartN(mmDate date, mmDatePeriod period) const
         if (d > 0)
             s -= wxDateSpan::Days(d);
     }
-    return mmDate(s);
+    return mmDateN(s);
 }
 
 mmDateN mmDateRange2::periodEndN(mmDate date, mmDatePeriod period) const
 {
     if (period == mmDatePeriod::_A)
         return mmDateN();
-    wxDateTime e = date.getDateTime();
+    wxDateTime e = date.dateTime();
     if (period == mmDatePeriod::_Y || period == mmDatePeriod::_Q || period == mmDatePeriod::_M) {
         if (e.GetDay() >= firstDay[range.f])
             e += wxDateSpan::Months(1);
@@ -544,7 +544,7 @@ mmDateN mmDateRange2::periodEndN(mmDate date, mmDatePeriod period) const
         if (d > 0)
             e += wxDateSpan::Days(d);
     }
-    return mmDate(e);
+    return mmDateN(e);
 }
 
 mmDateN mmDateRange2::rangeStartN() const
@@ -737,8 +737,8 @@ bool mmDateRange2::debug()
         mmDate(sDateTime), mmDate(tDateTime),
         mmDateN(), mmDate(defEndDateTime)
     );
-    wxLogDebug("INFO: sDateN.dateTime=[%s]", dateTimeISO(dr.getSDateN().getDateTimeN()));
-    wxLogDebug("INFO: tDate.dateTime=[%s]", dateTimeISO(dr.getTDate().getDateTime()));
+    wxLogDebug("INFO: sDateN=[%s]", dr.getSDateN().isoDateN());
+    wxLogDebug("INFO: tDate=[%s]", dr.getTDate().isoDate());
     wxLogDebug("INFO: defStartDateN=[%s]", dr.getDefStartDateN().isoDateN());
     wxLogDebug("INFO: defEndDateN=[%s]", dr.getDefEndDateN().isoDateN());
 

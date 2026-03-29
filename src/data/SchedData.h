@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "util/mmDateTime.h"
 #include "util/mmDate.h"
+#include "util/mmDateTime.h"
 #include "_DataEnum.h"
 #include "_Repeat.h"
 #include "table/SchedTable.h"
@@ -28,7 +28,7 @@
 struct SchedData
 {
     int64      m_id;
-    mmDateTime m_date_time;
+    mmDateTime m_datetime;
     TrxType    m_type;
     TrxStatus  m_status;
     int64      m_account_id;      // non-null (> 0) after initialization
@@ -66,10 +66,11 @@ struct SchedData
     bool operator< (const SchedData& other) const { return id() < other.id(); }
     bool operator< (const SchedData* other) const { return id() < other->id(); }
 
-    // m_date is a pseudo-member variable, convenient when time is disabled.
-    // note: the (unused) time part is set to noon in mmDate constructor and methods
-    mmDate m_date() const { return mmDate(m_date_time); }
-    void m_date(mmDate date) { m_date_time = mmDateTime(date.getDateTime()); }
+    // pseudo-member variables
+    auto m_date() const -> const mmDate& { return m_datetime.date(); }
+    auto m_isoDate() const -> const wxString { return m_datetime.isoDate(); }
+    auto m_isoTime() const -> const wxString { return m_datetime.isoTime(); }
+    auto m_isoDateTime() const -> const wxString { return m_datetime.isoDateTime(); }
 
     bool is_withdrawal() const { return m_type.id() == TrxType::e_withdrawal; }
     bool is_deposit()    const { return m_type.id() == TrxType::e_deposit; }
@@ -77,8 +78,7 @@ struct SchedData
     bool is_reconciled() const { return m_status.id() == TrxStatus::e_reconciled; }
     bool is_void()       const { return m_status.id() == TrxStatus::e_void; }
 
-    bool is_due() const;
-    auto unroll(const mmDate end_date, int limit = -1) const -> const std::vector<mmDateTime>;
+    auto unroll(const mmDate& end_date, int limit = -1) const -> std::vector<mmDate>;
 
     struct SorterById
     {
@@ -88,11 +88,47 @@ struct SchedData
         }
     };
 
+    struct SorterByDate
+    {
+        bool operator()(const SchedData& x, const SchedData& y)
+        {
+            return x.m_isoDate() < y.m_isoDate();
+        }
+    };
+
+    struct SorterByTime
+    {
+        bool operator()(const SchedData& x, const SchedData& y)
+        {
+            return x.m_isoTime() < y.m_isoTime();
+        }
+    };
+
     struct SorterByDateTime
     {
         bool operator()(const SchedData& x, const SchedData& y)
         {
-            return x.m_date_time < y.m_date_time;
+            return x.m_datetime < y.m_datetime;
+        }
+    };
+
+    struct SorterByDateId
+    {
+        bool operator()(const SchedData& x, const SchedData& y)
+        {
+            return x.m_isoDate() < y.m_isoDate() || (x.m_isoDate() == y.m_isoDate() &&
+                x.m_id < y.m_id
+            );
+        }
+    };
+
+    struct SorterByDateTimeId
+    {
+        bool operator()(const SchedData& x, const SchedData& y)
+        {
+            return x.m_datetime < y.m_datetime || (x.m_datetime == y.m_datetime &&
+                x.m_id < y.m_id
+            );
         }
     };
 

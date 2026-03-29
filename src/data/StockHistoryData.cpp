@@ -20,7 +20,7 @@
 
 StockHistoryData::StockHistoryData() :
     m_id(-1),
-    m_date(mmDate::today()),
+    m_date(mmDate::invalid()),
     m_price(0.0),
     m_update_type(UpdateType())
 {

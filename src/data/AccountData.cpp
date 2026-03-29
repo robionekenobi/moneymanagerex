@@ -23,7 +23,7 @@ AccountData::AccountData() :
     m_currency_id(-1),
     m_status(AccountStatus()),
     m_favorite(AccountFavorite()),
-    m_open_date(mmDate::today()),
+    m_open_date(mmDate::invalid()),
     m_open_balance(0.0),
     m_stmt_locked(false),
     m_stmt_date_n(mmDateN()),

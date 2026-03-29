@@ -73,7 +73,7 @@ TrxCol::DELETEDTIME TrxModel::IS_DELETED(bool value)
 
 void TrxModel::copy_from_trx(Data *this_n, const Data& other_d)
 {
-    this_n->m_date_time       = other_d.m_date_time;
+    this_n->m_datetime        = other_d.m_datetime;
     this_n->m_type            = other_d.m_type;
     this_n->m_status          = other_d.m_status;
     this_n->m_account_id      = other_d.m_account_id;
@@ -163,7 +163,7 @@ void TrxModel::save_timestamp(int64 trx_id)
 {
     Data* trx_n = instance().unsafe_get_id_data_n(trx_id);
     if (trx_n && trx_n->m_id == trx_id) {
-        trx_n->m_updated_time_n = mmDateTime::now();
+        trx_n->m_updated_utc_n = mmDateTime::now().fromLocalToUtc();
         unsafe_update_data_n(trx_n);
     }
 }
@@ -177,7 +177,7 @@ void TrxModel::update_timestamp(Data& trx_d)
     if (trx_a.size() == 0 || (!trx_a[0].equals(&trx_d) &&
         !trx_a[0].is_deleted() && !trx_d.is_deleted()
     )) {
-        trx_d.m_updated_time_n = mmDateTime::now();
+        trx_d.m_updated_utc_n = mmDateTime::now().fromLocalToUtc();
     }
 }
 
@@ -265,7 +265,7 @@ void TrxModel::getFrequentUsedNotes(std::vector<wxString>& frequentNotes, int64 
     // Count frequency
     std::map<wxString, std::pair<int, wxString>> counterMap;
     for (const auto& trx_d : trx_a) {
-        wxString trx_date = trx_d.m_date().isoDate();
+        wxString trx_date = trx_d.m_isoDate();
         auto& counter = counterMap[trx_d.m_notes];
         counter.first--;
         if (trx_date > counter.second)
@@ -299,15 +299,15 @@ void TrxModel::setEmptyData(Data& dst_trx_d, int64 account_id)
             TrxCol::ACCOUNTID(account_id),
             TrxCol::TOACCOUNTID(account_id)
         )) {
-            if (trx_d.is_deleted() || trx_d.m_date_time > now_dateTime)
+            if (trx_d.is_deleted() || trx_d.m_datetime > now_dateTime)
                 continue;
-            if (!max_dateTime.has_value() || max_dateTime.value() < trx_d.m_date_time) {
-                max_dateTime = trx_d.m_date_time;
+            if (!max_dateTime.has_value() || max_dateTime.value() < trx_d.m_datetime) {
+                max_dateTime = trx_d.m_datetime;
             }
         }
     }
 
-    dst_trx_d.m_date_time     = max_dateTime.value_or(now_dateTime);
+    dst_trx_d.m_datetime      = max_dateTime.value_or(now_dateTime);
     dst_trx_d.m_type          = TrxType(TrxType::e_withdrawal);
     dst_trx_d.m_status        = TrxStatus(PrefModel::instance().getTransStatusReconciled());
     dst_trx_d.m_account_id    = account_id;
@@ -465,11 +465,11 @@ bool TrxModel::DataExt::is_foreign_transfer() const
     return is_foreign() && (this->m_to_account_id_n == TrxLinkModel::AS_TRANSFER);
 }
 
-wxString TrxModel::DataExt::info() const
+wxString TrxModel::DataExt::info()
 {
     // TODO more info
     wxString info = wxGetTranslation(wxDateTime::GetEnglishWeekDayName(
-        m_date_time.getDateTime().GetWeekDay()
+        m_datetime.dateTime().GetWeekDay()
     ));
     return info;
 }

@@ -19,7 +19,6 @@
 #pragma once
 
 #include "util/mmDateTime.h"
-#include "util/mmDate.h"
 #include "_DataEnum.h"
 #include "table/TrxTable.h"
 
@@ -27,7 +26,7 @@
 struct TrxData
 {
     int64       m_id;
-    mmDateTime  m_date_time;
+    mmDateTime  m_datetime;
     TrxType     m_type;
     TrxStatus   m_status;
     int64       m_account_id;      // non-null (> 0) after initialization
@@ -40,8 +39,8 @@ struct TrxData
     wxString    m_notes;
     int64       m_followup_id;     // this is not a database id
     int64       m_color;
-    mmDateTimeN m_updated_time_n;  // non-null for TrxData; null for SchedData in Journal
-    mmDateTimeN m_deleted_time_n;  // non-null for deleted transactions, null otherwise
+    mmDateTimeN m_updated_utc_n;   // non-null for TrxData; null for SchedData in Journal
+    mmDateTimeN m_deleted_utc_n;   // non-null for deleted transactions, null otherwise
 
     explicit TrxData();
     explicit TrxData(wxSQLite3ResultSet& q);
@@ -65,17 +64,18 @@ struct TrxData
     bool operator< (const TrxData& other) const { return id() < other.id(); }
     bool operator< (const TrxData* other) const { return id() < other->id(); }
 
-    // m_date is a pseudo-member variable, convenient when time is disabled.
-    // note: the (unused) time part is set to noon in mmDate constructor and methods
-    mmDate m_date() const { return mmDate(m_date_time); }
-    void m_date(mmDate date) { m_date_time = mmDateTime(date.getDateTime()); }
+    // pseudo-member variables
+    auto m_date() const -> const mmDate& { return m_datetime.date(); }
+    auto m_isoDate() const -> const wxString { return m_datetime.isoDate(); }
+    auto m_isoTime() const -> const wxString { return m_datetime.isoTime(); }
+    auto m_isoDateTime() const -> const wxString { return m_datetime.isoDateTime(); }
 
     bool is_withdrawal() const { return m_type.id() == TrxType::e_withdrawal; }
     bool is_deposit()    const { return m_type.id() == TrxType::e_deposit; }
     bool is_transfer()   const { return m_type.id() == TrxType::e_transfer; }
     bool is_reconciled() const { return m_status.id() == TrxStatus::e_reconciled; }
     bool is_void()       const { return m_status.id() == TrxStatus::e_void; }
-    bool is_deleted()    const { return m_deleted_time_n.has_value(); }
+    bool is_deleted()    const { return m_deleted_utc_n.has_value(); }
     bool is_valid()      const { return !is_void() && !is_deleted(); }
 
     double account_flow(int64 account_id) const;
@@ -95,7 +95,7 @@ struct TrxData
     {
         bool operator()(const TrxData& x, const TrxData& y)
         {
-            return x.m_date() < y.m_date();
+            return x.m_isoDate() < y.m_isoDate();
         }
     };
 
@@ -103,9 +103,7 @@ struct TrxData
     {
         bool operator()(const TrxData& x, const TrxData& y)
         {
-            return
-                x.m_date_time.getDateTime().FormatISOTime() <
-                y.m_date_time.getDateTime().FormatISOTime();
+            return x.m_isoTime() < y.m_isoTime();
         }
     };
 
@@ -113,7 +111,7 @@ struct TrxData
     {
         bool operator()(const TrxData& x, const TrxData& y)
         {
-            return x.m_date_time < y.m_date_time;
+            return x.m_datetime < y.m_datetime;
         }
     };
 
@@ -121,8 +119,8 @@ struct TrxData
     {
         bool operator()(const TrxData& x, const TrxData& y)
         {
-            return x.m_date() < y.m_date() || (
-                x.m_date() == y.m_date() && x.m_id < y.m_id
+            return x.m_isoDate() < y.m_isoDate() || (x.m_isoDate() == y.m_isoDate() &&
+                x.m_id < y.m_id
             );
         }
     };
@@ -131,8 +129,8 @@ struct TrxData
     {
         bool operator()(const TrxData& x, const TrxData& y)
         {
-            return x.m_date_time < y.m_date_time || (
-                x.m_date_time == y.m_date_time && x.m_id < y.m_id
+            return x.m_datetime < y.m_datetime || (x.m_datetime == y.m_datetime &&
+                x.m_id < y.m_id
             );
         }
     };
@@ -239,9 +237,9 @@ struct TrxData
     {
         bool operator()(const TrxData& x, const TrxData& y)
         {
-            return x.m_updated_time_n.has_value() && (
-                !y.m_updated_time_n.has_value() ||
-                x.m_updated_time_n.value() < y.m_updated_time_n.value()
+            return x.m_updated_utc_n.has_value() && (
+                !y.m_updated_utc_n.has_value() ||
+                x.m_updated_utc_n.value() < y.m_updated_utc_n.value()
             );
         }
     };
@@ -250,9 +248,9 @@ struct TrxData
     {
         bool operator()(const TrxData& x, const TrxData& y)
         {
-            return x.m_deleted_time_n.has_value() && (
-                !y.m_deleted_time_n.has_value() ||
-                x.m_deleted_time_n.value() < y.m_deleted_time_n.value()
+            return x.m_deleted_utc_n.has_value() && (
+                !y.m_deleted_utc_n.has_value() ||
+                x.m_deleted_utc_n.value() < y.m_deleted_utc_n.value()
             );
         }
     };

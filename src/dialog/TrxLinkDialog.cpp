@@ -247,7 +247,7 @@ void TrxLinkDialog::DataToControls()
     if (!m_transaction_n)
         return;
 
-    wxDateTime trans_date = m_transaction_n->m_date_time.getDateTime();
+    wxDateTime trans_date = m_transaction_n->m_datetime.dateTime();
     TransactionDate(trans_date);
 
     m_transaction_id = m_transaction_n->m_id;
@@ -537,7 +537,7 @@ int64 TrxLinkDialog::SaveChecking()
         CheckingType() == TrxLinkModel::AS_TRANSFER
     ) ? m_account_id : -1; // Self Transfer as Revaluation
 
-    m_transaction_n->m_date_time     = mmDateTime(trx_datetime);
+    m_transaction_n->m_datetime      = mmDateTime(trx_datetime);
     m_transaction_n->m_type          = TrxType(TransactionType());
     m_transaction_n->m_status        = TrxStatus(m_status_selector->GetStringSelection().Mid(0, 1));
     m_transaction_n->m_payee_id_n    = m_payee_id;

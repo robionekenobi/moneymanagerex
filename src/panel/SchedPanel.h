@@ -88,7 +88,7 @@ private:
     void createControls();
     auto getItem(long item, int col_id) -> wxString;
     int  initList(int64 sched_id_n = -1);
-    auto getRemainingDays(const SchedData& sched_d) const -> const wxString;
+    auto getRemainingDays(SchedData& sched_d) -> const wxString;
     auto getRandomTip() -> wxString;
     void updateBottomPanelData(int selIndex);
     void enableEditDeleteButtons(bool en);

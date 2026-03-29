@@ -173,8 +173,9 @@ wxString mmReportIncomeExpensesMonthly::getHTMLText()
             );
         }
 
-        int year = trx_d.m_date_time.getDateTime().GetYear();
-        int idx = year * 100 + trx_d.m_date_time.getDateTime().GetMonth();
+        mmDateTime dateTime = trx_d.m_datetime;
+        int year = dateTime.dateTime().GetYear();
+        int idx = year * 100 + dateTime.dateTime().GetMonth();
 
         if (trx_d.is_deposit()) {
             incomeExpensesStats[idx].first += trx_d.m_amount * convRate;

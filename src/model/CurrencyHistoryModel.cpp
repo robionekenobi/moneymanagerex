@@ -89,7 +89,7 @@ double CurrencyHistoryModel::get_id_date_rate(int64 currency_id_n, const mmDate&
 
     // Rate not found for specified day, look at previous and next
     // FIXME: sort by date
-    const CurrencyHistoryModel::DataA prev_uh_a = find(
+    CurrencyHistoryModel::DataA prev_uh_a = find(
         CurrencyHistoryCol::CURRENCYID(currency_id_n),
         CurrencyHistoryModel::DATE(OP_LE, date)
     );
@@ -99,11 +99,10 @@ double CurrencyHistoryModel::get_id_date_rate(int64 currency_id_n, const mmDate&
     );
 
     if (!prev_uh_a.empty() && !next_uh_a.empty()) {
-        const wxTimeSpan prev_span = date.getDateTime().
-            Subtract(prev_uh_a.back().m_date.getDateTime());
-        const wxTimeSpan next_span = next_uh_a[0].m_date.getDateTime().
-            Subtract(date.getDateTime());
-        return prev_span <= next_span
+        mmDate date_copy = date;
+        int prev_days = date_copy.daysSince(prev_uh_a.back().m_date);
+        int next_days = date_copy.daysUntil(next_uh_a[0].m_date);
+        return prev_days <= next_days
             ? prev_uh_a.back().m_base_conv_rate
             : next_uh_a[0].m_base_conv_rate;
     }

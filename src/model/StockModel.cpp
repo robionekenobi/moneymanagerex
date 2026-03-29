@@ -81,7 +81,7 @@ const wxString StockModel::get_id_name(int64 stock_id)
 }
 
 // Return the last price date of a given stock
-const mmDate StockModel::find_last_hist_date(const Data& stock_d)
+mmDate StockModel::find_last_hist_date(const Data& stock_d)
 {
     mmDate date = stock_d.m_purchase_date;
     StockHistoryModel::DataA sh_a = StockHistoryModel::instance().find(
@@ -261,7 +261,9 @@ double StockModel::calculate_unrealiazed_gain(const Data& stock_d, bool to_base_
     const CurrencyData* currency_n = AccountModel::instance().get_id_currency_p(
         stock_d.m_account_id_n
     );
-    double conv_rate = CurrencyHistoryModel::instance().get_id_date_rate(currency_n->m_id);
+    double conv_rate = CurrencyHistoryModel::instance().get_id_date_rate(
+        currency_n->m_id
+    );
     TrxLinkModel::DataA tl_a = TrxLinkModel::instance().find_ref_data_a(
         s_ref_type, stock_d.m_id
     );
@@ -308,7 +310,9 @@ double StockModel::calculate_unrealiazed_gain(const Data& stock_d, bool to_base_
             if (total_initial_value < 0) total_initial_value = 0;
             if (total_shares > 0) avg_share_price = total_initial_value / total_shares;
         }
-        conv_rate = CurrencyHistoryModel::instance().get_id_date_rate(currency_n->m_id);
+        conv_rate = CurrencyHistoryModel::instance().get_id_date_rate(
+            currency_n->m_id
+        );
         return stock_d.current_value() * conv_rate - total_initial_value;
     }
     else {

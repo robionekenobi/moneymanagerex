@@ -122,7 +122,7 @@ double AccountModel::get_data_balance_to_date(const Data& account_d, mmDate date
 {
     double sum = account_d.m_open_balance;
     // TODO: skip Void and deleted transactions
-    // TODO: query transactions up to date; order by SN is not important
+    // TODO: query transactions until date; order by SN is not important
     for (const auto& trx_d: find_id_trx_aBySN(account_d.m_id)) {
         if (trx_d.m_date() <= date) {
             sum += trx_d.account_flow(account_d.m_id);

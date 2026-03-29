@@ -101,13 +101,14 @@ void DashboardPref::Create()
     totalsStaticBoxSizer->Add(m_incExpChoice, g_flagsH);
 
     m_inc_vs_exp_date_range = m_all_date_ranges[sel_id];
+    mmDate epoch = mmDate("1900-01-01");
     nDays_ = new wxSpinCtrl(
         totalsStaticBox,
         wxID_ANY, "",
         wxDefaultPosition, wxDefaultSize,
         wxSP_ARROW_KEYS,
         1,
-        mmDate::today().daysSince(mmDate(wxDateTime(1, wxDateTime::Month::Jan, 1900))),
+        mmDate::today().daysSince(epoch),
         InfoModel::instance().getInt("HOMEPAGE_INCEXP_DAYS", 14)
     );
     nDays_->Bind(wxEVT_SPINCTRL, [this](wxSpinEvent& event) {

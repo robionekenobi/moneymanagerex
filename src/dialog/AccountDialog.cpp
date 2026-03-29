@@ -345,7 +345,7 @@ void AccountDialog::fillControls()
     m_initbalance_ctrl->SetCurrency(currency_p);
     m_initbalance_ctrl->SetValue(initBal);
 
-    m_initdate_ctrl->SetValue(m_account_n->m_open_date.getDateTime());
+    m_initdate_ctrl->SetValue(m_account_n->m_open_date.dateTime());
 
     int selectedImage = PrefModel::instance().AccountImageId(
         m_account_n->m_id, false, true
@@ -360,7 +360,7 @@ void AccountDialog::fillControls()
     m_interest_rate_ctrl->SetValue(m_account_n->m_interest_rate, 2);
 
     if (m_account_n->m_payment_due_date_n.has_value()) {
-        m_payment_due_date_ctrl->SetValue(m_account_n->m_payment_due_date_n.getDateTimeN());
+        m_payment_due_date_ctrl->SetValue(m_account_n->m_payment_due_date_n.dateTimeN());
     }
 
     m_minimum_payment_ctrl->SetCurrency(currency_p);
@@ -369,7 +369,7 @@ void AccountDialog::fillControls()
     m_statement_lock_ctrl->SetValue(m_account_n->m_stmt_locked);
 
     if (m_account_n->m_stmt_date_n.has_value()) {
-        m_statement_date_ctrl->SetValue(m_account_n->m_stmt_date_n.value().getDateTime());
+        m_statement_date_ctrl->SetValue(m_account_n->m_stmt_date_n.dateTimeN());
     }
     m_minimum_balance_ctrl->SetCurrency(currency_p);
     m_minimum_balance_ctrl->SetValue(m_account_n->m_min_balance);

@@ -59,10 +59,10 @@ struct ValueTrio
 
 struct WebsiteNews
 {
-    wxDateTime Date;
-    wxString Title;
-    wxString Link;
-    wxString Description;
+    mmDateN m_dateN;
+    wxString m_titleN;
+    wxString m_linkN;
+    wxString m_descriptionN;
 };
 
 //----------------------------------------------------------------------------
@@ -114,7 +114,7 @@ bool get_yahoo_prices(
 );
 bool getCoincapInfoFromSymbol(const wxString& symbol, wxString& out_id, double& price_usd, wxString& output);
 bool getCoincapAssetHistory(
-    const wxString& asset_id, wxDateTime begin_date,
+    const wxString& asset_id, mmDate begin_date,
     std::map<mmDate, double>& date_rate_m, wxString& msg
 );
 
@@ -179,13 +179,15 @@ public:
 
 class mmSeparator
 {
+private:
+    std::map<wxString, int> m_separators;
+
 public:
     mmSeparator();
     ~mmSeparator();
-    bool isStringHasSeparator(const wxString &string);
+
+    bool isStringHasSeparator(const wxString& string);
     const wxString getSeparator() const;
-private:
-    std::map<wxString, int> m_separators;
 };
 
 // used where differences occur between platforms

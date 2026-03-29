@@ -572,7 +572,7 @@ void AssetPanel::loadAssetTransactions(wxListCtrl* listCtrl, int64 asset_id)
 void AssetPanel::fillAssetListRow(wxListCtrl* listCtrl, long index, const TrxData& trx_d)
 {
     listCtrl->SetItem(index, 0, AccountModel::instance().get_id_name(trx_d.m_account_id));
-    listCtrl->SetItem(index, 1, mmGetDateTimeForDisplay(trx_d.m_date_time.isoDateTime()));
+    listCtrl->SetItem(index, 1, mmGetDateTimeForDisplay(trx_d.m_isoDateTime()));
     listCtrl->SetItem(index, 2, trx_d.m_type.trade_name());
     listCtrl->SetItem(index, 3, CurrencyModel::instance().toString(trx_d.m_amount));
 //    listCtrl->SetItem(index, 3, CurrencyModel::instance().get_currency_symbol(trx_d.CURRENCYID));
@@ -595,9 +595,9 @@ void AssetPanel::bindAssetListEvents(wxListCtrl* listCtrl)
 
         // FIXME: change type to int64
         listCtrl->SortItems([](wxIntPtr item1, wxIntPtr item2, wxIntPtr) -> int {
-            auto date1 = TrxModel::instance().get_id_data_n(item1)->m_date_time.getDateTime();
-            auto date2 = TrxModel::instance().get_id_data_n(item2)->m_date_time.getDateTime();
-            return date1.IsEarlierThan(date2) ? -1 : (date1.IsLaterThan(date2) ? 1 : 0);
+            auto date1 = TrxModel::instance().get_id_data_n(item1)->m_datetime;
+            auto date2 = TrxModel::instance().get_id_data_n(item2)->m_datetime;
+            return (date1 < date2) ? -1 : (date1 > date2) ? 1 : 0;
         }, 0);
     });
 

@@ -22,7 +22,7 @@ AssetData::AssetData() :
     m_id(-1),
     m_type(AssetType()),
     m_status(AssetStatus()),
-    m_start_date(mmDate::today()),
+    m_start_date(mmDate::invalid()),
     m_currency_id_n(-1),
     m_value(0.0),
     m_change(AssetChange()),

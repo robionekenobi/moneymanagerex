@@ -136,144 +136,144 @@ void TrxUpdateDialog::CreateControls()
     box_sizer2->Add(box_sizer_left, g_flagsExpand);
 
     // Date --------------------------------------------
-    m_date_checkbox = new wxCheckBox(this, wxID_ANY, _t("Date")
+    w_date_cb = new wxCheckBox(this, wxID_ANY, _t("Date")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    m_dpc = new mmDatePickerCtrl(this, wxID_ANY);
-    grid_sizer->Add(m_date_checkbox, g_flagsH);
-    grid_sizer->Add(m_dpc->mmGetLayout(false), wxSizerFlags(g_flagsH).Border(wxLEFT, 0));
-    m_dpc->Enable(false);
+    w_date_picker = new mmDatePickerCtrl(this, wxID_ANY);
+    grid_sizer->Add(w_date_cb, g_flagsH);
+    grid_sizer->Add(w_date_picker->mmGetLayout(false), wxSizerFlags(g_flagsH).Border(wxLEFT, 0));
+    w_date_picker->Enable(false);
 
     if (PrefModel::instance().getUseTransDateTime())
     {
         // Time --------------------------------------------
-        m_time_checkbox = new wxCheckBox(this, wxID_ANY, _t("Time"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-        m_time_ctrl = new wxTimePickerCtrl(this, wxID_ANY);
-        grid_sizer->Add(m_time_checkbox, g_flagsH);
-        grid_sizer->Add(m_time_ctrl, g_flagsH);
-        m_time_ctrl->Enable(false);
+        w_time_cb = new wxCheckBox(this, wxID_ANY, _t("Time"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
+        w_time_picker = new wxTimePickerCtrl(this, wxID_ANY);
+        grid_sizer->Add(w_time_cb, g_flagsH);
+        grid_sizer->Add(w_time_picker, g_flagsH);
+        w_time_picker->Enable(false);
     }
 
     // Status --------------------------------------------
-    m_status_checkbox = new wxCheckBox(this, wxID_ANY, _t("Status")
+    w_status_cb = new wxCheckBox(this, wxID_ANY, _t("Status")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
 
-    m_status_choice = new wxChoice(this, wxID_ANY
+    w_status_choice = new wxChoice(this, wxID_ANY
         , wxDefaultPosition, wxDefaultSize);
     for (int i = 0; i < TrxStatus::size; ++i) {
         wxString status = TrxStatus(i).name();
-        m_status_choice->Append(wxGetTranslation(status), new wxStringClientData(status));
+        w_status_choice->Append(wxGetTranslation(status), new wxStringClientData(status));
     }
 
-    m_status_choice->Enable(false);
-    m_status_choice->Select(0);
+    w_status_choice->Enable(false);
+    w_status_choice->Select(0);
 
-    grid_sizer->Add(m_status_checkbox, g_flagsH);
-    grid_sizer->Add(m_status_choice, g_flagsExpand);
+    grid_sizer->Add(w_status_cb, g_flagsH);
+    grid_sizer->Add(w_status_choice, g_flagsExpand);
 
     // Type --------------------------------------------
-    m_type_checkbox = new wxCheckBox(this, wxID_ANY, _t("Type")
+    w_type_cb = new wxCheckBox(this, wxID_ANY, _t("Type")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
 
-    m_type_choice = new wxChoice(this, ID_TRANS_TYPE
+    w_type_choice = new wxChoice(this, ID_TRANS_TYPE
         , wxDefaultPosition, wxDefaultSize);
     for (int i = 0; i < TrxType::size; ++i) {
         if (!(m_hasSplits && i == TrxType::e_transfer)) {
             wxString type = TrxType(i).name();
-            m_type_choice->Append(wxGetTranslation(type), new wxStringClientData(type));
+            w_type_choice->Append(wxGetTranslation(type), new wxStringClientData(type));
         }
     }
-    m_type_choice->Enable(false);
-    m_type_choice->Select(0);
+    w_type_choice->Enable(false);
+    w_type_choice->Select(0);
 
 
-    grid_sizer->Add(m_type_checkbox, g_flagsH);
-    grid_sizer->Add(m_type_choice, g_flagsExpand);
+    grid_sizer->Add(w_type_cb, g_flagsH);
+    grid_sizer->Add(w_type_choice, g_flagsExpand);
 
     // Amount Field --------------------------------------------
-    m_amount_checkbox = new wxCheckBox(this, wxID_ANY, _t("Amount")
+    w_amount_cb = new wxCheckBox(this, wxID_ANY, _t("Amount")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    m_amount_checkbox->Enable(!m_hasSplits);
+    w_amount_cb->Enable(!m_hasSplits);
 
-    m_amount_ctrl = new mmTextCtrl(this, wxID_ANY, ""
+    w_amount_text = new mmTextCtrl(this, wxID_ANY, ""
         , wxDefaultPosition, wxDefaultSize
         , wxALIGN_RIGHT | wxTE_PROCESS_ENTER, mmCalcValidator());
-    m_amount_ctrl->Enable(false);
+    w_amount_text->Enable(false);
 
-    grid_sizer->Add(m_amount_checkbox, g_flagsH);
-    grid_sizer->Add(m_amount_ctrl, g_flagsExpand);
+    grid_sizer->Add(w_amount_cb, g_flagsH);
+    grid_sizer->Add(w_amount_text, g_flagsExpand);
 
     // Payee --------------------------------------------
-    m_payee_checkbox = new wxCheckBox(this, wxID_ANY, _t("Payee")
+    w_payee_cb = new wxCheckBox(this, wxID_ANY, _t("Payee")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    m_payee_checkbox->Enable(!m_hasTransfers);
+    w_payee_cb->Enable(!m_hasTransfers);
 
-    cbPayee_ = new mmComboBoxPayee(this, mmID_PAYEE, wxDefaultSize, -1, true);
-    cbPayee_->Enable(false);
-    cbPayee_->SetMinSize(wxSize(200, -1));
+    w_payee_text = new mmComboBoxPayee(this, mmID_PAYEE, wxDefaultSize, -1, true);
+    w_payee_text->Enable(false);
+    w_payee_text->SetMinSize(wxSize(200, -1));
 
-    grid_sizer->Add(m_payee_checkbox, g_flagsH);
-    grid_sizer->Add(cbPayee_, g_flagsExpand);
+    grid_sizer->Add(w_payee_cb, g_flagsH);
+    grid_sizer->Add(w_payee_text, g_flagsExpand);
 
     // Transfer to account --------------------------------------------
     m_transferAcc_checkbox = new wxCheckBox(this, wxID_ANY, _t("Transfer To")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
     m_transferAcc_checkbox->Enable(!m_hasNonTransfers);
 
-    cbAccount_ = new mmComboBoxAccount(this, ID_TRANS_ACC);
-    cbAccount_->SetMaxSize(cbPayee_->GetSize());
-    cbAccount_->Enable(false);
+    w_account_text = new mmComboBoxAccount(this, ID_TRANS_ACC);
+    w_account_text->SetMaxSize(w_payee_text->GetSize());
+    w_account_text->Enable(false);
 
     grid_sizer->Add(m_transferAcc_checkbox, g_flagsH);
-    grid_sizer->Add(cbAccount_, g_flagsExpand);
+    grid_sizer->Add(w_account_text, g_flagsExpand);
 
     // Category -------------------------------------------------
-    m_categ_checkbox = new wxCheckBox(this, wxID_VIEW_DETAILS, _t("Category")
+    w_cat_cb = new wxCheckBox(this, wxID_VIEW_DETAILS, _t("Category")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    m_categ_checkbox->Enable(!m_hasSplits);
+    w_cat_cb->Enable(!m_hasSplits);
 
-    cbCategory_ = new mmComboBoxCategory(this, mmID_CATEGORY, wxDefaultSize, -1, true);
-    cbCategory_->Enable(false);
+    w_cat_text = new mmComboBoxCategory(this, mmID_CATEGORY, wxDefaultSize, -1, true);
+    w_cat_text->Enable(false);
 
-    grid_sizer->Add(m_categ_checkbox, g_flagsH);
-    grid_sizer->Add(cbCategory_, g_flagsExpand);
+    grid_sizer->Add(w_cat_cb, g_flagsH);
+    grid_sizer->Add(w_cat_text, g_flagsExpand);
 
     // Tags ------------------------------------------------------
-    tag_checkbox_ = new wxCheckBox(this, wxID_ANY, _t("Tags"));
+    w_tag_cb = new wxCheckBox(this, wxID_ANY, _t("Tags"));
     tag_append_checkbox_ = new wxCheckBox(this, wxID_ANY, _t("Append"));
     tag_append_checkbox_->SetValue(true);
     tag_append_checkbox_->Enable(false);
 
-    tagTextCtrl_ = new mmTagTextCtrl(this);
-    tagTextCtrl_->Enable(false);
-    grid_sizer->Add(tag_checkbox_, g_flagsH);
+    w_tag_text = new mmTagTextCtrl(this);
+    w_tag_text->Enable(false);
+    grid_sizer->Add(w_tag_cb, g_flagsH);
     grid_sizer->Add(tag_append_checkbox_, g_flagsH);
     grid_sizer->AddSpacer(0);
-    grid_sizer->Add(tagTextCtrl_, g_flagsExpand);
+    grid_sizer->Add(w_tag_text, g_flagsExpand);
 
     // Colours --------------------------------------------
-    m_color_checkbox = new wxCheckBox(this, wxID_VIEW_DETAILS, _t("Color")
+    w_color_cb = new wxCheckBox(this, wxID_VIEW_DETAILS, _t("Color")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    bColours_ = new mmColorButton(this, wxID_HIGHEST, cbCategory_->GetSize());
-    mmToolTip(bColours_, _t("User Colors"));
-    grid_sizer->Add(m_color_checkbox, g_flagsH);
-    grid_sizer->Add(bColours_, g_flagsExpand);
-    bColours_->Enable(false);
+    w_color_btn = new mmColorButton(this, wxID_HIGHEST, w_cat_text->GetSize());
+    mmToolTip(w_color_btn, _t("User Colors"));
+    grid_sizer->Add(w_color_cb, g_flagsH);
+    grid_sizer->Add(w_color_btn, g_flagsExpand);
+    w_color_btn->Enable(false);
 
     // Notes --------------------------------------------
-    m_notes_checkbox = new wxCheckBox(this, wxID_ANY, _t("Notes")
+    w_notes_cb = new wxCheckBox(this, wxID_ANY, _t("Notes")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
     m_append_checkbox = new wxCheckBox(this, wxID_ANY, _t("Append")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
     m_append_checkbox->SetValue(true);
 
-    m_notes_ctrl = new wxTextCtrl(this, wxID_ANY, ""
-        , wxDefaultPosition, wxSize(-1, cbCategory_->GetSize().GetHeight() * 5), wxTE_MULTILINE);
-    m_notes_ctrl->Enable(false);
+    w_notes_text = new wxTextCtrl(this, wxID_ANY, ""
+        , wxDefaultPosition, wxSize(-1, w_cat_text->GetSize().GetHeight() * 5), wxTE_MULTILINE);
+    w_notes_text->Enable(false);
     m_append_checkbox->Enable(false);
 
-    grid_sizer->Add(m_notes_checkbox, g_flagsH);
+    grid_sizer->Add(w_notes_cb, g_flagsH);
     grid_sizer->Add(m_append_checkbox, g_flagsH);
-    box_sizer_left->Add(m_notes_ctrl, wxSizerFlags(g_flagsExpand).Border(wxLEFT | wxRIGHT | wxBOTTOM, 10));
+    box_sizer_left->Add(w_notes_text, wxSizerFlags(g_flagsExpand).Border(wxLEFT | wxRIGHT | wxBOTTOM, 10));
 
     /*************************************************************
      Button Panel with OK/Cancel buttons
@@ -317,13 +317,13 @@ void TrxUpdateDialog::CreateControls()
 void TrxUpdateDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 {
     double amount = 0;
-    if (m_amount_checkbox->IsChecked() && !m_amount_ctrl->checkValue(amount))
+    if (w_amount_cb->IsChecked() && !w_amount_text->checkValue(amount))
         return;
 
     wxString status = "";
-    if (m_status_checkbox->IsChecked()) {
+    if (w_status_cb->IsChecked()) {
         wxStringClientData* status_obj = static_cast<wxStringClientData*>(
-            m_status_choice->GetClientObject(m_status_choice->GetSelection())
+            w_status_choice->GetClientObject(w_status_choice->GetSelection())
         );
         if (status_obj)
             status = TrxStatus(status_obj->GetData()).key();
@@ -332,34 +332,34 @@ void TrxUpdateDialog::OnOk(wxCommandEvent& WXUNUSED(event))
     }
 
     TrxType trx_type = TrxType();
-    if (m_type_checkbox->IsChecked()) {
+    if (w_type_cb->IsChecked()) {
         wxStringClientData* type_obj = static_cast<wxStringClientData*>(
-            m_type_choice->GetClientObject(m_type_choice->GetSelection())
+            w_type_choice->GetClientObject(w_type_choice->GetSelection())
         );
         trx_type = TrxType(type_obj->GetData());
         if (trx_type.id() == TrxType::e_transfer) {
             if  (m_hasNonTransfers && !m_transferAcc_checkbox->IsChecked())
                 return mmErrorDialogs::InvalidAccount(m_transferAcc_checkbox, true);
         } else {
-            if (m_hasTransfers && !m_payee_checkbox->IsChecked())
-                return mmErrorDialogs::InvalidPayee(m_payee_checkbox);
+            if (m_hasTransfers && !w_payee_cb->IsChecked())
+                return mmErrorDialogs::InvalidPayee(w_payee_cb);
         }
     }
 
     int64 payee_id = -1;
-    if (m_payee_checkbox->IsChecked()) {
-        wxString payee_name = cbPayee_->GetValue();
+    if (w_payee_cb->IsChecked()) {
+        wxString payee_name = w_payee_text->GetValue();
         if (payee_name.IsEmpty())
-            return mmErrorDialogs::InvalidPayee(cbPayee_);
+            return mmErrorDialogs::InvalidPayee(w_payee_text);
 
-        if (!cbPayee_->mmIsValid()) {
+        if (!w_payee_text->mmIsValid()) {
             wxMessageDialog msgDlg(this
-                , wxString::Format(_t("Payee name has not been used before. Is the name correct?\n%s"), cbPayee_->GetValue())
+                , wxString::Format(_t("Payee name has not been used before. Is the name correct?\n%s"), w_payee_text->GetValue())
                 , _t("Confirm payee name")
                 , wxYES_NO | wxYES_DEFAULT | wxICON_WARNING);
             if (msgDlg.ShowModal() == wxID_YES) {
                 PayeeData new_payee_d = PayeeData();
-                new_payee_d.m_name = cbPayee_->GetValue();
+                new_payee_d.m_name = w_payee_text->GetValue();
                 PayeeModel::instance().add_data_n(new_payee_d);
                 mmWebApp::uploadPayee();
                 payee_id = new_payee_d.m_id;
@@ -368,26 +368,26 @@ void TrxUpdateDialog::OnOk(wxCommandEvent& WXUNUSED(event))
                 return;
         }
         else
-            payee_id = cbPayee_->mmGetId();
+            payee_id = w_payee_text->mmGetId();
     }
 
-    if (tag_checkbox_->IsChecked() && !tagTextCtrl_->IsValid())
-        return mmErrorDialogs::ToolTip4Object(tagTextCtrl_,
+    if (w_tag_cb->IsChecked() && !w_tag_text->IsValid())
+        return mmErrorDialogs::ToolTip4Object(w_tag_text,
             _t("Invalid value"),
             _t("Tags"),
             wxICON_ERROR
         );
 
     if (m_transferAcc_checkbox->IsChecked()) {
-        if (!cbAccount_->mmIsValid())
-            return mmErrorDialogs::InvalidAccount(cbAccount_);
+        if (!w_account_text->mmIsValid())
+            return mmErrorDialogs::InvalidAccount(w_account_text);
     }
 
-    if (m_categ_checkbox->IsChecked()) {
-        if (!cbCategory_->mmIsValid())
-            return mmErrorDialogs::InvalidCategory(cbCategory_);
+    if (w_cat_cb->IsChecked()) {
+        if (!w_cat_text->mmIsValid())
+            return mmErrorDialogs::InvalidCategory(w_cat_text);
     }
-    int64 categ_id = cbCategory_->mmGetCategoryId();
+    int64 categ_id = w_cat_text->mmGetCategoryId();
 
     // const auto split = TrxSplitModel::instance().find_all_mTrxId();
 
@@ -403,73 +403,73 @@ void TrxUpdateDialog::OnOk(wxCommandEvent& WXUNUSED(event))
             continue;
         }
 
-        if (m_status_checkbox->IsChecked()) {
+        if (w_status_cb->IsChecked()) {
             trx_n->m_status = TrxStatus(status);
         }
 
-        if (m_payee_checkbox->IsChecked()) {
+        if (w_payee_cb->IsChecked()) {
             trx_n->m_payee_id_n = payee_id;
             trx_n->m_to_account_id_n = -1;
         }
 
         if (m_transferAcc_checkbox->IsChecked()) {
-            trx_n->m_to_account_id_n = cbAccount_->mmGetId();
+            trx_n->m_to_account_id_n = w_account_text->mmGetId();
             trx_n->m_payee_id_n = -1;
         }
 
-        if (m_date_checkbox->IsChecked() || (m_time_ctrl && m_time_checkbox->IsChecked())) {
-            wxString date = trx_n->m_date_time.isoDateTime();
-            if (m_date_checkbox->IsChecked()) {
-                date.replace(0, 10, m_dpc->GetValue().FormatISODate());
+        if (w_date_cb->IsChecked() || (w_time_picker && w_time_cb->IsChecked())) {
+            wxString date_s = trx_n->m_isoDateTime();
+            if (w_date_cb->IsChecked()) {
+                date_s.replace(0, 10, w_date_picker->GetValue().FormatISODate());
                 const AccountData* account = AccountModel::instance().get_id_data_n(
                     trx_n->m_account_id
                 );
                 const AccountData* to_account = AccountModel::instance().get_id_data_n(
                     trx_n->m_to_account_id_n
                 );
-                if ((mmDate(date) < account->m_open_date) ||
-                    (to_account && (mmDate(date) < to_account->m_open_date))
+                if ((mmDate(date_s) < account->m_open_date) ||
+                    (to_account && (mmDate(date_s) < to_account->m_open_date))
                 ) {
                     skip_trx.push_back(trx_n->m_id);
                     continue;
                 }
             }
 
-            if (m_time_ctrl && m_time_checkbox->IsChecked()) {
-                if (date.Length() > 10)
-                    date.replace(11, 8, m_time_ctrl->GetValue().FormatISOTime());
+            if (w_time_picker && w_time_cb->IsChecked()) {
+                if (date_s.Length() > 10)
+                    date_s.replace(11, 8, w_time_picker->GetValue().FormatISOTime());
                 else
-                    date.Append("T" + m_time_ctrl->GetValue().FormatISOTime());
+                    date_s.Append("T" + w_time_picker->GetValue().FormatISOTime());
             }
 
-            trx_n->m_date_time = mmDateTime(date);
+            trx_n->m_datetime = mmDateTime(date_s);
         }
 
-        if (m_color_checkbox->IsChecked()) {
-            int color_id = bColours_->GetColorId();
+        if (w_color_cb->IsChecked()) {
+            int color_id = w_color_btn->GetColorId();
             if (color_id < 0 || color_id > 7) {
-                return mmErrorDialogs::ToolTip4Object(bColours_,
+                return mmErrorDialogs::ToolTip4Object(w_color_btn,
                     _t("Color"), _t("Invalid value"), wxICON_ERROR
                 );
             }
             trx_n->m_color = color_id == 0 ? -1 : color_id ; 
         }
 
-        if (m_notes_checkbox->IsChecked()) {
+        if (w_notes_cb->IsChecked()) {
             if (m_append_checkbox->IsChecked()) {
                 trx_n->m_notes += (trx_n->m_notes.Right(1) == "\n" || trx_n->m_notes.empty()
                     ? "" : "\n")
-                    + m_notes_ctrl->GetValue();
+                    + w_notes_text->GetValue();
             }
             else {
-                trx_n->m_notes = m_notes_ctrl->GetValue();
+                trx_n->m_notes = w_notes_text->GetValue();
             }
         }
 
         // Update tags
-        if (tag_checkbox_->IsChecked()) {
+        if (w_tag_cb->IsChecked()) {
             TagLinkModel::DataA gl_a;
-            wxArrayInt64 tag_id_a = tagTextCtrl_->GetTagIDs();
+            wxArrayInt64 tag_id_a = w_tag_text->GetTagIDs();
 
             if (tag_append_checkbox_->IsChecked()) {
                 // Since we are appending, start with the existing tags
@@ -499,20 +499,20 @@ void TrxUpdateDialog::OnOk(wxCommandEvent& WXUNUSED(event))
             );
         }
 
-        if (m_amount_checkbox->IsChecked()) {
+        if (w_amount_cb->IsChecked()) {
             trx_n->m_amount = amount;
         }
 
-        if (m_categ_checkbox->IsChecked()) {
+        if (w_cat_cb->IsChecked()) {
             trx_n->m_category_id_n = categ_id;
         }
 
-        if (m_type_checkbox->IsChecked()) {
+        if (w_type_cb->IsChecked()) {
             trx_n->m_type = trx_type;
         }
 
         // Need to consider m_to_amount if material transaction change
-        if (m_amount_checkbox->IsChecked() || m_type_checkbox->IsChecked() ||
+        if (w_amount_cb->IsChecked() || w_type_cb->IsChecked() ||
             m_transferAcc_checkbox->IsChecked()
         ) {
             if (!trx_n->is_transfer()) {
@@ -570,19 +570,19 @@ void TrxUpdateDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 void TrxUpdateDialog::SetPayeeTransferControls()
 {
     wxStringClientData* trans_obj = static_cast<wxStringClientData*>(
-        m_type_choice->GetClientObject(m_type_choice->GetSelection())
+        w_type_choice->GetClientObject(w_type_choice->GetSelection())
     );
     bool transfer = (TrxType(trans_obj->GetData()).id() == TrxType::e_transfer);
 
-    m_payee_checkbox->Enable(!transfer);
+    w_payee_cb->Enable(!transfer);
     m_transferAcc_checkbox->Enable(transfer);
     if (transfer) {
-        m_payee_checkbox->SetValue(false);
-        cbPayee_->Enable(false);
+        w_payee_cb->SetValue(false);
+        w_payee_text->Enable(false);
     }
     else {
         m_transferAcc_checkbox->SetValue(false);
-        cbAccount_->Enable(false);
+        w_account_text->Enable(false);
     }
 }
 
@@ -593,35 +593,35 @@ void TrxUpdateDialog::OnTransTypeChanged(wxCommandEvent&)
 
 void TrxUpdateDialog::OnCheckboxClick(wxCommandEvent& event)
 {
-    m_dpc->Enable(m_date_checkbox->IsChecked());
-    m_status_choice->Enable(m_status_checkbox->IsChecked());
-    m_type_choice->Enable(m_type_checkbox->IsChecked());
-    cbPayee_->Enable(m_payee_checkbox->IsChecked());
-    cbAccount_->Enable(m_transferAcc_checkbox->IsChecked());
-    cbCategory_->Enable(m_categ_checkbox->IsChecked());
-    m_amount_ctrl->Enable(m_amount_checkbox->IsChecked());
-    bColours_->Enable(m_color_checkbox->IsChecked());
-    m_notes_ctrl->Enable(m_notes_checkbox->IsChecked());
-    m_append_checkbox->Enable(m_notes_checkbox->IsChecked());
-    tagTextCtrl_->Enable(tag_checkbox_->IsChecked());
-    tag_append_checkbox_->Enable(tag_checkbox_->IsChecked());
+    w_date_picker->Enable(w_date_cb->IsChecked());
+    w_status_choice->Enable(w_status_cb->IsChecked());
+    w_type_choice->Enable(w_type_cb->IsChecked());
+    w_payee_text->Enable(w_payee_cb->IsChecked());
+    w_account_text->Enable(m_transferAcc_checkbox->IsChecked());
+    w_cat_text->Enable(w_cat_cb->IsChecked());
+    w_amount_text->Enable(w_amount_cb->IsChecked());
+    w_color_btn->Enable(w_color_cb->IsChecked());
+    w_notes_text->Enable(w_notes_cb->IsChecked());
+    m_append_checkbox->Enable(w_notes_cb->IsChecked());
+    w_tag_text->Enable(w_tag_cb->IsChecked());
+    tag_append_checkbox_->Enable(w_tag_cb->IsChecked());
 
-    if (m_type_checkbox->IsChecked()) {
+    if (w_type_cb->IsChecked()) {
         SetPayeeTransferControls();
     } else {
-        m_payee_checkbox->Enable(!m_hasTransfers);
+        w_payee_cb->Enable(!m_hasTransfers);
         m_transferAcc_checkbox->Enable(!m_hasNonTransfers);
     }
 
-    if (m_time_ctrl)
-        m_time_ctrl->Enable(m_time_checkbox->IsChecked());
+    if (w_time_picker)
+        w_time_picker->Enable(w_time_cb->IsChecked());
 
     event.Skip();
 }
 
 void TrxUpdateDialog::onFocusChange(wxChildFocusEvent& event)
 {
-    cbCategory_->SetValue(cbCategory_->GetValue());
+    w_cat_text->SetValue(w_cat_text->GetValue());
 
 
     int object_in_focus = -1;
@@ -630,11 +630,11 @@ void TrxUpdateDialog::onFocusChange(wxChildFocusEvent& event)
         object_in_focus = w->GetId();
     }
 
-    if (object_in_focus == m_amount_ctrl->GetId()) {
-        m_amount_ctrl->SelectAll();
+    if (object_in_focus == w_amount_text->GetId()) {
+        w_amount_text->SelectAll();
     }
     else {
-        m_amount_ctrl->Calculate();
+        w_amount_text->Calculate();
     }
 
     event.Skip();
@@ -665,17 +665,17 @@ void TrxUpdateDialog::OnComboKey(wxKeyEvent& event)
         switch (id) {
         case mmID_PAYEE:
         {
-            const auto payeeName = cbPayee_->GetValue();
+            const auto payeeName = w_payee_text->GetValue();
             if (payeeName.empty()) {
                 mmPayeeDialog dlg(this, true);
                 dlg.ShowModal();
                 if (dlg.getRefreshRequested())
-                    cbPayee_->mmDoReInitialize();
+                    w_payee_text->mmDoReInitialize();
                 int64 payee_id = dlg.getPayeeId();
                 const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(payee_id);
                 if (payee_n) {
-                    cbPayee_->ChangeValue(payee_n->m_name);
-                    cbPayee_->SelectAll();
+                    w_payee_text->ChangeValue(payee_n->m_name);
+                    w_payee_text->SelectAll();
                 }
                 return;
             }
@@ -683,15 +683,15 @@ void TrxUpdateDialog::OnComboKey(wxKeyEvent& event)
         break;
         case mmID_CATEGORY:
         {
-            auto category = cbCategory_->GetValue();
+            auto category = w_cat_text->GetValue();
             if (category.empty()) {
                 CategoryManager dlg(this, true, -1);
                 dlg.ShowModal();
                 if (dlg.getRefreshRequested())
-                    cbCategory_->mmDoReInitialize();
+                    w_cat_text->mmDoReInitialize();
                 category = CategoryModel::instance().get_id_fullname(dlg.getCategId());
-                cbCategory_->ChangeValue(category);
-                cbCategory_->SelectAll();
+                w_cat_text->ChangeValue(category);
+                w_cat_text->SelectAll();
                 return;
             }
         }
@@ -704,7 +704,7 @@ void TrxUpdateDialog::OnComboKey(wxKeyEvent& event)
     // The first time the ALT key is pressed accelerator hints are drawn, but custom painting on the tags button
     // is not applied. We need to refresh the tag ctrl to redraw the drop button with the correct image.
     if (event.AltDown() && !altRefreshDone) {
-        tagTextCtrl_->Refresh();
+        w_tag_text->Refresh();
         altRefreshDone = true;
     }
 

@@ -20,7 +20,7 @@
 
 SchedData::SchedData() :
     m_id(-1),
-    m_date_time(mmDateTime::now()),
+    m_datetime(mmDateTime::invalid()),
     m_type(TrxType()),
     m_status(TrxStatus()),
     m_account_id(-1),
@@ -31,7 +31,7 @@ SchedData::SchedData() :
     m_to_amount(0.0),
     m_followup_id(-1),
     m_color(-1),
-    m_due_date(mmDate::today()),
+    m_due_date(mmDate::invalid()),
     m_repeat(Repeat())
 {
 }
@@ -51,7 +51,7 @@ SchedRow SchedData::to_row() const
     row.TRANSACTIONNUMBER  = m_number;
     row.NOTES              = m_notes;
     row.CATEGID            = m_category_id_n;
-    row.TRANSDATE          = m_date_time.isoDateTime();
+    row.TRANSDATE          = m_datetime.isoDateTime();
     row.FOLLOWUPID         = m_followup_id;
     row.TOTRANSAMOUNT      = m_to_amount;
     row.NEXTOCCURRENCEDATE = m_due_date.isoDate();
@@ -67,7 +67,7 @@ SchedRow SchedData::to_row() const
 SchedData& SchedData::from_row(const SchedRow& row)
 {
     m_id              = row.BDID;
-    m_date_time       = mmDateTime(row.TRANSDATE);
+    m_datetime        = mmDateTime(row.TRANSDATE);
     m_type            = TrxType(row.TRANSCODE);
     m_status          = TrxStatus(row.STATUS);
     m_account_id      = row.ACCOUNTID;
@@ -91,7 +91,7 @@ SchedData& SchedData::from_row(const SchedRow& row)
 bool SchedData::equals(const SchedData* other) const
 {
     if ( m_id                 != other->m_id)                 return false;
-    if ( m_date_time          != other->m_date_time)          return false;
+    if ( m_datetime           != other->m_datetime)           return false;
     if ( m_type.id()          != other->m_type.id())          return false;
     if ( m_status.id()        != other->m_status.id())        return false;
     if ( m_account_id         != other->m_account_id)         return false;
@@ -113,35 +113,25 @@ bool SchedData::equals(const SchedData* other) const
     return true;
 }
 
-bool SchedData::is_due() const
-{
-    // TODO: use time only if it is enabled in settings
-    return (
-        m_due_date.getDateTime().Subtract(wxDateTime::Today()).GetSeconds().GetValue()
-        < 24*60*60
-    );
-}
-
 // TODO: return iterator
 // Note: end_date is inclusive, i.e., SchedData is unrolled until the end of end_date.
-const std::vector<mmDateTime> SchedData::unroll(const mmDate end_date, int limit) const
+std::vector<mmDate> SchedData::unroll(const mmDate& end_date, int limit) const
 {
-    std::vector<mmDateTime> date_time_a;
+    std::vector<mmDate> date_a;
 
     Repeat repeat = m_repeat;
-    mmDateTime date = m_date_time;
-    while (mmDate(date) <= end_date && limit != 0) {
+    mmDate date = m_date();
+    while (date <= end_date && limit != 0) {
         if (limit > 0)
             --limit;
-        date_time_a.push_back(date);
+        date_a.push_back(date);
 
         if (repeat.m_num == 1)
             break;
 
-        date = mmDateTime(repeat.next_datetime(date.getDateTime()));
+        date = repeat.next_date(date);
         repeat.next_repeat();
     }
 
-    return date_time_a;
+    return date_a;
 }
-

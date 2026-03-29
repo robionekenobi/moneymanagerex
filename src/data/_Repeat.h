@@ -19,6 +19,7 @@
 #pragma once
 
 #include "base/types.h"
+#include "util/mmDate.h"
 #include "_DataEnum.h"
 
 struct Repeat
@@ -36,6 +37,6 @@ struct Repeat
     static Repeat from_row(int64 row_REPEATS, int64 row_NUMOCCURRENCES);
 
     void to_row(int64& row_REPEATS, int64& row_NUMOCCURRENCES) const;
-    auto next_datetime(const wxDateTime dateTime, bool revese = false) -> const wxDateTime;
+    auto next_date(mmDate& date, bool revese = false) -> mmDate;
     void next_repeat();
 };

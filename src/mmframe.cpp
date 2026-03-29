@@ -598,8 +598,10 @@ void mmGUIFrame::OnAutoRepeatTransactionsTimer(wxTimerEvent& /*event*/)
     // Auto scheduled transaction
     bool continueExecution = false;
 
-    for (const auto& sched_d : SchedModel::instance().find_all()) {
-        if (!sched_d.is_due())
+    SchedModel::DataA sched_a = SchedModel::instance().find_all();
+    for (SchedData& sched_d : sched_a) {
+        mmDate today = mmDate::today();
+        if (sched_d.m_due_date.daysSince(today) > 0)
             continue;
 
         bool is_allowed = SchedModel::instance().is_data_allowed(sched_d);
@@ -621,7 +623,7 @@ void mmGUIFrame::OnAutoRepeatTransactionsTimer(wxTimerEvent& /*event*/)
             if (is_allowed) {
                 continueExecution = true;
                 TrxData new_trx_d = TrxData();
-                new_trx_d.m_date_time       = sched_d.m_date_time;
+                new_trx_d.m_datetime        = sched_d.m_datetime; // TODO: reset time
                 new_trx_d.m_type            = sched_d.m_type;
                 new_trx_d.m_status          = sched_d.m_status;
                 new_trx_d.m_account_id      = sched_d.m_account_id;
@@ -2286,7 +2288,7 @@ void  mmGUIFrame::PopulateToolBar(bool update)
                     if (ainfo->toolId == MENU_ANNOUNCEMENTMAILING) {
                         wxString news_array;
                         for (const auto& entry : websiteNewsArray_) {
-                            news_array += entry.Title + "\n";
+                            news_array += entry.m_titleN + "\n";
                         }
                         if (news_array.empty()) {
                             news_array = _t("News");

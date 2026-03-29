@@ -141,9 +141,9 @@ private:
         const wxString& BaseCurrencySymbol
     );
     bool GetOnlineHistory(
-        const wxString &symbol,
-        wxDateTime begin_date,
+        const wxString& symbol,
+        mmDate begin_date,
         std::map<mmDate, double>& date_rate_m,
-        wxString &msg
+        wxString& msg
     );
 };

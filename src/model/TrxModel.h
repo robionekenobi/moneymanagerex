@@ -85,7 +85,7 @@ public:
         bool has_attachment() const;
         bool is_foreign() const;
         bool is_foreign_transfer() const;
-        wxString info() const;
+        wxString info();
         const wxString to_json();
     };
     typedef std::vector<DataExt> DataExtA;

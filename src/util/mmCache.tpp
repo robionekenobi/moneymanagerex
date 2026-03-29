@@ -29,8 +29,8 @@
 template<typename K, typename V>
 auto mmCache<K, V>::unsafe_get(const Key& key) -> Value*
 {
-    auto it = m_key_value.find(key);
-    if (it != m_key_value.end()) {
+    auto it = m_key_value_m.find(key);
+    if (it != m_key_value_m.end()) {
         ++m_stat.hit_c;
         return it->second;
     }
@@ -57,19 +57,19 @@ auto mmCache<K, V>::get(const Key& key) -> const Value*
 template<typename K, typename V>
 auto mmCache<K, V>::add(const Key& key, const Value& value) -> const Value*
 {
-    if (m_key_value.find(key) != m_key_value.end())
+    if (m_key_value_m.find(key) != m_key_value_m.end())
         return nullptr;
 
-    if (m_stat.lock_c == 0 && m_stat.capacity > 0 && m_key_value.size() >= m_stat.capacity)
+    if (m_stat.lock_c == 0 && m_stat.capacity > 0 && m_key_value_m.size() >= m_stat.capacity)
         clear();
 
-    m_key_value[key] = new Value(value);
+    m_key_value_m[key] = new Value(value);
 
-    size_t size = m_key_value.size();
+    size_t size = m_key_value_m.size();
     if (m_stat.max_size < size)
         m_stat.max_size = size;
 
-    return m_key_value[key];
+    return m_key_value_m[key];
 }
 
 // If key is in cache, update value in cache and return a pointer
@@ -77,12 +77,12 @@ auto mmCache<K, V>::add(const Key& key, const Value& value) -> const Value*
 template<typename K, typename V>
 auto mmCache<K, V>::update(const Key& key, const Value& value) -> const Value*
 {
-    if (m_key_value.find(key) == m_key_value.end())
+    if (m_key_value_m.find(key) == m_key_value_m.end())
         return nullptr;
 
-    *(m_key_value[key]) = value;
+    *(m_key_value_m[key]) = value;
 
-    return m_key_value[key];
+    return m_key_value_m[key];
 }
 
 // Copy or update value into cache and return a pointer to the copy owned by cache.
@@ -91,7 +91,7 @@ auto mmCache<K, V>::update(const Key& key, const Value& value) -> const Value*
 template<typename K, typename V>
 auto mmCache<K, V>::set(const Key& key, const Value& value) -> const Value*
 {
-    if (m_key_value.find(key) == m_key_value.end()) {
+    if (m_key_value_m.find(key) == m_key_value_m.end()) {
         return add(key, value);
     }
     else {
@@ -104,11 +104,11 @@ auto mmCache<K, V>::set(const Key& key, const Value& value) -> const Value*
 template<typename K, typename V>
 bool mmCache<K, V>::remove(const Key& key)
 {
-    if (m_key_value.find(key) == m_key_value.end())
+    if (m_key_value_m.find(key) == m_key_value_m.end())
         return false;
 
-    delete m_key_value[key];
-    m_key_value.erase(key);
+    delete m_key_value_m[key];
+    m_key_value_m.erase(key);
 
     return true;
 }
@@ -137,10 +137,10 @@ void mmCache<K, V>::clear()
     if (m_stat.lock_c > 0)
         return;
 
-    for (auto& [_, v] : m_key_value)
+    for (auto& [_, v] : m_key_value_m)
         delete v;
 
-    m_key_value.clear();
+    m_key_value_m.clear();
 }
 
 // Remove all keys and delete all values, even if the cache is locked;
