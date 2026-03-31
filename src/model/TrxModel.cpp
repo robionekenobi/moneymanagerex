@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -33,43 +34,20 @@
 
 #include "dialog/AttachmentDialog.h"
 
+// -- static
+
 const RefTypeN TrxModel::s_ref_type = RefTypeN(RefTypeN::e_trx);
-
-TrxModel::TrxModel() :
-    TableFactory<TrxTable, TrxData>()
-{
-}
-
-TrxModel::~TrxModel()
-{
-}
-
-// Initialize the global TrxModel table.
-// Reset the TrxModel table or create the table if it does not exist.
-TrxModel& TrxModel::instance(wxSQLite3Database* db)
-{
-    TrxModel& ins = Singleton<TrxModel>::instance();
-    ins.reset_cache();
-    ins.m_db = db;
-    ins.ensure_table();
-
-    return ins;
-}
-
-// Return the static instance of TrxModel table
-TrxModel& TrxModel::instance()
-{
-    return Singleton<TrxModel>::instance();
-}
 
 TrxCol::TRANSDATE TrxModel::DATE(OP op, const mmDate& date)
 {
     // OP_EQ and OP_NE should not be used for date comparisons.
     // if needed, create an equivalent AND/OR combination of two other operators.
     wxString bound =
-        (op == OP_GE || op == OP_LT) ? date.isoStart()
-        : (op == OP_LE || op == OP_GT) ? date.isoEnd()
-        : date.isoDate();
+        (op == OP_GE || op == OP_LT)
+            ? date.isoStart()
+        : (op == OP_LE || op == OP_GT)
+            ? date.isoEnd()
+            : date.isoDate();
     return TrxCol::TRANSDATE(op, bound);
 }
 
@@ -90,12 +68,12 @@ TrxCol::STATUS TrxModel::IS_VOID(bool value)
 
 TrxCol::DELETEDTIME TrxModel::IS_DELETED(bool value)
 {
-    return TrxCol::DELETEDTIME(value ? OP_NE : OP_EQ, wxEmptyString);
+    return TrxCol::DELETEDTIME(value ? OP_NEN : OP_EQN, "");
 }
 
 void TrxModel::copy_from_trx(Data *this_n, const Data& other_d)
 {
-    this_n->m_date_time       = other_d.m_date_time;
+    this_n->m_datetime        = other_d.m_datetime;
     this_n->m_type            = other_d.m_type;
     this_n->m_status          = other_d.m_status;
     this_n->m_account_id      = other_d.m_account_id;
@@ -124,6 +102,28 @@ bool TrxModel::is_foreignAsTransfer(const Data& this_d)
         this_d.m_to_account_id_n == this_d.m_account_id
     );
 }
+
+// -- constructor
+
+// Initialize the global TrxModel table.
+// Reset the TrxModel table or create the table if it does not exist.
+TrxModel& TrxModel::instance(wxSQLite3Database* db)
+{
+    TrxModel& ins = Singleton<TrxModel>::instance();
+    ins.reset_cache();
+    ins.m_db = db;
+    ins.ensure_table();
+
+    return ins;
+}
+
+// Return the static instance of TrxModel table
+TrxModel& TrxModel::instance()
+{
+    return Singleton<TrxModel>::instance();
+}
+
+// -- override
 
 bool TrxModel::purge_id(int64 trx_id)
 {
@@ -157,11 +157,13 @@ bool TrxModel::purge_id(int64 trx_id)
     return unsafe_remove_id(trx_id);
 }
 
+// -- methods
+
 void TrxModel::save_timestamp(int64 trx_id)
 {
     Data* trx_n = instance().unsafe_get_id_data_n(trx_id);
     if (trx_n && trx_n->m_id == trx_id) {
-        trx_n->m_updated_time_n = mmDateTime::now();
+        trx_n->m_updated_utc_n = mmDateTime::now().fromLocalToUtc();
         unsafe_update_data_n(trx_n);
     }
 }
@@ -175,7 +177,7 @@ void TrxModel::update_timestamp(Data& trx_d)
     if (trx_a.size() == 0 || (!trx_a[0].equals(&trx_d) &&
         !trx_a[0].is_deleted() && !trx_d.is_deleted()
     )) {
-        trx_d.m_updated_time_n = mmDateTime::now();
+        trx_d.m_updated_utc_n = mmDateTime::now().fromLocalToUtc();
     }
 }
 
@@ -229,7 +231,7 @@ const TrxModel::DataA TrxModel::find_all_aDateTimeId()
     DataA trx_a = TrxModel::instance().find_all();
     // first sort by id, then stable sort by datetime or date only
     std::sort(trx_a.begin(), trx_a.end());
-    if (PrefModel::instance().UseTransDateTime())
+    if (PrefModel::instance().getUseTransDateTime())
         std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTime());
     else
         std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDate());
@@ -256,14 +258,14 @@ void TrxModel::getFrequentUsedNotes(std::vector<wxString>& frequentNotes, int64 
     size_t max = 20;
 
     const auto trx_a = instance().find(
-        TrxCol::NOTES(OP_NE, ""),
+        TrxCol::NOTES(OP_NEN, ""),
         account_id > 0 ? TrxCol::ACCOUNTID(account_id) : TrxCol::ACCOUNTID(OP_NE, -1)
     );
 
     // Count frequency
     std::map<wxString, std::pair<int, wxString>> counterMap;
     for (const auto& trx_d : trx_a) {
-        wxString trx_date = trx_d.m_date().isoDate();
+        wxString trx_date = trx_d.m_isoDate();
         auto& counter = counterMap[trx_d.m_notes];
         counter.first--;
         if (trx_date > counter.second)
@@ -297,15 +299,15 @@ void TrxModel::setEmptyData(Data& dst_trx_d, int64 account_id)
             TrxCol::ACCOUNTID(account_id),
             TrxCol::TOACCOUNTID(account_id)
         )) {
-            if (trx_d.is_deleted() || trx_d.m_date_time > now_dateTime)
+            if (trx_d.is_deleted() || trx_d.m_datetime > now_dateTime)
                 continue;
-            if (!max_dateTime.has_value() || max_dateTime.value() < trx_d.m_date_time) {
-                max_dateTime = trx_d.m_date_time;
+            if (!max_dateTime.has_value() || max_dateTime.value() < trx_d.m_datetime) {
+                max_dateTime = trx_d.m_datetime;
             }
         }
     }
 
-    dst_trx_d.m_date_time     = max_dateTime.value_or(now_dateTime);
+    dst_trx_d.m_datetime      = max_dateTime.value_or(now_dateTime);
     dst_trx_d.m_type          = TrxType(TrxType::e_withdrawal);
     dst_trx_d.m_status        = TrxStatus(PrefModel::instance().getTransStatusReconciled());
     dst_trx_d.m_account_id    = account_id;
@@ -323,6 +325,8 @@ bool TrxModel::is_locked(const Data& trx_d)
     const AccountData* account_n = AccountModel::instance().get_id_data_n(trx_d.m_account_id);
     return account_n && account_n->is_locked_for(trx_d.m_date());
 }
+
+// -- DataExt
 
 TrxModel::DataExt::DataExt() :
     Data(), TAGNAMES(""),
@@ -461,11 +465,11 @@ bool TrxModel::DataExt::is_foreign_transfer() const
     return is_foreign() && (this->m_to_account_id_n == TrxLinkModel::AS_TRANSFER);
 }
 
-wxString TrxModel::DataExt::info() const
+wxString TrxModel::DataExt::info()
 {
     // TODO more info
     wxString info = wxGetTranslation(wxDateTime::GetEnglishWeekDayName(
-        m_date_time.getDateTime().GetWeekDay()
+        m_datetime.dateTime().GetWeekDay()
     ));
     return info;
 }
@@ -523,4 +527,3 @@ const wxString TrxModel::DataExt::to_json()
 
     return wxString::FromUTF8(json_buffer.GetString());
 }
-

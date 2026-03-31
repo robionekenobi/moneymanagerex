@@ -23,10 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "dialog/AttachmentDialog.h"
 #include "report/htmlbuilder.h"
 
-TrxFilter::TrxFilter()
-{
-    this->clear();
-}
+// -- methods
 
 void TrxFilter::clear()
 {
@@ -103,7 +100,7 @@ bool TrxFilter::mmIsRecordMatches(
 ) {
     bool ok = true;
     // note: date comparisons have granularity of a day
-    mmDate trx_date = mmDate(trx_d.m_date_time);
+    mmDate trx_date = trx_d.m_date();
     if (m_filter_account && (std::find(m_account_id_a.begin(), m_account_id_a.end(),
         trx_d.m_account_id
     ) == m_account_id_a.end()) && (std::find(m_account_id_a.begin(), m_account_id_a.end(),
@@ -210,13 +207,18 @@ table {
     // Display the data for each row
     for (auto& trx_dx : m_trx_xa) {
         hb.startTableRow();
-        hb.addTableCellLink(wxString::Format("trx:%lld", trx_dx.m_id)
-            , wxString::Format("%lld", trx_dx.m_id), true);
+        hb.addTableCellLink(
+            wxString::Format("trx:%lld", trx_dx.m_id),
+            wxString::Format("%lld", trx_dx.m_id),
+            true
+        );
         hb.addColorMarker(getUDColour(trx_dx.m_color.GetValue()).GetAsString(), true);
-        hb.addTableCellDate(trx_dx.m_date_time.isoDateTime());
+        hb.addTableCellDate(trx_dx.m_isoDateTime());
         hb.addTableCell(trx_dx.m_number);
-        hb.addTableCellLink(wxString::Format("trxid:%lld", trx_dx.m_id)
-            , trx_dx.ACCOUNTNAME);
+        hb.addTableCellLink(
+            wxString::Format("trxid:%lld", trx_dx.m_id),
+            trx_dx.ACCOUNTNAME
+        );
         hb.addTableCell(trx_dx.PAYEENAME);
         hb.addTableCell(trx_dx.m_status.key(), false, true);
         hb.addTableCell(trx_dx.CATEGNAME);
@@ -225,7 +227,9 @@ table {
         else
             hb.addTableCell(wxGetTranslation(trx_dx.m_type.name()));
 
-        const AccountData* acc = AccountModel::instance().get_id_data_n(trx_dx.m_account_id);
+        const AccountData* acc = AccountModel::instance().get_id_data_n(
+            trx_dx.m_account_id
+        );
         if (acc) {
             const CurrencyData* curr = AccountModel::instance().get_data_currency_p(*acc);
             double flow = trx_dx.account_flow(acc->m_id);

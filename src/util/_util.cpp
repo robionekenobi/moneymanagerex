@@ -289,7 +289,7 @@ wxColour mmColors::userDefColor7;
 
 //*-------------------------------------------------------------------------*//
 
-//Get unread news or all news for last year
+// Get unread news or all news for last year
 bool getNewsRSS(std::vector<WebsiteNews>& websiteNews_a)
 {
     wxString RssContent;
@@ -324,25 +324,25 @@ bool getNewsRSS(std::vector<WebsiteNews>& websiteNews_a)
             while (field_node) {
                 wxString field_name = field_node->GetName();
                 if (field_name == "title")
-                    websiteNews.Title = field_node->GetChildren()->GetContent();
+                    websiteNews.m_titleN = field_node->GetChildren()->GetContent();
                 else if (field_name == "link")
-                    websiteNews.Link = field_node->GetChildren()->GetContent();
+                    websiteNews.m_linkN = field_node->GetChildren()->GetContent();
                 else if (field_name == "description")
-                    websiteNews.Description = field_node->GetChildren()->GetContent();
+                    websiteNews.m_descriptionN = field_node->GetChildren()->GetContent();
                 else if (field_name == "pubDate") {
-                    websiteNews.Date = mmDateN(
-                        field_node->GetChildren()->GetContent()
-                    ).value_or(
-                        mmDate::today().minusDateSpan(wxDateSpan::Year())
-                    ).getDateTime();
+                    websiteNews.m_dateN = mmDateN(field_node->GetChildren()->GetContent());
+                    if (!websiteNews.m_dateN.has_value())
+                        websiteNews.m_dateN = mmDateN(
+                            mmDate::today().minusDateSpan(wxDateSpan::Year())
+                        );
                 }
                 field_node = field_node->GetNext();
             }
             wxLogDebug("%s - %s",
                 last_date.isoDate(),
-                mmDate(websiteNews.Date).isoDate()
+                websiteNews.m_dateN.isoDateN()
             );
-            if (last_date < mmDate(websiteNews.Date))
+            if (websiteNews.m_dateN.has_value() && last_date < websiteNews.m_dateN.value())
                 websiteNews_a.push_back(websiteNews);
         }
         news_node = news_node->GetNext();
@@ -839,8 +839,7 @@ bool getOnlineCurrencyRates(wxString& msg,const int64 curr_id, const bool used_o
     }
 
     std::map<wxString, double> fiat;
-    const wxDateTime today = wxDateTime::Today();
-    const wxString today_str = today.FormatISODate();
+    mmDate today = mmDate::today();
 
     auto currency_a = CurrencyModel::instance().find(
         CurrencyCol::CURRENCY_SYMBOL(OP_NE, base_currency_symbol)
@@ -856,7 +855,7 @@ bool getOnlineCurrencyRates(wxString& msg,const int64 curr_id, const bool used_o
 
         fiat[symbol] = CurrencyHistoryModel::instance().get_id_date_rate(
             currency_d.m_id,
-            mmDate(today_str)
+            today
         );
     }
 
@@ -873,7 +872,9 @@ bool getOnlineCurrencyRates(wxString& msg,const int64 curr_id, const bool used_o
     // fallback to coincap if some currencies were not found
     double usd_conv_rate = -1;
     for (const auto & item : fiat) {
-        if (currency_data.find(item.first) == currency_data.end() && !g_fiat_curr().Contains(item.first)) {
+        if (currency_data.find(item.first) == currency_data.end() &&
+            !g_fiat_curr().Contains(item.first)
+        ) {
             wxString coincap_id;
             wxString coincap_msg;
             double coincap_price_usd;
@@ -895,12 +896,21 @@ bool getOnlineCurrencyRates(wxString& msg,const int64 curr_id, const bool used_o
     msg << _t("Currency rates have been updated");
     msg << "\n\n";
     for (const auto & item : fiat) {
-        const wxString value0_str(fmt::format("{:>{}}", fmt::string_view(CurrencyModel::instance().toString(item.second, b, 4).mb_str()), 20));
-        const wxString symbol(fmt::format("{:<{}}", fmt::string_view(item.first.mb_str()), 10));
+        const wxString value0_str(fmt::format("{:>{}}",
+            fmt::string_view(CurrencyModel::instance().toString(item.second, b, 4).mb_str()),
+            20
+        ));
+        const wxString symbol(fmt::format("{:<{}}",
+            fmt::string_view(item.first.mb_str()),
+            10
+        ));
 
         if (currency_data.find(item.first) != currency_data.end()) {
             auto value1 = currency_data[item.first];
-            const wxString value1_str(fmt::format("{:>{}}", fmt::string_view(CurrencyModel::instance().toString(value1, b, 4).mb_str()), 20));
+            const wxString value1_str(fmt::format("{:>{}}",
+                fmt::string_view(CurrencyModel::instance().toString(value1, b, 4).mb_str()),
+                20
+            ));
             msg << wxString::Format("%s\t%s\t\t%s\n", symbol, value0_str, value1_str);
         }
         else {
@@ -923,7 +933,7 @@ bool getOnlineCurrencyRates(wxString& msg,const int64 curr_id, const bool used_o
                 if(PrefModel::instance().getUseCurrencyHistory())
                     CurrencyHistoryModel::instance().save_record(
                         currency_d.m_id,
-                        mmDate(today),
+                        today,
                         new_rate,
                         UpdateType(UpdateType::e_online)
                     );
@@ -942,17 +952,20 @@ bool getOnlineCurrencyRates(wxString& msg,const int64 curr_id, const bool used_o
 
 /* Currencies & stock prices */
 
-bool get_yahoo_prices(std::map<wxString, double>& symbols
-    , std::map<wxString, double>& out
-    , const wxString& base_currency_symbol
-    , wxString& output
-    , int type)
-{
+bool get_yahoo_prices(
+    std::map<wxString, double>& symbols,
+    std::map<wxString, double>& out,
+    const wxString& base_currency_symbol,
+    wxString& output,
+    int type
+) {
     double conversion_factor = 1.0;
     wxString buffer;
 
     wxString base_curr_symbol = base_currency_symbol;
-    if (type == yahoo_price_type::FIAT && !wxString("USD|EUR|GBP").Contains(base_currency_symbol)) {
+    if (type == yahoo_price_type::FIAT &&
+        !wxString("USD|EUR|GBP").Contains(base_currency_symbol)
+    ) {
         base_curr_symbol = "USD";
         buffer += wxString::Format("%s%s=X,", base_currency_symbol, base_curr_symbol);
     }
@@ -1173,13 +1186,15 @@ bool getCoincapInfoFromSymbol(const wxString& symbol, wxString& out_id, double& 
 
 bool getCoincapAssetHistory(
     const wxString& asset_id,
-    wxDateTime begin_date,
+    mmDate begin_date,
     std::map<mmDate, double>& date_rate_m,
     wxString& msg
 ) {
     // coincap uses unix time milliseconds
-    long long begin_date_unix = static_cast<long long>(begin_date.GetTicks()) * 1000;
-    long long end_date_unix = static_cast<long long>(wxDateTime::Today().GetTicks()) * 1000;
+    time_t begin_ticks = begin_date.dateTime().GetTicks();
+    time_t today_ticks = mmDate::today().dateTime().GetTicks();
+    long long begin_date_unix = static_cast<long long>(begin_ticks) * 1000;
+    long long end_date_unix = static_cast<long long>(today_ticks) * 1000;
     wxString url = wxString::Format(mmex::weblink::CoinCapHistory,
         asset_id, "d1", begin_date_unix, end_date_unix
     );
@@ -1543,8 +1558,8 @@ CURLcode getYahooFinanceQuotes(const wxString& URL, wxString& output) {
                                 curl_slist_free_all(cookies);
                             }
 
-                            SettingModel::instance().setString("YAHOO_FINANCE_COOKIE", cookieJar);
-                            SettingModel::instance().setString("YAHOO_FINANCE_CRUMB", wxString::FromUTF8(crumb.memory));
+                            SettingModel::instance().saveString("YAHOO_FINANCE_COOKIE", cookieJar);
+                            SettingModel::instance().saveString("YAHOO_FINANCE_CRUMB", wxString::FromUTF8(crumb.memory));
                         }
                         free(newQuote.memory);
                     }

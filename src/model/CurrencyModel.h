@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022  Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -31,15 +32,25 @@
 
 class CurrencyModel : public TableFactory<CurrencyTable, CurrencyData>
 {
+// -- static
+
 public:
-    CurrencyModel();
-    ~CurrencyModel();
+    static CurrencyCol::CURRENCY_TYPE CURRENCY_TYPE(OP op, CurrencyType currency_type) {
+        return CurrencyCol::CURRENCY_TYPE(op, currency_type.name());
+    }
+
+// -- constructor
+
+public:
+    CurrencyModel() :
+        TableFactory<CurrencyTable, CurrencyData>() {}
+    ~CurrencyModel() {}
 
 public:
     static CurrencyModel& instance(wxSQLite3Database* db);
     static CurrencyModel& instance();
 
-    static CurrencyCol::CURRENCY_TYPE CURRENCY_TYPE(OP op, CurrencyType currency_type);
+// -- override
 
 public:
     // TODO: add to virtual methods in TableFactory
@@ -47,6 +58,8 @@ public:
 
     // override TableFactory
     virtual bool purge_id(int64 currency_id) override;
+
+// -- methods
 
     auto get_base_data_n() -> const Data*;
     bool get_base_symbol(wxString& symbol);

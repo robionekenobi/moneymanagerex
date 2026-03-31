@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2016 Stefano Giorgio
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -28,13 +29,18 @@
 
 class TrxShareModel : public TableFactory<TrxShareTable, TrxShareData>
 {
+// -- constructor
+
 public:
-    TrxShareModel();
-    ~TrxShareModel();
+    TrxShareModel() :
+        TableFactory<TrxShareTable, TrxShareData>() {}
+    ~TrxShareModel() {}
 
 public:
     static TrxShareModel& instance(wxSQLite3Database* db);
     static TrxShareModel& instance();
+
+// -- methods
 
 public:
     void purge_trxId(const int64 trx_id);

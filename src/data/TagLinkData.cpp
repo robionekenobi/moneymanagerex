@@ -32,7 +32,7 @@ TagLinkRow TagLinkData::to_row() const
     TagLinkRow row;
 
     row.TAGLINKID = m_id;
-    row.REFTYPE   = m_ref_type.name_n();
+    row.REFTYPE   = m_ref_type.key_n();
     row.REFID     = m_ref_id;
     row.TAGID     = m_tag_id;
 

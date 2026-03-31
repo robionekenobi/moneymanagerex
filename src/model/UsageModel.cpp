@@ -1,6 +1,7 @@
 /*******************************************************
-Copyright (C) 2013 - 2018 Guan Lisheng (guanlisheng@gmail.com)
-Copyright (C) 2018 Stefano Giorgio (stef145g)
+ Copyright (C) 2013 - 2018 Guan Lisheng (guanlisheng@gmail.com)
+ Copyright (C) 2018 Stefano Giorgio (stef145g)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -32,14 +33,7 @@ Copyright (C) 2018 Stefano Giorgio (stef145g)
 
 #include "report/_ReportBase.h"
 
-UsageModel::UsageModel() :
-    TableFactory<UsageTable, UsageData>()
-{
-}
-
-UsageModel::~UsageModel()
-{
-}
+// -- constructor
 
 // Initialize the global UsageModel table.
 // Reset the UsageModel table or create the table if it does not exist.
@@ -59,6 +53,8 @@ UsageModel& UsageModel::instance()
 {
     return Singleton<UsageModel>::instance();
 }
+
+// -- methods
 
 // Appends to usage array
 void UsageModel::append_usage(const wxString& json_string)
@@ -127,16 +123,16 @@ std::pair<wxString /*UUID*/, wxString /*UID*/> uuid()
             wxPlatformInfo::Get().GetPortIdShortName(),
             now.Format("%Y%m%d%H%M%S%l")
         );
-        SettingModel::instance().setString("UUID", UUID);
-        SettingModel::instance().setString("UID", UID);
+        SettingModel::instance().saveString("UUID", UUID);
+        SettingModel::instance().saveString("UID", UID);
     }
     else if (UUID.IsEmpty()) {
         UUID = UID;
-        SettingModel::instance().setString("UUID", UUID);
+        SettingModel::instance().saveString("UUID", UUID);
     }
     else if (UID.IsEmpty()) {
         UID = UUID;
-        SettingModel::instance().setString("UID", UID);
+        SettingModel::instance().saveString("UID", UID);
     }
 
     return std::make_pair(UUID, UID);

@@ -32,10 +32,8 @@ class SchedPanel : public PanelBase
 {
     friend class SchedList;
 
-    wxDECLARE_EVENT_TABLE();
-
 public:
-    enum EIcons
+    enum
     {
         ICON_FOLLOWUP,
         ICON_RUN_AUTO,
@@ -43,6 +41,9 @@ public:
         ICON_UPARROW,
         ICON_DOWNARROW
     };
+
+private:
+    wxDECLARE_EVENT_TABLE();
 
 private:
     SchedModel::DataExtA m_sched_xa;
@@ -87,7 +88,7 @@ private:
     void createControls();
     auto getItem(long item, int col_id) -> wxString;
     int  initList(int64 sched_id_n = -1);
-    auto getRemainingDays(const SchedData& sched_d) const -> const wxString;
+    auto getRemainingDays(SchedData& sched_d) -> const wxString;
     auto getRandomTip() -> wxString;
     void updateBottomPanelData(int selIndex);
     void enableEditDeleteButtons(bool en);

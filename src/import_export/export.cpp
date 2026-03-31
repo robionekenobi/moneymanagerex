@@ -86,7 +86,7 @@ const wxString mmExportTransaction::getTransactionCSV(
             const wxString split_categ = CategoryModel::instance().get_id_fullname(tp_d.m_category_id, ":");
 
             buffer << inQuotes(wxString::Format("%lld", trx_dx.m_id), delimiter) << delimiter;
-            buffer << inQuotes(mmGetDateTimeForDisplay(trx_dx.m_date_time.isoDateTime(), dateMask), delimiter) << delimiter;
+            buffer << inQuotes(mmGetDateTimeForDisplay(trx_dx.m_isoDateTime(), dateMask), delimiter) << delimiter;
             buffer << inQuotes(trx_dx.m_status.key(), delimiter) << delimiter;
             buffer << inQuotes(trx_dx.m_type.name(), delimiter) << delimiter;
 
@@ -105,7 +105,7 @@ const wxString mmExportTransaction::getTransactionCSV(
     }
     else {
         buffer << inQuotes(wxString::Format("%lld", trx_dx.m_id), delimiter) << delimiter;
-        buffer << inQuotes(mmGetDateTimeForDisplay(trx_dx.m_date_time.isoDateTime(), dateMask), delimiter) << delimiter;
+        buffer << inQuotes(mmGetDateTimeForDisplay(trx_dx.m_isoDateTime(), dateMask), delimiter) << delimiter;
         buffer << inQuotes(trx_dx.m_status.key(), delimiter) << delimiter;
         buffer << inQuotes(trx_dx.m_type.name(), delimiter) << delimiter;
 
@@ -169,7 +169,7 @@ const wxString mmExportTransaction::getTransactionQIF(
         }
     }
 
-    buffer << "D" << mmGetDateTimeForDisplay(trx_dx.m_date_time.isoDateTime(), dateMask) << "\n";
+    buffer << "D" << mmGetDateTimeForDisplay(trx_dx.m_isoDateTime(), dateMask) << "\n";
     buffer << "C" << (trx_dx.is_reconciled() ? "R" : "") << "\n";
     double value = trx_dx.account_flow(
         reverse ? trx_dx.m_to_account_id_n : trx_dx.m_account_id

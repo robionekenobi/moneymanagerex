@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -28,14 +29,7 @@
 #include "SchedModel.h"
 #include "TrxModel.h"
 
-CategoryModel::CategoryModel() :
-    TableFactory<CategoryTable, CategoryData>()
-{
-}
-
-CategoryModel::~CategoryModel()
-{
-}
+// -- constructor
 
 // Initialize the global CategoryModel table.
 // Reset the CategoryModel table or create the table if it does not exist.
@@ -55,6 +49,8 @@ CategoryModel& CategoryModel::instance()
 {
     return Singleton<CategoryModel>::instance();
 }
+
+// -- methods
 
 bool CategoryModel::is_used(int64 cat_id)
 {

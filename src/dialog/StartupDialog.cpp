@@ -76,7 +76,7 @@ StartupDialog::~StartupDialog()
     try
     {
         bool showBeginApp = itemCheckBox->GetValue();
-        SettingModel::instance().setBool("SHOWBEGINAPP", showBeginApp);
+        SettingModel::instance().saveBool("SHOWBEGINAPP", showBeginApp);
     }
     catch (...)
     {

@@ -114,7 +114,7 @@ void AssetDialog::dataToControls()
     w_assetName->SetValue(m_asset_n->m_name);
     if (AccountModel::instance().get_name_data_n(m_asset_n->m_name))
         w_assetName->Enable(false);
-    w_dpc->SetValue(m_asset_n->m_start_date.getDateTime());
+    w_dpc->SetValue(m_asset_n->m_start_date.dateTime());
     w_assetType->SetSelection(m_asset_n->m_type.id());
     if (AccountModel::instance().get_name_data_n(m_asset_n->m_type.name()))
         w_assetType->Enable(false);

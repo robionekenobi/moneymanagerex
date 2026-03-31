@@ -69,8 +69,8 @@ BudgetPanel::BudgetPanel(
     long style,
     const wxString& name
 ) :
-    w_list(nullptr),
-    m_bp_id(bp_id)
+    m_bp_id(bp_id),
+    w_list(nullptr)
 {
     create(parent_win, win_id, pos, size, style, name);
     mmThemeAutoColour(this);
@@ -125,7 +125,7 @@ void BudgetPanel::onViewPopupSelected(wxCommandEvent& event)
         wxASSERT(false);
     }
 
-    InfoModel::instance().setString("BUDGET_FILTER", m_current_view);
+    InfoModel::instance().saveString("BUDGET_FILTER", m_current_view);
 
     refreshList();
 }
@@ -363,7 +363,7 @@ void BudgetPanel::initVirtualListControl()
 
     // Readjust dates by the Budget Offset Option
     PrefModel::instance().addBudgetDateOffset(dtBegin);
-    m_start_date = dtBegin.FormatISODate();   
+    m_start_date = dtBegin.FormatISODate();
     PrefModel::instance().addBudgetDateOffset(dtEnd);
     mmDateRange date_range;
     date_range.start_date(dtBegin.ResetTime()); // Start of Day

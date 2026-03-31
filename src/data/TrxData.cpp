@@ -20,7 +20,7 @@
 
 TrxData::TrxData() :
     m_id(-1),
-    m_date_time(mmDateTime::now()),
+    m_datetime(mmDateTime::invalid()),
     m_type(TrxType()),
     m_status(TrxStatus()),
     m_account_id(-1),
@@ -31,8 +31,8 @@ TrxData::TrxData() :
     m_to_amount(0.0),
     m_followup_id(-1),
     m_color(-1),
-    m_updated_time_n(mmDateTimeN()),
-    m_deleted_time_n(mmDateTimeN())
+    m_updated_utc_n(mmDateTimeN()),
+    m_deleted_utc_n(mmDateTimeN())
 {
 }
 
@@ -45,15 +45,15 @@ TrxRow TrxData::to_row() const
     row.ACCOUNTID         = m_account_id;
     row.TOACCOUNTID       = m_to_account_id_n;
     row.PAYEEID           = m_payee_id_n;
-    row.TRANSCODE         = m_type.name();
+    row.TRANSCODE         = m_type.key();
     row.TRANSAMOUNT       = m_amount;
     row.STATUS            = m_status.key();
     row.TRANSACTIONNUMBER = m_number;
     row.NOTES             = m_notes;
     row.CATEGID           = m_category_id_n;
-    row.TRANSDATE         = m_date_time.isoDateTime();
-    row.LASTUPDATEDTIME   = m_updated_time_n.utcDateTimeN();
-    row.DELETEDTIME       = m_deleted_time_n.utcDateTimeN();
+    row.TRANSDATE         = m_datetime.isoDateTime();
+    row.LASTUPDATEDTIME   = m_updated_utc_n.isoDateTimeN();
+    row.DELETEDTIME       = m_deleted_utc_n.isoDateTimeN();
     row.FOLLOWUPID        = m_followup_id;
     row.TOTRANSAMOUNT     = m_to_amount;
     row.COLOR             = m_color;
@@ -65,7 +65,7 @@ TrxRow TrxData::to_row() const
 TrxData& TrxData::from_row(const TrxRow& row)
 {
     m_id              = row.TRANSID;
-    m_date_time       = mmDateTime(row.TRANSDATE);
+    m_datetime        = mmDateTime(row.TRANSDATE);
     m_type            = TrxType(row.TRANSCODE);
     m_status          = TrxStatus(row.STATUS);
     m_account_id      = row.ACCOUNTID;
@@ -78,8 +78,8 @@ TrxData& TrxData::from_row(const TrxRow& row)
     m_notes           = row.NOTES;
     m_followup_id     = row.FOLLOWUPID;
     m_color           = row.COLOR;
-    m_updated_time_n  = mmDateTimeN::from_utc(row.LASTUPDATEDTIME);
-    m_deleted_time_n  = mmDateTimeN::from_utc(row.DELETEDTIME);
+    m_updated_utc_n   = mmDateTimeN(row.LASTUPDATEDTIME);
+    m_deleted_utc_n   = mmDateTimeN(row.DELETEDTIME);
 
     return *this;
 }
@@ -87,7 +87,7 @@ TrxData& TrxData::from_row(const TrxRow& row)
 bool TrxData::equals(const TrxData* other) const
 {
     if ( m_id              != other->m_id)              return false;
-    if ( m_date_time       != other->m_date_time)       return false;
+    if ( m_datetime        != other->m_datetime)        return false;
     if ( m_type.id()       != other->m_type.id())       return false;
     if ( m_status.id()     != other->m_status.id())     return false;
     if ( m_account_id      != other->m_account_id)      return false;
@@ -100,8 +100,8 @@ bool TrxData::equals(const TrxData* other) const
     if (!m_notes.IsSameAs(    other->m_notes))          return false;
     if ( m_followup_id     != other->m_followup_id)     return false;
     if ( m_color           != other->m_color)           return false;
-    if ( m_updated_time_n  != other->m_updated_time_n)  return false;
-    if ( m_deleted_time_n  != other->m_deleted_time_n)  return false;
+    if ( m_updated_utc_n   != other->m_updated_utc_n)   return false;
+    if ( m_deleted_utc_n   != other->m_deleted_utc_n)   return false;
 
     return true;
 }

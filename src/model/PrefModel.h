@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2006 Madhan Kanagavel
  Copyright (C) 2021-2025 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -23,16 +24,25 @@
 #include "util/_primitive.h"
 #include "util/mmDateRange2.h"
 
-/*
-   mmOptions caches the options for MMEX
-   so that we don't hit the DB that often
-   for data.
-*/
+// mmOptions caches the options for MMEX so that we don't hit the DB
+// that often for data.
+
 class PrefModel
 {
+// -- static
+
 public:
-    enum USAGE_TYPE { NONE = 0, LASTUSED, UNUSED, DEFAULT };
-    enum THEME_MODE { AUTO = 0, LIGHT, DARK };
+    enum USAGE_TYPE {
+        NONE = 0,
+        LASTUSED,
+        UNUSED,
+        DEFAULT
+    };
+    enum THEME_MODE {
+        AUTO = 0,
+        LIGHT,
+        DARK
+    };
     enum COMPOUNDING_ID {
         COMPOUNDING_ID_DAY = 0,
         COMPOUNDING_ID_WEEK,
@@ -40,272 +50,12 @@ public:
         COMPOUNDING_ID_YEAR,
         COMPOUNDING_ID_size
     };
-    static const std::vector<std::pair<COMPOUNDING_ID, wxString> > COMPOUNDING_NAME;
-    static const std::vector<std::pair<COMPOUNDING_ID, int> > COMPOUNDING_N;
-    static const std::vector<std::pair<wxString, wxString> > CHECKING_RANGE_DEFAULT;
-    static const std::vector<std::pair<wxString, wxString> > REPORTING_RANGE_DEFAULT;
+    static const std::vector<std::pair<COMPOUNDING_ID, wxString>> COMPOUNDING_NAME;
+    static const std::vector<std::pair<COMPOUNDING_ID, int>> COMPOUNDING_N;
+    static const std::vector<std::pair<wxString, wxString>> CHECKING_RANGE_DEFAULT;
+    static const std::vector<std::pair<wxString, wxString>> REPORTING_RANGE_DEFAULT;
 
-public:
-    PrefModel();
-    static PrefModel& instance();
-    void load(const bool include_infotable = true);
-
-    // m_database_updated
-    void setDatabaseUpdated(const bool value);
-    bool getDatabaseUpdated() const noexcept;
-
-    // m_language
-    wxLanguage getLanguageID(const bool get_db = false);
-    // get 2-letter ISO 639-1 code
-    const wxString getLanguageCode(const bool get_db = false);
-    void setLanguage(const wxLanguage& language);
-
-    // m_locale_name
-    void setLocaleName(const wxString& locale);
-    const wxString& getLocaleName() const;
-
-    // m_date_format
-    void loadDateFormat();
-    void setDateFormat(const wxString& date_format);
-    const wxString getDateFormat() const;
-
-    // m_user_name
-    void loadUserName();
-    void setUserName(const wxString& username);
-    const wxString& getUserName() const;
-
-    // m_base_currency_id
-    void loadBaseCurrencyID();
-    void setBaseCurrencyID(const int64 base_currency_id);
-    int64 getBaseCurrencyID() const noexcept;
-
-    // m_use_currency_history
-    void loadUseCurrencyHistory();
-    void setUseCurrencyHistory(const bool value);
-    bool getUseCurrencyHistory() const noexcept;
-
-    // m_currency_history_days
-    void loadCurrencyHistoryDays();
-    void setCurrencyHistoryDays(const int value);
-    int getCurrencyHistoryDays() const noexcept;
-
-    // m_share_precision
-    void loadSharePrecision();
-    void setSharePrecision(const int value);
-    int getSharePrecision() const noexcept;
-
-    // m_asset_compounding
-    void loadAssetCompounding();
-    void setAssetCompounding(const int value);
-    int getAssetCompounding() const noexcept;
-
-    // m_reporting_first_day: allows the 'first day' in the month to be adjusted
-    void loadReportingFirstDay();
-    void setReportingFirstDay(const int value);
-    int getReportingFirstDay() const noexcept;
-
-    // m_reporting_first_weekday
-    void loadReportingFirstWeekday();
-    void setReportingFirstWeekday(const wxDateTime::WeekDay value);
-    wxDateTime::WeekDay getReportingFirstWeekday() const noexcept;
-
-    // m_financial_first_day
-    void loadFinancialFirstDay();
-    void setFinancialFirstDay(int value);
-    int getFinancialFirstDay() const;
-
-    // m_financial_first_month
-    void loadFinancialFirstMonth();
-    void setFinancialFirstMonth(const wxDateTime::Month value);
-    wxDateTime::Month getFinancialFirstMonth() const;
-
-    // m_budget_days_offset: allows a year to start before or after the 1st of the month.
-    void loadBudgetDaysOffset();
-    void setBudgetDaysOffset(const int value);
-    int getBudgetDaysOffset() const noexcept;
-    void addBudgetDateOffset(wxDateTime& dateTime) const;
-    void addBudgetDateOffset(mmDate& date) const;
-
-    // m_homepage_incexp_range: homepage income vs expenses graph range
-    void loadHomePageIncExpRange();
-    void setHomePageIncExpRange(const int value);
-    int getHomePageIncExpRange() const noexcept;
-
-    // m_hide_share_accounts
-    void loadHideShareAccounts();
-    void setHideShareAccounts(const bool value);
-    bool getHideShareAccounts() const noexcept;
-
-    // m_hide_deleted_transactions
-    void loadHideDeletedTransactions();
-    void setHideDeletedTransactions(const bool value);
-    bool getHideDeletedTransactions() const noexcept;
-
-    // m_budget_financial_years
-    void loadBudgetFinancialYears();
-    void setBudgetFinancialYears(const bool value);
-    bool getBudgetFinancialYears() const noexcept;
-
-    // m_budget_include_transfers
-    void loadBudgetIncludeTransfers();
-    void setBudgetIncludeTransfers(const bool value);
-    bool getBudgetIncludeTransfers() const noexcept;
-
-    // m_budget_summary_without_categories
-    void loadBudgetSummaryWithoutCategories();
-    void setBudgetSummaryWithoutCategories(const bool value);
-    bool getBudgetSummaryWithoutCategories() const noexcept;
-
-    // m_budget_override
-    void loadBudgetOverride();
-    void setBudgetOverride(const bool value);
-    bool getBudgetOverride() const noexcept;
-
-    // m_use_trans_datetime
-    void loadUseTransDateTime();
-    bool UseTransDateTime(const bool value);
-    bool UseTransDateTime() const noexcept;
-
-    // m_treat_date_as_SN
-    void loadTreatDateAsSN();
-    bool TreatDateAsSN(const bool value);
-    bool TreatDateAsSN() const noexcept;
-
-
-    // m_budget_deduct_monthly: Deduct monthly budget from yearly budget
-    void loadBudgetDeductMonthly();
-    void setBudgetDeductMonthly(const bool value);
-    bool getBudgetDeductMonthly() const noexcept;
-
-    // m_trans_payee_none
-    void loadTransPayeeNone();
-    void setTransPayeeNone(const int value);
-    int getTransPayeeNone() const noexcept;
-
-    // m_trans_category_none
-    void loadTransCategoryNone();
-    void setTransCategoryNone(const int value);
-    int getTransCategoryNone() const noexcept;
-
-    // m_trans_category_transfer_none
-    void loadTransCategoryTransferNone();
-    void setTransCategoryTransferNone(const int value);
-    int getTransCategoryTransferNone() const noexcept;
-
-    // m_trans_status_reconciled
-    void loadTransStatusReconciled();
-    void setTransStatusReconciled(const int value);
-    int getTransStatusReconciled() const noexcept;
-
-    // m_trans_date_default
-    void loadTransDateDefault();
-    void setTransDateDefault(const int value);
-    int getTransDateDefault() const noexcept;
-
-    // m_send_usage_stats
-    void loadSendUsageStats();
-    void setSendUsageStats(const bool value);
-    bool getSendUsageStats() const noexcept;
-    bool doSendUsageStats() const noexcept;
-
-    // m_check_news
-    void loadCheckNews();
-    void setCheckNews(const bool value);
-    bool getCheckNews() const noexcept;
-
-    // m_html_scale: scale factor for html font and other objects, in percantage
-    void loadHtmlScale();
-    void setHtmlScale(const int value);
-    int getHtmlScale() const noexcept;
-
-    // m_theme_mode
-    void loadThemeMode();
-    void setThemeMode(const int value);
-    int getThemeMode() const noexcept;
-
-    // m_font_size
-    void loadFontSize();
-    void setFontSize(const int value);
-    int getFontSize() const noexcept;
-
-    // m_icon_size
-    void loadIconSize();
-    void setIconSize(const int value);
-    int getIconSize() const noexcept;
-
-    // m_toolbar_icon_size
-    void loadToolbarIconSize();
-    void setToolbarIconSize(const int value);
-    int getToolbarIconSize() const noexcept;
-
-    // m_navigation_icon_size
-    void loadNavigationIconSize();
-    void setNavigationIconSize(const int value);
-    int getNavigationIconSize() const noexcept;
-
-    int AccountImageId(const int64 account_id, const bool def, const bool ignoreClosure = false);
-
-    // m_ignore_future_transactions
-    void loadIgnoreFutureTransactions();
-    void setIgnoreFutureTransactions(const bool value);
-    bool getIgnoreFutureTransactions() const noexcept;
-
-    // m_ignore_future_transactions_homepage
-    void loadIgnoreFutureTransactionsHomePage();
-    void setIgnoreFutureTransactionsHomePage(const bool value);
-    bool getIgnoreFutureTransactionsHomePage() const noexcept;
-
-    // m_show_reconciled_in_home_page
-    void loadShowReconciledInHomePage();
-    void setShowReconciledInHomePage(const bool value);
-    bool getShowReconciledInHomePage() const noexcept;
-
-    // m_doNotColorFuture
-    void loadDoNotColorFuture();
-    void setDoNotColorFuture(const bool value);
-    bool getDoNotColorFuture() const noexcept;
-
-    // m_doSpecialColorReconciled
-    void loadDoSpecialColorReconciled();
-    void setDoSpecialColorReconciled(const bool value);
-    bool getDoSpecialColorReconciled() const noexcept;
-
-    // m_store_account_specific_filter
-    void loadUsePerAccountFilter();
-    void setUsePerAccountFilter(const bool value);
-    bool getUsePerAccountFilter() const noexcept;
-
-    // m_show_tooltips
-    void loadShowToolTips();
-    void setShowToolTips(const bool value);
-    bool getShowToolTips() const noexcept;
-
-    // m_show_moneytips
-    void loadShowMoneyTips();
-    void setShowMoneyTips(const bool value);
-    bool getShowMoneyTips() const noexcept;
-
-    // m_checking_range, m_checking_range_a, m_checking_range_m
-    void loadCheckingRange();
-    void setCheckingRange(const wxArrayString &a);
-    void parseCheckingRange();
-    const wxArrayString getCheckingRange() const noexcept;
-    const std::vector<mmDateRange2::Range> getCheckingRangeA() const noexcept;
-    int getCheckingRangeM() const noexcept;
-
-    // m_reporting_range, m_reporting_range_a, m_reporting_range_m
-    void loadReportingRange();
-    void setReportingRange(const wxArrayString &a);
-    void parseReportingRange();
-    const wxArrayString getReportingRange() const noexcept;
-    const std::vector<mmDateRange2::Range> getReportingRangeA() const noexcept;
-    int getReportingRangeM() const noexcept;
-
-    // m_show_navigator_cashLedger
-    void loadShowNavigatorCashLedger();
-    void setShowNavigatorCashLedger(const bool value);
-    bool getShowNavigatorCashLedger() const noexcept;
-
+// -- state
 
 private:
     bool m_database_updated = false;
@@ -317,7 +67,6 @@ private:
     wxString m_user_name;                               // USERNAME
     int64 m_base_currency_id = -1;                      // BASECURRENCYID
     bool m_use_currency_history = false;                // USECURRENCYHISTORY
-    int m_currency_history_days = 90;                   // USECURRENCYHISTORYDAYS
     int m_share_precision = 4;                          // SHARE_PRECISION
     int m_asset_compounding = 0;                        // ASSET_COMPOUNDING
     int m_reporting_first_day = 1;                      // REPORTING_FIRSTDAY
@@ -369,6 +118,269 @@ private:
     int m_checking_range_m;                               // m_checking_range
     std::vector<mmDateRange2::Range> m_reporting_range_a; // m_reporting_range
     int m_reporting_range_m;                              // m_reporting_range
+
+// -- constructor
+
+public:
+    PrefModel();
+
+    static PrefModel& instance();
+
+// -- methods
+
+public:
+    void load(const bool include_infotable = true);
+
+    // m_database_updated
+    void setDatabaseUpdated(const bool value);
+    bool getDatabaseUpdated() const noexcept;
+
+    // m_language
+    wxLanguage getLanguageID(const bool get_db = false);
+    // get 2-letter ISO 639-1 code
+    const wxString getLanguageCode(const bool get_db = false);
+    void saveLanguage(const wxLanguage& language);
+
+    // m_locale_name
+    void saveLocaleName(const wxString& locale);
+    const wxString& getLocaleName() const;
+
+    // m_date_format
+    void loadDateFormat();
+    void saveDateFormat(const wxString& date_format);
+    const wxString getDateFormat() const;
+
+    // m_user_name
+    void loadUserName();
+    void saveUserName(const wxString& username);
+    const wxString& getUserName() const;
+
+    // m_base_currency_id
+    void loadBaseCurrencyID();
+    void saveBaseCurrencyID(const int64 base_currency_id);
+    int64 getBaseCurrencyID() const noexcept;
+
+    // m_use_currency_history
+    void loadUseCurrencyHistory();
+    void saveUseCurrencyHistory(const bool value);
+    bool getUseCurrencyHistory() const noexcept;
+
+    // m_share_precision
+    void loadSharePrecision();
+    void saveSharePrecision(const int value);
+    int getSharePrecision() const noexcept;
+
+    // m_asset_compounding
+    void loadAssetCompounding();
+    void saveAssetCompounding(const int value);
+    int getAssetCompounding() const noexcept;
+
+    // m_reporting_first_day: allows the 'first day' in the month to be adjusted
+    void loadReportingFirstDay();
+    void saveReportingFirstDay(const int value);
+    int getReportingFirstDay() const noexcept;
+
+    // m_reporting_first_weekday
+    void loadReportingFirstWeekday();
+    void saveReportingFirstWeekday(const wxDateTime::WeekDay value);
+    wxDateTime::WeekDay getReportingFirstWeekday() const noexcept;
+
+    // m_financial_first_day
+    void loadFinancialFirstDay();
+    void saveFinancialFirstDay(int value);
+    int getFinancialFirstDay() const;
+
+    // m_financial_first_month
+    void loadFinancialFirstMonth();
+    void saveFinancialFirstMonth(const wxDateTime::Month value);
+    wxDateTime::Month getFinancialFirstMonth() const;
+
+    // m_budget_days_offset: allows a year to start before or after the 1st of the month.
+    void loadBudgetDaysOffset();
+    void saveBudgetDaysOffset(const int value);
+    int getBudgetDaysOffset() const noexcept;
+    void addBudgetDateOffset(wxDateTime& dateTime) const;
+    void addBudgetDateOffset(mmDate& date) const;
+
+    // m_homepage_incexp_range: homepage income vs expenses graph range
+    void loadHomePageIncExpRange();
+    void saveHomePageIncExpRange(const int value);
+    int getHomePageIncExpRange() const noexcept;
+
+    // m_hide_share_accounts
+    void loadHideShareAccounts();
+    void saveHideShareAccounts(const bool value);
+    bool getHideShareAccounts() const noexcept;
+
+    // m_hide_deleted_transactions
+    void loadHideDeletedTransactions();
+    void saveHideDeletedTransactions(const bool value);
+    bool getHideDeletedTransactions() const noexcept;
+
+    // m_budget_financial_years
+    void loadBudgetFinancialYears();
+    void saveBudgetFinancialYears(const bool value);
+    bool getBudgetFinancialYears() const noexcept;
+
+    // m_budget_include_transfers
+    void loadBudgetIncludeTransfers();
+    void saveBudgetIncludeTransfers(const bool value);
+    bool getBudgetIncludeTransfers() const noexcept;
+
+    // m_budget_summary_without_categories
+    void loadBudgetSummaryWithoutCategories();
+    void saveBudgetSummaryWithoutCategories(const bool value);
+    bool getBudgetSummaryWithoutCategories() const noexcept;
+
+    // m_budget_override
+    void loadBudgetOverride();
+    void saveBudgetOverride(const bool value);
+    bool getBudgetOverride() const noexcept;
+
+    // m_use_trans_datetime
+    void loadUseTransDateTime();
+    bool saveUseTransDateTime(const bool value);
+    bool getUseTransDateTime() const noexcept;
+
+    // m_treat_date_as_SN
+    void loadTreatDateAsSN();
+    bool saveTreatDateAsSN(const bool value);
+    bool getTreatDateAsSN() const noexcept;
+
+
+    // m_budget_deduct_monthly: Deduct monthly budget from yearly budget
+    void loadBudgetDeductMonthly();
+    void saveBudgetDeductMonthly(const bool value);
+    bool getBudgetDeductMonthly() const noexcept;
+
+    // m_trans_payee_none
+    void loadTransPayeeNone();
+    void saveTransPayeeNone(const int value);
+    int getTransPayeeNone() const noexcept;
+
+    // m_trans_category_none
+    void loadTransCategoryNone();
+    void saveTransCategoryNone(const int value);
+    int getTransCategoryNone() const noexcept;
+
+    // m_trans_category_transfer_none
+    void loadTransCategoryTransferNone();
+    void saveTransCategoryTransferNone(const int value);
+    int getTransCategoryTransferNone() const noexcept;
+
+    // m_trans_status_reconciled
+    void loadTransStatusReconciled();
+    void saveTransStatusReconciled(const int value);
+    int getTransStatusReconciled() const noexcept;
+
+    // m_trans_date_default
+    void loadTransDateDefault();
+    void saveTransDateDefault(const int value);
+    int getTransDateDefault() const noexcept;
+
+    // m_send_usage_stats
+    void loadSendUsageStats();
+    void saveSendUsageStats(const bool value);
+    bool getSendUsageStats() const noexcept;
+    bool doSendUsageStats() const noexcept;
+
+    // m_check_news
+    void loadCheckNews();
+    void saveCheckNews(const bool value);
+    bool getCheckNews() const noexcept;
+
+    // m_html_scale: scale factor for html font and other objects, in percantage
+    void loadHtmlScale();
+    void saveHtmlScale(const int value);
+    int getHtmlScale() const noexcept;
+
+    // m_theme_mode
+    void loadThemeMode();
+    void saveThemeMode(const int value);
+    int getThemeMode() const noexcept;
+
+    // m_font_size
+    void loadFontSize();
+    void saveFontSize(const int value);
+    int getFontSize() const noexcept;
+
+    // m_icon_size
+    void loadIconSize();
+    void saveIconSize(const int value);
+    int getIconSize() const noexcept;
+
+    // m_toolbar_icon_size
+    void loadToolbarIconSize();
+    void saveToolbarIconSize(const int value);
+    int getToolbarIconSize() const noexcept;
+
+    // m_navigation_icon_size
+    void loadNavigationIconSize();
+    void saveNavigationIconSize(const int value);
+    int getNavigationIconSize() const noexcept;
+
+    int AccountImageId(const int64 account_id, const bool def, const bool ignoreClosure = false);
+
+    // m_ignore_future_transactions
+    void loadIgnoreFutureTransactions();
+    void saveIgnoreFutureTransactions(const bool value);
+    bool getIgnoreFutureTransactions() const noexcept;
+
+    // m_ignore_future_transactions_homepage
+    void loadIgnoreFutureTransactionsHomePage();
+    void saveIgnoreFutureTransactionsHomePage(const bool value);
+    bool getIgnoreFutureTransactionsHomePage() const noexcept;
+
+    // m_show_reconciled_in_home_page
+    void loadShowReconciledInHomePage();
+    void saveShowReconciledInHomePage(const bool value);
+    bool getShowReconciledInHomePage() const noexcept;
+
+    // m_doNotColorFuture
+    void loadDoNotColorFuture();
+    void saveDoNotColorFuture(const bool value);
+    bool getDoNotColorFuture() const noexcept;
+
+    // m_doSpecialColorReconciled
+    void loadDoSpecialColorReconciled();
+    void saveDoSpecialColorReconciled(const bool value);
+    bool getDoSpecialColorReconciled() const noexcept;
+
+    // m_store_account_specific_filter
+    void loadUsePerAccountFilter();
+    void saveUsePerAccountFilter(const bool value);
+    bool getUsePerAccountFilter() const noexcept;
+
+    // m_show_tooltips
+    void loadShowToolTips();
+    void saveShowToolTips(const bool value);
+    bool getShowToolTips() const noexcept;
+
+    // m_show_moneytips
+    void loadShowMoneyTips();
+    void saveShowMoneyTips(const bool value);
+    bool getShowMoneyTips() const noexcept;
+
+    // m_checking_range, m_checking_range_a, m_checking_range_m
+    void loadCheckingRange();
+    void saveCheckingRange(const wxArrayString &a);
+    void parseCheckingRange();
+    const wxArrayString getCheckingRange() const noexcept;
+    const std::vector<mmDateRange2::Range> getCheckingRangeA() const noexcept;
+    int getCheckingRangeM() const noexcept;
+
+    // m_reporting_range, m_reporting_range_a, m_reporting_range_m
+    void loadReportingRange();
+    void saveReportingRange(const wxArrayString &a);
+    void parseReportingRange();
+    const wxArrayString getReportingRange() const noexcept;
+    const std::vector<mmDateRange2::Range> getReportingRangeA() const noexcept;
+    int getReportingRangeM() const noexcept;
+
+    // m_show_navigator_cashLedger
+    void loadShowNavigatorCashLedger();
+    void saveShowNavigatorCashLedger(const bool value);
+    bool getShowNavigatorCashLedger() const noexcept;
 };
 
 inline void PrefModel::setDatabaseUpdated(const bool value)
@@ -406,15 +418,9 @@ inline bool PrefModel::getUseCurrencyHistory() const noexcept
 }
 
 inline int PrefModel::getSharePrecision() const noexcept
-
 {
     return m_share_precision;
 }
-inline int PrefModel::getCurrencyHistoryDays() const noexcept
-{
-    return m_currency_history_days;
-}
-
 
 inline int PrefModel::getAssetCompounding() const noexcept
 {
@@ -520,12 +526,12 @@ inline bool PrefModel::getBudgetSummaryWithoutCategories() const noexcept
     return m_budget_summary_without_categories;
 }
 
-inline bool PrefModel::UseTransDateTime() const noexcept
+inline bool PrefModel::getUseTransDateTime() const noexcept
 {
     return m_use_trans_datetime;
 }
 
-inline bool PrefModel::TreatDateAsSN() const noexcept
+inline bool PrefModel::getTreatDateAsSN() const noexcept
 {
     return m_treat_date_as_SN;
 }

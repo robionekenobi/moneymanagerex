@@ -2,6 +2,7 @@
  Copyright (C) 2006 Madhan Kanagavel
  Copyright (C) 2016 - 2021 Nikolay Akimov
  Copyright (C) 2021-2025 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -32,6 +33,8 @@
 
 #include "dialog/CurrencyChoiceDialog.h"
 #include "uicontrols/navigatortypes.h"
+
+// -- static
 
 const std::vector<std::pair<PrefModel::COMPOUNDING_ID, wxString> > PrefModel::COMPOUNDING_NAME =
 {
@@ -115,18 +118,20 @@ const std::vector<std::pair<wxString, wxString> > PrefModel::REPORTING_RANGE_DEF
     { "-2 Y",         _n("Year before last") },
 };
 
-//----------------------------------------------------------------------------
-PrefModel::PrefModel()
-:   m_date_format(mmex::DEFDATEFORMAT)
-{}
+// -- constructor
 
-//----------------------------------------------------------------------------
+PrefModel::PrefModel() :
+    m_date_format(mmex::DEFDATEFORMAT)
+{
+}
+
 PrefModel& PrefModel::instance()
 {
     return Singleton<PrefModel>::instance();
 }
 
-//----------------------------------------------------------------------------
+// -- methods
+
 void PrefModel::load(bool include_infotable)
 {
     if (include_infotable) {
@@ -147,7 +152,7 @@ void PrefModel::load(bool include_infotable)
         // Ensure that base currency is set for the database.
         while (m_base_currency_id < 1) {
             if (CurrencyChoiceDialog::Execute(m_base_currency_id)) {
-                setBaseCurrencyID(m_base_currency_id);
+                saveBaseCurrencyID(m_base_currency_id);
                 CurrencyHistoryModel::instance().purge_all();
                 CurrencyModel::instance().resetBaseConversionRates();
             }
@@ -221,9 +226,9 @@ wxLanguage PrefModel::getLanguageID(const bool get_db)
     return m_language;
 }
 
-void PrefModel::setLocaleName(const wxString& locale)
+void PrefModel::saveLocaleName(const wxString& locale)
 {
-    InfoModel::instance().setString("LOCALE", locale);
+    InfoModel::instance().saveString("LOCALE", locale);
     m_locale_name = locale;
 }
 
@@ -231,9 +236,9 @@ void PrefModel::loadDateFormat()
 {
     m_date_format = InfoModel::instance().getString("DATEFORMAT", mmex::DEFDATEFORMAT);
 }
-void PrefModel::setDateFormat(const wxString& date_format)
+void PrefModel::saveDateFormat(const wxString& date_format)
 {
-    InfoModel::instance().setString("DATEFORMAT", date_format);
+    InfoModel::instance().saveString("DATEFORMAT", date_format);
     m_date_format = date_format;
 }
 
@@ -241,19 +246,19 @@ void PrefModel::loadUserName()
 {
     m_user_name = InfoModel::instance().getString("USERNAME", "");
 }
-void PrefModel::setUserName(const wxString& username)
+void PrefModel::saveUserName(const wxString& username)
 {
     m_user_name = username;
-    InfoModel::instance().setString("USERNAME", username);
+    InfoModel::instance().saveString("USERNAME", username);
 }
 
 void PrefModel::loadBaseCurrencyID()
 {
     m_base_currency_id = InfoModel::instance().getInt64("BASECURRENCYID", -1);
 }
-void PrefModel::setBaseCurrencyID(const int64 base_currency_id)
+void PrefModel::saveBaseCurrencyID(const int64 base_currency_id)
 {
-    InfoModel::instance().setInt64("BASECURRENCYID", base_currency_id);
+    InfoModel::instance().saveInt64("BASECURRENCYID", base_currency_id);
     m_base_currency_id = base_currency_id;
 }
 
@@ -261,9 +266,9 @@ void PrefModel::loadUseCurrencyHistory()
 {
     m_use_currency_history = InfoModel::instance().getBool("USECURRENCYHISTORY", true);
 }
-void PrefModel::setUseCurrencyHistory(const bool value)
+void PrefModel::saveUseCurrencyHistory(const bool value)
 {
-    InfoModel::instance().setBool("USECURRENCYHISTORY", value);
+    InfoModel::instance().saveBool("USECURRENCYHISTORY", value);
     m_use_currency_history = value;
 }
 void PrefModel::loadCurrencyHistoryDays()
@@ -280,9 +285,9 @@ void PrefModel::loadSharePrecision()
 {
     m_share_precision = InfoModel::instance().getInt("SHARE_PRECISION", 4);
 }
-void PrefModel::setSharePrecision(const int value)
+void PrefModel::saveSharePrecision(const int value)
 {
-    InfoModel::instance().setInt("SHARE_PRECISION", value);
+    InfoModel::instance().saveInt("SHARE_PRECISION", value);
     m_share_precision = value;
 }
 
@@ -295,9 +300,9 @@ void PrefModel::loadAssetCompounding()
         break;
     }
 }
-void PrefModel::setAssetCompounding(const int value)
+void PrefModel::saveAssetCompounding(const int value)
 {
-    InfoModel::instance().setString("ASSET_COMPOUNDING", PrefModel::COMPOUNDING_NAME[value].second);
+    InfoModel::instance().saveString("ASSET_COMPOUNDING", PrefModel::COMPOUNDING_NAME[value].second);
     m_asset_compounding = value;
 }
 
@@ -308,11 +313,11 @@ void PrefModel::loadReportingFirstDay()
     if (value > 28) value = 28;
     m_reporting_first_day = value;
 }
-void PrefModel::setReportingFirstDay(int value)
+void PrefModel::saveReportingFirstDay(int value)
 {
     if (value < 1) value = 1;
     if (value > 28) value = 28;
-    InfoModel::instance().setInt("REPORTING_FIRSTDAY", value);
+    InfoModel::instance().saveInt("REPORTING_FIRSTDAY", value);
     m_reporting_first_day = value;
 }
 
@@ -323,11 +328,11 @@ void PrefModel::loadReportingFirstWeekday()
         (valueStr == "Mon") ? wxDateTime::WeekDay::Mon :
         wxDateTime::WeekDay::Sun;
 }
-void PrefModel::setReportingFirstWeekday(wxDateTime::WeekDay value)
+void PrefModel::saveReportingFirstWeekday(wxDateTime::WeekDay value)
 {
     if (value != wxDateTime::WeekDay::Mon)
         value = wxDateTime::WeekDay::Sun;
-    InfoModel::instance().setString("REPORTING_FIRST_WEEKDAY", g_short_days_of_week[value]);
+    InfoModel::instance().saveString("REPORTING_FIRST_WEEKDAY", g_short_days_of_week[value]);
     m_reporting_first_weekday = value;
 }
 
@@ -338,11 +343,11 @@ void PrefModel::loadFinancialFirstDay()
     if (value > 28) value = 28;
     m_financial_first_day = value;
 }
-void PrefModel::setFinancialFirstDay(int value)
+void PrefModel::saveFinancialFirstDay(int value)
 {
     if (value < 1) value = 1;
     if (value > 28) value = 28;
-    InfoModel::instance().setInt("FINANCIAL_YEAR_START_DAY", value);
+    InfoModel::instance().saveInt("FINANCIAL_YEAR_START_DAY", value);
     m_financial_first_day = value;
 }
 
@@ -353,10 +358,10 @@ void PrefModel::loadFinancialFirstMonth()
     if (value > 12) value = 12;
     m_financial_first_month = wxDateTime::Month(value - 1);
 }
-void PrefModel::setFinancialFirstMonth(const wxDateTime::Month value)
+void PrefModel::saveFinancialFirstMonth(const wxDateTime::Month value)
 {
     wxString valueStr = wxString::Format("%d", value + 1);
-    InfoModel::instance().setString("FINANCIAL_YEAR_START_MONTH", valueStr);
+    InfoModel::instance().saveString("FINANCIAL_YEAR_START_MONTH", valueStr);
     m_financial_first_month = value;
 }
 
@@ -364,9 +369,9 @@ void PrefModel::loadBudgetDaysOffset()
 {
     m_budget_days_offset = InfoModel::instance().getInt("BUDGET_DAYS_OFFSET", 0);
 }
-void PrefModel::setBudgetDaysOffset(const int value)
+void PrefModel::saveBudgetDaysOffset(const int value)
 {
-    InfoModel::instance().setInt("BUDGET_DAYS_OFFSET", value);
+    InfoModel::instance().saveInt("BUDGET_DAYS_OFFSET", value);
     m_budget_days_offset = value;
 }
 void PrefModel::addBudgetDateOffset(wxDateTime& dateTime) const
@@ -384,9 +389,9 @@ void PrefModel::loadHomePageIncExpRange()
 {
     m_homepage_incexp_range = InfoModel::instance().getInt("HOMEPAGE_INCEXP_RANGE", 0);
 }
-void PrefModel::setHomePageIncExpRange(const int value)
+void PrefModel::saveHomePageIncExpRange(const int value)
 {
-    InfoModel::instance().setInt("HOMEPAGE_INCEXP_RANGE", value);
+    InfoModel::instance().saveInt("HOMEPAGE_INCEXP_RANGE", value);
     m_homepage_incexp_range = value;
 }
 
@@ -394,9 +399,9 @@ void PrefModel::loadHideShareAccounts()
 {
     m_hide_share_accounts = SettingModel::instance().getBool("HIDE_SHARE_ACCOUNTS", true);
 }
-void PrefModel::setHideShareAccounts(const bool value)
+void PrefModel::saveHideShareAccounts(const bool value)
 {
-    SettingModel::instance().setBool("HIDE_SHARE_ACCOUNTS", value);
+    SettingModel::instance().saveBool("HIDE_SHARE_ACCOUNTS", value);
     m_hide_share_accounts = value;
 }
 
@@ -404,9 +409,9 @@ void PrefModel::loadHideDeletedTransactions()
 {
     m_hide_deleted_transactions = SettingModel::instance().getBool("HIDE_DELETED_TRANSACTIONS", false);
 }
-void PrefModel::setHideDeletedTransactions(const bool value)
+void PrefModel::saveHideDeletedTransactions(const bool value)
 {
-    SettingModel::instance().setBool("HIDE_DELETED_TRANSACTIONS", value);
+    SettingModel::instance().saveBool("HIDE_DELETED_TRANSACTIONS", value);
     m_hide_deleted_transactions = value;
 }
 
@@ -414,9 +419,9 @@ void PrefModel::loadBudgetFinancialYears()
 {
     m_budget_financial_years = SettingModel::instance().getBool("BUDGET_FINANCIAL_YEARS", false);
 }
-void PrefModel::setBudgetFinancialYears(const bool value)
+void PrefModel::saveBudgetFinancialYears(const bool value)
 {
-    SettingModel::instance().setBool("BUDGET_FINANCIAL_YEARS", value);
+    SettingModel::instance().saveBool("BUDGET_FINANCIAL_YEARS", value);
     m_budget_financial_years = value;
 }
 
@@ -424,9 +429,9 @@ void PrefModel::loadBudgetIncludeTransfers()
 {
     m_budget_include_transfers = SettingModel::instance().getBool("BUDGET_INCLUDE_TRANSFERS", false);
 }
-void PrefModel::setBudgetIncludeTransfers(const bool value)
+void PrefModel::saveBudgetIncludeTransfers(const bool value)
 {
-    SettingModel::instance().setBool("BUDGET_INCLUDE_TRANSFERS", value);
+    SettingModel::instance().saveBool("BUDGET_INCLUDE_TRANSFERS", value);
     m_budget_include_transfers = value;
 }
 
@@ -434,9 +439,9 @@ void PrefModel::loadBudgetSummaryWithoutCategories()
 {
     m_budget_summary_without_categories = SettingModel::instance().getBool("BUDGET_SUMMARY_WITHOUT_CATEGORIES", true);
 }
-void PrefModel::setBudgetSummaryWithoutCategories(bool value)
+void PrefModel::saveBudgetSummaryWithoutCategories(bool value)
 {
-    SettingModel::instance().setBool("BUDGET_SUMMARY_WITHOUT_CATEGORIES", value);
+    SettingModel::instance().saveBool("BUDGET_SUMMARY_WITHOUT_CATEGORIES", value);
     m_budget_summary_without_categories = value;
 }
 
@@ -444,9 +449,9 @@ void PrefModel::loadBudgetOverride()
 {
     m_budget_override = SettingModel::instance().getBool("BUDGET_OVERRIDE", false);
 }
-void PrefModel::setBudgetOverride(const bool value)
+void PrefModel::saveBudgetOverride(const bool value)
 {
-    SettingModel::instance().setBool("BUDGET_OVERRIDE", value);
+    SettingModel::instance().saveBool("BUDGET_OVERRIDE", value);
     m_budget_override = value;
 }
 
@@ -454,9 +459,9 @@ void PrefModel::loadBudgetDeductMonthly()
 {
     m_budget_deduct_monthly = SettingModel::instance().getBool("BUDGET_DEDUCT_MONTH_FROM_YEAR", false);
 }
-void PrefModel::setBudgetDeductMonthly(bool value)
+void PrefModel::saveBudgetDeductMonthly(bool value)
 {
-    SettingModel::instance().setBool("BUDGET_DEDUCT_MONTH_FROM_YEAR", value);
+    SettingModel::instance().saveBool("BUDGET_DEDUCT_MONTH_FROM_YEAR", value);
     m_budget_deduct_monthly = value;
 }
 
@@ -464,9 +469,9 @@ void PrefModel::loadIgnoreFutureTransactions()
 {
     m_ignore_future_transactions = SettingModel::instance().getBool("IGNORE_FUTURE_TRANSACTIONS", false);
 }
-void PrefModel::setIgnoreFutureTransactions(const bool value)
+void PrefModel::saveIgnoreFutureTransactions(const bool value)
 {
-    SettingModel::instance().setBool("IGNORE_FUTURE_TRANSACTIONS", value);
+    SettingModel::instance().saveBool("IGNORE_FUTURE_TRANSACTIONS", value);
     m_ignore_future_transactions = value;
 }
 
@@ -474,9 +479,9 @@ void PrefModel::loadIgnoreFutureTransactionsHomePage()
 {
     m_ignore_future_transactions_home = SettingModel::instance().getBool("IGNORE_FUTURE_TRANSACTIONS_HOMEPAGE", true);
 }
-void PrefModel::setIgnoreFutureTransactionsHomePage(const bool value)
+void PrefModel::saveIgnoreFutureTransactionsHomePage(const bool value)
 {
-    SettingModel::instance().setBool("IGNORE_FUTURE_TRANSACTIONS_HOMEPAGE", value);
+    SettingModel::instance().saveBool("IGNORE_FUTURE_TRANSACTIONS_HOMEPAGE", value);
     m_ignore_future_transactions_home = value;
 }
 
@@ -484,9 +489,9 @@ void PrefModel::loadShowReconciledInHomePage()
 {
     m_show_reconciled_in_home_page = SettingModel::instance().getBool("SHOW_RECONCILED_IN_HOME_PAGE", true);
 }
-void PrefModel::setShowReconciledInHomePage(const bool value)
+void PrefModel::saveShowReconciledInHomePage(const bool value)
 {
-    SettingModel::instance().setBool("SHOW_RECONCILED_IN_HOME_PAGE", value);
+    SettingModel::instance().saveBool("SHOW_RECONCILED_IN_HOME_PAGE", value);
     m_show_reconciled_in_home_page = value;
 }
 
@@ -495,10 +500,10 @@ void PrefModel::loadUseTransDateTime()
     m_use_trans_datetime = SettingModel::instance().getBool("TRANSACTION_USE_DATE_TIME", false);
 }
 
-bool PrefModel::UseTransDateTime(const bool value)
+bool PrefModel::saveUseTransDateTime(const bool value)
 {
     if (value != m_use_trans_datetime) {
-        SettingModel::instance().setBool("TRANSACTION_USE_DATE_TIME", value);
+        SettingModel::instance().saveBool("TRANSACTION_USE_DATE_TIME", value);
         m_use_trans_datetime = value;
         return true;
     }
@@ -510,10 +515,10 @@ void PrefModel::loadTreatDateAsSN()
     m_treat_date_as_SN = SettingModel::instance().getBool("TRANSACTION_TREAT_DATE_AS_SN", true);
 }
 
-bool PrefModel::TreatDateAsSN(const bool value)
+bool PrefModel::saveTreatDateAsSN(const bool value)
 {
     if (value != m_treat_date_as_SN) {
-        SettingModel::instance().setBool("TRANSACTION_TREAT_DATE_AS_SN", value);
+        SettingModel::instance().saveBool("TRANSACTION_TREAT_DATE_AS_SN", value);
         m_treat_date_as_SN = value;
         return true;
     }
@@ -524,9 +529,9 @@ void PrefModel::loadDoNotColorFuture()
 {
     m_do_not_color_future = SettingModel::instance().getBool("DO_NOT_COLOR_FUTURE_TRANSACTIONS", true);
 }
-void PrefModel::setDoNotColorFuture(const bool value)
+void PrefModel::saveDoNotColorFuture(const bool value)
 {
-    SettingModel::instance().setBool("DO_NOT_COLOR_FUTURE_TRANSACTIONS", value);
+    SettingModel::instance().saveBool("DO_NOT_COLOR_FUTURE_TRANSACTIONS", value);
     m_do_not_color_future = value;
 }
 
@@ -534,9 +539,9 @@ void PrefModel::loadDoSpecialColorReconciled()
 {
     m_do_special_color_reconciled = SettingModel::instance().getBool("SPECIAL_COLOR_RECONCILED_TRANSACTIONS", true);
 }
-void PrefModel::setDoSpecialColorReconciled(const bool value)
+void PrefModel::saveDoSpecialColorReconciled(const bool value)
 {
-    SettingModel::instance().setBool("SPECIAL_COLOR_RECONCILED_TRANSACTIONS", value);
+    SettingModel::instance().saveBool("SPECIAL_COLOR_RECONCILED_TRANSACTIONS", value);
     m_do_special_color_reconciled = value;
 }
 
@@ -544,9 +549,9 @@ void PrefModel::loadUsePerAccountFilter()
 {
     m_store_account_specific_filter = SettingModel::instance().getBool("USE_PER_ACCOUNT_FILTER", true);
 }
-void PrefModel::setUsePerAccountFilter(const bool value)
+void PrefModel::saveUsePerAccountFilter(const bool value)
 {
-    SettingModel::instance().setBool("USE_PER_ACCOUNT_FILTER", value);
+    SettingModel::instance().saveBool("USE_PER_ACCOUNT_FILTER", value);
     m_store_account_specific_filter = value;
 }
 
@@ -555,9 +560,9 @@ void PrefModel::loadShowToolTips()
 {
     m_show_tooltips = SettingModel::instance().getBool("IGNORE_SHOW_TOOLTIPS", true);
 }
-void PrefModel::setShowToolTips(const bool value)
+void PrefModel::saveShowToolTips(const bool value)
 {
-    SettingModel::instance().setBool("IGNORE_SHOW_TOOLTIPS", value);
+    SettingModel::instance().saveBool("IGNORE_SHOW_TOOLTIPS", value);
     m_show_tooltips = value;
 }
 
@@ -565,9 +570,9 @@ void PrefModel::loadShowMoneyTips()
 {
     m_show_moneytips = SettingModel::instance().getBool("IGNORE_SHOW_MONEYTIPS", true);
 }
-void PrefModel::setShowMoneyTips(const bool value)
+void PrefModel::saveShowMoneyTips(const bool value)
 {
-    SettingModel::instance().setBool("IGNORE_SHOW_MONEYTIPS", value);
+    SettingModel::instance().saveBool("IGNORE_SHOW_MONEYTIPS", value);
     m_show_moneytips = value;
 }
 
@@ -576,9 +581,9 @@ void PrefModel::loadTransPayeeNone()
     // Read the preference as a string and convert to int
     m_trans_payee_none = SettingModel::instance().getInt("TRANSACTION_PAYEE_NONE", PrefModel::NONE);
 }
-void PrefModel::setTransPayeeNone(const int value)
+void PrefModel::saveTransPayeeNone(const int value)
 {
-    SettingModel::instance().setInt("TRANSACTION_PAYEE_NONE", value);
+    SettingModel::instance().saveInt("TRANSACTION_PAYEE_NONE", value);
     m_trans_payee_none = value;
 }
 
@@ -586,9 +591,9 @@ void PrefModel::loadTransCategoryNone()
 {
     m_trans_category_none = SettingModel::instance().getInt("TRANSACTION_CATEGORY_NONE", PrefModel::LASTUSED);
 }
-void PrefModel::setTransCategoryNone(const int value)
+void PrefModel::saveTransCategoryNone(const int value)
 {
-    SettingModel::instance().setInt("TRANSACTION_CATEGORY_NONE", value);
+    SettingModel::instance().saveInt("TRANSACTION_CATEGORY_NONE", value);
     m_trans_category_none = value;
 }
 
@@ -596,9 +601,9 @@ void PrefModel::loadTransCategoryTransferNone()
 {
     m_trans_category_transfer_none = SettingModel::instance().getInt("TRANSACTION_CATEGORY_TRANSFER_NONE", PrefModel::LASTUSED);
 }
-void PrefModel::setTransCategoryTransferNone(const int value)
+void PrefModel::saveTransCategoryTransferNone(const int value)
 {
-    SettingModel::instance().setInt("TRANSACTION_CATEGORY_TRANSFER_NONE", value);
+    SettingModel::instance().saveInt("TRANSACTION_CATEGORY_TRANSFER_NONE", value);
     m_trans_category_transfer_none = value;
 }
 
@@ -606,9 +611,9 @@ void PrefModel::loadTransStatusReconciled()
 {
     m_trans_status_reconciled = SettingModel::instance().getInt("TRANSACTION_STATUS_RECONCILED", PrefModel::NONE);
 }
-void PrefModel::setTransStatusReconciled(const int value)
+void PrefModel::saveTransStatusReconciled(const int value)
 {
-    SettingModel::instance().setInt("TRANSACTION_STATUS_RECONCILED", value);
+    SettingModel::instance().saveInt("TRANSACTION_STATUS_RECONCILED", value);
     m_trans_status_reconciled = value;
 }
 
@@ -616,9 +621,9 @@ void PrefModel::loadTransDateDefault()
 {
     m_trans_date_default = SettingModel::instance().getInt("TRANSACTION_DATE_DEFAULT", PrefModel::NONE);
 }
-void PrefModel::setTransDateDefault(const int value)
+void PrefModel::saveTransDateDefault(const int value)
 {
-    SettingModel::instance().setInt("TRANSACTION_DATE_DEFAULT", value);
+    SettingModel::instance().saveInt("TRANSACTION_DATE_DEFAULT", value);
     m_trans_date_default = value;
 }
 
@@ -626,9 +631,9 @@ void PrefModel::loadSendUsageStats()
 {
     m_send_usage_stats = SettingModel::instance().getBool(INIDB_SEND_USAGE_STATS, true);
 }
-void PrefModel::setSendUsageStats(const bool value)
+void PrefModel::saveSendUsageStats(const bool value)
 {
-    SettingModel::instance().setBool(INIDB_SEND_USAGE_STATS, value);
+    SettingModel::instance().saveBool(INIDB_SEND_USAGE_STATS, value);
     m_send_usage_stats = value;
 }
 
@@ -636,9 +641,9 @@ void PrefModel::loadCheckNews()
 {
     m_check_news = SettingModel::instance().getBool("CHECKNEWS", true);
 }
-void PrefModel::setCheckNews(const bool value)
+void PrefModel::saveCheckNews(const bool value)
 {
-    SettingModel::instance().setBool("CHECKNEWS", value);
+    SettingModel::instance().saveBool("CHECKNEWS", value);
     m_check_news = value;
 }
 
@@ -646,9 +651,9 @@ void PrefModel::loadThemeMode()
 {
     m_theme_mode = SettingModel::instance().getInt("THEMEMODE", PrefModel::THEME_MODE::AUTO);
 }
-void PrefModel::setThemeMode(const int value)
+void PrefModel::saveThemeMode(const int value)
 {
-    SettingModel::instance().setInt("THEMEMODE", value);
+    SettingModel::instance().saveInt("THEMEMODE", value);
     m_theme_mode = value;
 }
 
@@ -656,9 +661,9 @@ void PrefModel::loadHtmlScale()
 {
     m_html_scale = SettingModel::instance().getInt("HTMLSCALE", 100);
 }
-void PrefModel::setHtmlScale(const int value)
+void PrefModel::saveHtmlScale(const int value)
 {
-    SettingModel::instance().setInt("HTMLSCALE", value);
+    SettingModel::instance().saveInt("HTMLSCALE", value);
     m_html_scale = value;
 }
 
@@ -666,9 +671,9 @@ void PrefModel::loadFontSize()
 {
     m_font_size = SettingModel::instance().getInt("UI_FONT_SIZE", 0);
 }
-void PrefModel::setFontSize(const int value)
+void PrefModel::saveFontSize(const int value)
 {
-    SettingModel::instance().setInt("UI_FONT_SIZE", value);
+    SettingModel::instance().saveInt("UI_FONT_SIZE", value);
     m_font_size = value;
 }
 
@@ -676,9 +681,9 @@ void PrefModel::loadIconSize()
 {
     m_icon_size = SettingModel::instance().getInt("ICONSIZE", 16);
 }
-void PrefModel::setIconSize(const int value)
+void PrefModel::saveIconSize(const int value)
 {
-    SettingModel::instance().setInt("ICONSIZE", value);
+    SettingModel::instance().saveInt("ICONSIZE", value);
     m_icon_size = value;
 }
 
@@ -686,9 +691,9 @@ void PrefModel::loadToolbarIconSize()
 {
     m_toolbar_icon_size = SettingModel::instance().getInt("TOOLBARICONSIZE", 32);
 }
-void PrefModel::setToolbarIconSize(const int value)
+void PrefModel::saveToolbarIconSize(const int value)
 {
-    SettingModel::instance().setInt("TOOLBARICONSIZE", value);
+    SettingModel::instance().saveInt("TOOLBARICONSIZE", value);
     m_toolbar_icon_size = value;
 }
 
@@ -696,9 +701,9 @@ void PrefModel::loadNavigationIconSize()
 {
     m_navigation_icon_size = SettingModel::instance().getInt("NAVIGATIONICONSIZE", 24);
 }
-void PrefModel::setNavigationIconSize(const int value)
+void PrefModel::saveNavigationIconSize(const int value)
 {
-    SettingModel::instance().setInt("NAVIGATIONICONSIZE", value);
+    SettingModel::instance().saveInt("NAVIGATIONICONSIZE", value);
     m_navigation_icon_size = value;
 }
 
@@ -707,9 +712,9 @@ void PrefModel::loadCheckingRange()
     m_checking_range = SettingModel::instance().getArrayString("CHECKING_RANGE");
     parseCheckingRange();
 }
-void PrefModel::setCheckingRange(const wxArrayString &a)
+void PrefModel::saveCheckingRange(const wxArrayString &a)
 {
-    SettingModel::instance().setArrayString("CHECKING_RANGE", a);
+    SettingModel::instance().saveArrayString("CHECKING_RANGE", a);
     m_checking_range = a;
     parseCheckingRange();
 }
@@ -765,9 +770,9 @@ void PrefModel::loadReportingRange()
     m_reporting_range = SettingModel::instance().getArrayString("REPORTING_RANGE");
     parseReportingRange();
 }
-void PrefModel::setReportingRange(const wxArrayString &a)
+void PrefModel::saveReportingRange(const wxArrayString &a)
 {
-    SettingModel::instance().setArrayString("REPORTING_RANGE", a);
+    SettingModel::instance().saveArrayString("REPORTING_RANGE", a);
     m_reporting_range = a;
     parseReportingRange();
 }
@@ -864,10 +869,10 @@ const wxString PrefModel::getLanguageCode(const bool get_db)
     return lang;
 }
 
-void PrefModel::setLanguage(const wxLanguage& language)
+void PrefModel::saveLanguage(const wxLanguage& language)
 {
     m_language = language;
-    SettingModel::instance().setString(
+    SettingModel::instance().saveString(
         LANGUAGE_PARAMETER,
         wxLocale::GetLanguageCanonicalName(language)
     );
@@ -877,8 +882,8 @@ void PrefModel::loadShowNavigatorCashLedger()
 {
     m_show_navigator_cashLedger = SettingModel::instance().getBool("NAVIGATOR_SHOW_CASHLEDGER", true);
 }
-void PrefModel::setShowNavigatorCashLedger(const bool value)
+void PrefModel::saveShowNavigatorCashLedger(const bool value)
 {
-    SettingModel::instance().setBool("NAVIGATOR_SHOW_CASHLEDGER", value);
+    SettingModel::instance().saveBool("NAVIGATOR_SHOW_CASHLEDGER", value);
     m_show_navigator_cashLedger = value;
 }

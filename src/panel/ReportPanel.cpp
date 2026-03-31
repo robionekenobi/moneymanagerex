@@ -43,6 +43,8 @@
 #include "mmframe.h"
 #include "mmex.h"
 
+// -- static
+
 wxBEGIN_EVENT_TABLE(ReportPanel, wxPanel)
     EVT_CHOICE(ID_YEAR_CHOICE,               ReportPanel::onYearChanged)
     EVT_CHOICE(ID_BUDGET_CHOICE,             ReportPanel::onBudgetChanged)
@@ -66,6 +68,44 @@ wxBEGIN_EVENT_TABLE(ReportPanel, wxPanel)
         ID_DATE_RANGE_MAX,                   ReportPanel::onDateRangeSelect)
     EVT_BUTTON(wxID_ANY,                     ReportPanel::onShiftPressed)
 wxEND_EVENT_TABLE()
+
+void ReportPanel::loadDateRanges(
+    std::vector<mmDateRange2::Range>* date_range_a,
+    int* date_range_m,
+    bool all_ranges
+) {
+    date_range_a->clear();
+    *date_range_m = -1;
+    int src_i = 0;
+    int src_m = PrefModel::instance().getReportingRangeM();
+    for (const auto& range : PrefModel::instance().getReportingRangeA()) {
+        if (date_range_a->size() > ID_DATE_RANGE_MAX - ID_DATE_RANGE_MIN) {
+            break;
+        }
+        if (src_i == src_m) {
+            *date_range_m = date_range_a->size();
+        }
+        if (all_ranges || !range.hasPeriodS()) {
+            date_range_a->push_back(range);
+        }
+        src_i++;
+    }
+    if (*date_range_m < 0) {
+        *date_range_m = date_range_a->size();
+    }
+}
+
+// Adjust wxStaticText size after font change
+// Workaround for not auto Layout() after SetFont()
+void ReportPanel::setOwnFont(wxStaticText* w, const wxFont& font)
+{
+    w->SetOwnFont(font);
+    wxString label = w->GetLabelText();
+    if (!label.IsEmpty())
+        w->SetInitialSize(w->GetTextExtent(label));
+}
+
+// -- constructor
 
 ReportPanel::ReportPanel(
     ReportBase* rb,
@@ -131,6 +171,535 @@ bool ReportPanel::create(
     return true;
 }
 
+void ReportPanel::createControls()
+{
+    wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
+    SetSizer(itemBoxSizer2);
+
+    wxPanel* itemPanel3 = new wxPanel(this, wxID_ANY);
+    itemBoxSizer2->Add(itemPanel3, 0, wxGROW | wxALL, 0);
+
+    wxWrapSizer* itemBoxSizerHeader = new wxWrapSizer();
+    itemPanel3->SetSizer(itemBoxSizerHeader);
+
+    itemBoxSizerHeader->Add(
+        new wxStaticText(itemPanel3, wxID_ANY, ""),
+        0,
+        wxALL | wxALIGN_CENTER_VERTICAL,
+        2
+    );
+
+    if (m_rb) {
+        int rp = m_rb->getParameters();
+
+        if (rp == 0) {
+            itemPanel3->SetMinSize(wxSize(0, 0));
+            itemPanel3->Fit();
+        }
+
+        if (rp & ReportBase::M_DATE_RANGE) {
+            w_range_btn = new wxButton(itemPanel3, ID_DATE_RANGE_BUTTON, _tu("Period…"));
+            w_range_btn->SetBitmap(mmBitmapBundle(png::TRANSFILTER, mmBitmapButtonSize));
+            w_range_btn->SetMinSize(
+                wxSize(200 + PrefModel::instance().getIconSize() * 2, -1)
+            );
+            itemBoxSizerHeader->Add(w_range_btn, g_flagsH);
+            itemBoxSizerHeader->AddSpacer(5);
+
+            w_start_date = new mmDatePickerCtrl(
+                itemPanel3, ID_START_DATE_PICKER,
+                wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
+                wxDP_DROPDOWN | wxDP_SHOWCENTURY
+            );
+            itemBoxSizerHeader->Add(w_start_date, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(5);
+
+            w_end_date = new mmDatePickerCtrl(
+                itemPanel3, ID_END_DATE_PICKER,
+                wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
+                wxDP_DROPDOWN | wxDP_SHOWCENTURY
+            );
+            itemBoxSizerHeader->Add(w_end_date, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(30);
+        }
+        else if (rp & ReportBase::M_SINGLE_DATE) {
+            wxStaticText* itemStaticTextH1 = new wxStaticText(itemPanel3, wxID_ANY,
+                _t("Date:")
+            );
+            ReportPanel::setOwnFont(itemStaticTextH1, GetFont().Larger());
+            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(5);
+            long date_style = wxDP_DROPDOWN | wxDP_SHOWCENTURY;
+            w_single_date = new mmDatePickerCtrl(
+                itemPanel3, ID_SINGLE_DATE_PICKER,
+                wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
+                date_style
+            );
+            w_single_date->SetValue(wxDateTime::Today());
+            w_single_date->Enable(true);
+
+            itemBoxSizerHeader->Add(w_single_date, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(30);
+        }
+        else if (rp & ReportBase::M_MONTHS) {
+            wxStaticText* itemStaticTextH1 = new wxStaticText(
+                itemPanel3, wxID_ANY, _t("Date:")
+            );
+            ReportPanel::setOwnFont(itemStaticTextH1, GetFont().Larger());
+            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(5);
+
+            mmDateYearMonth* up_down_month = new mmDateYearMonth(itemPanel3);
+            up_down_month->Connect(
+                wxEVT_BUTTON, wxEVT_COMMAND_BUTTON_CLICKED,
+                wxCommandEventHandler(mmDateYearMonth::OnButtonPress),
+                nullptr, this
+            );
+            m_rb->setDateSelection(m_shift);
+
+            itemBoxSizerHeader->Add(up_down_month, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(30);
+        }
+
+        if (rp & ReportBase::M_TIME) {
+            wxStaticText* itemStaticTextH1 = new wxStaticText(
+                itemPanel3, wxID_ANY, _t("Time:")
+            );
+            ReportPanel::setOwnFont(itemStaticTextH1, GetFont().Larger());
+            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(5);
+
+            w_time = new wxTimePickerCtrl(itemPanel3, ID_TIME_PICKER);
+
+            itemBoxSizerHeader->Add(w_time, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(30);
+        }
+
+        if (rp & ReportBase::M_YEAR) {
+            wxStaticText* itemStaticTextH1 = new wxStaticText(
+                itemPanel3, wxID_ANY, _t("Year:")
+            );
+            ReportPanel::setOwnFont(itemStaticTextH1, GetFont().Larger());
+            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(5);
+
+            w_year_choice = new wxChoice(
+                itemPanel3, ID_YEAR_CHOICE,
+                wxDefaultPosition, wxDefaultSize, 0,
+                nullptr, wxCB_SORT
+            );
+
+            const int y = wxDateTime::Today().GetYear();
+            for (int i = y - 100; i <= y + 10; ++i) {
+                const wxString name = wxString::Format("%i", i);
+                w_year_choice->Append(name, new wxStringClientData(name));
+            }
+
+            w_year_choice->SetStringSelection(wxString::Format("%i", y));
+            w_year_choice->SetMaxSize(wxSize(120, -1));
+
+
+            itemBoxSizerHeader->Add(w_year_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(30);
+        }
+        else if (rp & ReportBase::M_BUDGET) {
+            wxStaticText* itemStaticTextH1 = new wxStaticText(
+                itemPanel3, wxID_ANY, _t("Budget:")
+            );
+            ReportPanel::setOwnFont(itemStaticTextH1, GetFont().Larger());
+            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(5);
+
+            w_year_choice = new wxChoice(
+                itemPanel3, ID_BUDGET_CHOICE,
+                wxDefaultPosition, wxDefaultSize, 0,
+                nullptr, wxCB_SORT
+            );
+
+            int64 sel_id = m_rb->getDateSelection();
+            wxString sel_name;
+            for (const auto& bp_d : BudgetPeriodModel::instance().find_all(
+                BudgetPeriodCol::COL_ID_BUDGETYEARNAME
+            )) {
+                const wxString& name = bp_d.m_name;
+
+                // Only years for performance report
+                if (m_rb->getReportId() == ReportBase::REPORT_ID::BudgetCategorySummary ||
+                    name.length() == 4
+                ) {
+                    w_year_choice->Append(name, new wxStringClientData(wxString::Format("%lld", bp_d.m_id)));
+                    if (sel_id == bp_d.m_id)
+                        sel_name = bp_d.m_name;
+                }
+            }
+
+            if (!sel_name.IsEmpty())
+                w_year_choice->SetStringSelection(sel_name);
+            else
+                w_year_choice->SetSelection(0);
+
+            itemBoxSizerHeader->Add(w_year_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(30);
+        }
+
+        if (rp & ReportBase::M_ACCOUNT) {
+            wxStaticText* itemStaticTextH1 = new wxStaticText(itemPanel3, wxID_ANY,
+                _t("Accounts:")
+            );
+            ReportPanel::setOwnFont(itemStaticTextH1, GetFont().Larger());
+            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(5);
+            w_account_choice = new wxChoice(itemPanel3, ID_ACCOUNT_CHOICE);
+            w_account_choice->Append(_t("All Accounts"));
+            w_account_choice->Append(_tu("Specific Accounts…"));
+            w_account_choice->Append(NavigatorTypes::instance().getUsedAccountTypeNames());
+            w_account_choice->SetSelection(m_rb->getAccountSelection());
+
+            itemBoxSizerHeader->Add(w_account_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(30);
+        }
+
+        if (rp & ReportBase::M_FORWARD_MONTHS) {
+            wxStaticText* itemStaticTextH1 = new wxStaticText(
+                itemPanel3, wxID_ANY, _t("Future Months:")
+            );
+            ReportPanel::setOwnFont(itemStaticTextH1, GetFont().Larger());
+            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(5);
+            w_forward_months = new wxSpinCtrl(
+                itemPanel3, ID_FORWARD_MONTHS,
+                wxEmptyString, wxDefaultPosition, wxDefaultSize,
+                wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER
+            );
+            w_forward_months->SetRange(1, 120);
+            w_forward_months->SetValue(m_rb->getForwardMonths());
+            itemBoxSizerHeader->Add(w_forward_months, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(30);
+        }
+
+        if (rp & ReportBase::M_CHART) {
+            wxStaticText* itemStaticTextH1 = new wxStaticText(
+                itemPanel3, wxID_ANY, _t("Chart:")
+            );
+            ReportPanel::setOwnFont(itemStaticTextH1, GetFont().Larger());
+            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(5);
+            w_chart_choice = new wxChoice(itemPanel3, ID_CHART_CHOICE);
+            w_chart_choice->Append(_t("Show"));
+            w_chart_choice->Append(_t("Hide"));
+            w_chart_choice->SetSelection(m_rb->getChartSelection());
+
+            itemBoxSizerHeader->Add(w_chart_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(30);
+        }
+
+        if (rp & ReportBase::M_STOCK_NAMES) {
+            wxStaticText* itemStaticTextH1 = new wxStaticText(itemPanel3, wxID_ANY,
+                _t("Stock name:")
+            );
+            ReportPanel::setOwnFont(itemStaticTextH1, GetFont().Larger());
+            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(5);
+
+            StockModel::DataA stock_a = StockModel::instance().find_all();
+            std::stable_sort(stock_a.begin(), stock_a.end(), StockData::SorterBySTOCKNAME());
+
+            wxString prevSymbol = "";
+            w_stocks_choice = new wxChoice(itemPanel3, ID_STOCK_CHOICE);
+            for (const StockModel::Data& stock_d : stock_a) {
+                const AccountModel::Data* account_n = AccountModel::instance().get_id_data_n(
+                    stock_d.m_account_id_n
+                );
+                if (account_n->is_open()) {
+                    if (stock_d.m_symbol != prevSymbol) {
+                        w_stocks_choice->Append(stock_d.m_name);
+                        prevSymbol = stock_d.m_symbol;
+                    }
+                }
+            }
+            w_stocks_choice->SetSelection(m_rb->getStockSelection());
+
+            itemBoxSizerHeader->Add(w_stocks_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(30);
+        }
+
+        if (rp & ReportBase::M_GENERIC_FILTER) {
+            auto map = m_rb->getFilterMap();
+            wxString name = map.count("name") > 0 ? removeQuotes(map["name"]) : _t("Filter:");
+            wxStaticText* itemStaticTextH1 = new wxStaticText(itemPanel3, wxID_ANY, name);
+            ReportPanel::setOwnFont(itemStaticTextH1, GetFont().Larger());
+            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(5);
+
+            w_filter = new wxTextCtrl(itemPanel3,
+                ID_FILTER_GENERIC_CHOICE,
+                m_rb->getFilterValue(),
+                wxDefaultPosition, wxDefaultSize,
+                wxTE_PROCESS_ENTER
+            );
+            if (map.count("default") > 0) {
+                w_filter->SetValue(removeQuotes(map["default"]));
+            }
+            w_filter->Bind(wxEVT_TEXT, &ReportPanel::onFilterTextChanged, this);
+            itemBoxSizerHeader->Add(w_filter, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+
+            w_filter_cancel = new wxBitmapButton(itemPanel3, wxID_ANY,
+                mmBitmapBundle(png::CLEAR, mmBitmapButtonSize)
+            );
+            mmToolTip(w_filter_cancel, _t("Reset filter"));
+            w_filter_cancel->Bind(
+                wxEVT_COMMAND_BUTTON_CLICKED,
+                &ReportPanel::onFilterCancel,
+                this
+            );
+            itemBoxSizerHeader->Add(
+                w_filter_cancel,
+                0,
+                wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL,
+                2
+            );
+            itemBoxSizerHeader->AddSpacer(30);
+        }
+
+        if (rp & ReportBase::M_GENERIC_SELECTION) {
+            auto map = m_rb->getSelectionMap();
+            wxString name = map.count("name") > 0
+                ? removeQuotes(map["name"])
+                : _t("Selection:");
+            wxStaticText* itemStaticTextH1 = new wxStaticText(itemPanel3, wxID_ANY, name);
+            ReportPanel::setOwnFont(itemStaticTextH1, GetFont().Larger());
+            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(5);
+
+            w_selection_choice = new wxChoice(itemPanel3, ID_SELECTION_GENERIC_CHOICE);
+            if (map.count("values") > 0) {
+                wxStringTokenizer tokenizer(map["values"], ",");
+                while (tokenizer.HasMoreTokens()) {
+                    w_selection_choice->Append(removeQuotes(tokenizer.GetNextToken()));
+                }
+            }
+            if (map.count("default") > 0) {
+                int idx = w_selection_choice->FindString(removeQuotes(map["default"]));
+                w_selection_choice->SetSelection(idx != wxNOT_FOUND ? idx : 0);
+            }
+            itemBoxSizerHeader->Add(w_selection_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
+            itemBoxSizerHeader->AddSpacer(30);
+        }
+    }
+
+    itemBoxSizerHeader->Add(
+        new wxStaticText(itemPanel3, wxID_ANY, ""),
+        0,
+        wxALL | wxALIGN_CENTER_VERTICAL,
+        2
+    );
+
+    w_browser = wxWebView::New();
+#ifdef __WXMAC__
+    // With WKWebView handlers need to be registered before creation
+    w_browser->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewFSHandler("memory")));
+    w_browser->Create(this, mmID_BROWSER);
+#else
+    w_browser->Create(this, mmID_BROWSER);
+    w_browser->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewFSHandler("memory")));
+#endif
+    Bind(wxEVT_WEBVIEW_NEWWINDOW, &ReportPanel::onNewWindow, this, mmID_BROWSER);
+
+    itemBoxSizer2->Add(w_browser, 1, wxGROW | wxALL, 1);
+}
+
+// -- methods
+
+// function only used for new filter
+void ReportPanel::loadFilterSettings()
+{
+    wxString key = m_use_account_specific_filter
+        ? wxString::Format("REPORT_FILTER_DEDICATED_%d", m_rb->getReportId())
+        : "REPORT_FILTER_ALL";
+    Document j_doc = InfoModel::instance().getJdoc(key, "{}");
+
+    int fid = 0;
+    if (JSON_GetIntValue(j_doc, "FILTER_ID", fid)) {
+        m_filter_id = static_cast<JournalPanel::FILTER_ID>(fid);
+    }
+    else {
+        // no filter found => set to date range
+        m_filter_id = JournalPanel::FILTER_ID_DATE_RANGE;
+    }
+
+    loadDateRanges(&m_date_range_a, &m_date_range_m);
+
+    if (m_filter_id == JournalPanel::FILTER_ID_DATE_RANGE) {
+        // recreate m_date_range in order to reload parameters from setting,
+        // refresh the date of today, and clear the default start/end dates
+        m_date_range = mmDateRange2();
+
+        // load m_date_range from settings.
+        // the start/end date pickers are configured later in updateFilter().
+        wxString j_filter;
+        bool found = false;
+        if (JSON_GetStringValue(j_doc, "FILTER_DATE", j_filter)) {
+            // find range specification
+            for (const auto& range : m_date_range_a) {
+                if (range.getName() == j_filter) {
+                    m_date_range.setRange(range);
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            // init with 'All'
+            m_date_range.setRange(m_date_range_a[0]);
+        }
+    }
+    else if (m_filter_id == JournalPanel::FILTER_ID_DATE_PICKER) {
+        // Load start/end date pickers from settings.
+        // The date range is configured later in updateFilter().
+        if (w_start_date) {
+            wxString date_str;
+            wxString::const_iterator end;
+            wxDateTime start_dateTime, end_dateTime;
+            if (JSON_GetStringValue(j_doc, "FILTER_DATE_BEGIN", date_str)) {
+                start_dateTime.ParseFormat(date_str, "%Y-%m-%d", &end);
+            }
+            if (JSON_GetStringValue(j_doc, "FILTER_DATE_END", date_str)) {
+                end_dateTime.ParseFormat(date_str, "%Y-%m-%d", &end);
+            }
+            // initialize pickers (also when start/end dates are undefined)
+            w_start_date->SetValue(start_dateTime);
+            w_end_date->SetValue(end_dateTime);
+        }
+        else {
+            wxLogDebug("ReportPanel warning: Date Pickers are not available");
+        }
+    }
+
+    if (w_stocks_choice) {
+        int idx = -1;
+        if (JSON_GetIntValue(j_doc, "FILTER_STOCK_NAME_IDX", idx)) {
+            if (idx > -1 && static_cast<unsigned int>(idx) < w_stocks_choice->GetCount()) {
+                w_stocks_choice->SetSelection(idx);
+            }
+        }
+    }
+
+    if (w_filter) {
+        auto map = m_rb->getFilterMap();
+        wxString token = map.count("name") > 0
+            ? "FILTER_STRING_" + removeQuotes(map["name"])
+            : "FILTER_STRING_VALUE";
+        wxString filter_str;
+        if (JSON_GetStringValue(j_doc, token.ToUTF8(), filter_str)) {
+            w_filter->SetValue(filter_str);
+        }
+    }
+}
+
+void ReportPanel::saveFilterSettings()
+{
+    wxString key = m_use_account_specific_filter
+        ? wxString::Format("REPORT_FILTER_DEDICATED_%d", m_rb->getReportId())
+        : "REPORT_FILTER_ALL";
+    Document j_doc = InfoModel::instance().getJdoc(key, "{}");
+    InfoModel::saveFilterInt(j_doc, "FILTER_ID", m_filter_id);
+    InfoModel::saveFilterString(j_doc,
+        "FILTER_NAME",
+        JournalPanel::filter_id_name(m_filter_id)
+    );
+
+    if (m_filter_id == JournalPanel::FILTER_ID_DATE_RANGE) {
+        if (!m_date_range.rangeName().IsEmpty()) {
+            InfoModel::saveFilterString(j_doc, "FILTER_DATE", m_date_range.rangeName());
+            InfoModel::saveFilterString(j_doc, "FILTER_DATE_BEGIN", "");
+            InfoModel::saveFilterString(j_doc, "FILTER_DATE_END", "");
+        }
+        else {
+            wxLogError("ReportPanel::saveFilterSettings(): m_date_range.rangeName() is empty");
+        }
+    }
+    else if (m_filter_id == JournalPanel::FILTER_ID_DATE_PICKER) {
+        InfoModel::saveFilterString(j_doc, "FILTER_DATE", "");
+        if (w_start_date) {
+            InfoModel::saveFilterString(j_doc,
+                "FILTER_DATE_BEGIN",
+                mmDateN(w_start_date->GetValue()).isoDateN()
+            );
+        }
+        else {
+            wxLogDebug("ReportPanel::saveFilterSettings(): w_start_date is null");
+        }
+        if (w_end_date) {
+            InfoModel::saveFilterString(j_doc,
+                "FILTER_DATE_END",
+                mmDateN(w_end_date->GetValue()).isoDateN()
+            );
+        }
+        else {
+            wxLogDebug("ReportPanel::saveFilterSettings(): w_end_date is null");
+        }
+    }
+
+    if (w_stocks_choice) {
+        InfoModel::saveFilterInt(j_doc, "FILTER_STOCK_NAME_IDX",
+            w_stocks_choice->GetSelection()
+        );
+    }
+
+    if (w_filter) {
+        auto map = m_rb->getFilterMap();
+        wxString token = map.count("name") > 0
+            ? "FILTER_STRING_" + removeQuotes(map["name"])
+            : "FILTER_STRING_VALUE";
+        InfoModel::saveFilterString(j_doc, token.ToUTF8(), w_filter->GetValue());
+    }
+
+    InfoModel::instance().saveJdoc(key, j_doc);
+}
+
+void ReportPanel::updateFilter()
+{
+    if (!w_range_btn)
+        return;
+
+    wxLogDebug("ReportPanel::updateFilter(): m_filter_id=%d", int(m_filter_id));
+    if (m_filter_id == JournalPanel::FILTER_ID_DATE_RANGE) {
+        w_range_btn->SetLabel(m_date_range.rangeName());
+        w_range_btn->SetBitmap(mmBitmapBundle(
+            // FIXME: refine the condition below
+            (m_date_range.rangeName() != m_date_range_a[0].getName()
+                ? png::TRANSFILTER_ACTIVE
+                : png::TRANSFILTER
+            ),
+            mmBitmapButtonSize
+        ));
+        // TODO: calculate default start/end dates from model
+        m_date_range.setDefStartDateN(mmDate::min());
+        m_date_range.setDefEndDateN(mmDate::max());
+        // copy from date range to start/end pickers
+        w_start_date->SetValue(
+            m_date_range.rangeStartN().value().dateTime()
+        );
+        w_end_date->SetValue(
+            m_date_range.rangeEndN().value().dateTime()
+        );
+    }
+    else if (m_filter_id == JournalPanel::FILTER_ID_DATE_PICKER) {
+        w_range_btn->SetLabel(_t("Date range"));
+        w_range_btn->SetBitmap(mmBitmapBundle(
+            png::TRANSFILTER_ACTIVE,
+            mmBitmapButtonSize
+        ));
+        // set date range to default ('All') and copy default start/end dates from pickers.
+        m_date_range = mmDateRange2();
+        mmDateRange2::Range range = m_date_range.getRange();
+        range.setName(_t("Date range"));
+        m_date_range.setRange(range);
+        m_date_range.setDefStartDateN(mmDateN(w_start_date->GetValue()));
+        m_date_range.setDefEndDateN(mmDateN(w_end_date->GetValue()));
+    }
+}
+
 bool ReportPanel::saveReportText()
 {
     if (!m_rb)
@@ -180,520 +749,7 @@ bool ReportPanel::saveReportText()
     return true;
 }
 
-// Adjust wxStaticText size after font change
-// Workaround for not auto Layout() after SetFont()
-void mmSetOwnFont(wxStaticText* w, const wxFont& font)
-{
-    w->SetOwnFont(font);
-    wxString label = w->GetLabelText();
-    if (!label.IsEmpty())
-        w->SetInitialSize(w->GetTextExtent(label));
-}
-
-// function only used for new filter
-void ReportPanel::loadFilterSettings() {
-    wxString key = m_use_account_specific_filter
-        ? wxString::Format("REPORT_FILTER_DEDICATED_%d", m_rb->getReportId())
-        : "REPORT_FILTER_ALL";
-    Document j_doc = InfoModel::instance().getJdoc(key, "{}");
-
-    int fid = 0;
-    if (JSON_GetIntValue(j_doc, "FILTER_ID", fid)) {
-        m_filter_id = static_cast<JournalPanel::FILTER_ID>(fid);
-    }
-    else {
-        // no filter found => set to date range
-        m_filter_id = JournalPanel::FILTER_ID_DATE_RANGE;
-    }
-
-    loadDateRanges(&m_date_range_a, &m_date_range_m);
-    if (m_filter_id == JournalPanel::FILTER_ID_DATE_RANGE) {
-        // recreate m_date_range in order to reload parameters from setting,
-        // refresh the date of today, and clear the default start/end dates
-        m_date_range = mmDateRange2();
-
-        // load m_date_range from settings.
-        // the start/end date pickers are configured later in updateFilter().
-        wxString j_filter;
-        bool found = false;
-        if (JSON_GetStringValue(j_doc, "FILTER_DATE", j_filter)) {
-            // find range specification
-            for (const auto& range : m_date_range_a) {
-                if (range.getName() == j_filter) {
-                    m_date_range.setRange(range);
-                    found = true;
-                    break;
-                }
-            }
-        }
-        if (!found) {
-            // init with 'All'
-            m_date_range.setRange(m_date_range_a[0]);
-        }
-    }
-    else if (m_filter_id == JournalPanel::FILTER_ID_DATE_PICKER) {
-        // Load start/end date pickers from settings.
-        // The date range is configured later in updateFilter().
-        if (w_start_date_picker) {
-            wxString date_str;
-            wxString::const_iterator end;
-            wxDateTime start_dateTime, end_dateTime;
-            if (JSON_GetStringValue(j_doc, "FILTER_DATE_BEGIN", date_str)) {
-                start_dateTime.ParseFormat(date_str, "%Y-%m-%d", &end);
-            }
-            if (JSON_GetStringValue(j_doc, "FILTER_DATE_END", date_str)) {
-                end_dateTime.ParseFormat(date_str, "%Y-%m-%d", &end);
-            }
-            // initialize pickers (also when start/end dates are undefined)
-            w_start_date_picker->SetValue(start_dateTime);
-            w_end_date_picker->SetValue(end_dateTime);
-        }
-        else {
-            wxLogDebug("ReportPanel warning: Date Pickers are not available");
-        }
-    }
-
-    if (w_stocks_choice) {
-        int idx = -1;
-        if (JSON_GetIntValue(j_doc, "FILTER_STOCK_NAME_IDX", idx)) {
-            if (idx > -1 && static_cast<unsigned int>(idx) < w_stocks_choice->GetCount()) {
-                w_stocks_choice->SetSelection(idx);
-            }
-        }
-    }
-
-    if (w_filter) {
-        auto map = m_rb->getFilterMap();
-        wxString token = map.count("name") > 0
-            ? "FILTER_STRING_" + removeQuotes(map["name"])
-            : "FILTER_STRING_VALUE";
-        wxString filter_str;
-        if (JSON_GetStringValue(j_doc, token.ToUTF8(), filter_str)) {
-            w_filter->SetValue(filter_str);
-        }
-    }
-}
-
-void ReportPanel::saveFilterSettings() {
-    wxString key = m_use_account_specific_filter
-        ? wxString::Format("REPORT_FILTER_DEDICATED_%d", m_rb->getReportId())
-        : "REPORT_FILTER_ALL";
-    Document j_doc = InfoModel::instance().getJdoc(key, "{}");
-    InfoModel::saveFilterInt(j_doc, "FILTER_ID", m_filter_id);
-    InfoModel::saveFilterString(j_doc, "FILTER_NAME",
-        JournalPanel::getFilterName(m_filter_id)
-    );
-
-    if (m_filter_id == JournalPanel::FILTER_ID_DATE_RANGE) {
-        if (!m_date_range.rangeName().IsEmpty()) {
-            InfoModel::saveFilterString(j_doc, "FILTER_DATE", m_date_range.rangeName());
-            InfoModel::saveFilterString(j_doc, "FILTER_DATE_BEGIN", "");
-            InfoModel::saveFilterString(j_doc, "FILTER_DATE_END", "");
-        }
-        else {
-            wxLogError("ReportPanel::saveFilterSettings(): m_date_range.rangeName() is empty");
-        }
-    }
-    else if (m_filter_id == JournalPanel::FILTER_ID_DATE_PICKER) {
-        if (w_start_date_picker) {
-            InfoModel::saveFilterString(j_doc, "FILTER_DATE_BEGIN",
-                mmDateN(w_start_date_picker->GetValue()).isoDateN()
-            );
-        }
-        else {
-            wxLogDebug("ReportPanel::saveFilterSettings(): w_start_date_picker is null");
-        }
-        if (w_end_date_picker) {
-            InfoModel::saveFilterString(j_doc, "FILTER_DATE_END",
-                mmDateN(w_end_date_picker->GetValue()).isoDateN()
-            );
-        }
-        else {
-            wxLogDebug("ReportPanel::saveFilterSettings(): w_end_date_picker is null");
-        }
-        InfoModel::saveFilterString(j_doc, "FILTER_DATE", "");
-    }
-
-    if (w_stocks_choice) {
-        InfoModel::saveFilterInt(j_doc, "FILTER_STOCK_NAME_IDX",
-            w_stocks_choice->GetSelection()
-        );
-    }
-
-    if (w_filter) {
-        auto map = m_rb->getFilterMap();
-        wxString token = map.count("name") > 0
-            ? "FILTER_STRING_" + removeQuotes(map["name"])
-            : "FILTER_STRING_VALUE";
-        InfoModel::saveFilterString(j_doc, token.ToUTF8(), w_filter->GetValue());
-    }
-
-    InfoModel::instance().setJdoc(key, j_doc);
-}
-
-void ReportPanel::updateFilter()
-{
-    if (!w_date_range_button) {
-        return;
-    }
-
-    wxLogDebug("ReportPanel::updateFilter(): m_filter_id=%d", int(m_filter_id));
-    if (m_filter_id == JournalPanel::FILTER_ID_DATE_RANGE) {
-        w_date_range_button->SetLabel(m_date_range.rangeName());
-        w_date_range_button->SetBitmap(mmBitmapBundle(
-            // FIXME: refine the condition below
-            (m_date_range.rangeName() != m_date_range_a[0].getName()
-                ? png::TRANSFILTER_ACTIVE
-                : png::TRANSFILTER
-            ),
-            mmBitmapButtonSize
-        ));
-        // TODO: calculate default start/end dates from model
-        m_date_range.setDefStartDateN(mmDate::min());
-        m_date_range.setDefEndDateN(mmDate::max());
-        // copy from date range to start/end pickers
-        w_start_date_picker->SetValue(
-            m_date_range.rangeStartN().value().getDateTime()
-        );
-        w_end_date_picker->SetValue(
-            m_date_range.rangeEndN().value().getDateTime()
-        );
-    }
-    else if (m_filter_id == JournalPanel::FILTER_ID_DATE_PICKER) {
-        w_date_range_button->SetLabel(_t("Date range"));
-        w_date_range_button->SetBitmap(mmBitmapBundle(
-            png::TRANSFILTER_ACTIVE,
-            mmBitmapButtonSize
-        ));
-        // set date range to default ('All') and copy default start/end dates from pickers.
-        m_date_range = mmDateRange2();
-        mmDateRange2::Range range = m_date_range.getRange();
-        range.setName(_t("Date range"));
-        m_date_range.setRange(range);
-        m_date_range.setDefStartDateN(mmDateN(w_start_date_picker->GetValue()));
-        m_date_range.setDefEndDateN(mmDateN(w_end_date_picker->GetValue()));
-    }
-}
-
-void ReportPanel::createControls()
-{
-    wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
-    SetSizer(itemBoxSizer2);
-
-    wxPanel* itemPanel3 = new wxPanel(this, wxID_ANY);
-    itemBoxSizer2->Add(itemPanel3, 0, wxGROW | wxALL, 0);
-
-    wxWrapSizer* itemBoxSizerHeader = new wxWrapSizer();
-    itemPanel3->SetSizer(itemBoxSizerHeader);
-
-    itemBoxSizerHeader->Add(
-        new wxStaticText(itemPanel3, wxID_ANY, ""),
-        0,
-        wxALL | wxALIGN_CENTER_VERTICAL,
-        2
-    );
-
-    if (m_rb) {
-        int rp = m_rb->getParameters();
-
-        if (rp == 0) {
-            itemPanel3->SetMinSize(wxSize(0, 0));
-            itemPanel3->Fit();
-        }
-
-        if (rp & ReportBase::M_DATE_RANGE) {
-            w_date_range_button = new wxButton(itemPanel3, ID_DATE_RANGE_BUTTON, _tu("Period…"));
-            w_date_range_button->SetBitmap(mmBitmapBundle(png::TRANSFILTER, mmBitmapButtonSize));
-            w_date_range_button->SetMinSize(
-                wxSize(200 + PrefModel::instance().getIconSize() * 2, -1)
-            );
-            itemBoxSizerHeader->Add(w_date_range_button, g_flagsH);
-            itemBoxSizerHeader->AddSpacer(5);
-
-            w_start_date_picker = new mmDatePickerCtrl(
-                itemPanel3, ID_START_DATE_PICKER,
-                wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
-                wxDP_DROPDOWN | wxDP_SHOWCENTURY
-            );
-            itemBoxSizerHeader->Add(w_start_date_picker, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(5);
-
-            w_end_date_picker = new mmDatePickerCtrl(
-                itemPanel3, ID_END_DATE_PICKER,
-                wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
-                wxDP_DROPDOWN | wxDP_SHOWCENTURY
-            );
-            itemBoxSizerHeader->Add(w_end_date_picker, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(30);
-        }
-        else if (rp & ReportBase::M_SINGLE_DATE) {
-            wxStaticText* itemStaticTextH1 = new wxStaticText(itemPanel3
-                , wxID_ANY, _t("Date:"));
-            mmSetOwnFont(itemStaticTextH1, GetFont().Larger());
-            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(5);
-            long date_style = wxDP_DROPDOWN | wxDP_SHOWCENTURY;
-            w_single_date_picker = new mmDatePickerCtrl(
-                itemPanel3, ID_SINGLE_DATE_PICKER,
-                wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
-                date_style
-            );
-            w_single_date_picker->SetValue(wxDateTime::Today());
-            w_single_date_picker->Enable(true);
-
-            itemBoxSizerHeader->Add(w_single_date_picker, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(30);
-        }
-        else if (rp & ReportBase::M_MONTHS) {
-            wxStaticText* itemStaticTextH1 = new wxStaticText(
-                itemPanel3, wxID_ANY, _t("Date:")
-            );
-            mmSetOwnFont(itemStaticTextH1, GetFont().Larger());
-            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(5);
-
-            mmDateYearMonth* up_down_month = new mmDateYearMonth(itemPanel3);
-            up_down_month->Connect(
-                wxEVT_BUTTON, wxEVT_COMMAND_BUTTON_CLICKED,
-                wxCommandEventHandler(mmDateYearMonth::OnButtonPress),
-                nullptr, this
-            );
-            m_rb->setDateSelection(m_shift);
-
-            itemBoxSizerHeader->Add(up_down_month, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(30);
-        }
-
-        if (rp & ReportBase::M_TIME) {
-            wxStaticText* itemStaticTextH1 = new wxStaticText(
-                itemPanel3, wxID_ANY, _t("Time:")
-            );
-            mmSetOwnFont(itemStaticTextH1, GetFont().Larger());
-            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(5);
-
-            w_time_picker = new wxTimePickerCtrl(itemPanel3, ID_TIME_PICKER);
-
-            itemBoxSizerHeader->Add(w_time_picker, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(30);
-        }
-
-        if (rp & ReportBase::M_YEAR) {
-            wxStaticText* itemStaticTextH1 = new wxStaticText(
-                itemPanel3, wxID_ANY, _t("Year:")
-            );
-            mmSetOwnFont(itemStaticTextH1, GetFont().Larger());
-            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(5);
-
-            w_year_choice = new wxChoice(
-                itemPanel3, ID_YEAR_CHOICE,
-                wxDefaultPosition, wxDefaultSize, 0,
-                nullptr, wxCB_SORT
-            );
-
-            const int y = wxDateTime::Today().GetYear();
-            for (int i = y - 100; i <= y + 10; ++i) {
-                const wxString name = wxString::Format("%i", i);
-                w_year_choice->Append(name, new wxStringClientData(name));
-            }
-
-            w_year_choice->SetStringSelection(wxString::Format("%i", y));
-            w_year_choice->SetMaxSize(wxSize(120, -1));
-
-
-            itemBoxSizerHeader->Add(w_year_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(30);
-        }
-        else if (rp & ReportBase::M_BUDGET) {
-            wxStaticText* itemStaticTextH1 = new wxStaticText(
-                itemPanel3, wxID_ANY, _t("Budget:")
-            );
-            mmSetOwnFont(itemStaticTextH1, GetFont().Larger());
-            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(5);
-
-            w_year_choice = new wxChoice(
-                itemPanel3, ID_BUDGET_CHOICE,
-                wxDefaultPosition, wxDefaultSize, 0,
-                nullptr, wxCB_SORT
-            );
-
-            int64 sel_id = m_rb->getDateSelection();
-            wxString sel_name;
-            for (const auto& bp_d : BudgetPeriodModel::instance().find_all(
-                BudgetPeriodCol::COL_ID_BUDGETYEARNAME
-            )) {
-                const wxString& name = bp_d.m_name;
-
-                // Only years for performance report
-                if (m_rb->getReportId() == ReportBase::REPORT_ID::BudgetCategorySummary ||
-                    name.length() == 4
-                ) {
-                    w_year_choice->Append(name, new wxStringClientData(wxString::Format("%lld", bp_d.m_id)));
-                    if (sel_id == bp_d.m_id)
-                        sel_name = bp_d.m_name;
-                }
-            }
-
-            if (!sel_name.IsEmpty())
-                w_year_choice->SetStringSelection(sel_name);
-            else
-                w_year_choice->SetSelection(0);
-
-            itemBoxSizerHeader->Add(w_year_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(30);
-        }
-
-        if (rp & ReportBase::M_ACCOUNT) {
-            wxStaticText* itemStaticTextH1 = new wxStaticText(itemPanel3, wxID_ANY, _t("Accounts:"));
-            mmSetOwnFont(itemStaticTextH1, GetFont().Larger());
-            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(5);
-            w_account_choice = new wxChoice(itemPanel3, ID_ACCOUNT_CHOICE);
-            w_account_choice->Append(_t("All Accounts"));
-            w_account_choice->Append(_tu("Specific Accounts…"));
-            w_account_choice->Append(NavigatorTypes::instance().getUsedAccountTypeNames());
-            w_account_choice->SetSelection(m_rb->getAccountSelection());
-
-            itemBoxSizerHeader->Add(w_account_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(30);
-        }
-
-        if (rp & ReportBase::M_FORWARD_MONTHS) {
-            wxStaticText* itemStaticTextH1 = new wxStaticText(
-                itemPanel3, wxID_ANY, _t("Future Months:")
-            );
-            mmSetOwnFont(itemStaticTextH1, GetFont().Larger());
-            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(5);
-            w_forward_months = new wxSpinCtrl(
-                itemPanel3, ID_FORWARD_MONTHS,
-                wxEmptyString, wxDefaultPosition, wxDefaultSize,
-                wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER
-            );
-            w_forward_months->SetRange(1, 120);
-            w_forward_months->SetValue(m_rb->getForwardMonths());
-            itemBoxSizerHeader->Add(w_forward_months, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(30);
-        }
-
-        if (rp & ReportBase::M_CHART) {
-            wxStaticText* itemStaticTextH1 = new wxStaticText(
-                itemPanel3, wxID_ANY, _t("Chart:")
-            );
-            mmSetOwnFont(itemStaticTextH1, GetFont().Larger());
-            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(5);
-            w_chart_choice = new wxChoice(itemPanel3, ID_CHART_CHOICE);
-            w_chart_choice->Append(_t("Show"));
-            w_chart_choice->Append(_t("Hide"));
-            w_chart_choice->SetSelection(m_rb->getChartSelection());
-
-            itemBoxSizerHeader->Add(w_chart_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(30);
-        }
-
-        if (rp & ReportBase::M_STOCK_NAMES)
-        {
-            wxStaticText* itemStaticTextH1 = new wxStaticText(itemPanel3, wxID_ANY, _t("Stock name:"));
-            mmSetOwnFont(itemStaticTextH1, GetFont().Larger());
-            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(5);
-
-            StockModel::DataA stock_a = StockModel::instance().find_all();
-            std::stable_sort(stock_a.begin(), stock_a.end(), StockData::SorterBySTOCKNAME());
-
-            wxString prevSymbol = "";
-            w_stocks_choice = new wxChoice(itemPanel3, ID_STOCK_CHOICE);
-            for (StockModel::Data stock : stock_a) {
-                const AccountModel::Data* account = AccountModel::instance().get_id_data_n(stock.m_account_id_n);
-                if (account->is_open()) {
-                    if (stock.m_symbol != prevSymbol) {
-                        w_stocks_choice->Append(stock.m_name);
-                        prevSymbol = stock.m_symbol;
-                    }
-                }
-            }
-            w_stocks_choice->SetSelection(m_rb->getStockSelection());
-
-            itemBoxSizerHeader->Add(w_stocks_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(30);
-        }
-
-        if (rp & ReportBase::M_GENERIC_FILTER)
-        {
-            auto map = m_rb->getFilterMap();
-            wxString name = map.count("name") > 0 ? removeQuotes(map["name"]) : _t("Filter:");
-            wxStaticText* itemStaticTextH1 = new wxStaticText(itemPanel3, wxID_ANY, name);
-            mmSetOwnFont(itemStaticTextH1, GetFont().Larger());
-            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(5);
-
-            w_filter = new wxTextCtrl(itemPanel3, ID_FILTER_GENERIC_CHOICE, m_rb->getFilterValue(), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-            if (map.count("default") > 0) {
-                w_filter->SetValue(removeQuotes(map["default"]));
-            }
-            w_filter->Bind(wxEVT_TEXT, &ReportPanel::onFilterTextChanged, this);
-            itemBoxSizerHeader->Add(w_filter, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-
-            w_filter_cancel = new wxBitmapButton(itemPanel3, wxID_ANY, mmBitmapBundle(png::CLEAR, mmBitmapButtonSize));
-            mmToolTip(w_filter_cancel, _t("Reset filter"));
-            w_filter_cancel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ReportPanel::onFilterCancel, this);
-            itemBoxSizerHeader->Add(w_filter_cancel, 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL, 2);
-            itemBoxSizerHeader->AddSpacer(30);
-        }
-
-        if (rp & ReportBase::M_GENERIC_SELECTION)
-        {
-            auto map = m_rb->getSelectionMap();
-            wxString name = map.count("name") > 0 ? removeQuotes(map["name"]) : _t("Selection:");
-            wxStaticText* itemStaticTextH1 = new wxStaticText(itemPanel3, wxID_ANY, name);
-            mmSetOwnFont(itemStaticTextH1, GetFont().Larger());
-            itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(5);
-
-            w_selection_choice = new wxChoice(itemPanel3, ID_SELECTION_GENERIC_CHOICE);
-            if (map.count("values") > 0) {
-                wxStringTokenizer tokenizer(map["values"], ",");
-                while (tokenizer.HasMoreTokens()) {
-                    w_selection_choice->Append(removeQuotes(tokenizer.GetNextToken()));
-                }
-            }
-            if (map.count("default") > 0) {
-                int idx = w_selection_choice->FindString(removeQuotes(map["default"]));
-                w_selection_choice->SetSelection(idx != wxNOT_FOUND ? idx : 0);
-            }
-            itemBoxSizerHeader->Add(w_selection_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
-            itemBoxSizerHeader->AddSpacer(30);
-        }
-    }
-
-    itemBoxSizerHeader->Add(
-        new wxStaticText(itemPanel3, wxID_ANY, ""),
-        0,
-        wxALL | wxALIGN_CENTER_VERTICAL,
-        2
-    );
-
-    w_browser = wxWebView::New();
-#ifdef __WXMAC__
-    // With WKWebView handlers need to be registered before creation
-    w_browser->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewFSHandler("memory")));
-    w_browser->Create(this, mmID_BROWSER);
-#else
-    w_browser->Create(this, mmID_BROWSER);
-    w_browser->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewFSHandler("memory")));
-#endif
-    Bind(wxEVT_WEBVIEW_NEWWINDOW, &ReportPanel::onNewWindow, this, mmID_BROWSER);
-
-    itemBoxSizer2->Add(w_browser, 1, wxGROW | wxALL, 1);
-}
-
-void ReportPanel::printPage()
-{
-    w_browser->Print();
-}
+// -- event handlers
 
 void ReportPanel::onNewWindow(wxWebViewEvent& evt)
 {
@@ -1039,6 +1095,7 @@ void ReportPanel::onDateRangePopup(wxCommandEvent& event)
     menu.Append(ID_DATE_RANGE_EDIT, _tu("Edit date ranges…"));
 
     PopupMenu(&menu);
+    w_range_btn->Layout();
     event.Skip();
 }
 
@@ -1095,18 +1152,18 @@ void ReportPanel::onStartEndDateChanged(wxDateEvent& event)
 {
     wxObject* eo = event.GetEventObject();
     if (eo) {
-        wxDateTime start_dateTime = w_start_date_picker->GetValue();
-        wxDateTime end_dateTime = w_end_date_picker->GetValue();
-        if (w_start_date_picker->isItMyDateControl(eo)) {
+        wxDateTime start_dateTime = w_start_date->GetValue();
+        wxDateTime end_dateTime = w_end_date->GetValue();
+        if (w_start_date->isItMyDateControl(eo)) {
             //wxLogDebug("Start date changed to %s", start_dateTime.FormatISODate());
             if (start_dateTime > end_dateTime) {
-                w_end_date_picker->SetValue(start_dateTime);
+                w_end_date->SetValue(start_dateTime);
                 wxLogDebug("End date changed to %s", start_dateTime.FormatISODate());
             }
         }
-        else if (w_end_date_picker->isItMyDateControl(eo)) {
+        else if (w_end_date->isItMyDateControl(eo)) {
             if (start_dateTime > end_dateTime) {
-                w_start_date_picker->SetValue(end_dateTime);
+                w_start_date->SetValue(end_dateTime);
                 wxLogDebug("Start date changed to %s", end_dateTime.FormatISODate());
             }
         }
@@ -1119,31 +1176,5 @@ void ReportPanel::onStartEndDateChanged(wxDateEvent& event)
     if (m_rb) {
         saveReportText();
         m_rb->saveReportSettings();
-    }
-}
-
-void ReportPanel::loadDateRanges(
-    std::vector<mmDateRange2::Range>* date_range_a,
-    int* date_range_m,
-    bool all_ranges
-) {
-    date_range_a->clear();
-    *date_range_m = -1;
-    int src_i = 0;
-    int src_m = PrefModel::instance().getReportingRangeM();
-    for (const auto& range : PrefModel::instance().getReportingRangeA()) {
-        if (date_range_a->size() > ID_DATE_RANGE_MAX - ID_DATE_RANGE_MIN) {
-            break;
-        }
-        if (src_i == src_m) {
-            *date_range_m = date_range_a->size();
-        }
-        if (all_ranges || !range.hasPeriodS()) {
-            date_range_a->push_back(range);
-        }
-        src_i++;
-    }
-    if (*date_range_m < 0) {
-        *date_range_m = date_range_a->size();
     }
 }

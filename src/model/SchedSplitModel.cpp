@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 James Higley
  Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -21,16 +22,11 @@
 #include "AttachmentModel.h"
 #include "TagLinkModel.h"
 
+// -- static
+
 const RefTypeN SchedSplitModel::s_ref_type = RefTypeN(RefTypeN::e_sched_split);
 
-SchedSplitModel::SchedSplitModel() :
-    TableFactory<SchedSplitTable, SchedSplitData>()
-{
-}
-
-SchedSplitModel::~SchedSplitModel()
-{
-}
+// -- constructor
 
 // Initialize the global SchedSplitModel table.
 // Reset the SchedSplitModel table or create the table if it does not exist.
@@ -50,11 +46,15 @@ SchedSplitModel& SchedSplitModel::instance()
     return Singleton<SchedSplitModel>::instance();
 }
 
+// -- override
+
 bool SchedSplitModel::purge_id(int64 qp_id)
 {
     TagLinkModel::instance().purge_ref(s_ref_type, qp_id);
     return unsafe_remove_id(qp_id);
 }
+
+// -- methods
 
 double SchedSplitModel::get_data_amount(const DataA& qp_a)
 {

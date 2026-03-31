@@ -33,7 +33,7 @@ TrxLinkRow TrxLinkData::to_row() const
 
     row.TRANSLINKID       = m_id;
     row.CHECKINGACCOUNTID = m_trx_id;
-    row.LINKTYPE          = m_ref_type.name_n();
+    row.LINKTYPE          = m_ref_type.key_n();
     row.LINKRECORDID      = m_ref_id;
 
     return row;

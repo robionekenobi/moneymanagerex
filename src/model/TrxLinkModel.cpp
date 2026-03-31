@@ -2,6 +2,7 @@
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2016 Stefano Giorgio
  Copyright (C) 2025 Klaus Wich
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -22,14 +23,19 @@
 #include "TrxShareModel.h"
 #include "CurrencyHistoryModel.h"
 
-TrxLinkModel::TrxLinkModel() :
-    TableFactory<TrxLinkTable, TrxLinkData>()
+// -- static
+
+TrxLinkModel::CHECKING_TYPE TrxLinkModel::type_checking(const int64 tt)
 {
+    if (tt == AS_INCOME_EXPENSE || tt == -1) {
+        return AS_INCOME_EXPENSE;
+    }
+    else {
+        return AS_TRANSFER;
+    }
 }
 
-TrxLinkModel::~TrxLinkModel()
-{
-}
+// -- constructor
 
 // Initialize the global TrxLinkModel table.
 // Reset the TrxLinkModel table or create the table if it does not exist.
@@ -49,15 +55,7 @@ TrxLinkModel& TrxLinkModel::instance()
     return Singleton<TrxLinkModel>::instance();
 }
 
-TrxLinkModel::CHECKING_TYPE TrxLinkModel::type_checking(const int64 tt)
-{
-    if (tt == AS_INCOME_EXPENSE || tt == -1) {
-        return AS_INCOME_EXPENSE;
-    }
-    else {
-        return AS_TRANSFER;
-    }
-}
+// -- methods
 
 // Remove all records associated with the Translink list
 void TrxLinkModel::purge_ref(RefTypeN ref_type, int64 ref_id)

@@ -62,13 +62,13 @@ double CategoryReport::AppendData(
     std::reverse(subcat_a.begin(), subcat_a.end());
     double subamount = 0;
     for (const auto& subcat_d : subcat_a) {
-        double amount = AppendData(data_, categoryStats, &subcat_d, groupID, level + 1);
-        if (amount != 0)
+        double amount_ = AppendData(data_, categoryStats, &subcat_d, groupID, level + 1);
+        if (amount_ != 0)
             data_.insert(data_.begin(), {
                 category_n->m_id, subcat_d.m_id, category_n->m_name,
-                amount, groupID, level
+                amount_, groupID, level
             });
-        subamount += amount;
+        subamount += amount_;
     }
     if (amount != 0 || subamount != 0)
         data_.insert(data_.begin(), {
@@ -111,13 +111,13 @@ void CategoryReport::refreshData()
         std::reverse(subcat_a.begin(), subcat_a.end());
         double subamount = 0;
         for (const auto& subcat_d : subcat_a) {
-            double amount = AppendData(data_, categoryStats, &subcat_d, cat_d.m_id, 1);
-            if (amount != 0)
+            double amount_ = AppendData(data_, categoryStats, &subcat_d, cat_d.m_id, 1);
+            if (amount_ != 0)
                 data_.insert(data_.begin(), {
                     cat_d.m_id, subcat_d.m_id, cat_d.m_name,
-                    amount, cat_d.m_id, 0
+                    amount_, cat_d.m_id, 0
                 });
-            subamount += amount;
+            subamount += amount_;
         }
         if (amount != 0 || subamount != 0)
             data_.insert(data_.begin(), {
@@ -375,7 +375,7 @@ wxString mmReportCategoryOverTimePerformance::getHTMLText()
     mmDate ed = mmDate(m_date_range->end_date()).plusDateSpan(
         wxDateSpan::Months(m_date_selection.GetValue())
     );
-    mmDateRange* date_range = new mmSpecifiedRange(sd.getDateTime(), ed.getDateTime());
+    mmDateRange* date_range = new mmSpecifiedRange(sd.dateTime(), ed.dateTime());
 
     //Get statistic
     std::map<int64, std::map<int, double>> categoryStats;
@@ -422,11 +422,11 @@ wxString mmReportCategoryOverTimePerformance::getHTMLText()
     mmHTMLBuilder hb;
     hb.init();
     hb.addReportHeader(getTitle(), m_date_range->startDay(), m_date_range->isFutureIgnored());
-    hb.displayDateHeading(sd.getDateTime(), ed.getDateTime(), true);
+    hb.displayDateHeading(sd.dateTime(), ed.dateTime(), true);
     hb.displayFooter(getAccountNames());
     // Prime the filter
     m_filter.clear();
-    m_filter.setDateRange(sd.getDateTime(), ed.getDateTime());
+    m_filter.setDateRange(sd.dateTime(), ed.dateTime());
     m_filter.setAccountList(m_account_a);
 
     const wxDateTime start_date = date_range->start_date();

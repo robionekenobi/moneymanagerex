@@ -311,42 +311,42 @@ bool ViewPref::SaveSettings()
 {
     auto delimiter = m_categ_delimiter_list->GetValue();
     if (delimiter.empty()) delimiter = ":";
-    InfoModel::instance().setString("CATEG_DELIMITER", delimiter);
+    InfoModel::instance().saveString("CATEG_DELIMITER", delimiter);
 
     wxString accVisible = VIEW_ACCOUNTS_ALL_STR;
     wxStringClientData* visible_acc_obj = static_cast<wxStringClientData*>(m_choice_visible->GetClientObject(m_choice_visible->GetSelection()));
     if (visible_acc_obj)
         accVisible = visible_acc_obj->GetData();
-    SettingModel::instance().setViewAccounts(accVisible);
+    SettingModel::instance().saveViewAccounts(accVisible);
 
     int themeMode = m_theme_mode->GetSelection();
-    PrefModel::instance().setThemeMode(themeMode);
+    PrefModel::instance().saveThemeMode(themeMode);
 
     int size = m_scale_factor->GetValue();
-    PrefModel::instance().setHtmlScale(size);
+    PrefModel::instance().saveHtmlScale(size);
     int i[4] = { 16, 24, 32, 48 };
     size = m_others_icon_size->GetSelection();
     size = i[size];
-    PrefModel::instance().setIconSize(size);
+    PrefModel::instance().saveIconSize(size);
 
     size = m_font_size_chooser->GetSelection();
-    PrefModel::instance().setFontSize(size);
+    PrefModel::instance().saveFontSize(size);
 
     size = m_navigation_icon_size->GetSelection();
     size = i[size];
-    PrefModel::instance().setNavigationIconSize(size);
+    PrefModel::instance().saveNavigationIconSize(size);
 
     size = m_toolbar_icon_size->GetSelection();
     size = i[size];
-    PrefModel::instance().setToolbarIconSize(size);
+    PrefModel::instance().saveToolbarIconSize(size);
 
-    PrefModel::instance().setDoNotColorFuture(m_doNotColorFuture->GetValue());
-    PrefModel::instance().setDoSpecialColorReconciled(m_doSpecialColorReconciled->GetValue());
+    PrefModel::instance().saveDoNotColorFuture(m_doNotColorFuture->GetValue());
+    PrefModel::instance().saveDoSpecialColorReconciled(m_doSpecialColorReconciled->GetValue());
 
-    PrefModel::instance().setShowToolTips(m_showToolTips->GetValue());
-    PrefModel::instance().setShowMoneyTips(m_showMoneyTips->GetValue());
+    PrefModel::instance().saveShowToolTips(m_showToolTips->GetValue());
+    PrefModel::instance().saveShowMoneyTips(m_showMoneyTips->GetValue());
 
-    PrefModel::instance().setShowNavigatorCashLedger(m_navShowCashLedger->GetValue());
+    PrefModel::instance().saveShowNavigatorCashLedger(m_navShowCashLedger->GetValue());
 
     return true;
 }

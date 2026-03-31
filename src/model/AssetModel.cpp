@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -21,16 +22,22 @@
 #include "TrxLinkModel.h"
 #include "CurrencyHistoryModel.h"
 
+// -- static
+
 const RefTypeN AssetModel::s_ref_type = RefTypeN(RefTypeN::e_asset);
 
-AssetModel::AssetModel() :
-    TableFactory<AssetTable, AssetData>()
+AssetCol::STARTDATE AssetModel::STARTDATE(OP op, const mmDate& date)
 {
+    // OP_EQ and OP_NE should not be used for date comparisons.
+    // if needed, create an equivalent AND/OR combination of two other operators.
+    return AssetCol::STARTDATE(op,
+        (op == OP_GE || op == OP_LT) ? date.isoStart() :
+        (op == OP_LE || op == OP_GT) ? date.isoEnd() :
+        date.isoDate()
+    );
 }
 
-AssetModel::~AssetModel()
-{
-}
+// -- constructor
 
 // Initialize the global AssetModel table.
 // Reset the AssetModel table or create the table if it does not exist.
@@ -50,21 +57,7 @@ AssetModel& AssetModel::instance()
     return Singleton<AssetModel>::instance();
 }
 
-AssetCol::ASSETTYPE AssetModel::ASSETTYPE(OP op, AssetType type)
-{
-    return AssetCol::ASSETTYPE(op, type.name());
-}
-
-AssetCol::STARTDATE AssetModel::STARTDATE(OP op, const mmDate& date)
-{
-    // OP_EQ and OP_NE should not be used for date comparisons.
-    // if needed, create an equivalent AND/OR combination of two other operators.
-    return AssetCol::STARTDATE(op,
-        (op == OP_GE || op == OP_LT) ? date.isoStart() :
-        (op == OP_LE || op == OP_GT) ? date.isoEnd() :
-        date.isoDate()
-    );
-}
+// -- methods
 
 const wxString AssetModel::get_id_name(int64 asset_id)
 {
@@ -123,8 +116,10 @@ const std::pair<double, double> AssetModel::get_data_value_date(
     if (!tl_a.empty()) {
         mmDateN last_n = mmDateN();
         for (const auto& trx_d : trx_a) {
-            const mmDate trx_date = trx_d.m_date();
-            const AccountData* account_n = AccountModel::instance().get_id_data_n(trx_d.m_account_id);
+            mmDate trx_date = trx_d.m_date();
+            const AccountData* account_n = AccountModel::instance().get_id_data_n(
+                trx_d.m_account_id
+            );
             int64 currency_id_n = account_n ? account_n->m_currency_id : -1;
             double currency_rate = CurrencyHistoryModel::instance().get_id_date_rate(
                 currency_id_n,

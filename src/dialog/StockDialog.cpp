@@ -112,7 +112,7 @@ void StockDialog::DataToControls()
     m_stock_name_ctrl->SetValue(m_stock_n->m_name);
     m_stock_symbol_ctrl->SetValue(m_stock_n->m_symbol);
     m_notes_ctrl->SetValue(m_stock_n->m_notes);
-    m_purchase_date_ctrl->SetValue(m_stock_n->m_purchase_date.getDateTime());
+    m_purchase_date_ctrl->SetValue(m_stock_n->m_purchase_date.dateTime());
 
     int precision = m_stock_n->m_num_shares == floor(m_stock_n->m_num_shares)
         ? 0
@@ -544,10 +544,12 @@ void StockDialog::OnListItemSelected(wxListEvent& event)
     const AccountData* account_n = AccountModel::instance().get_id_data_n(
         m_stock_n->m_account_id_n
     );
-    const StockHistoryData* sh_n = StockHistoryModel::instance().get_id_data_n(histId);
+    StockHistoryData* sh_n = StockHistoryModel::instance().unsafe_get_id_data_n(
+        histId
+    );
 
     if (sh_n->m_id > 0) {
-        m_history_date_ctrl->SetValue(sh_n->m_date.getDateTime());
+        m_history_date_ctrl->SetValue(sh_n->m_date.dateTime());
         m_history_price_ctrl->SetValue(AccountModel::instance().value_number(
             *account_n, sh_n->m_price, PrefModel::instance().getSharePrecision()
         ));
@@ -887,7 +889,7 @@ void StockDialog::OnHistoryDownloadButton(wxCommandEvent& /*event*/)
 
         StockHistoryModel::instance().db_savepoint();
         for (const auto& date_price : date_price_a) {
-            const mmDate date = date_price.first;
+            mmDate date = date_price.first;
             if (date == mmDate::today())
                 continue;
             float price = date_price.second;
@@ -1022,7 +1024,7 @@ void StockDialog::ShowStockHistory()
         return;
 
     for (size_t sh_i = 0; sh_i < sh_a.size(); ++sh_i ) {
-        const auto& sh_d = sh_a.at(sh_i);
+        StockHistoryData& sh_d = sh_a.at(sh_i);
         wxListItem item;
         item.SetId(static_cast<long>(sh_i));
         item.SetData(reinterpret_cast<void*>(sh_d.m_id.GetValue()));
@@ -1038,7 +1040,7 @@ void StockDialog::ShowStockHistory()
         );
         if (sh_i != 0)
             continue;
-        m_history_date_ctrl->SetValue(sh_d.m_date.getDateTime());
+        m_history_date_ctrl->SetValue(sh_d.m_date.dateTime());
         m_history_price_ctrl->SetValue(disp_price);
         m_current_price_ctrl->SetValue(disp_price);
         // if the latest share price is not the current stock price, update it.

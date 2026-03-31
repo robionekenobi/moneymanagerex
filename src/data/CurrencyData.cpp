@@ -42,7 +42,7 @@ CurrencyRow CurrencyData::to_row() const
     row.SCALE           = m_scale;
     row.BASECONVRATE    = m_base_conv_rate;
     row.CURRENCY_SYMBOL = m_symbol;
-    row.CURRENCY_TYPE   = m_type.name();
+    row.CURRENCY_TYPE   = m_type.key();
 
     return row;
 }

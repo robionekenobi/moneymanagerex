@@ -1458,6 +1458,7 @@ bool mmOFXImportDialog::ImportTransactions(wxXmlNode* banktranlist, wxLongLong a
             }
             // Check if this FITID exists in the current account first
             if (!TrxModel::instance().find(
+                // CHECK: fitid may be empty and TRANSACTIONNUMBER may be NULL
                 TrxCol::TRANSACTIONNUMBER(OP_EQ, fitid),
                 TrxCol::ACCOUNTID(OP_EQ, account->m_id.GetValue())
             ).empty())
@@ -1514,19 +1515,20 @@ bool mmOFXImportDialog::ImportTransactions(wxXmlNode* banktranlist, wxLongLong a
             continue;
         }
         // set time to noon
-        date = mmDate(date).getDateTime();
+        date = mmDate(date).dateTime();
 
         TrxData new_trx_d = TrxData();
+        new_trx_d.m_datetime   = mmDateTime(date);
         new_trx_d.m_account_id = account->m_id;
-        new_trx_d.m_number     = result.fitid;
-        new_trx_d.m_date_time  = mmDateTime(date);
         new_trx_d.m_amount     = fabs(amount);
+        new_trx_d.m_number     = result.fitid;
         new_trx_d.m_notes      = memo;
 
         bool isTransfer = false;
         // Check for existing transaction in the current account first
         TrxModel::DataA same_account_trx_d =
             TrxModel::instance().find(
+                // CHECK: fitid may be empty and TRANSACTIONNUMBER may be NULL
                 TrxCol::TRANSACTIONNUMBER(OP_EQ, fitid),
                 TrxCol::ACCOUNTID(OP_EQ, account->m_id)
             );
@@ -1541,6 +1543,7 @@ bool mmOFXImportDialog::ImportTransactions(wxXmlNode* banktranlist, wxLongLong a
 
         // Only check other accounts if no duplicate in current account
         TrxModel::DataA allExistingTrans = TrxModel::instance().find(
+            // CHECK: fitid may be empty and TRANSACTIONNUMBER may be NULL
             TrxCol::TRANSACTIONNUMBER(OP_EQ, fitid)
         );
         if (!allExistingTrans.empty()) {
@@ -1563,11 +1566,12 @@ bool mmOFXImportDialog::ImportTransactions(wxXmlNode* banktranlist, wxLongLong a
                 else if (existing_trx_d.m_account_id != account->m_id) {
                     // Potential new transfer
                     double existingAmount = existing_trx_d.m_amount;
-                    wxDateTime existingDate = existing_trx_d.m_date().getDateTime();
-                    double adjustedExistingAmount = existing_trx_d.is_withdrawal() ? -existingAmount : existingAmount;
-
+                    mmDate existingDate = existing_trx_d.m_date();
+                    double adjustedExistingAmount = existing_trx_d.is_withdrawal()
+                        ? -existingAmount
+                        : existingAmount;
                     double compAmt = fabs(adjustedExistingAmount + amount);
-                    int compDate = abs((date - existingDate).GetDays());
+                    int compDate = abs((date - existingDate.dateTime()).GetDays());
                     if (compAmt < 0.01 && compDate <= 7) {
                         if (existing_trx_d.is_transfer()) {
                             wxLogWarning("FITID='%s' is a transfer from %lld to %lld, not updating", fitid, existing_trx_d.m_account_id,

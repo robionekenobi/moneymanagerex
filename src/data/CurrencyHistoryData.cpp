@@ -21,7 +21,7 @@
 CurrencyHistoryData::CurrencyHistoryData() :
     m_id(-1),
     m_currency_id(-1),
-    m_date(mmDate::today()),
+    m_date(mmDate::invalid()),
     m_base_conv_rate(0.0),
     m_update_type(UpdateType())
 {

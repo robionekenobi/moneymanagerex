@@ -18,239 +18,162 @@
 
 #pragma once
 
-#include "base/defs.h"
-#include <optional>
 #include <wx/datetime.h>
+#include <wx/string.h>
+#include <wx/log.h>
+#include "base/types.h"
+#include "mmCache.h"
 
-#include "_primitive.h"
-#include "mmDateTime.h"
-
-// mmDate represents a date without time information.
+// mmDate represents the date part of a datetime (without time information).
 // wxWidgets does not have a dedicated type for this purpose.
-// The underlying data structure is wxDateTime, with the time part set
-// to noon (12:00), in order to avoid rounding errors around midnight.
-// The underlying value cannot be wxInvalidDateTime.
+// The underlying data structure is a string in ISO date format "YYYY-MM-DD",
+// and a wxDateTime with the time part set to noon (12:00:00) instead of zero,
+// in order to avoid rounding errors. The string representation is always
+// available after construction, and it is used for date comparisons,
+// while the wxDateTime representation is caclulated and cached on demand
+// (for date arithmetic), otherwise it is set to wxInvalidDateTime.
+// Notice that the MMEX schema stores dates as strings, therefore loading,
+// processing, and saving of data records does not require converions between
+// date representations, unless date arithmetic is involved.
 //
 // mmDateN is an optional (nullable) mmDate.
-// The underlying null value is wxInvalidDateTime.
+// The underlying null value is { "", wxInvalidDateTime }.
 //
-// iso{Start,End} are helper functions for date comparisons, e.g.,
-//   start.isoStart() <= isoDate <= end.isoEnd()
-// where `isoDate` is a date or date+time string in ISO format, checks
-// if `isoDate` is in the range (`start`..`end`) inclusive.
+// mmDate::invalid() is not a valid mmDate (it is not created by any other method).
+// It is provided for temporary initialization of an mmDate variable,
+// when it is known that this variable is re-initialized later before it is used
+// (using mmDate::invalid() with other methods is undefined behavior).
+// Initialization with a dummy date string, e.g., mmDate::min(), also serves
+// the same purpose, but it may be more confusing to the reader.
+// Notice that mmDate("") is equivalent to mmDate::today(), which has a conversion
+// overhead (from wxDateTime to string).
+//
+// iso{Start,End} are helper functions for date comparisons.
+// For a string `isoDateTime` in ISO date or datetime format,
+// * start_date.isoStart() <= isoDateTime
+//   checks if `isoDateTime` is in the same day as `start_date` or later
+// * isoDateTime <= end_date.isoEnd()
+//   checks if `isoDateTime` is in the same day as `end_date` or earlier
+// * start_date.isoEnd() < isoDateTime
+//   checks if `isoDateTime` is strictly later than `start_date`
+// * isoDateTime < end_date.isoStart()
+//   checks if `isoDateTime` is strictly earlier than `end_date`
+// Notice that the strict comparisons `start_date.isoStart() < isoDateTime`
+// and `isoDateTime < end_date.isoEnd()` do not have the intended meaning.
 
 struct mmDate
 {
     friend struct mmDateN;
 
-protected:
-    wxDateTime m_dateTime;
+// -- static
+
+private:
+    static const wxTimeSpan s_htol;
+    static constexpr std::size_t s_cache_cap = 10000;
+    static mmCache<wxDateTime, wxString> c_dateTime_isoDate;
+    static mmCache<wxString, wxDateTime> c_isoDate_dateTime;
+
+// -- state
+
+private:
+    wxString m_isoDate;
+    wxDateTime c_dateTimeN;
+
+// -- constructor
+
+private:
+    mmDate(const wxString& isoDate, wxDateTime dateTimeN) :
+        m_isoDate(isoDate), c_dateTimeN(dateTimeN) {}
 
 public:
-    mmDate(wxDateTime dateTime);
-    mmDate(mmDateTime dateTime);
     mmDate(const wxString& isoDateTime);
+    mmDate(wxDateTime dateTime);
 
 public:
-    static const wxTimeSpan htol; // half-day tolerance
-    static mmDate today();
-    static mmDate min();
-    static mmDate max();
+    static mmDate invalid() { return mmDate("", wxInvalidDateTime); }
+    static mmDate today() { return mmDate(wxDateTime(12, 0, 0, 0)); }
+    static mmDate min() { return mmDate("1970-01-01"); }
+    static mmDate max() { return mmDate("2999-12-31"); }
+
+// -- methods
 
 public:
-    auto getDateTime() const -> wxDateTime;
-    auto isoDate() const -> const wxString;
-    auto isoStart() const -> const wxString;
-    auto isoEnd() const -> const wxString;
+    auto isoDate() const -> const wxString { return m_isoDate; }
+    auto isoStart() const -> const wxString { return m_isoDate; }
+    auto isoEnd() const -> const wxString { return m_isoDate + "~"; }
+
+private:
+    auto cache_dateTime() -> wxDateTime;
+    void cache_dateTime(wxDateTime dateTime);
+
+public:
+    auto dateTime() -> wxDateTime {
+        return c_dateTimeN.IsValid() ? c_dateTimeN : cache_dateTime();
+    }
     void addDateSpan(wxDateSpan dateSpan);
+    void subDateSpan(wxDateSpan dateSpan);
     auto plusDateSpan(wxDateSpan dateSpan) -> mmDate;
     auto minusDateSpan(wxDateSpan dateSpan) -> mmDate;
-    int  daysSince(const mmDate& other) const;
-    int  daysUntil(const mmDate& other) const;
+    int  daysSince(mmDate& other);
+    int  daysUntil(mmDate& other);
+
+// -- operators
 
 public:
-    bool operator== (const mmDate& other) const;
-    bool operator!= (const mmDate& other) const;
-    bool operator<  (const mmDate& other) const;
-    bool operator>  (const mmDate& other) const;
-    bool operator<= (const mmDate& other) const;
-    bool operator>= (const mmDate& other) const;
+    bool operator== (const mmDate& other) const { return m_isoDate == other.m_isoDate; }
+    bool operator!= (const mmDate& other) const { return m_isoDate != other.m_isoDate; }
+    bool operator<  (const mmDate& other) const { return m_isoDate <  other.m_isoDate; }
+    bool operator>  (const mmDate& other) const { return m_isoDate >  other.m_isoDate; }
+    bool operator<= (const mmDate& other) const { return m_isoDate <= other.m_isoDate; }
+    bool operator>= (const mmDate& other) const { return m_isoDate >= other.m_isoDate; }
 };
 
 struct mmDateN
 {
-    friend struct mmDate;
+// -- state
 
 private:
-    wxDateTime m_dateTimeN;
+    wxString m_isoDateN;
+    wxDateTime c_dateTimeN;
+
+// -- constructor
+
+private:
+    mmDateN(const wxString& isoDateN, wxDateTime dateTimeN) :
+        m_isoDateN(isoDateN), c_dateTimeN(dateTimeN) {}
 
 public:
-    mmDateN() = default;
-    mmDateN(mmDate dateDay);
-    mmDateN(wxDateTime dateTimeN);
-    mmDateN(mmDateTimeN dateTimeN);
+    mmDateN() : mmDateN("", wxInvalidDateTime) {}
+    mmDateN(mmDate date) : mmDateN(date.m_isoDate, date.c_dateTimeN) {}
     mmDateN(const wxString& isoDateTimeN);
+    mmDateN(wxDateTime dateTimeN);
+
+// -- methods
 
 public:
-    bool has_value() const;
-    auto value() const -> mmDate;
-    auto value_or(mmDate defDateDay) const -> mmDate;
+    bool has_value() const { return !m_isoDateN.IsEmpty(); }
+    auto value() const -> mmDate { return mmDate(m_isoDateN, c_dateTimeN); }
+    auto value_or(mmDate def_date) const -> mmDate {
+        return has_value() ? value() : def_date;
+    }
 
 public:
-    auto getDateTimeN() const -> wxDateTime;
-    auto isoDateN() const -> const wxString;
-    auto isoStartN() const -> const wxString;
-    auto isoEndN() const -> const wxString;
+    auto isoDateN() const -> const wxString { return m_isoDateN; }
+    auto isoStartN() const -> const wxString { return m_isoDateN; }
+    auto isoEndN() const -> const wxString { return m_isoDateN + "~"; }
+
+private:
+    auto cache_dateTimeN() -> wxDateTime;
+    void cache_dateTimeN(wxDateTime dateTimeN);
 
 public:
-    bool operator== (const mmDateN& other) const;
-    bool operator!= (const mmDateN& other) const;
+    auto dateTimeN() -> wxDateTime {
+        return (!has_value() || c_dateTimeN.IsValid()) ? c_dateTimeN : cache_dateTimeN();
+    }
+
+// -- operators
+
+public:
+    bool operator== (const mmDateN& other) const { return m_isoDateN == other.m_isoDateN; }
+    bool operator!= (const mmDateN& other) const { return m_isoDateN != other.m_isoDateN; }
 };
-
-inline mmDate mmDate::today()
-{
-    // get the dateTime of today, with time set to noon (12:00)
-    wxDateTime today_dateTime = wxDateTime(12, 0, 0, 0);
-    // the mmDate constructor anyway resets the time to noon
-    return mmDate(today_dateTime);
-}
-inline mmDate mmDate::min()
-{
-    // same date as in DATE_MIN
-    wxDateTime min_dateTime;
-    min_dateTime.ParseISOCombined("1970-01-01T12:00:00");
-    return mmDate(min_dateTime);
-}
-inline mmDate mmDate::max()
-{
-    // same date as in DATE_MAX
-    // TODO: the datetime is 12 hours larger than DATE_MAX; check for overflow
-    wxDateTime max_dateTime;
-    max_dateTime.ParseISOCombined("2999-12-31T12:00:00");
-    return mmDate(max_dateTime);
-}
-
-inline wxDateTime mmDate::getDateTime() const
-{
-    return m_dateTime;
-}
-
-inline const wxString mmDate::isoDate() const
-{
-    return m_dateTime.FormatISODate();
-}
-
-// Let `isoDate` be a date or date+time string in ISO format.
-// (start.isoStart() <= isoDate) checks if `isoDate` is in the
-// same day as `start` or later. Notice that the strict comparison
-// (start.isoStart() < isoDate) does not have the intended meaning.
-inline const wxString mmDate::isoStart() const
-{
-    wxString dateStr = isoDate();
-    return dateStr.append("");
-}
-
-// (isoDate <= end.isoEnd()) checks if `isoDate` is in the
-// same day as `end` or earlier. Notice that the strict comparison
-// (isoDate < end.isoEnd()) does not have the intended meaning.
-inline const wxString mmDate::isoEnd() const
-{
-    // note: the ASCII code of "~" is greater than any character in ISO format
-    wxString dateStr = isoDate();
-    return dateStr.append("~");
-}
-
-inline void mmDate::addDateSpan(wxDateSpan dateSpan)
-{
-    // assumption: dateSpan has granularity of a day or larger
-    m_dateTime += dateSpan;
-}
-inline mmDate mmDate::plusDateSpan(wxDateSpan dateSpan)
-{
-    return mmDate(m_dateTime + dateSpan);
-}
-inline mmDate mmDate::minusDateSpan(wxDateSpan dateSpan)
-{
-    return mmDate(m_dateTime - dateSpan);
-}
-
-inline int mmDate::daysSince(const mmDate& other) const
-{
-    wxTimeSpan dt = m_dateTime.Subtract(other.m_dateTime) + htol;
-    return dt.IsPositive() ? dt.GetDays() : dt.GetDays() - 1;
-}
-inline int mmDate::daysUntil(const mmDate& other) const
-{
-    wxTimeSpan dt = other.m_dateTime.Subtract(m_dateTime) + htol;
-    return dt.IsPositive() ? dt.GetDays() : dt.GetDays() - 1;
-}
-
-// The time in both operands is set to noon, therefore
-// a simple comparison of m_dateTime is sufficient.
-// For more robustness we compare with a tolerance of half day.
-inline bool mmDate::operator== (const mmDate& other) const
-{
-    return (m_dateTime < other.m_dateTime + htol && m_dateTime + htol >= other.m_dateTime);
-}
-inline bool mmDate::operator!= (const mmDate& other) const
-{
-    return (m_dateTime >= other.m_dateTime + htol || m_dateTime + htol < other.m_dateTime);
-}
-inline bool mmDate::operator< (const mmDate& other) const
-{
-    return m_dateTime + htol < other.m_dateTime;
-}
-inline bool mmDate::operator> (const mmDate& other) const
-{
-    return m_dateTime >= other.m_dateTime + htol;
-}
-inline bool mmDate::operator<= (const mmDate& other) const
-{
-    return (m_dateTime < other.m_dateTime + htol);
-}
-inline bool mmDate::operator>= (const mmDate& other) const
-{
-    return (m_dateTime + htol >= other.m_dateTime);
-}
-
-inline bool mmDateN::has_value() const
-{
-    return m_dateTimeN.IsValid();
-}
-inline mmDate mmDateN::value() const
-{
-    return mmDate(m_dateTimeN);
-}
-inline mmDate mmDateN::value_or(mmDate defDateDay) const
-{
-    return m_dateTimeN.IsValid() ? mmDate(m_dateTimeN) : defDateDay;
-}
-
-inline wxDateTime mmDateN::getDateTimeN() const
-{
-    return m_dateTimeN;
-}
-inline const wxString mmDateN::isoDateN() const
-{
-    return has_value() ? value().isoDate() : "";
-}
-inline const wxString mmDateN::isoStartN() const
-{
-    return has_value() ? value().isoStart() : "";
-}
-inline const wxString mmDateN::isoEndN() const
-{
-    return has_value() ? value().isoEnd() : "~";
-}
-
-inline bool mmDateN::operator== (const mmDateN& other) const
-{
-    return (!has_value() && !other.has_value())
-        || (has_value() && other.has_value() && value() == other.value());
-}
-inline bool mmDateN::operator!= (const mmDateN& other) const
-{
-    return (has_value() || other.has_value())
-        && (!has_value() || !other.has_value() || value() != other.value());
-}
-

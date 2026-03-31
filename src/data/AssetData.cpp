@@ -22,7 +22,7 @@ AssetData::AssetData() :
     m_id(-1),
     m_type(AssetType()),
     m_status(AssetStatus()),
-    m_start_date(mmDate::today()),
+    m_start_date(mmDate::invalid()),
     m_currency_id_n(-1),
     m_value(0.0),
     m_change(AssetChange()),
@@ -39,14 +39,14 @@ AssetRow AssetData::to_row() const
     row.ASSETID         = m_id;
     row.STARTDATE       = m_start_date.isoDate();
     row.ASSETNAME       = m_name;
-    row.ASSETSTATUS     = m_status.name();
+    row.ASSETSTATUS     = m_status.key();
     row.CURRENCYID      = m_currency_id_n;
-    row.VALUECHANGEMODE = m_change_mode.name();
+    row.VALUECHANGEMODE = m_change_mode.key();
     row.VALUE           = m_value;
-    row.VALUECHANGE     = m_change.name();
+    row.VALUECHANGE     = m_change.key();
     row.NOTES           = m_notes;
     row.VALUECHANGERATE = m_change_rate;
-    row.ASSETTYPE       = m_type.name();
+    row.ASSETTYPE       = m_type.key();
 
     return row;
 }

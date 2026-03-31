@@ -101,12 +101,14 @@ TrxFilterDialog::~TrxFilterDialog()
 {
     wxLogDebug("~TrxFilterDialog");
     if (isReportMode_)
-        InfoModel::instance().setSize("TRANSACTION_FILTER_SIZE", GetSize());
+        InfoModel::instance().saveSize("TRANSACTION_FILTER_SIZE", GetSize());
 }
 
-TrxFilterDialog::TrxFilterDialog(wxWindow* parent, int64 accountID, bool isReport, wxString selected)
-    : isMultiAccount_(accountID == -1), accountID_(accountID), isReportMode_(isReport),
-      m_filter_key(isReport ? "TRANSACTIONS_FILTER" : "ALL_TRANSACTIONS_FILTER")
+TrxFilterDialog::TrxFilterDialog(wxWindow* parent, int64 accountID, bool isReport, wxString selected) :
+    m_filter_key(isReport ? "TRANSACTIONS_FILTER" : "ALL_TRANSACTIONS_FILTER"),
+    isMultiAccount_(accountID == -1),
+    accountID_(accountID),
+    isReportMode_(isReport)
 {
     this->SetFont(parent->GetFont());
     mmDoInitVariables();
@@ -118,10 +120,10 @@ TrxFilterDialog::TrxFilterDialog(wxWindow* parent, int64 accountID, bool isRepor
 }
 
 TrxFilterDialog::TrxFilterDialog(wxWindow* parent, const wxString& json) :
+    m_filter_key("TRANSACTIONS_FILTER"),
     isMultiAccount_(true),
     accountID_(-1),
-    isReportMode_(true),
-    m_filter_key("TRANSACTIONS_FILTER")
+    isReportMode_(true)
 {
     this->SetFont(parent->GetFont());
     mmDoInitVariables();
@@ -468,7 +470,7 @@ void TrxFilterDialog::mmDoDataToControls(const wxString& json)
     }
 
     // Remove the time column from the hidden columns list if not enabled in options
-    if (!PrefModel::instance().UseTransDateTime() &&
+    if (!PrefModel::instance().getUseTransDateTime() &&
         m_selected_columns_id.Index(COL_TIME) != wxNOT_FOUND
     ) {
         m_selected_columns_id.Remove(COL_TIME);
@@ -1185,7 +1187,7 @@ void TrxFilterDialog::OnQuit(wxCloseEvent& /*event*/)
 void TrxFilterDialog::OnShowColumnsButton(wxCommandEvent& /*event*/)
 {
 
-    bool useDateTime = PrefModel::instance().UseTransDateTime();
+    bool useDateTime = PrefModel::instance().getUseTransDateTime();
 
     wxArrayString column_names;
     for (const auto& name : COLUMN_NAMES)
@@ -1777,7 +1779,7 @@ void TrxFilterDialog::mmGetDescription(mmHTMLBuilder& hb)
                         appendOperator = true;
                     }
                     else if (wxGetTranslation("Hide Columns").IsSameAs(name) &&
-                        !(!PrefModel::instance().UseTransDateTime() && a.GetInt() == COL_TIME))
+                        !(!PrefModel::instance().getUseTransDateTime() && a.GetInt() == COL_TIME))
                     {
                         temp += (temp.empty() ? "" : ", ") + wxGetTranslation(COLUMN_NAMES[a.GetInt()]);
                     }
@@ -1853,7 +1855,7 @@ const wxString TrxFilterDialog::mmGetJsonSettings(bool i18n) const
         // Dates
         if (w_range_cb->IsChecked()) {
             wxString from_date, to_date;
-            if (PrefModel::instance().UseTransDateTime()) {
+            if (PrefModel::instance().getUseTransDateTime()) {
                 from_date = w_start_date->GetValue().FormatISOCombined(' ');
                 to_date = w_end_date->GetValue().FormatISOCombined(' ');
             }
@@ -2064,7 +2066,7 @@ void TrxFilterDialog::OnDateChanged(wxDateEvent& event)
         m_start_date = event.GetDate().FormatISOCombined();
         break;
     case wxID_LAST:
-        if (PrefModel::instance().UseTransDateTime())
+        if (PrefModel::instance().getUseTransDateTime())
             m_end_date = event.GetDate().FormatISOCombined();
         else
             m_end_date = mmDateRange::getDayEnd(event.GetDate()).FormatISOCombined();
@@ -2159,7 +2161,7 @@ void TrxFilterDialog::mmDoUpdateSettings()
         }
     }
     if (!isReportMode_) {
-        InfoModel::instance().setString(
+        InfoModel::instance().saveString(
             wxString::Format("CHECK_FILTER_ID_ADV_%lld", accountID_),
             mmGetJsonSettings()
         );
@@ -2255,7 +2257,7 @@ void TrxFilterDialog::mmDoSaveSettings(bool is_user_request)
             StringBuffer buffer;
             Writer<StringBuffer> writer(buffer);
             j_doc.Accept(writer);
-            InfoModel::instance().setString(
+            InfoModel::instance().saveString(
                 m_filter_key + "_LAST_USED",
                 wxString::FromUTF8(buffer.GetString())
             );
@@ -2263,7 +2265,7 @@ void TrxFilterDialog::mmDoSaveSettings(bool is_user_request)
             mmDoInitSettingNameChoice();
         }
     }
-    InfoModel::instance().setString("TRANSACTIONS_FILTER_LAST_USED", m_settings_json);
+    InfoModel::instance().saveString("TRANSACTIONS_FILTER_LAST_USED", m_settings_json);
 }
 
 void TrxFilterDialog::OnSaveSettings(wxCommandEvent& WXUNUSED(event))

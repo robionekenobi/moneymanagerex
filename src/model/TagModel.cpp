@@ -1,5 +1,6 @@
 /*******************************************************
  Copyright (C) 2016 Guan Lisheng
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -21,14 +22,7 @@
 #include "AttachmentModel.h"
 #include "TrxModel.h"
 
-TagModel::TagModel() :
-    TableFactory<TagTable, TagData>()
-{
-}
-
-TagModel::~TagModel()
-{
-}
+// -- constructor
 
 // Initialize the global TagModel.
 TagModel& TagModel::instance(wxSQLite3Database* db)
@@ -46,6 +40,8 @@ TagModel& TagModel::instance()
 {
     return Singleton<TagModel>::instance();
 }
+
+// -- methods
 
 int TagModel::is_used(int64 tag_id)
 {

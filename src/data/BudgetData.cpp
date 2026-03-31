@@ -36,7 +36,7 @@ BudgetRow BudgetData::to_row() const
     row.BUDGETENTRYID = m_id;
     row.BUDGETYEARID  = m_period_id;
     row.CATEGID       = m_category_id;
-    row.PERIOD        = m_freq.name();
+    row.PERIOD        = m_freq.key();
     row.AMOUNT        = m_amount;
     row.NOTES         = m_notes;
     row.ACTIVE        = (m_active ? 1 : 0);

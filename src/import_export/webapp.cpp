@@ -590,12 +590,12 @@ int64 mmWebApp::insertNewTrx(TrxWebData& trx_w)
     // Create New Transaction
     TrxData new_trx_d = TrxData();
     mmDateTime trx_datetime = mmDateTime(trx_w.Date);
-    if ((mmDate(trx_datetime) < account_open_date_n.value()) ||
-        (to_account_n && mmDate(trx_datetime) < to_account_n->m_open_date)
+    if ((trx_datetime.date() < account_open_date_n.value()) ||
+        (to_account_n && trx_datetime.date() < to_account_n->m_open_date)
     ) {
         wxString msgStr = wxString::Format("%s: %s / %s: %s\n\n%s\n%s",
             _t("Account"), account_name,
-            _t("Date"), mmDate(trx_datetime).isoDate(),
+            _t("Date"), trx_datetime.isoDate(),
             _t("The opening date for the account is later than the date of this transaction"),
             _t("Today will be used as the transaction date")
         );
@@ -603,7 +603,7 @@ int64 mmWebApp::insertNewTrx(TrxWebData& trx_w)
         trx_datetime = mmDateTime::now();
     }
 
-    new_trx_d.m_date_time       = trx_datetime;
+    new_trx_d.m_datetime        = trx_datetime;
     new_trx_d.m_type            = TrxType(trx_w.Type);
     new_trx_d.m_status          = trx_status;
     new_trx_d.m_account_id      = account_id;

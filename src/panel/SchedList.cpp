@@ -230,7 +230,7 @@ void SchedList::OnListLeftClick(wxMouseEvent& event)
 
 int SchedList::OnGetItemImage(long item) const
 {
-    const SchedData& sched_d = w_panel->m_sched_xa[item];
+    SchedData& sched_d = w_panel->m_sched_xa[item];
     int due_days = sched_d.m_due_date.daysSince(w_panel->m_today);
 
     // Returns the icon to be shown for each entry

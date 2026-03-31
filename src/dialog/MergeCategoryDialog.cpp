@@ -44,7 +44,7 @@ MergeCategoryDialog::MergeCategoryDialog()
 
 MergeCategoryDialog::~MergeCategoryDialog()
 {
-    InfoModel::instance().setSize("RELOCATECATEG_DIALOG_SIZE", GetSize());
+    InfoModel::instance().saveSize("RELOCATECATEG_DIALOG_SIZE", GetSize());
 }
 
 MergeCategoryDialog::MergeCategoryDialog(wxWindow* parent

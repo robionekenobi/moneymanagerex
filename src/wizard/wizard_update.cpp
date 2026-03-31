@@ -63,7 +63,7 @@ mmUpdateWizard::~mmUpdateWizard()
 {
     clearVFprintedFiles("rep");
     bool isActive = showUpdateCheckBox_->GetValue();
-    SettingModel::instance().setString(
+    SettingModel::instance().saveString(
         "UPDATE_LAST_CHECKED_VERSION",
         (!isActive) ? top_version_ : ("v" + mmex::version::string).Lower()
     );

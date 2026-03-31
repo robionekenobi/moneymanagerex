@@ -41,7 +41,7 @@ mmNavigatorDialog::mmNavigatorDialog()
 
 mmNavigatorDialog::~mmNavigatorDialog()
 {
-    InfoModel::instance().setSize(DIALOG_SIZE, GetSize());
+    InfoModel::instance().saveSize(DIALOG_SIZE, GetSize());
 }
 
 mmNavigatorDialog::mmNavigatorDialog(wxWindow* parent):genericTreeListDialog(parent, _t("Navigator and account type configuration"))
@@ -246,7 +246,7 @@ void mmNavigatorDialog::updateItemsRecursive(wxTreeListItem item)
             child = m_treeList->GetNextSibling(child);
             // Special for Trash:
             if (data->ref->type == NavigatorTypes::NAV_ENTRY_DELETED_TRANSACTIONS) {
-                PrefModel::instance().setHideDeletedTransactions(!data->ref->active);
+                PrefModel::instance().saveHideDeletedTransactions(!data->ref->active);
                 mmGUIFrame* mainFrame = wxDynamicCast(this->GetParent(), mmGUIFrame);
                 if (mainFrame) {
                     mainFrame->SetTrashState(data->ref->active);
@@ -254,7 +254,7 @@ void mmNavigatorDialog::updateItemsRecursive(wxTreeListItem item)
             }
             // Special for Share Accounts:
             if (data->ref->type == NavigatorTypes::TYPE_ID_SHARES) {
-                PrefModel::instance().setHideShareAccounts(!data->ref->active);
+                PrefModel::instance().saveHideShareAccounts(!data->ref->active);
                 mmGUIFrame* mainFrame = wxDynamicCast(this->GetParent(), mmGUIFrame);
                 if (mainFrame) {
                     mainFrame->SetShareAccountState(data->ref->active);

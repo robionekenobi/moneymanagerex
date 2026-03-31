@@ -26,13 +26,18 @@
 
 class TagLinkModel : public TableFactory<TagLinkTable, TagLinkData>
 {
+// -- constructor
+
 public:
-    TagLinkModel();
-    ~TagLinkModel();
+    TagLinkModel() :
+        TableFactory<TagLinkTable, TagLinkData>() {}
+    ~TagLinkModel() {}
 
 public:
     static TagLinkModel& instance(wxSQLite3Database* db);
     static TagLinkModel& instance();
+
+// -- methods
 
 public:
     void purge_ref(RefTypeN ref_type, int64 ref_id);

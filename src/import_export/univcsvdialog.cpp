@@ -1327,7 +1327,7 @@ void mmUnivCSVDialog::OnSettingsSave(wxCommandEvent& WXUNUSED(event))
 
     const wxString json_data = wxString::FromUTF8(json_buffer.GetString());
 
-    SettingModel::instance().setString(setting_id, json_data);
+    SettingModel::instance().saveString(setting_id, json_data);
 }
 
 void mmUnivCSVDialog::saveAccountPresets()
@@ -1343,7 +1343,7 @@ void mmUnivCSVDialog::saveAccountPresets()
     }
     json_writer.EndObject();
 
-    InfoModel::instance().setString(
+    InfoModel::instance().saveString(
         (IsCSV() ? "CSV_ACCOUNT_PRESETS" : "XML_ACCOUNT_PRESETS"),
         wxString::FromUTF8(json_buffer.GetString())
     );
@@ -1544,7 +1544,7 @@ void mmUnivCSVDialog::OnImport(wxCommandEvent& WXUNUSED(event))
         }
 
         TrxData new_trx_d = TrxData();
-        new_trx_d.m_date_time       = mmDateTime(trx_datetime);
+        new_trx_d.m_datetime        = mmDateTime(trx_datetime);
         new_trx_d.m_type            = TrxType(holder.Type);
         new_trx_d.m_status          = TrxStatus(holder.Status);
         new_trx_d.m_account_id      = accountID_;
@@ -1744,7 +1744,7 @@ void mmUnivCSVDialog::OnExport(wxCommandEvent& WXUNUSED(event))
         std::sort(trx_a.begin(), trx_a.end());
         std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTime());
 
-        for (const auto& trx_d : trx_a) {
+        for (TrxData& trx_d : trx_a) {
             if (!trx_d.is_valid())
                 continue;
 
@@ -1765,7 +1765,7 @@ void mmUnivCSVDialog::OnExport(wxCommandEvent& WXUNUSED(event))
                 // Export the transaction only if the transaction is between
                 // the selected dates or if the user select to export all
                 // the transactions regardless of their date
-                if (trx_d.m_date_time.getDateTime().IsBetween(
+                if (trx_d.m_datetime.dateTime().IsBetween(
                     m_date_picker_start->GetValue(),
                     m_date_picker_end->GetValue()
                 ) || !m_haveDatesCheckBox->IsChecked()) {
@@ -1835,7 +1835,7 @@ void mmUnivCSVDialog::OnExport(wxCommandEvent& WXUNUSED(event))
                             entry = trx_d.m_number;
                             break;
                         case UNIV_CSV_NOTES:
-                            entry = wxString(trx_d.m_notes).Trim();
+                            entry = trx_d.m_notes.Trim();
                             entry.Replace("\n", "\\n");
                             break;
                         case UNIV_CSV_DEPOSIT:
@@ -1891,9 +1891,9 @@ void mmUnivCSVDialog::OnExport(wxCommandEvent& WXUNUSED(event))
         std::stable_sort(stock_a.begin(), stock_a.end(), StockData::SorterBySTOCKID());
 
         const AccountData* account = AccountModel::instance().get_id_data_n(fromAccountID);
-        for (const auto& stock_d : stock_a) {
+        for (StockData& stock_d : stock_a) {
             //If the transaction happened between the dates that the user selected or if the user selected to export all the transactions regardless of date then the row is added to the preview
-            if (stock_d.m_purchase_date.getDateTime().IsBetween(
+            if (stock_d.m_purchase_date.dateTime().IsBetween(
                 m_date_picker_start->GetValue(),
                 m_date_picker_end->GetValue()
             ) || m_haveDatesCheckBox->GetValue()==false) {
@@ -1938,7 +1938,7 @@ void mmUnivCSVDialog::OnExport(wxCommandEvent& WXUNUSED(event))
                         entry = std::to_wstring(stock_d.current_value());
                         break;
                     case UNIV_CSV_NOTES:
-                        entry = wxString(stock_d.m_notes).Trim();
+                        entry = stock_d.m_notes.Trim();
                         break;
                     case UNIV_CSV_COMMISSION:
                         entry = std::to_wstring(stock_d.m_commission);
@@ -2131,12 +2131,12 @@ void mmUnivCSVDialog::update_preview()
             );
             std::sort(trx_a.begin(), trx_a.end());
             std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTime());
-            for (const auto& trx_d : trx_a) {
+            for (TrxData& trx_d : trx_a) {
                 if (!trx_d.is_valid())
                     continue;
 
                 //If the transaction happened between the dates that the user selected or if the user selected to export all the transactions regardless of date then the row is added to the preview
-                if (trx_d.m_date_time.getDateTime().IsBetween(
+                if (trx_d.m_datetime.dateTime().IsBetween(
                     m_date_picker_start->GetValue(),
                     m_date_picker_end->GetValue()
                 ) || !m_haveDatesCheckBox->GetValue()) {
@@ -2226,7 +2226,7 @@ void mmUnivCSVDialog::update_preview()
                                 text << inQuotes(trx_d.m_number, delimit);
                                 break;
                             case UNIV_CSV_NOTES:
-                                text << inQuotes(wxString(trx_d.m_notes).Trim(), delimit);
+                                text << inQuotes(trx_d.m_notes.Trim(), delimit);
                                 break;
                             case UNIV_CSV_DEPOSIT:
                                 text << inQuotes(value > 0.0 ? amount : "", delimit);
@@ -2287,12 +2287,14 @@ void mmUnivCSVDialog::update_preview()
             std::sort(stock_a.begin(), stock_a.end());
             std::stable_sort(stock_a.begin(), stock_a.end(), StockData::SorterBySTOCKID());
 
-            const AccountData* account = AccountModel::instance().get_id_data_n(from_account_id);
-            for (const auto& stock_d : stock_a) {
+            const AccountData* account = AccountModel::instance().get_id_data_n(
+                from_account_id
+            );
+            for (StockData& stock_d : stock_a) {
                 // If the transaction happened between the dates that the user selected
                 // or if the user selected to export all the transactions regardless
                 // of date then the row is added to the preview
-                if (stock_d.m_purchase_date.getDateTime().IsBetween(
+                if (stock_d.m_purchase_date.dateTime().IsBetween(
                     m_date_picker_start->GetValue(),
                     m_date_picker_end->GetValue()
                 ) || !m_haveDatesCheckBox->GetValue()) {
@@ -2379,7 +2381,7 @@ void mmUnivCSVDialog::update_preview()
                             text << inQuotes(currentTotalValue, delimit);
                             break;
                         case UNIV_CSV_NOTES:
-                            text << inQuotes(wxString(stock_d.m_notes).Trim(), delimit);
+                            text << inQuotes(stock_d.m_notes.Trim(), delimit);
                             break;
                         case UNIV_CSV_COMMISSION:
                             text << inQuotes(commission, delimit);
@@ -2720,7 +2722,7 @@ void mmUnivCSVDialog::compilePayeeRegEx() {
     payeeMatchPatterns_.clear();
     // only look at payees that have a match pattern set
     PayeeModel::DataA payee_a = PayeeModel::instance().find(
-        PayeeCol::PATTERN(OP_NE, wxEmptyString)
+        PayeeCol::PATTERN(OP_NEN, "")
     );
     for (const auto& payee_d : payee_a) {
         Document json_doc;

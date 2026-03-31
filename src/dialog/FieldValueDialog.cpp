@@ -224,7 +224,7 @@ bool FieldValueDialog::FillCustomFields(wxBoxSizer* box_sizer)
 
             mmDatePickerCtrl* CustomDate = new mmDatePickerCtrl(
                 scrolled_window, controlID,
-                date_n.value_or(mmDate::today()).getDateTime()
+                date_n.value_or(mmDate::today()).dateTime()
             );
             mmToolTip(CustomDate, FieldModel::getTooltip(field_d.m_properties));
             grid_sizer_custom->Add(CustomDate->mmGetLayout(false));

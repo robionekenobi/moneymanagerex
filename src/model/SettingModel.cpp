@@ -2,6 +2,7 @@
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2014 - 2022 Nikolay Akimov
  Copyright (C) 2021 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -26,14 +27,7 @@
 
 #include "panel/JournalPanel.h"
 
-SettingModel::SettingModel() :
-    TableFactory<SettingTable, SettingData>()
-{
-}
-
-SettingModel::~SettingModel()
-{
-}
+// -- contructor
 
 // Initialize the global SettingModel table.
 // Reset the SettingModel table or create the table if it does not exist.
@@ -54,6 +48,8 @@ SettingModel& SettingModel::instance()
     return Singleton<SettingModel>::instance();
 }
 
+// -- methods
+
 // Returns true if key setting found
 bool SettingModel::contains(const wxString& key)
 {
@@ -61,7 +57,7 @@ bool SettingModel::contains(const wxString& key)
 }
 
 // Raw
-void SettingModel::setRaw(const wxString& key, const wxString& newValue)
+void SettingModel::saveRaw(const wxString& key, const wxString& newValue)
 {
     // search in cache
     const Data* setting_n = search_cache_n(SettingCol::SETTINGNAME(key));
@@ -83,21 +79,27 @@ void SettingModel::setRaw(const wxString& key, const wxString& newValue)
 const wxString SettingModel::getRaw(const wxString& key, const wxString& defaultValue)
 {
     // search in cache
-    const Data* setting_n = search_cache_n(SettingCol::SETTINGNAME(key));
+    const Data* setting_n = search_cache_n(
+        SettingCol::SETTINGNAME(key)
+    );
     if (setting_n)
         return setting_n->m_value;
+
     // search in db
-    DataA setting_a = find(SettingCol::SETTINGNAME(key));
+    DataA setting_a = find(
+        SettingCol::SETTINGNAME(key)
+    );
     if (!setting_a.empty())
         return setting_a[0].m_value;
+
     // not found
     return defaultValue;
 }
 
 // String
-void SettingModel::setString(const wxString& key, const wxString& newValue)
+void SettingModel::saveString(const wxString& key, const wxString& newValue)
 {
-    setRaw(key, newValue);
+    saveRaw(key, newValue);
 }
 const wxString SettingModel::getString(const wxString& key, const wxString& defaultValue)
 {
@@ -105,9 +107,9 @@ const wxString SettingModel::getString(const wxString& key, const wxString& defa
 }
 
 // Bool
-void SettingModel::setBool(const wxString& key, bool newValue)
+void SettingModel::saveBool(const wxString& key, bool newValue)
 {
-    setRaw(key, wxString::Format("%s", newValue ? "TRUE" : "FALSE"));
+    saveRaw(key, wxString::Format("%s", newValue ? "TRUE" : "FALSE"));
 }
 bool SettingModel::getBool(const wxString& key, bool defaultValue)
 {
@@ -118,9 +120,9 @@ bool SettingModel::getBool(const wxString& key, bool defaultValue)
 }
 
 // Int
-void SettingModel::setInt(const wxString& key, int newValue)
+void SettingModel::saveInt(const wxString& key, int newValue)
 {
-    setRaw(key, wxString::Format("%d", newValue));
+    saveRaw(key, wxString::Format("%d", newValue));
 }
 int SettingModel::getInt(const wxString& key, int defaultValue)
 {
@@ -131,9 +133,9 @@ int SettingModel::getInt(const wxString& key, int defaultValue)
 }
 
 // Colour
-void SettingModel::setColour(const wxString& key, const wxColour& newValue)
+void SettingModel::saveColour(const wxString& key, const wxColour& newValue)
 {
-    setRaw(key, wxString::Format("%d,%d,%d",
+    saveRaw(key, wxString::Format("%d,%d,%d",
         newValue.Red(), newValue.Green(), newValue.Blue()
     ));
 }
@@ -157,15 +159,15 @@ const wxColour SettingModel::getColour(const wxString& key, const wxColour& defa
 
 //-------------------------------------------------------------------
 // Jdoc
-void SettingModel::setJdoc(const wxString& key, Document& newValue)
+void SettingModel::saveJdoc(const wxString& key, Document& newValue)
 {
     wxString j_str = JSON_PrettyFormated(newValue);
-    setRaw(key, j_str);
+    saveRaw(key, j_str);
 }
-void SettingModel::setJdoc(const wxString& key, StringBuffer& newValue)
+void SettingModel::saveJdoc(const wxString& key, StringBuffer& newValue)
 {
     wxString j_str = wxString::FromUTF8(newValue.GetString());
-    setRaw(key, j_str);
+    saveRaw(key, j_str);
 }
 Document SettingModel::getJdoc(const wxString& key, const wxString& defaultValue)
 {
@@ -176,7 +178,7 @@ Document SettingModel::getJdoc(const wxString& key, const wxString& defaultValue
 }
 
 // ArrayString
-void SettingModel::setArrayString(const wxString& key, const wxArrayString& a)
+void SettingModel::saveArrayString(const wxString& key, const wxArrayString& a)
 {
     StringBuffer json_buffer;
     PrettyWriter<StringBuffer> json_writer(json_buffer);
@@ -186,8 +188,8 @@ void SettingModel::setArrayString(const wxString& key, const wxArrayString& a)
     }
     json_writer.EndArray();
     const wxString& json_string = wxString::FromUTF8(json_buffer.GetString());
-    setRaw(key, json_string);
-    wxLogDebug("SettingModel::setArrayString(%s): %s", key, json_string);
+    saveRaw(key, json_string);
+    wxLogDebug("SettingModel::saveArrayString(%s): %s", key, json_string);
 }
 
 const wxArrayString SettingModel::getArrayString(const wxString& key)
@@ -263,9 +265,9 @@ void SettingModel::prependArrayItem(const wxString& key, const wxString& value, 
 
 //-------------------------------------------------------------------
 // VIEWACCOUNTS
-void SettingModel::setViewAccounts(const wxString& newValue)
+void SettingModel::saveViewAccounts(const wxString& newValue)
 {
-    setString("VIEWACCOUNTS", newValue);
+    saveString("VIEWACCOUNTS", newValue);
 }
 const wxString SettingModel::getViewAccounts()
 {
@@ -273,9 +275,9 @@ const wxString SettingModel::getViewAccounts()
 }
 
 // THEME
-void SettingModel::setTheme(const wxString& newValue)
+void SettingModel::saveTheme(const wxString& newValue)
 {
-    setString("THEME", newValue);
+    saveString("THEME", newValue);
 }
 const wxString SettingModel::getTheme()
 {

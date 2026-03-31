@@ -65,9 +65,9 @@ public:
     );
 
     void SetDialogTitle(const wxString& title);
-    int64 GetAccountID() { return m_journal_data.m_account_id; }
-    int64 GetToAccountID() { return m_journal_data.m_to_account_id_n; }
-    int64 GetTransactionID() { return m_journal_data.m_id; }
+    int64 GetAccountID() { return m_journal_d.m_account_id; }
+    int64 GetToAccountID() { return m_journal_d.m_to_account_id_n; }
+    int64 GetTransactionID() { return m_journal_d.m_id; }
 
 private:
     wxSharedPtr<FieldValueDialog> m_custom_fields;
@@ -136,7 +136,7 @@ private:
     int64 m_account_id = -1;
     wxString m_status;
 
-    Journal::Data m_journal_data;
+    Journal::Data m_journal_d;
     std::vector<Split> m_local_splits;
 
     std::vector<wxString> frequentNotes_;

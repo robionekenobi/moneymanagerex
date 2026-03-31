@@ -322,9 +322,9 @@ void DateRangeManager::OnOk(wxCommandEvent&)
         arr.Add(m_date_range_a[k].getLabelName());
     }
     if (m_type_id == TYPE_ID_CHECKING)
-        PrefModel::instance().setCheckingRange(arr);
+        PrefModel::instance().saveCheckingRange(arr);
     else if (m_type_id == TYPE_ID_REPORTING)
-        PrefModel::instance().setReportingRange(arr);
+        PrefModel::instance().saveReportingRange(arr);
 
     ++m_date_range_m;
 
@@ -344,9 +344,9 @@ void DateRangeManager::OnDefault(wxCommandEvent&)
     wxArrayString arr;
     // delete stored settings
     if (m_type_id == TYPE_ID_CHECKING)
-        PrefModel::instance().setCheckingRange(arr);
+        PrefModel::instance().saveCheckingRange(arr);
     else if (m_type_id == TYPE_ID_REPORTING)
-        PrefModel::instance().setReportingRange(arr);
+        PrefModel::instance().saveReportingRange(arr);
 
     EndModal(wxID_OK);
 }

@@ -342,6 +342,6 @@ void DashboardPanel::onLinkClicked(wxWebViewEvent& event)
     }
 
     wxLogDebug("New %s:\n%s", key, JSON_PrettyFormated(j_doc));
-    InfoModel::instance().setJdoc(key, j_doc);
+    InfoModel::instance().saveJdoc(key, j_doc);
     wxLogDebug("}}}");
 }

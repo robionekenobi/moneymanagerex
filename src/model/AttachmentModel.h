@@ -26,13 +26,18 @@
 
 class AttachmentModel : public TableFactory<AttachmentTable, AttachmentData>
 {
+// -- constructor
+
 public:
-    AttachmentModel();
-    ~AttachmentModel();
+    AttachmentModel() :
+        TableFactory<AttachmentTable, AttachmentData>() {}
+    ~AttachmentModel() {}
 
 public:
     static AttachmentModel& instance(wxSQLite3Database* db);
     static AttachmentModel& instance();
+
+// -- methods
 
 public:
     int  find_ref_c(RefTypeN ref_type, const int64 ref_id);

@@ -29,9 +29,9 @@ FieldRow FieldData::to_row() const
     FieldRow row;
 
     row.FIELDID     = m_id;
-    row.REFTYPE     = m_ref_type.name_n();
+    row.REFTYPE     = m_ref_type.key_n();
     row.DESCRIPTION = m_description;
-    row.TYPE        = m_type_n.name_n();
+    row.TYPE        = m_type_n.key_n();
     row.PROPERTIES  = m_properties;
 
     return row;

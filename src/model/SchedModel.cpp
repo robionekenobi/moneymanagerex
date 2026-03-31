@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2021,2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -29,20 +30,26 @@
  // TODO: Move attachment management outside of AttachmentDialog
 #include "dialog/AttachmentDialog.h"
 
+// -- static
+
 const RefTypeN SchedModel::s_ref_type = RefTypeN(RefTypeN::e_sched);
 
+SchedCol::TRANSCODE SchedModel::TYPE(OP op, TrxType sched_type)
+{
+    return SchedCol::TRANSCODE(op, sched_type.name());
+}
+
+SchedCol::STATUS SchedModel::STATUS(OP op, TrxStatus sched_status)
+{
+    return SchedCol::STATUS(op, sched_status.key());
+}
+
+SchedCol::STATUS SchedModel::IS_VOID(bool value)
+{
+    return SchedCol::STATUS(value ? OP_EQ : OP_NE, TrxStatus(TrxStatus::e_void).key());
+}
+
 // -- constructor --
-
-SchedModel::SchedModel() :
-    TableFactory<SchedTable, SchedData>()
-{
-}
-
-SchedModel::~SchedModel()
-{
-}
-
-// -- static methods --
 
 // Initialize the global SchedModel table.
 // Reset the SchedModel table or create the table if it does not exist.
@@ -62,22 +69,7 @@ SchedModel& SchedModel::instance()
     return Singleton<SchedModel>::instance();
 }
 
-SchedCol::TRANSCODE SchedModel::TYPE(OP op, TrxType sched_type)
-{
-    return SchedCol::TRANSCODE(op, sched_type.name());
-}
-
-SchedCol::STATUS SchedModel::STATUS(OP op, TrxStatus sched_status)
-{
-    return SchedCol::STATUS(op, sched_status.key());
-}
-
-SchedCol::STATUS SchedModel::IS_VOID(bool value)
-{
-    return SchedCol::STATUS(value ? OP_EQ : OP_NE, TrxStatus(TrxStatus::e_void).key());
-}
-
-// -- instance methods --
+// -- override
 
 // Remove the Data record instance from memory and the database
 // including any splits associated with the Data Record.
@@ -95,6 +87,8 @@ bool SchedModel::purge_id(int64 sched_id)
 
     return unsafe_remove_id(sched_id);
 }
+
+// -- methods
 
 const SchedSplitModel::DataA SchedModel::find_id_qp_a(int64 sched_id)
 {
@@ -176,20 +170,19 @@ void SchedModel::reschedule_id(int64 sched_id)
         return;
     }
 
-    sched_n->m_date_time = mmDateTime(sched_n->m_repeat.next_datetime(
-        sched_n->m_date_time.getDateTime()
-    ));
-    sched_n->m_due_date = mmDate(sched_n->m_repeat.next_datetime(
-        sched_n->m_due_date.getDateTime()
-    ));
+    mmDate date = sched_n->m_date();
+    sched_n->m_datetime = mmDateTime(
+        sched_n->m_repeat.next_date(date),
+        sched_n->m_isoTime()
+    );
+    sched_n->m_due_date = sched_n->m_repeat.next_date(
+        sched_n->m_due_date
+    );
     sched_n->m_repeat.next_repeat();
     unsafe_save_data_n(sched_n);
 }
 
-// -- DataExt --
-
-SchedModel::DataExt::DataExt()
-{}
+// -- DataExt
 
 SchedModel::DataExt::DataExt(const Data& sched_d) :
     Data(sched_d),

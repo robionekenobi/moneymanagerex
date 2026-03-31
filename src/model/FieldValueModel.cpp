@@ -1,5 +1,6 @@
 /*******************************************************
  Copyright (C) 2016 Gabriele-V
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -22,14 +23,7 @@
 #include "FieldModel.h"
 #include "FieldValueModel.h"
 
-FieldValueModel::FieldValueModel() :
-    TableFactory<FieldValueTable, FieldValueData>()
-{
-}
-
-FieldValueModel::~FieldValueModel()
-{
-}
+// -- constructor
 
 // Initialize the global FieldValueModel table.
 // Reset the FieldValueModel table or create the table if it does not exist.
@@ -49,10 +43,7 @@ FieldValueModel& FieldValueModel::instance()
     return Singleton<FieldValueModel>::instance();
 }
 
-FieldValueCol::REFID FieldValueModel::REFTYPEID(RefTypeN ref_type, int64 ref_id)
-{
-    return FieldValueCol::REFID(FieldValueData::encode_REFID(ref_type, ref_id));
-}
+// -- methods
 
 bool FieldValueModel::purge_ref(RefTypeN ref_type, int64 ref_id)
 {

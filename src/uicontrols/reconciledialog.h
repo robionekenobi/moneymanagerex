@@ -25,24 +25,7 @@
 
 class mmReconcileDialog: public wxDialog
 {
-    wxDECLARE_DYNAMIC_CLASS(mmReconcileDialog);
-
-public:
-    mmReconcileDialog();
-    ~mmReconcileDialog();
-    mmReconcileDialog(wxWindow* parent, const AccountData* account, JournalPanel* cp);
-
 private:
-
-    enum
-    {
-        ID_CHECK_SHOW_STATE_COL = wxID_HIGHEST + 1,
-        ID_CHECK_SHOW_NUMBER_COL,
-        ID_CHECK_INCLUDE_VOID,
-        ID_CHECK_INCLUDE_DUPLICATED,
-        ID_BUTTON
-    };
-
     enum
     {
         SETTING_SHOW_STATE_COL,
@@ -52,32 +35,54 @@ private:
         SETTING_size
     };
 
-    mmTextCtrl*           m_amountCtrl;
-    wxStaticText*         m_previousCtrl;
-    wxStaticText*         m_clearedBalanceCtrl;
-    wxStaticText*         m_endingCtrl;
-    wxStaticText*         m_differenceLabel;
-    wxStaticText*         m_differenceCtrl;
-    wxListCtrl*           m_listLeft;
-    wxListCtrl*           m_listRight;
-    wxButton*             m_btnCancel;
-    wxButton*             m_btnReconcile;
-    wxButton*             m_btnReconcileLater;
-    wxBitmapButton*       m_btnCalc;
-    wxButton*             m_btnEdit;
-    std::vector<int64>    m_itemDataMap;
-    wxVector<wxBitmapBundle> m_images;
+private:
+    wxDECLARE_DYNAMIC_CLASS(mmReconcileDialog);
+    enum
+    {
+        ID_CHECK_SHOW_STATE_COL = wxID_HIGHEST + 1,
+        ID_CHECK_SHOW_NUMBER_COL,
+        ID_CHECK_INCLUDE_VOID,
+        ID_CHECK_INCLUDE_DUPLICATED,
+        ID_BUTTON
+    };
 
-    mmCalculatorPopup*   m_calculaterPopup;
-    const AccountData*   m_account;
-    const CurrencyData*  m_currency;
-    JournalPanel*        m_checkingPanel;
-    double               m_reconciledBalance;
-    double               m_hiddenDuplicatedBalance;
-    bool                 m_ignore;
-    bool                 m_settings[SETTING_size];
-    int                  m_colwidth[2]; // Store width for hidable columns
+private:
+    const AccountData*  m_account_n;
+    const CurrencyData* m_currency_n;
+    double              m_reconciledBalance;
+    double              m_hiddenDuplicatedBalance;
+    bool                m_ignore;
+    bool                m_settings[SETTING_size];
+    int                 m_colwidth[2]; // Store width for hidable columns
+    std::vector<int64>  m_itemDataMap;
 
+    wxVector<wxBitmapBundle> w_images;
+    JournalPanel*      w_journal;
+    mmTextCtrl*        w_amount_text;
+    wxStaticText*      w_previous_bal_text;
+    wxStaticText*      w_cleared_bal_text;
+    wxStaticText*      w_ending_bal_text;
+    wxStaticText*      w_diff_label;
+    wxStaticText*      w_diff_text;
+    wxListCtrl*        w_left_list;
+    wxListCtrl*        w_right_list;
+    wxButton*          w_cancel_btn;
+    wxButton*          w_reconcile_btn;
+    wxButton*          w_later_btn;
+    wxBitmapButton*    w_calc_btn;
+    wxButton*          w_edit_btn;
+    mmCalculatorPopup* w_calc_popup;
+
+public:
+    mmReconcileDialog();
+    mmReconcileDialog(
+        wxWindow* parent_win,
+        const AccountData* account_n,
+        JournalPanel* journal_panel_n
+    );
+    ~mmReconcileDialog();
+
+private:
     void CreateControls();
     void UpdateAll();
     void FillControls(bool init = false);

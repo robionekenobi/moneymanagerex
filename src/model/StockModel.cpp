@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022,2025 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -23,16 +24,11 @@
 #include "TrxShareModel.h"
 #include "CurrencyHistoryModel.h"
 
+// -- static
+
 const RefTypeN StockModel::s_ref_type = RefTypeN(RefTypeN::e_stock);
 
-StockModel::StockModel() :
-    TableFactory<StockTable, StockData>()
-{
-}
-
-StockModel::~StockModel()
-{
-}
+// -- constructor
 
 // Initialize the global StockModel table.
 // Reset the StockModel table or create the table if it does not exist.
@@ -51,6 +47,8 @@ StockModel& StockModel::instance()
 {
     return Singleton<StockModel>::instance();
 }
+
+// -- override
 
 // Remove the Data record from memory and the database.
 // Delete also all stock history
@@ -74,6 +72,8 @@ bool StockModel::purge_id(int64 id)
     return unsafe_remove_id(id);
 }
 
+// -- methods
+
 const wxString StockModel::get_id_name(int64 stock_id)
 {
     const Data* stock_n = instance().get_id_data_n(stock_id);
@@ -81,7 +81,7 @@ const wxString StockModel::get_id_name(int64 stock_id)
 }
 
 // Return the last price date of a given stock
-const mmDate StockModel::find_last_hist_date(const Data& stock_d)
+mmDate StockModel::find_last_hist_date(const Data& stock_d)
 {
     mmDate date = stock_d.m_purchase_date;
     StockHistoryModel::DataA sh_a = StockHistoryModel::instance().find(
@@ -261,7 +261,9 @@ double StockModel::calculate_unrealiazed_gain(const Data& stock_d, bool to_base_
     const CurrencyData* currency_n = AccountModel::instance().get_id_currency_p(
         stock_d.m_account_id_n
     );
-    double conv_rate = CurrencyHistoryModel::instance().get_id_date_rate(currency_n->m_id);
+    double conv_rate = CurrencyHistoryModel::instance().get_id_date_rate(
+        currency_n->m_id
+    );
     TrxLinkModel::DataA tl_a = TrxLinkModel::instance().find_ref_data_a(
         s_ref_type, stock_d.m_id
     );
@@ -308,7 +310,9 @@ double StockModel::calculate_unrealiazed_gain(const Data& stock_d, bool to_base_
             if (total_initial_value < 0) total_initial_value = 0;
             if (total_shares > 0) avg_share_price = total_initial_value / total_shares;
         }
-        conv_rate = CurrencyHistoryModel::instance().get_id_date_rate(currency_n->m_id);
+        conv_rate = CurrencyHistoryModel::instance().get_id_date_rate(
+            currency_n->m_id
+        );
         return stock_d.current_value() * conv_rate - total_initial_value;
     }
     else {

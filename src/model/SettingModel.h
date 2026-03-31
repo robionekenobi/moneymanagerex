@@ -2,6 +2,7 @@
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2014 - 2022 Nikolay Akimov
  Copyright (C) 2021 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
  
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -27,13 +28,18 @@
 
 class SettingModel : public TableFactory<SettingTable, SettingData>
 {
+// -- contructor
+
 public:
-    SettingModel();
-    ~SettingModel();
+    SettingModel() :
+        TableFactory<SettingTable, SettingData>() {}
+    ~SettingModel() {}
 
 public:
     static SettingModel& instance(wxSQLite3Database* db);
     static SettingModel& instance();
+
+// -- methods
 
 public:
     void setting_savepoint()
@@ -52,39 +58,38 @@ public:
 public:
     bool contains(const wxString& key);
 
-    void setRaw(const wxString& key, const wxString& newValue);
     auto getRaw(const wxString& key, const wxString& defaultValue) -> const wxString;
+    void saveRaw(const wxString& key, const wxString& newValue);
 
-    void setString(const wxString& key, const wxString& newValue);
     auto getString(const wxString& key, const wxString& defaultValue) -> const wxString;
+    void saveString(const wxString& key, const wxString& newValue);
 
-    void setBool(const wxString& key, bool newValue);
     bool getBool(const wxString& key, bool defaultValue);
+    void saveBool(const wxString& key, bool newValue);
 
-    void setInt(const wxString& key, int newValue);
     int  getInt(const wxString& key, int defaultValue);
+    void saveInt(const wxString& key, int newValue);
 
-    void setColour(const wxString& key, const wxColour& newValue);
     auto getColour(const wxString& key, const wxColour& defaultValue) -> const wxColour;
+    void saveColour(const wxString& key, const wxColour& newValue);
 
-    void setJdoc(const wxString& key, Document& newValue);
-    void setJdoc(const wxString& key, StringBuffer& newValue);
     auto getJdoc(const wxString& key, const wxString& defaultValue) -> Document;
+    void saveJdoc(const wxString& key, Document& newValue);
+    void saveJdoc(const wxString& key, StringBuffer& newValue);
 
-    void setArrayString(const wxString& key, const wxArrayString& a);
     auto getArrayString(const wxString& key) -> const wxArrayString;
+    void saveArrayString(const wxString& key, const wxArrayString& a);
 
     void prependArrayItem(const wxString& key, const wxString& value, int limit);
 
-    void setViewAccounts(const wxString& newValue);
     auto getViewAccounts() -> const wxString;
+    void saveViewAccounts(const wxString& newValue);
     
-    void setTheme(const wxString& newValue);
     auto getTheme() -> const wxString;
+    void saveTheme(const wxString& newValue);
 
     auto getLastDbPath() -> const wxString;
 
     void shrinkUsageTable();
     auto to_html_row() -> row_t;
 };
-

@@ -69,10 +69,10 @@ void mmFileHistory::SaveHistory()
                 SettingModel::instance().getString("LASTFILENAME", "") :
                 GetHistoryFile(i);
             wxLogDebug("%s %s", buf, historyFile);
-            SettingModel::instance().setString(buf, historyFile);
+            SettingModel::instance().saveString(buf, historyFile);
         }
         else {
-            SettingModel::instance().setString(buf, wxString(""));
+            SettingModel::instance().saveString(buf, wxString(""));
         }
     }
     SettingModel::instance().db_release_savepoint();

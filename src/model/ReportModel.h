@@ -1,5 +1,6 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -56,13 +57,18 @@ struct ReportParam
 
 class ReportModel : public TableFactory<ReportTable, ReportData>
 {
+// -- constructor
+
 public:
-    ReportModel(); 
-    ~ReportModel();
+    ReportModel() :
+        TableFactory<ReportTable, ReportData>() {}
+    ~ReportModel() {}
 
 public:
     static ReportModel& instance(wxSQLite3Database* db);
     static ReportModel& instance();
+
+// -- methods
 
 public:
     auto get_name_data_n(const wxString& name) -> const Data*;
@@ -72,4 +78,3 @@ public:
     // not used
     bool sql_result_as_json(const wxString& query, PrettyWriter<StringBuffer>& json_writer);
 };
-

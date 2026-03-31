@@ -43,15 +43,15 @@ mmDatePeriod::MapLabelId mmDatePeriod::makeLabelId()
     return map;
 }
 
-mmDatePeriod::mmDatePeriod(Id id_new) :
-    id(id_new)
+mmDatePeriod::mmDatePeriod(Id id) :
+    m_id(id)
 {
 }
 
 mmDatePeriod::mmDatePeriod(char label)
 {
     auto it = mapLabelId.find(label);
-    id = (it == mapLabelId.end()) ? _A : it->second;
+    m_id = (it == mapLabelId.end()) ? _A : it->second;
 }
 
 wxDateSpan mmDatePeriod::span(int offset, mmDatePeriod period)
@@ -71,35 +71,35 @@ wxDateSpan mmDatePeriod::span(int offset, mmDatePeriod period)
 }
 
 mmDateRange2::Range::Range(
-    int so1_new, mmDatePeriod  sp1_new,
-    int eo1_new, mmDatePeriod  ep1_new,
-    int so2_new, mmDatePeriodN sp2_new,
-    int eo2_new, mmDatePeriodN ep2_new,
-    int f_new, wxString name_new
+    int so1, mmDatePeriod  sp1,
+    int eo1, mmDatePeriod  ep1,
+    int so2, mmDatePeriodN sp2,
+    int eo2, mmDatePeriodN ep2,
+    int f, wxString name
 ) :
-    sp1(sp1_new),
-    ep1(ep1_new)
+    m_sp1(sp1),
+    m_ep1(ep1)
 {
-    // so1/eo1 is not applicable if sp1/ep1 resp., is mmDatePeriod::_A
-    so1 = (sp1 == mmDatePeriod::_A) ? 0 : so1_new;
-    eo1 = (ep1 == mmDatePeriod::_A) ? 0 : eo1_new;
-    // either both sp2 and ep2 are null, or none of them
-    if (!sp2_new.has_value() || !ep2_new.has_value()) {
-        // so2/eo2 are not applicable if sp2/ep2 are null
-        sp2 = mmDatePeriodN(); so2 = 0;
-        ep2 = mmDatePeriodN(); eo2 = 0;
+    // m_so1/m_eo1 is not applicable if m_sp1/m_ep1 resp., is mmDatePeriod::_A
+    m_so1 = (m_sp1 == mmDatePeriod::_A) ? 0 : so1;
+    m_eo1 = (m_ep1 == mmDatePeriod::_A) ? 0 : eo1;
+    // either both m_sp2 and m_ep2 are null, or none of them
+    if (!sp2.has_value() || !ep2.has_value()) {
+        // m_so2/m_eo2 are not applicable if m_sp2/m_ep2 are null
+        m_sp2 = mmDatePeriodN(); m_so2 = 0;
+        m_ep2 = mmDatePeriodN(); m_eo2 = 0;
     }
     else {
-        // so2/eo2 is not applicable if sp2/ep2 resp., is mmDatePeriod::A
-        sp2 = sp2_new; so2 = (sp2 == mmDatePeriod::_A) ? 0 : so2_new;
-        ep2 = ep2_new; eo2 = (ep2 == mmDatePeriod::_A) ? 0 : eo2_new;
+        // m_so2/m_eo2 is not applicable if m_sp2/m_ep2 resp., is mmDatePeriod::A
+        m_sp2 = sp2; m_so2 = (m_sp2 == mmDatePeriod::_A) ? 0 : so2;
+        m_ep2 = ep2; m_eo2 = (m_ep2 == mmDatePeriod::_A) ? 0 : eo2;
     }
-    // f is either 0 (calendar) or 1 (financial)
-    f = (f_new == 1) ? 1 : 0;
-    name = name_new;
+    // m_f is either 0 (calendar) or 1 (financial)
+    m_f = (f == 1) ? 1 : 0;
+    m_name = name;
 }
 
-void mmDateRange2::Range::scanWhiteSpace(StringIt &buffer_i, StringIt buffer_end)
+void mmDateRange2::Range::scanWhiteSpace(StringIt& buffer_i, StringIt buffer_end)
 {
     const wxString ws = " \t\r\n"; 
     while (buffer_i != buffer_end && ws.Find(*buffer_i) != wxNOT_FOUND)
@@ -116,8 +116,8 @@ void mmDateRange2::Range::scanWhiteSpace(StringIt &buffer_i, StringIt buffer_end
 //   _ : error
 // token_o is set if token==o; token_p is set if token==p
 char mmDateRange2::Range::scanToken(
-    StringIt &buffer_i, StringIt buffer_end,
-    int &token_o, mmDatePeriod &token_p
+    StringIt& buffer_i, StringIt buffer_end,
+    int& token_o, mmDatePeriod& token_p
 ) {
     scanWhiteSpace(buffer_i, buffer_end);
     if (buffer_i == buffer_end)
@@ -181,16 +181,16 @@ char mmDateRange2::Range::scanToken(
 }
 
 // return true if parse is successful
-bool mmDateRange2::Range::parseLabel(StringIt &buffer_i, StringIt buffer_end)
+bool mmDateRange2::Range::parseLabel(StringIt& buffer_i, StringIt buffer_end)
 {
     // range = subrange ("," subrange)? ("F")? (";" name)?
     // subrange = so? sp ".." eo? ep
     // subrange = so ".." eo p
     // subrange = o? p
 
-    int so_new[2] = { 0, 0 }; mmDatePeriodN sp_new[2] = { mmDatePeriodN(), mmDatePeriodN() };
-    int eo_new[2] = { 0, 0 }; mmDatePeriodN ep_new[2] = { mmDatePeriodN(), mmDatePeriodN() };
-    int f_new = 0;
+    int so[2] = { 0, 0 }; mmDatePeriodN sp[2] = { mmDatePeriodN(), mmDatePeriodN() };
+    int eo[2] = { 0, 0 }; mmDatePeriodN ep[2] = { mmDatePeriodN(), mmDatePeriodN() };
+    int f = 0;
     int i = 0;     // index into {s,e}{o,p}[] (0: first subrange, 1: second subrange)
     int state = 0; // parse state: 0 (so) 1 (sp) 2 (..) 3 (eo) 4 (ep) 5 (f) 6 (;) 7
 
@@ -201,12 +201,12 @@ bool mmDateRange2::Range::parseLabel(StringIt &buffer_i, StringIt buffer_end)
         token = scanToken(buffer_i, buffer_end, token_o, token_p);
         //wxLogDebug("DEBUG: state=%d, token=%c", state, token);
         if (state == 0 && token == 'o') {
-            so_new[i] = token_o;
+            so[i] = token_o;
             state = 1;
             continue;
         }
         if ((state == 0 || state == 1) && token == 'p') {
-            sp_new[i] = token_p;
+            sp[i] = token_p;
             state = 2;
             continue;
         }
@@ -215,20 +215,20 @@ bool mmDateRange2::Range::parseLabel(StringIt &buffer_i, StringIt buffer_end)
             continue;
         }
         if (state == 3 && token == 'o') {
-            eo_new[i] = token_o;
+            eo[i] = token_o;
             state = 4;
             continue;
         }
         if ((state == 3 || state == 4) && token == 'p') {
-            if (!sp_new[i].has_value())
-                sp_new[i] = token_p;
-            ep_new[i] = token_p;
+            if (!sp[i].has_value())
+                sp[i] = token_p;
+            ep[i] = token_p;
             state = 5;
             continue;
         }
         if (state == 2 && ((i == 0 && token == ',') || token == 'f' || token == ';')) {
-            eo_new[i] = so_new[i];
-            ep_new[i] = sp_new[i];
+            eo[i] = so[i];
+            ep[i] = sp[i];
             state = 5;
         }
         if (i == 0 && state == 5 && token == ',') {
@@ -237,7 +237,7 @@ bool mmDateRange2::Range::parseLabel(StringIt &buffer_i, StringIt buffer_end)
             continue;
         }
         if (state == 5 && token == 'f') {
-            f_new = 1;
+            f = 1;
             state = 6;
             continue;
         }
@@ -248,36 +248,36 @@ bool mmDateRange2::Range::parseLabel(StringIt &buffer_i, StringIt buffer_end)
         break;
     }
 
-    if (state != 7 || !sp_new[0].has_value() || !ep_new[0].has_value()) {
+    if (state != 7 || !sp[0].has_value() || !ep[0].has_value()) {
         wxLogDebug("ERROR: mmDateRange2::Range::parseLabel(): state=%d", state);
         return false;
     }
 
-    so1 = so_new[0]; sp1 = sp_new[0].value(); so2 = so_new[1]; sp2 = sp_new[1];
-    eo1 = eo_new[0]; ep1 = ep_new[0].value(); eo2 = eo_new[1]; ep2 = ep_new[1];
-    f = f_new;
+    m_so1 = so[0]; m_sp1 = sp[0].value(); m_so2 = so[1]; m_sp2 = sp[1];
+    m_eo1 = eo[0]; m_ep1 = ep[0].value(); m_eo2 = eo[1]; m_ep2 = ep[1];
+    m_f = f;
 
     return true;
 }
 
-void mmDateRange2::Range::parseName(StringIt &buffer_i, StringIt buffer_end)
+void mmDateRange2::Range::parseName(StringIt& buffer_i, StringIt buffer_end)
 {
-    name = "";
+    m_name = "";
     scanWhiteSpace(buffer_i, buffer_end);
-    name.append(buffer_i, buffer_end);
+    m_name.append(buffer_i, buffer_end);
 }
 
-bool mmDateRange2::Range::parseLabelName(const wxString &buffer, const wxString &name_new)
+bool mmDateRange2::Range::parseLabelName(const wxString& buffer, const wxString& name)
 {
-    Range range_new = Range();
+    Range range = Range();
     StringIt buffer_i = buffer.begin();
-    if (!range_new.parseLabel(buffer_i, buffer.end()))
+    if (!range.parseLabel(buffer_i, buffer.end()))
         return false;
-    if (!name_new.empty())
-        range_new.name = name_new;
+    if (!name.empty())
+        range.m_name = name;
     else
-        range_new.parseName(buffer_i, buffer.end());
-    *this = range_new;
+        range.parseName(buffer_i, buffer.end());
+    *this = range;
     return true;
 }
 
@@ -300,30 +300,30 @@ const wxString mmDateRange2::Range::getLabel() const
     StringBuilder sb;
 
     // first range
-    if (sp1 == ep1) {
-        sb.append(offsetRangeStr(so1, eo1)); sb.sep(); sb.append(sp1.label());
+    if (m_sp1 == m_ep1) {
+        sb.append(offsetRangeStr(m_so1, m_eo1)); sb.sep(); sb.append(m_sp1.label());
     }
     else {
-        sb.append(offsetStr(so1)); sb.sep(); sb.append(sp1.label());
+        sb.append(offsetStr(m_so1)); sb.sep(); sb.append(m_sp1.label());
         sb.sep(); sb.append(".."); sb.sep();
-        sb.append(offsetStr(eo1)); sb.sep(); sb.append(ep1.label());
+        sb.append(offsetStr(m_eo1)); sb.sep(); sb.append(m_ep1.label());
     }
 
     // second range
-    if (sp2.has_value() && ep2.has_value()) {
+    if (m_sp2.has_value() && m_ep2.has_value()) {
         sb.append(","); sb.sep();
-        if (sp2 == ep2) {
-            sb.append(offsetRangeStr(so2, eo2)); sb.sep(); sb.append(sp2.value().label());
+        if (m_sp2 == m_ep2) {
+            sb.append(offsetRangeStr(m_so2, m_eo2)); sb.sep(); sb.append(m_sp2.value().label());
         }
         else {
-            sb.append(offsetStr(so2)); sb.sep(); sb.append(sp2.value().label());
+            sb.append(offsetStr(m_so2)); sb.sep(); sb.append(m_sp2.value().label());
             sb.sep(); sb.append(".."); sb.sep();
-            sb.append(offsetStr(eo2)); sb.sep(); sb.append(ep2.value().label());
+            sb.append(offsetStr(m_eo2)); sb.sep(); sb.append(m_ep2.value().label());
         }
     }
 
     // financial
-    if (f == 1) {
+    if (m_f == 1) {
         sb.sep(); sb.append("F");
     }
 
@@ -333,9 +333,9 @@ const wxString mmDateRange2::Range::getLabel() const
 const wxString mmDateRange2::Range::getLabelName() const
 {
     wxString s = getLabel();
-    if (!name.empty()) {
+    if (!m_name.empty()) {
         s.append("; ");
-        s.append(name);
+        s.append(m_name);
     }
     return s;
 }
@@ -357,21 +357,21 @@ const wxString mmDateRange2::Range::checkingDescription() const
 }
 
 mmDateRange2::Reporting::Reporting(
-    int m_new, mmDatePeriod p_new
+    int m, mmDatePeriod p
 ) :
-    // p cannot be mmDatePeriod::_S (account statement date)
-    // m cannot be 0; it is normalized to 1 if p is mmDatePeriod::_A
-    m((m_new == 0 || p_new == mmDatePeriod::_A) ? 1 : m_new),
-    p((p_new == mmDatePeriod::_S) ? mmDatePeriod::_T : p_new)
+    // m_p cannot be mmDatePeriod::_S (account statement date)
+    // m_m cannot be 0; it is normalized to 1 if m_p is mmDatePeriod::_A
+    m_m((m == 0 || p == mmDatePeriod::_A) ? 1 : m),
+    m_p((p == mmDatePeriod::_S) ? mmDatePeriod::_T : p)
 {
 }
 
 // return true if parse is successful
-bool mmDateRange2::Reporting::parseLabel(StringIt &buffer_i, StringIt buffer_end)
+bool mmDateRange2::Reporting::parseLabel(StringIt& buffer_i, StringIt buffer_end)
 {
     // reporting = m? p
 
-    int m_new = 1; mmDatePeriod p_new = mmDatePeriod::_A;
+    int m = 1; mmDatePeriod p = mmDatePeriod::_A;
     int state = 0; // parse state: 0 (m) 1 (p) 2 (;) 3
 
     while (1) {
@@ -381,17 +381,17 @@ bool mmDateRange2::Reporting::parseLabel(StringIt &buffer_i, StringIt buffer_end
         token = mmDateRange2::Range::scanToken(buffer_i, buffer_end, token_o, token_p);
         //wxLogDebug("DEBUG: state=%d, token=%c", state, token);
         if (state == 0 && token == 'o') {
-            // m cannot be 0
-            m_new = (token_o == 0) ? 1 : token_o;
+            // m_m cannot be 0
+            m = (token_o == 0) ? 1 : token_o;
             state = 1;
             continue;
         }
         if ((state == 0 || state == 1) && token == 'p') {
-            // m is normalized to 1 if p is mmDatePeriod::_A
+            // m_m is normalized to 1 if m_p is mmDatePeriod::_A
             if (token_p == mmDatePeriod::_A)
-                m_new = 1;
-            // p cannot be mmDatePeriod::_S
-            p_new = (token_p == mmDatePeriod::_S) ? mmDatePeriod::_T : token_p;
+                m = 1;
+            // m_p cannot be mmDatePeriod::_S
+            p = (token_p == mmDatePeriod::_S) ? mmDatePeriod::_T : token_p;
             state = 2;
             continue;
         }
@@ -407,8 +407,8 @@ bool mmDateRange2::Reporting::parseLabel(StringIt &buffer_i, StringIt buffer_end
         return false;
     }
 
-    m = m_new;
-    p = p_new;
+    m_m = m;
+    m_p = p;
 
     return true;
 }
@@ -416,77 +416,77 @@ bool mmDateRange2::Reporting::parseLabel(StringIt &buffer_i, StringIt buffer_end
 const wxString mmDateRange2::Reporting::getLabel() const
 {
     StringBuilder sb;
-    sb.append(multiplierStr(m)); sb.sep(); sb.append(p.label());
+    sb.append(multiplierStr(m_m)); sb.sep(); sb.append(m_p.label());
     return sb.buffer;
 }
 
 mmDateRange2::mmDateRange2(
-    mmDateN sDateN_new,
-    mmDate  tDate_new,
-    mmDateN defStartDateN_new,
-    mmDateN defEndDateN_new
+    mmDateN sDateN,
+    mmDate  tDate,
+    mmDateN defStartDateN,
+    mmDateN defEndDateN
 ) :
-    firstDay{
+    m_firstDay{
         PrefModel::instance().getReportingFirstDay(),
         PrefModel::instance().getFinancialFirstDay()
     },
-    firstMonth{
+    m_firstMonth{
         wxDateTime::Jan,
         PrefModel::instance().getFinancialFirstMonth()
     },
-    firstWeekday(
+    m_firstWeekday(
         PrefModel::instance().getReportingFirstWeekday()
     ),
-    sDateN(sDateN_new),
-    tDate(tDate_new),
-    defStartDateN(defStartDateN_new),
-    defEndDateN(defEndDateN_new),
-    range(Range()),
-    reporting(Reporting())
+    m_sDateN(sDateN),
+    m_tDate(tDate),
+    m_defStartDateN(defStartDateN),
+    m_defEndDateN(defEndDateN),
+    m_range(Range()),
+    m_reporting(Reporting())
 {
 }
 
 #ifndef NDEBUG
 mmDateRange2::mmDateRange2(
-    int firstDay_new_0, int firstDay_new_1,
-    wxDateTime::Month firstMonth_new_0, wxDateTime::Month firstMonth_new_1,
-    wxDateTime::WeekDay firstWeekday_new,
-    mmDateN sDateN_new,
-    mmDate  tDate_new,
-    mmDateN defStartDateN_new,
-    mmDateN defEndDateN_new
+    int firstDay_0, int firstDay_1,
+    wxDateTime::Month firstMonth_0, wxDateTime::Month firstMonth_1,
+    wxDateTime::WeekDay firstWeekday,
+    mmDateN sDateN,
+    mmDate  tDate,
+    mmDateN defStartDateN,
+    mmDateN defEndDateN
 ) :
-    firstDay{firstDay_new_0, firstDay_new_1},
-    firstMonth{firstMonth_new_0, firstMonth_new_1},
-    firstWeekday(firstWeekday_new),
-    sDateN(sDateN_new),
-    tDate(tDate_new),
-    defStartDateN(defStartDateN_new),
-    defEndDateN(defEndDateN_new),
-    range(Range()),
-    reporting(Reporting())
+    m_firstDay{firstDay_0, firstDay_1},
+    m_firstMonth{firstMonth_0, firstMonth_1},
+    m_firstWeekday(firstWeekday),
+    m_sDateN(sDateN),
+    m_tDate(tDate),
+    m_defStartDateN(defStartDateN),
+    m_defEndDateN(defEndDateN),
+    m_range(Range()),
+    m_reporting(Reporting())
 {
 }
 #endif
 
 // return true if parse is successful
-bool mmDateRange2::parseRange(const wxString &buffer, const wxString &name)
+bool mmDateRange2::parseRange(const wxString& buffer, const wxString& name)
 {
-    Range range_new = Range();
-    if (!range_new.parseLabelName(buffer, name))
+    Range range = Range();
+    if (!range.parseLabelName(buffer, name))
         return false;
-    range = range_new;
+    m_range = range;
     return true;
 }
 
 // return true if parse is successful
-bool mmDateRange2::parseReporting(const wxString &buffer)
+bool mmDateRange2::parseReporting(const wxString& buffer)
 {
-    Reporting reporting_new = Reporting();
+    Reporting reporting = Reporting();
     StringIt buffer_i = buffer.begin();
-    if (!reporting_new.parseLabel(buffer_i, buffer.end()))
+    if (!reporting.parseLabel(buffer_i, buffer.end()))
         return false;
-    reporting = reporting_new;
+    m_reporting = reporting;
     return true;
 }
 
@@ -494,105 +494,106 @@ mmDateN mmDateRange2::periodStartN(mmDate date, mmDatePeriod period) const
 {
     if (period == mmDatePeriod::_A)
         return mmDateN();
-    wxDateTime s = date.getDateTime();
+    wxDateTime s = date.dateTime();
     if (period == mmDatePeriod::_Y || period == mmDatePeriod::_Q || period == mmDatePeriod::_M) {
-        if (s.GetDay() < firstDay[range.f])
+        if (s.GetDay() < m_firstDay[m_range.m_f])
             s -= wxDateSpan::Months(1);
-        s.SetDay(firstDay[range.f]);
+        s.SetDay(m_firstDay[m_range.m_f]);
         if (period == mmDatePeriod::_Y) {
-            if (s.GetMonth() < firstMonth[range.f])
+            if (s.GetMonth() < m_firstMonth[m_range.m_f])
                 s -= wxDateSpan::Years(1);
-            s.SetMonth(firstMonth[range.f]);
+            s.SetMonth(m_firstMonth[m_range.m_f]);
         }
         else if (period == mmDatePeriod::_Q) {
-            int m = (s.GetMonth() - firstMonth[range.f] + 12) % 3;
+            int m = (s.GetMonth() - m_firstMonth[m_range.m_f] + 12) % 3;
             if (m > 0)
                 s -= wxDateSpan::Months(m);
         }
     }
     else if (period == mmDatePeriod::_W) {
-        int d = (s.GetWeekDay() - firstWeekday + 7) % 7;
+        int d = (s.GetWeekDay() - m_firstWeekday + 7) % 7;
         if (d > 0)
             s -= wxDateSpan::Days(d);
     }
-    return mmDate(s);
+    return mmDateN(s);
 }
 
 mmDateN mmDateRange2::periodEndN(mmDate date, mmDatePeriod period) const
 {
     if (period == mmDatePeriod::_A)
         return mmDateN();
-    wxDateTime e = date.getDateTime();
+    wxDateTime e = date.dateTime();
     if (period == mmDatePeriod::_Y || period == mmDatePeriod::_Q || period == mmDatePeriod::_M) {
-        if (e.GetDay() >= firstDay[range.f])
+        if (e.GetDay() >= m_firstDay[m_range.m_f])
             e += wxDateSpan::Months(1);
-        e.SetDay(firstDay[range.f]);
+        e.SetDay(m_firstDay[m_range.m_f]);
         if (period == mmDatePeriod::_Y) {
-            if (e.GetMonth() > firstMonth[range.f])
+            if (e.GetMonth() > m_firstMonth[m_range.m_f])
                 e += wxDateSpan::Years(1);
-            e.SetMonth(firstMonth[range.f]);
+            e.SetMonth(m_firstMonth[m_range.m_f]);
         }
         else if (period == mmDatePeriod::_Q) {
-            int m = (firstMonth[range.f] - e.GetMonth() + 12) % 3;
+            int m = (m_firstMonth[m_range.m_f] - e.GetMonth() + 12) % 3;
             if (m > 0)
                 e += wxDateSpan::Months(m);
         }
         e -= wxDateSpan::Days(1);
     }
     else if (period == mmDatePeriod::_W) {
-        int d = (firstWeekday - e.GetWeekDay() + 6) % 7;
+        int d = (m_firstWeekday - e.GetWeekDay() + 6) % 7;
         if (d > 0)
             e += wxDateSpan::Days(d);
     }
-    return mmDate(e);
+    return mmDateN(e);
 }
 
 mmDateN mmDateRange2::rangeStartN() const
 {
-    if (range.sp1 == mmDatePeriod::_A || range.sp2 == mmDatePeriod::_A)
-        return defStartDateN;
-    mmDateN s1N = (range.sp1 == mmDatePeriod::_S) ? sDateN : tDate;
+    if (m_range.m_sp1 == mmDatePeriod::_A || m_range.m_sp2 == mmDatePeriod::_A)
+        return m_defStartDateN;
+    mmDateN s1N = (m_range.m_sp1 == mmDatePeriod::_S) ? m_sDateN : m_tDate;
     if (!s1N.has_value())
         return mmDateN();
     mmDate s1 = s1N.value();
-    if (range.so1 != 0)
-        s1.addDateSpan(mmDatePeriod::span(range.so1, range.sp1));
-    s1 = periodStartN(s1, range.sp1).value();
-    if (!range.sp2.has_value())
+    if (m_range.m_so1 != 0)
+        s1.addDateSpan(mmDatePeriod::span(m_range.m_so1, m_range.m_sp1));
+    s1 = periodStartN(s1, m_range.m_sp1).value();
+    if (!m_range.m_sp2.has_value())
         return s1;
-    mmDateN s2N = (range.sp2 == mmDatePeriod::_S) ? sDateN : tDate;
+    mmDateN s2N = (m_range.m_sp2 == mmDatePeriod::_S) ? m_sDateN : m_tDate;
     if (!s2N.has_value())
         return mmDateN();
     mmDate s2 = s2N.value();
-    if (range.so2 != 0)
-        s2.addDateSpan(mmDatePeriod::span(range.so2, range.sp2.value()));
-    mmDatePeriod p = range.sp1.toInt() > range.sp2.value().toInt() ? range.sp1
-        : range.sp2.value();
+    if (m_range.m_so2 != 0)
+        s2.addDateSpan(mmDatePeriod::span(m_range.m_so2, m_range.m_sp2.value()));
+    mmDatePeriod p = m_range.m_sp1.toInt() > m_range.m_sp2.value().toInt() ? m_range.m_sp1
+        : m_range.m_sp2.value();
     s2 = periodStartN(s2, p).value();
     return s1 <= s2 ? s1 : s2;
 }
 
 mmDateN mmDateRange2::rangeEndN() const
 {
-    if (range.ep1 == mmDatePeriod::_A || range.ep2 == mmDatePeriod::_A)
-        return defEndDateN;
-    mmDateN e1N = (range.ep1 == mmDatePeriod::_S) ? sDateN : tDate;
+    if (m_range.m_ep1 == mmDatePeriod::_A || m_range.m_ep2 == mmDatePeriod::_A)
+        return m_defEndDateN;
+    mmDateN e1N = (m_range.m_ep1 == mmDatePeriod::_S) ? m_sDateN : m_tDate;
     if (!e1N.has_value())
         return mmDateN();
     mmDate e1 = e1N.value();
-    if (range.eo1 != 0)
-        e1.addDateSpan(mmDatePeriod::span(range.eo1, range.ep1));
-    e1 = periodEndN(e1, range.ep1).value();
-    if (!range.ep2.has_value())
+    if (m_range.m_eo1 != 0)
+        e1.addDateSpan(mmDatePeriod::span(m_range.m_eo1, m_range.m_ep1));
+    e1 = periodEndN(e1, m_range.m_ep1).value();
+    if (!m_range.m_ep2.has_value())
         return e1;
-    mmDateN e2N = (range.ep2 == mmDatePeriod::_S) ? sDateN : tDate;
+    mmDateN e2N = (m_range.m_ep2 == mmDatePeriod::_S) ? m_sDateN : m_tDate;
     if (!e2N.has_value())
         return mmDateN();
     mmDate e2 = e2N.value();
-    if (range.eo2 != 0)
-        e2.addDateSpan(mmDatePeriod::span(range.eo2, range.ep2.value()));
-    mmDatePeriod p = range.ep1.toInt() > range.ep2.value().toInt() ? range.ep1
-        : range.ep2.value();
+    if (m_range.m_eo2 != 0)
+        e2.addDateSpan(mmDatePeriod::span(m_range.m_eo2, m_range.m_ep2.value()));
+    mmDatePeriod p = m_range.m_ep1.toInt() > m_range.m_ep2.value().toInt()
+        ? m_range.m_ep1
+        : m_range.m_ep2.value();
     e2 = periodEndN(e2, p).value();
     return e2 <= e1 ? e1 : e2;
 }
@@ -609,28 +610,28 @@ mmDateN mmDateRange2::reportingNextN() const
     if (s > e)
         return mmDateN();
 
-    if (reporting.p == mmDatePeriod::_A)
+    if (m_reporting.m_p == mmDatePeriod::_A)
         return e;
 
-    if (reporting.m > 0) {
+    if (m_reporting.m_m > 0) {
         // return the end of the multi-period aligned at s
         // (i.e., its first period contains s)
-        mmDate next = periodEndN(s, reporting.p).value();
-        if (reporting.m > 1) {
-            next.addDateSpan(mmDatePeriod::span(reporting.m - 1, reporting.p));
-            next = periodEndN(next, reporting.p).value();
+        mmDate next = periodEndN(s, m_reporting.m_p).value();
+        if (m_reporting.m_m > 1) {
+            next.addDateSpan(mmDatePeriod::span(m_reporting.m_m - 1, m_reporting.m_p));
+            next = periodEndN(next, m_reporting.m_p).value();
         }
         return next <= e ? next : e;
     }
-    else { // if (reporting.m < 0)
+    else { // if (m_reporting.m_m < 0)
         // return the end of the multi-period aligned at e
         // (i.e., its last period contains e)
-        mmDate next = periodEndN(e, reporting.p).value();
-        mmDate next1 = next.plusDateSpan(mmDatePeriod::span(reporting.m, reporting.p));
+        mmDate next = periodEndN(e, m_reporting.m_p).value();
+        mmDate next1 = next.plusDateSpan(mmDatePeriod::span(m_reporting.m_m, m_reporting.m_p));
         while (s <= next1) {
             next = next1;
-            next1.addDateSpan(mmDatePeriod::span(reporting.m, reporting.p));
-            next1 = periodEndN(next1, reporting.p).value();
+            next1.addDateSpan(mmDatePeriod::span(m_reporting.m_m, m_reporting.m_p));
+            next1 = periodEndN(next1, m_reporting.m_p).value();
         }
         return next <= e ? next : e;
     }
@@ -651,7 +652,7 @@ const wxString mmDateRange2::checkingTooltip() const
     sb.flush();
 
     sb.append("\n");
-    sb.append(range.checkingDescription());
+    sb.append(m_range.checkingDescription());
     return sb.buffer;
 }
 
@@ -661,53 +662,53 @@ const wxString mmDateRange2::reportingTooltip() const
     return "";
 }
 
-mmDateRange2::ReportingIterator::ReportingIterator(const mmDateRange2* a_new) :
-    a(a_new),
-    count(0),
-    nextDateN(a_new->reportingNextN()),
-    lastDateN(a_new->rangeEndN())
+mmDateRange2::ReportingIterator::ReportingIterator(const mmDateRange2* a) :
+    m_a(a),
+    m_count(0),
+    m_nextDateN(a->reportingNextN()),
+    m_lastDateN(a->rangeEndN())
 {
 }
 
 void mmDateRange2::ReportingIterator::increment()
 {
-    // The iterator reaches the end when (nextDateN == lastDateN)
-    // (this includes the special case of open end, in which lastDateN is null).
-    // count is initialized to 0 and set to -1 at the end.
+    // The iterator reaches the end when (m_nextDateN == m_lastDateN)
+    // (this includes the special case of open end, in which m_lastDateN is null).
+    // m_count is initialized to 0 and set to -1 at the end.
     // Notice that the iterator returns at least one mmDateN before it reaches the end.
 
-    if (count == -1)
+    if (m_count == -1)
         return;
-    if (!nextDateN.has_value() || nextDateN == lastDateN) {
-        count = -1;
+    if (!m_nextDateN.has_value() || m_nextDateN == m_lastDateN) {
+        m_count = -1;
         return;
     }
-    if (!nextDateN.has_value() || !lastDateN.has_value()) {
+    if (!m_nextDateN.has_value() || !m_lastDateN.has_value()) {
         // this should not happen
-        wxLogDebug("ERROR in mmDateRange2::ReportingIterator: only one of nextDateN, lastDateN is null");
-        count = -1;
+        wxLogDebug("ERROR in mmDateRange2::ReportingIterator: only one of m_nextDateN, m_lastDateN is null");
+        m_count = -1;
         return;
     }
 
-    int rm = a->reporting.m;
+    int rm = m_a->m_reporting.m_m;
     if (rm < 0) rm = -rm;
-    mmDatePeriod rp = a->reporting.p;
+    mmDatePeriod rp = m_a->m_reporting.m_p;
     // assertion: rp is not mmDatePeriod::_A
-    mmDate next1 = nextDateN.value().plusDateSpan(mmDatePeriod::span(rm, rp));
-    next1 = a->periodEndN(next1, rp).value();
-    if (lastDateN.value() < next1)
-        next1 = lastDateN.value();
+    mmDate next1 = m_nextDateN.value().plusDateSpan(mmDatePeriod::span(rm, rp));
+    next1 = m_a->periodEndN(next1, rp).value();
+    if (m_lastDateN.value() < next1)
+        next1 = m_lastDateN.value();
 
-    if (next1 <= nextDateN.value()) {
+    if (next1 <= m_nextDateN.value()) {
         // this should not happen
-        // nextDateN must strictly increase in each step
+        // m_nextDateN must strictly increase in each step
         wxLogDebug("ERROR in mmDateRange2::ReportingIterator: cannot increment");
-        count = -1;
+        m_count = -1;
         return;
     }
 
-    ++count;
-    nextDateN = next1;
+    ++m_count;
+    m_nextDateN = next1;
 }
 
 #ifndef NDEBUG
@@ -737,8 +738,8 @@ bool mmDateRange2::debug()
         mmDate(sDateTime), mmDate(tDateTime),
         mmDateN(), mmDate(defEndDateTime)
     );
-    wxLogDebug("INFO: sDateN.dateTime=[%s]", dateTimeISO(dr.getSDateN().getDateTimeN()));
-    wxLogDebug("INFO: tDate.dateTime=[%s]", dateTimeISO(dr.getTDate().getDateTime()));
+    wxLogDebug("INFO: sDateN=[%s]", dr.getSDateN().isoDateN());
+    wxLogDebug("INFO: tDate=[%s]", dr.getTDate().isoDate());
     wxLogDebug("INFO: defStartDateN=[%s]", dr.getDefStartDateN().isoDateN());
     wxLogDebug("INFO: defEndDateN=[%s]", dr.getDefEndDateN().isoDateN());
 
