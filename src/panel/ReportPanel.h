@@ -116,15 +116,6 @@ public:
     );
     ~ReportPanel();
 
-// -- override
-
-public:
-    // override PanelBase
-    virtual void printPage() override { w_browser->Print(); }
-    virtual void sortList() override {}
-
-// -- methods
-
 private:
     bool create(
         wxWindow* parent_win,
@@ -135,6 +126,17 @@ private:
         const wxString& name = "ReportPanel"
     );
     void createControls();
+
+// -- override
+
+public:
+    // override PanelBase
+    virtual void printPage() override { w_browser->Print(); }
+    virtual void sortList() override {}
+
+// -- methods
+
+private:
     void loadFilterSettings();
     void saveFilterSettings();
     void updateFilter();

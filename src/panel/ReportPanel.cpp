@@ -134,8 +134,6 @@ ReportPanel::~ReportPanel()
     clearVFprintedFiles("rep");
 }
 
-// -- methods
-
 bool ReportPanel::create(
     wxWindow* parent_win,
     wxWindowID win_id,
@@ -510,6 +508,8 @@ void ReportPanel::createControls()
     itemBoxSizer2->Add(w_browser, 1, wxGROW | wxALL, 1);
 }
 
+// -- methods
+
 // function only used for new filter
 void ReportPanel::loadFilterSettings()
 {
@@ -603,7 +603,8 @@ void ReportPanel::saveFilterSettings()
         : "REPORT_FILTER_ALL";
     Document j_doc = InfoModel::instance().getJdoc(key, "{}");
     InfoModel::saveFilterInt(j_doc, "FILTER_ID", m_filter_id);
-    InfoModel::saveFilterString(j_doc, "FILTER_NAME",
+    InfoModel::saveFilterString(j_doc,
+        "FILTER_NAME",
         JournalPanel::filter_id_name(m_filter_id)
     );
 
@@ -618,8 +619,10 @@ void ReportPanel::saveFilterSettings()
         }
     }
     else if (m_filter_id == JournalPanel::FILTER_ID_DATE_PICKER) {
+        InfoModel::saveFilterString(j_doc, "FILTER_DATE", "");
         if (w_start_date) {
-            InfoModel::saveFilterString(j_doc, "FILTER_DATE_BEGIN",
+            InfoModel::saveFilterString(j_doc,
+                "FILTER_DATE_BEGIN",
                 mmDateN(w_start_date->GetValue()).isoDateN()
             );
         }
@@ -627,14 +630,14 @@ void ReportPanel::saveFilterSettings()
             wxLogDebug("ReportPanel::saveFilterSettings(): w_start_date is null");
         }
         if (w_end_date) {
-            InfoModel::saveFilterString(j_doc, "FILTER_DATE_END",
+            InfoModel::saveFilterString(j_doc,
+                "FILTER_DATE_END",
                 mmDateN(w_end_date->GetValue()).isoDateN()
             );
         }
         else {
             wxLogDebug("ReportPanel::saveFilterSettings(): w_end_date is null");
         }
-        InfoModel::saveFilterString(j_doc, "FILTER_DATE", "");
     }
 
     if (w_stocks_choice) {
@@ -1092,6 +1095,7 @@ void ReportPanel::onDateRangePopup(wxCommandEvent& event)
     menu.Append(ID_DATE_RANGE_EDIT, _tu("Edit date ranges…"));
 
     PopupMenu(&menu);
+    w_range_btn->Layout();
     event.Skip();
 }
 

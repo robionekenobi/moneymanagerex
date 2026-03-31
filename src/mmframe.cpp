@@ -3723,7 +3723,9 @@ void mmGUIFrame::createCheckingPage(int64 checking_id, const std::vector<int64> 
             if (cp->isAccount()) {
                 cp->loadAccount(checking_id);
             }
-            cp->refreshList();
+            else {
+                cp->refreshList();
+            }
             done = true;
         }
     }

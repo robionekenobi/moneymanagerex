@@ -70,15 +70,15 @@ private:
     wxDECLARE_EVENT_TABLE();
     enum
     {
-        ID_FILTER = wxID_HIGHEST + 50,
+        ID_DATE_RANGE_BUTTON = wxID_HIGHEST + 50,
         ID_DATE_RANGE_MIN,
         ID_DATE_RANGE_MAX = ID_DATE_RANGE_MIN + 99,
         ID_FILTER_ADVANCED,
-        ID_FILTER_TRANS,
-        ID_DATE_PICKER_LOW,
-        ID_DATE_PICKER_HIGH,
+        ID_FILTER_BUTTON,
+        ID_START_DATE_PICKER,
+        ID_END_DATE_PICKER,
         ID_DATE_RANGE_EDIT,
-        ID_SCHEDULED,
+        ID_SCHEDULED_BUTTON,
     };
 
 public:
@@ -171,6 +171,16 @@ public:
     );
     ~JournalPanel();
 
+private:
+    bool create(
+        wxWindow* perent_win,
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxTAB_TRAVERSAL | wxNO_BORDER,
+        const wxString& name = "JournalPanel"
+    );
+    void createControls();
+
 // -- override
 
 public:
@@ -184,16 +194,6 @@ public:
 
 // -- methods
 
-private:
-    bool create(
-        wxWindow* perent_win,
-        const wxPoint& pos = wxDefaultPosition,
-        const wxSize& size = wxDefaultSize,
-        long style = wxTAB_TRAVERSAL | wxNO_BORDER,
-        const wxString& name = "JournalPanel"
-    );
-    void createControls();
-
 public:
     void loadAccount(int64 account_id = -1);
     void refreshList();
@@ -201,17 +201,15 @@ public:
     void setSelectedTransaction(JournalKey journal_key);
 
 private:
+    void loadFilter();
     void loadFilterSettings();
     void saveFilterSettings();
     void filterList();
 
     void updateHeader();
-    void updateFilter(bool firstinit = false);
+    void updateFilter();
     void updateFilterTooltip();
-    void updateScheduledEnable();
     void updateScheduledToolTip();
-    void setFilterDate(mmDateRange2::Range& range);
-    void setFilterAdvanced(bool firstinit = false);
     void updateExtraTransactionData(bool single, int repeat_num, bool foreign);
     void enableButtons(bool edit, bool dup, bool del, bool enter, bool skip, bool attach);
     void showTips(const wxString& tip);
@@ -222,13 +220,13 @@ private:
 // -- event handlers
 
 private:
-    void onFilterPopup(wxCommandEvent& event);
-    void onFilterDate(wxCommandEvent& event);
-    void onDatePickLow(wxDateEvent& event);
-    void onDatePickHigh(wxDateEvent& event);
-    void onFilterAdvanced(wxCommandEvent& event);
-    void onFilterAdvancedCancel(wxCommandEvent& event);
-    void onEditDateRanges(wxCommandEvent& event);
+    void onDateRangePopup(wxCommandEvent& event);
+    void onDateRangeSelect(wxCommandEvent& event);
+    void onStartDateChanged(wxDateEvent& event);
+    void onEndDateChanged(wxDateEvent& event);
+    void onFilter(wxCommandEvent& event);
+    void onFilterCancel(wxCommandEvent& event);
+    void onDateRangeEdit(wxCommandEvent& event);
     void onScheduled(wxCommandEvent& event);
     void onNewTrx(wxCommandEvent& event) { w_list->onNewTrx(event); }
     void onEditTrx(wxCommandEvent& event) {
