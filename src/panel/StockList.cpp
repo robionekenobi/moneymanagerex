@@ -579,7 +579,7 @@ void StockList::sortList()
     case StockList::LIST_ID_REAL_GAIN_LOSS:
         std::stable_sort(m_stock_a.begin(), m_stock_a.end(),
             [](const StockData& x, const StockData& y) {
-                return getRealGainLoss(x) < getRealGainLoss(y);
+                return StockList::getRealGainLoss(x) < StockList::getRealGainLoss(y);
             }
         );
         break;
