@@ -1835,7 +1835,7 @@ void mmUnivCSVDialog::OnExport(wxCommandEvent& WXUNUSED(event))
                             entry = trx_d.m_number;
                             break;
                         case UNIV_CSV_NOTES:
-                            entry = wxString(trx_d.m_notes).Trim();
+                            entry = trx_d.m_notes.Trim();
                             entry.Replace("\n", "\\n");
                             break;
                         case UNIV_CSV_DEPOSIT:
@@ -1938,7 +1938,7 @@ void mmUnivCSVDialog::OnExport(wxCommandEvent& WXUNUSED(event))
                         entry = std::to_wstring(stock_d.current_value());
                         break;
                     case UNIV_CSV_NOTES:
-                        entry = wxString(stock_d.m_notes).Trim();
+                        entry = stock_d.m_notes.Trim();
                         break;
                     case UNIV_CSV_COMMISSION:
                         entry = std::to_wstring(stock_d.m_commission);
@@ -2226,7 +2226,7 @@ void mmUnivCSVDialog::update_preview()
                                 text << inQuotes(trx_d.m_number, delimit);
                                 break;
                             case UNIV_CSV_NOTES:
-                                text << inQuotes(wxString(trx_d.m_notes).Trim(), delimit);
+                                text << inQuotes(trx_d.m_notes.Trim(), delimit);
                                 break;
                             case UNIV_CSV_DEPOSIT:
                                 text << inQuotes(value > 0.0 ? amount : "", delimit);
@@ -2381,7 +2381,7 @@ void mmUnivCSVDialog::update_preview()
                             text << inQuotes(currentTotalValue, delimit);
                             break;
                         case UNIV_CSV_NOTES:
-                            text << inQuotes(wxString(stock_d.m_notes).Trim(), delimit);
+                            text << inQuotes(stock_d.m_notes.Trim(), delimit);
                             break;
                         case UNIV_CSV_COMMISSION:
                             text << inQuotes(commission, delimit);
