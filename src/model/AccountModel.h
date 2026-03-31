@@ -2,6 +2,7 @@
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2014, 2020 - 2022 Nikolay Akimov
  Copyright (C) 2025 Klaus Wich
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -34,30 +35,45 @@
 
 class AccountModel : public TableFactory<AccountTable, AccountData>
 {
+// -- static
+
 public:
     static const RefTypeN s_ref_type;
 
+    static AccountCol::STATUS STATUS(OP op, AccountStatus status) {
+        return AccountCol::STATUS(op, status.name());
+    }
+
+    // TODO: move to AccountData
+    static NavigatorTypes::TYPE_ID type_id(const Data& account_d) {
+        return static_cast<NavigatorTypes::TYPE_ID>(
+            NavigatorTypes::instance().getTypeIdFromDBName(account_d.m_type_)
+        );
+    }
+
+// -- constructor
+
 public:
-    AccountModel();
-    ~AccountModel();
+    AccountModel() :
+        TableFactory<AccountTable, AccountData>() {}
+    ~AccountModel() {}
 
 public:
     static AccountModel& instance(wxSQLite3Database* db);
     static AccountModel& instance();
 
-    // TODO: move to AccountData
-    static NavigatorTypes::TYPE_ID type_id(const Data& account_d);
-
-    static AccountCol::STATUS STATUS(OP op, AccountStatus status);
+// -- override
 
 public:
     // override TableFactory
     virtual bool purge_id(int64 account_id) override;
 
+// -- methods
+
     // lookup for given Data
     auto get_data_currency_p(const Data& account_d) -> const CurrencyData*;
     auto get_data_balance(const Data& account_d) -> double;
-    auto get_data_balance_to_date(const Data& account_d, mmDate date) -> double;   // get balance up to given date
+    auto get_data_balance_to_date(const Data& account_d, mmDate date) -> double;
     auto get_data_investment_balance(const Data& account_d) -> std::pair<double, double>;
 
     // lookup for given id
@@ -86,11 +102,3 @@ public:
     void dangerous_reset_type(wxString old_type);
     void dangerous_reset_unknown_types();
 };
-
-//----------------------------------------------------------------------------
-
-// TODO: move to AccountData
-inline NavigatorTypes::TYPE_ID AccountModel::type_id(const Data& account)
-{
-    return static_cast<NavigatorTypes::TYPE_ID>(NavigatorTypes::instance().getTypeIdFromDBName(account.m_type_));
-}

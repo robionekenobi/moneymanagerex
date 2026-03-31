@@ -101,13 +101,14 @@ void DashboardPref::Create()
     totalsStaticBoxSizer->Add(m_incExpChoice, g_flagsH);
 
     m_inc_vs_exp_date_range = m_all_date_ranges[sel_id];
+    mmDate epoch = mmDate("1900-01-01");
     nDays_ = new wxSpinCtrl(
         totalsStaticBox,
         wxID_ANY, "",
         wxDefaultPosition, wxDefaultSize,
         wxSP_ARROW_KEYS,
         1,
-        mmDate::today().daysSince(mmDate(wxDateTime(1, wxDateTime::Month::Jan, 1900))),
+        mmDate::today().daysSince(epoch),
         InfoModel::instance().getInt("HOMEPAGE_INCEXP_DAYS", 14)
     );
     nDays_->Bind(wxEVT_SPINCTRL, [this](wxSpinEvent& event) {
@@ -152,13 +153,13 @@ void DashboardPref::Create()
 bool DashboardPref::SaveSettings()
 {
     int sel_id = m_incExpChoice->GetSelection();
-    PrefModel::instance().setHomePageIncExpRange(sel_id);
+    PrefModel::instance().saveHomePageIncExpRange(sel_id);
     if (sel_id == static_cast<int>(m_all_date_ranges.size() - 1))
-        InfoModel::instance().setInt("HOMEPAGE_INCEXP_DAYS", nDays_->GetValue());
-    PrefModel::instance().setIgnoreFutureTransactionsHomePage(
+        InfoModel::instance().saveInt("HOMEPAGE_INCEXP_DAYS", nDays_->GetValue());
+    PrefModel::instance().saveIgnoreFutureTransactionsHomePage(
         m_ignore_future_transactions_home->GetValue()
     );
-    PrefModel::instance().setShowReconciledInHomePage(m_show_reconciled->GetValue());
+    PrefModel::instance().saveShowReconciledInHomePage(m_show_reconciled->GetValue());
     return true;
 }
 

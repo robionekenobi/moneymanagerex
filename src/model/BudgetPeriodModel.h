@@ -1,5 +1,6 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -25,20 +26,26 @@
 
 class BudgetPeriodModel : public TableFactory<BudgetPeriodTable, BudgetPeriodData>
 {
+// -- constructor
+
 public:
-    BudgetPeriodModel();
-    ~BudgetPeriodModel();
+    BudgetPeriodModel() :
+        TableFactory<BudgetPeriodTable, BudgetPeriodData>() {}
+    ~BudgetPeriodModel() {}
 
 public:
     static BudgetPeriodModel& instance(wxSQLite3Database* db);
     static BudgetPeriodModel& instance();
 
+// -- override
+
 public:
     // override TableFactory
     virtual bool purge_id(int64 bp_id) override;
+
+// -- methods
 
     auto get_id_name_n(int64 bp_id) -> const wxString;
     auto get_name_id_n(const wxString& bp_name) -> int64;
     auto ensure_name(const wxString& bp_name) -> int64;
 };
-

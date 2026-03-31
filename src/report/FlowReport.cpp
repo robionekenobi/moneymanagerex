@@ -102,15 +102,14 @@ void FlowReport::getTransactions()
         }
 
         double convRate = CurrencyHistoryModel::instance().get_id_date_rate(
-            account.m_currency_id,
-            mmDate(todayString)
+            account.m_currency_id
         );
         m_balance += account.m_open_balance * convRate;
 
         m_account_id.push_back(account.m_id);
 
         for (const auto& trx_d : AccountModel::instance().find_id_trx_aBySN(account.m_id)) {
-            wxString strDate = trx_d.m_date_time.isoDateTime();
+            wxString strDate = trx_d.m_isoDateTime();
             // Do not include asset or stock transfers in income expense calculations.
             if (TrxModel::is_foreignAsTransfer(trx_d) || (strDate > todayString))
                 continue;
@@ -154,8 +153,9 @@ void FlowReport::getTransactions()
     for (const auto& sched_d : SchedModel::instance().find(
         SchedModel::IS_VOID(false)
     )) {
-        wxDateTime next_date = sched_d.m_due_date.getDateTime();
-        if (next_date > endDate)
+        // CHECK: use m_date() instead of m_due_date
+        mmDate next_date = sched_d.m_due_date;
+        if (next_date > mmDate(endDate))
             continue;
 
         bool isAccountFound = std::find(m_account_id.begin(), m_account_id.end(),
@@ -171,11 +171,11 @@ void FlowReport::getTransactions()
 
         // Process all possible recurring transactions for this BD
         while (1) {
-            if (next_date > endDate)
+            if (next_date > mmDate(endDate))
                 break;
 
             TrxData trx_d;
-            trx_d.m_date_time       = mmDateTime(next_date); // time is set to noon
+            trx_d.m_datetime        = mmDateTime(next_date);
             trx_d.m_type            = sched_d.m_type;
             trx_d.m_account_id      = sched_d.m_account_id;
             trx_d.m_to_account_id_n = sched_d.m_to_account_id_n;
@@ -203,7 +203,7 @@ void FlowReport::getTransactions()
             if (repeat.m_num == 1)
                 break;
 
-            next_date = repeat.next_datetime(next_date);
+            next_date = repeat.next_date(next_date);
             repeat.next_repeat();
         }
     }
@@ -211,8 +211,8 @@ void FlowReport::getTransactions()
     // Sort by transaction date
     sort(
         m_forecastVector.begin(), m_forecastVector.end(),
-        [] (TrxData const& a, TrxData const& b) {
-            return a.m_date_time < b.m_date_time;
+        [](TrxData const& a, TrxData const& b) {
+            return a.m_datetime < b.m_datetime;
         }
     );
 }
@@ -240,8 +240,8 @@ wxString FlowReport::getHTMLText_DayOrMonth(bool monthly)
     }
 
     // squash the data by month or day
-    for (const auto& trx_d : m_forecastVector) {
-        dt = trx_d.m_date_time.getDateTime();
+    for (TrxData& trx_d : m_forecastVector) {
+        dt = trx_d.m_datetime.dateTime();
         wxString date = dt.FormatISODate();
         if (monthly) {
             date = dt.SetDay(1).FormatISODate();
@@ -397,7 +397,7 @@ wxString mmReportCashFlowTransactions::getHTMLText()
     for (const auto& trx_d : m_forecastVector) {
         runningBalance += trx_d.m_amount;
         gs.values.push_back(runningBalance);
-        gd.labels.push_back(trx_d.m_date_time.isoDateTime());
+        gd.labels.push_back(trx_d.m_isoDateTime());
     }
     gd.series.push_back(gs);
 
@@ -426,8 +426,8 @@ wxString mmReportCashFlowTransactions::getHTMLText()
     int lastRowDate = -1;
     bool rowType = false;
     runningBalance = m_balance;
-    for (const auto& trx_d : m_forecastVector) {
-        int rowDate = trx_d.m_date().getDateTime().GetMonth();
+    for (TrxData& trx_d : m_forecastVector) {
+        int rowDate = trx_d.m_datetime.dateTime(false).GetMonth();
         if (rowDate != lastRowDate) {
             lastRowDate = rowDate;
             rowType = !rowType;
@@ -436,7 +436,7 @@ wxString mmReportCashFlowTransactions::getHTMLText()
             hb.startTableRow();
         else
             hb.startAltTableRow();
-        hb.addTableCellDate(trx_d.m_date_time.isoDateTime());
+        hb.addTableCellDate(trx_d.m_isoDateTime());
         hb.addTableCell(AccountModel::instance().get_id_name(trx_d.m_account_id));
         hb.addTableCell((trx_d.m_to_account_id_n == -1)
             ? PayeeModel::instance().get_id_name(trx_d.m_payee_id_n)

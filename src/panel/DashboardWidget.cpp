@@ -310,20 +310,22 @@ const wxString htmlWidgetBillsAndDeposits::getHTMLText()
         const AccountData* /* 4: account_n */,
         wxString           /* 5: notes */
     >> sched_info_a;
-    for (const auto& sched_d : SchedModel::instance().find_all(
+    for (const SchedData& sched_d : SchedModel::instance().find_all(
         SchedCol::COL_ID_TRANSDATE
     )) {
-        int payment_days = sched_d.m_date().daysSince(today);
+        mmDate pay_date = sched_d.m_date();
+        int pay_days = pay_date.daysSince(today);
         // Stop searching
-        if (payment_days > 14)
+        if (pay_days > 14)
             break;
-        int due_days = sched_d.m_due_date.daysSince(today);
+        mmDate due_date = sched_d.m_due_date;
+        int due_days = due_date.daysSince(today);
 
-        wxString description = (payment_days > 0)
-            ? wxString::Format(wxPLURAL("%d day", "%d days", payment_days), payment_days)
+        wxString description = (pay_days > 0)
+            ? wxString::Format(wxPLURAL("%d day", "%d days", pay_days), pay_days)
             : "*" + wxString::Format(
-                wxPLURAL("%d day delay", "%d days delay", -payment_days),
-                -payment_days
+                wxPLURAL("%d day delay", "%d days delay", -pay_days),
+                -pay_days
             );
         if (due_days < 0)
             description = "*" + wxString::Format(
@@ -355,7 +357,7 @@ const wxString htmlWidgetBillsAndDeposits::getHTMLText()
         double amount = (sched_d.is_withdrawal() ? -sched_d.m_amount : sched_d.m_amount);
         wxString notes = HTMLEncode(sched_d.m_notes);
         sched_info_a.push_back(std::make_tuple(
-            payment_days, payee_name_n, description, amount, account_n, notes
+            pay_days, payee_name_n, description, amount, account_n, notes
         ));
     }
 

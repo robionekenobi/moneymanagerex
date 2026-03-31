@@ -234,11 +234,11 @@ void TrxPref::Create()
     trxSizer->Add(m_ignore_future_transactions, g_flagsV);
 
     m_use_trans_date_time = new wxCheckBox(trxBox, wxID_ANY, _t("Use 'Time' in transaction recording/reporting"));
-    m_use_trans_date_time->SetValue(PrefModel::instance().UseTransDateTime());
+    m_use_trans_date_time->SetValue(PrefModel::instance().getUseTransDateTime());
     trxSizer->Add(m_use_trans_date_time, g_flagsV);
 
     m_treat_date_as_SN = new wxCheckBox(trxBox, wxID_ANY, _t("Sort Date identically to Sequence Number (SN)"));
-    m_treat_date_as_SN->SetValue(PrefModel::instance().TreatDateAsSN());
+    m_treat_date_as_SN->SetValue(PrefModel::instance().getTreatDateAsSN());
     trxSizer->Add(m_treat_date_as_SN, g_flagsV);
 
     // Colors settings
@@ -298,24 +298,24 @@ void TrxPref::Create()
 
 bool TrxPref::SaveSettings()
 {
-    SettingModel::instance().setBool(INIDB_USE_ORG_DATE_COPYPASTE, m_use_org_date_copy_paste->GetValue());
-    SettingModel::instance().setBool(INIDB_USE_ORG_DATE_DUPLICATE, m_use_org_date_duplicate->GetValue());
-    SettingModel::instance().setBool(INIDB_USE_ORG_STATE_DUPLICATE_PASTE, m_use_org_state_duplicate_paste->GetValue());
-    SettingModel::instance().setInt(INIDB_USE_TRANSACTION_SOUND, m_use_sound->GetSelection());
+    SettingModel::instance().saveBool(INIDB_USE_ORG_DATE_COPYPASTE, m_use_org_date_copy_paste->GetValue());
+    SettingModel::instance().saveBool(INIDB_USE_ORG_DATE_DUPLICATE, m_use_org_date_duplicate->GetValue());
+    SettingModel::instance().saveBool(INIDB_USE_ORG_STATE_DUPLICATE_PASTE, m_use_org_state_duplicate_paste->GetValue());
+    SettingModel::instance().saveInt(INIDB_USE_TRANSACTION_SOUND, m_use_sound->GetSelection());
 
-    PrefModel::instance().setBudgetFinancialYears(m_budget_financial_years->GetValue());
-    PrefModel::instance().setBudgetIncludeTransfers(m_budget_include_transfers->GetValue());
-    PrefModel::instance().setBudgetSummaryWithoutCategories(m_budget_summary_without_category->GetValue());
-    PrefModel::instance().setBudgetOverride(m_budget_override->GetValue());
-    PrefModel::instance().setBudgetDeductMonthly(m_budget_deduct_monthly->GetValue());
-    PrefModel::instance().setBudgetDaysOffset(m_budget_days_offset->GetValue());
-    PrefModel::instance().setReportingFirstDay(m_reporting_firstday->GetValue());
-    PrefModel::instance().setReportingFirstWeekday(
+    PrefModel::instance().saveBudgetFinancialYears(m_budget_financial_years->GetValue());
+    PrefModel::instance().saveBudgetIncludeTransfers(m_budget_include_transfers->GetValue());
+    PrefModel::instance().saveBudgetSummaryWithoutCategories(m_budget_summary_without_category->GetValue());
+    PrefModel::instance().saveBudgetOverride(m_budget_override->GetValue());
+    PrefModel::instance().saveBudgetDeductMonthly(m_budget_deduct_monthly->GetValue());
+    PrefModel::instance().saveBudgetDaysOffset(m_budget_days_offset->GetValue());
+    PrefModel::instance().saveReportingFirstDay(m_reporting_firstday->GetValue());
+    PrefModel::instance().saveReportingFirstWeekday(
         static_cast<wxDateTime::WeekDay>(m_reporting_first_weekday->GetSelection())
     );
-    PrefModel::instance().setIgnoreFutureTransactions(m_ignore_future_transactions->GetValue());
-    PrefModel::instance().UseTransDateTime(m_use_trans_date_time->GetValue());
-    PrefModel::instance().TreatDateAsSN(m_treat_date_as_SN->GetValue());
+    PrefModel::instance().saveIgnoreFutureTransactions(m_ignore_future_transactions->GetValue());
+    PrefModel::instance().saveUseTransDateTime(m_use_trans_date_time->GetValue());
+    PrefModel::instance().saveTreatDateAsSN(m_treat_date_as_SN->GetValue());
 
     mmColors::userDefColor1 = m_UDFCB1->GetBackgroundColour();
     mmColors::userDefColor2 = m_UDFCB2->GetBackgroundColour();
@@ -325,28 +325,28 @@ bool TrxPref::SaveSettings()
     mmColors::userDefColor6 = m_UDFCB6->GetBackgroundColour();
     mmColors::userDefColor7 = m_UDFCB7->GetBackgroundColour();
 
-    InfoModel::instance().setColour("USER_COLOR1", mmColors::userDefColor1);
-    InfoModel::instance().setColour("USER_COLOR2", mmColors::userDefColor2);
-    InfoModel::instance().setColour("USER_COLOR3", mmColors::userDefColor3);
-    InfoModel::instance().setColour("USER_COLOR4", mmColors::userDefColor4);
-    InfoModel::instance().setColour("USER_COLOR5", mmColors::userDefColor5);
-    InfoModel::instance().setColour("USER_COLOR6", mmColors::userDefColor6);
-    InfoModel::instance().setColour("USER_COLOR7", mmColors::userDefColor7);
+    InfoModel::instance().saveColour("USER_COLOR1", mmColors::userDefColor1);
+    InfoModel::instance().saveColour("USER_COLOR2", mmColors::userDefColor2);
+    InfoModel::instance().saveColour("USER_COLOR3", mmColors::userDefColor3);
+    InfoModel::instance().saveColour("USER_COLOR4", mmColors::userDefColor4);
+    InfoModel::instance().saveColour("USER_COLOR5", mmColors::userDefColor5);
+    InfoModel::instance().saveColour("USER_COLOR6", mmColors::userDefColor6);
+    InfoModel::instance().saveColour("USER_COLOR7", mmColors::userDefColor7);
 
     wxChoice* itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_PAYEE));
-    PrefModel::instance().setTransPayeeNone(itemChoice->GetSelection());
+    PrefModel::instance().saveTransPayeeNone(itemChoice->GetSelection());
 
     itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_NONTRANSFER));
-    PrefModel::instance().setTransCategoryNone(itemChoice->GetSelection());
+    PrefModel::instance().saveTransCategoryNone(itemChoice->GetSelection());
 
     itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_TRANSFER));
-    PrefModel::instance().setTransCategoryTransferNone(itemChoice->GetSelection());
+    PrefModel::instance().saveTransCategoryTransferNone(itemChoice->GetSelection());
 
     itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_STATUS));
-    PrefModel::instance().setTransStatusReconciled(itemChoice->GetSelection());
+    PrefModel::instance().saveTransStatusReconciled(itemChoice->GetSelection());
 
     itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_DATE));
-    PrefModel::instance().setTransDateDefault(itemChoice->GetSelection());
+    PrefModel::instance().saveTransDateDefault(itemChoice->GetSelection());
 
     return true;
 }

@@ -29,7 +29,7 @@ class AssetPanel : public PanelBase
     friend class AssetList;
 
 public:
-    enum EIcons
+    enum
     {
         ICON_PROPERTY,
         ICON_CAR,

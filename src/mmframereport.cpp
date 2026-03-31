@@ -250,9 +250,11 @@ void mmGUIFrame::DoUpdateReportNavigation(wxTreeItemId& parent_item)
 
 void mmGUIFrame::DoUpdateGRMNavigation(wxTreeItemId& parent_item)
 {
-    /*GRM Reports*/
-    auto report_a = ReportModel::instance().find(ReportCol::ACTIVE(OP_EQ, 1));
-    //Sort by group name and report name
+    // GRM Reports
+    auto report_a = ReportModel::instance().find(
+        ReportCol::ACTIVE(OP_EQ, 1)
+    );
+    // Sort by group name and report name
     std::sort(report_a.begin(), report_a.end(), ReportData::SorterByREPORTNAME());
     std::stable_sort(report_a.begin(), report_a.end(), ReportData::SorterByGROUPNAME());
 
@@ -339,7 +341,7 @@ void mmGUIFrame::mmDoHideReportsDialog()
 
     if (reports.ShowModal() == wxID_OK)
     {
-        InfoModel::instance().setString("HIDDEN_REPORTS", "[]");
+        InfoModel::instance().saveString("HIDDEN_REPORTS", "[]");
         const auto sel = reports.GetSelections();
         for (const auto& i : sel)
         {

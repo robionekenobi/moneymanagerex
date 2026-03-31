@@ -462,7 +462,7 @@ void mmGUIFrame::ShutdownDatabase()
     // Cache empty on InfoModel means instance never initialized
     if (!InfoModel::instance().cache_empty()) {
         if (!db_lockInPlace)
-            InfoModel::instance().setBool("ISUSED", false);
+            InfoModel::instance().saveBool("ISUSED", false);
     }
     m_db->SetCommitHook(nullptr);
     m_db->Close();
@@ -598,8 +598,10 @@ void mmGUIFrame::OnAutoRepeatTransactionsTimer(wxTimerEvent& /*event*/)
     // Auto scheduled transaction
     bool continueExecution = false;
 
-    for (const auto& sched_d : SchedModel::instance().find_all()) {
-        if (!sched_d.is_due())
+    SchedModel::DataA sched_a = SchedModel::instance().find_all();
+    for (SchedData& sched_d : sched_a) {
+        mmDate today = mmDate::today();
+        if (sched_d.m_due_date.daysSince(today) > 0)
             continue;
 
         bool is_allowed = SchedModel::instance().is_data_allowed(sched_d);
@@ -621,7 +623,7 @@ void mmGUIFrame::OnAutoRepeatTransactionsTimer(wxTimerEvent& /*event*/)
             if (is_allowed) {
                 continueExecution = true;
                 TrxData new_trx_d = TrxData();
-                new_trx_d.m_date_time       = sched_d.m_date_time;
+                new_trx_d.m_datetime        = sched_d.m_datetime; // TODO: reset time
                 new_trx_d.m_type            = sched_d.m_type;
                 new_trx_d.m_status          = sched_d.m_status;
                 new_trx_d.m_account_id      = sched_d.m_account_id;
@@ -723,24 +725,24 @@ void mmGUIFrame::saveSettings()
     SettingModel::instance().db_savepoint();
     if (!m_filename.IsEmpty()) {
         wxFileName fname(m_filename);
-        SettingModel::instance().setString("LASTFILENAME", fname.GetFullPath());
+        SettingModel::instance().saveString("LASTFILENAME", fname.GetFullPath());
     }
     /* Aui Settings */
-    SettingModel::instance().setString("AUIPERSPECTIVE", m_mgr.SavePerspective());
+    SettingModel::instance().saveString("AUIPERSPECTIVE", m_mgr.SavePerspective());
 
     // prevent values being saved while window is in an iconised state.
     if (this->IsIconized()) this->Restore();
 
     int value_x = 0, value_y = 0;
     this->GetPosition(&value_x, &value_y);
-    SettingModel::instance().setInt("ORIGINX", value_x);
-    SettingModel::instance().setInt("ORIGINY", value_y);
+    SettingModel::instance().saveInt("ORIGINX", value_x);
+    SettingModel::instance().saveInt("ORIGINY", value_y);
 
     int value_w = 0, value_h = 0;
     this->GetSize(&value_w, &value_h);
-    SettingModel::instance().setInt("SIZEW", value_w);
-    SettingModel::instance().setInt("SIZEH", value_h);
-    SettingModel::instance().setBool("ISMAXIMIZED", this->IsMaximized());
+    SettingModel::instance().saveInt("SIZEW", value_w);
+    SettingModel::instance().saveInt("SIZEH", value_h);
+    SettingModel::instance().saveBool("ISMAXIMIZED", this->IsMaximized());
     SettingModel::instance().db_release_savepoint();
 }
 //----------------------------------------------------------------------------
@@ -1261,7 +1263,7 @@ void mmGUIFrame::navTreeStateToJson()
     rapidjson::StringBuffer nav_tree_status;
     rapidjson::Writer<rapidjson::StringBuffer> writer(nav_tree_status);
     doc.Accept(writer);
-    InfoModel::instance().setString("NAV_TREE_STATUS", nav_tree_status.GetString());
+    InfoModel::instance().saveString("NAV_TREE_STATUS", nav_tree_status.GetString());
     //wxLogDebug("=========== navTreeStateToJson =============================");
     //wxLogDebug(nav_tree_status.GetString());
 }
@@ -1795,11 +1797,11 @@ void mmGUIFrame::OnViewAccountsTemporaryChange(wxCommandEvent& e)
         m_temp_view = VIEW_ACCOUNTS_CLOSED_STR;
         break;
     }
-    SettingModel::instance().setViewAccounts(m_temp_view);
+    SettingModel::instance().saveViewAccounts(m_temp_view);
     RefreshNavigationTree();
 
     //Restore settings
-    SettingModel::instance().setViewAccounts(vAccts);
+    SettingModel::instance().saveViewAccounts(vAccts);
 }
 
 //----------------------------------------------------------------------------
@@ -2286,7 +2288,7 @@ void  mmGUIFrame::PopulateToolBar(bool update)
                     if (ainfo->toolId == MENU_ANNOUNCEMENTMAILING) {
                         wxString news_array;
                         for (const auto& entry : websiteNewsArray_) {
-                            news_array += entry.Title + "\n";
+                            news_array += entry.m_titleN + "\n";
                         }
                         if (news_array.empty()) {
                             news_array = _t("News");
@@ -2443,9 +2445,9 @@ bool mmGUIFrame::createDataStore(const wxString& fileName, const wxString& pwd, 
         wxString UID = InfoModel::instance().getString("UID", wxEmptyString);
         if (UID.IsEmpty()) {
             UID = SettingModel::instance().getString("UUID", wxEmptyString);
-            InfoModel::instance().setString("UID", UID);
+            InfoModel::instance().saveString("UID", UID);
         }
-        SettingModel::instance().setString("UID", UID);
+        SettingModel::instance().saveString("UID", UID);
 
         // ** OBSOLETE **
         // Mantained only for really old compatibility reason and replaced by dbupgrade.cpp
@@ -2490,7 +2492,7 @@ bool mmGUIFrame::createDataStore(const wxString& fileName, const wxString& pwd, 
                 }
             }
             CategoryModel::instance().db_release_savepoint();
-            InfoModel::instance().setString("HIDDEN_CATEGS_ID", "");
+            InfoModel::instance().saveString("HIDDEN_CATEGS_ID", "");
         }
     }
     else if (openingNew) { // New Database
@@ -2600,7 +2602,7 @@ bool mmGUIFrame::openFile(const wxString& fileName, bool openingNew, const wxStr
             }
         }
 
-        InfoModel::instance().setBool("ISUSED", true);
+        InfoModel::instance().saveBool("ISUSED", true);
         db_lockInPlace = false;
         NavigatorTypes::instance().LoadFromDB();
         autoRepeatTransactionsTimer_.Start(REPEAT_FREQ_TRANS_DELAY_TIME, wxTIMER_ONE_SHOT);
@@ -2632,7 +2634,7 @@ void mmGUIFrame::OnNew(wxCommandEvent& /*event*/)
         fileName += ".mmb";
 
     SetDatabaseFile(fileName, true);
-    SettingModel::instance().setString("LASTFILENAME", fileName);
+    SettingModel::instance().saveString("LASTFILENAME", fileName);
 }
 //----------------------------------------------------------------------------
 
@@ -2852,8 +2854,8 @@ void mmGUIFrame::OnCookieReset(wxCommandEvent& /*event*/)
         wxYES_NO | wxNO_DEFAULT | wxICON_WARNING
     );
     if (msgDlg.ShowModal() == wxID_YES) {
-        SettingModel::instance().setString("YAHOO_FINANCE_COOKIE", "");
-        SettingModel::instance().setString("YAHOO_FINANCE_CRUMB", "");
+        SettingModel::instance().saveString("YAHOO_FINANCE_COOKIE", "");
+        SettingModel::instance().saveString("YAHOO_FINANCE_CRUMB", "");
         wxMessageBox(_t("Cookies have been reset"), _t("Cookie Reset"));
     }
 }
@@ -3420,7 +3422,7 @@ void mmGUIFrame::OnSimpleURLOpen(wxCommandEvent& event)
 
 void mmGUIFrame::OnBeNotified(wxCommandEvent& /*event*/)
 {
-    SettingModel::instance().setString(INIDB_NEWS_LAST_READ_DATE,
+    SettingModel::instance().saveString(INIDB_NEWS_LAST_READ_DATE,
         mmDate::today().isoDate()
     );
     wxLaunchDefaultBrowser(mmex::weblink::News);
@@ -3721,7 +3723,9 @@ void mmGUIFrame::createCheckingPage(int64 checking_id, const std::vector<int64> 
             if (cp->isAccount()) {
                 cp->loadAccount(checking_id);
             }
-            cp->refreshList();
+            else {
+                cp->refreshList();
+            }
             done = true;
         }
     }
@@ -3934,7 +3938,7 @@ void mmGUIFrame::OnRates(wxCommandEvent& WXUNUSED(event))
                 wxDateTime::Now().FormatTime(),
                 mmGetDateTimeForDisplay(wxDateTime::Now().FormatISODate())
             );
-            InfoModel::instance().setString("STOCKS_LAST_REFRESH_DATETIME", strLastUpdate);
+            InfoModel::instance().saveString("STOCKS_LAST_REFRESH_DATETIME", strLastUpdate);
         }
 
         wxLogDebug("%s", msg);
@@ -4031,13 +4035,13 @@ void mmGUIFrame::OnViewToolbar(wxCommandEvent &event)
 {
     m_mgr.GetPane("toolbar").Show(event.IsChecked());
     m_mgr.Update();
-    SettingModel::instance().setBool("SHOWTOOLBAR", event.IsChecked());
+    SettingModel::instance().saveBool("SHOWTOOLBAR", event.IsChecked());
 }
 
 void mmGUIFrame::OnViewLinks(wxCommandEvent& WXUNUSED(event))
 {
     if (m_mgr.GetPane("Navigation").IsShown()) {
-        SettingModel::instance().setString("AUIPERSPECTIVE_NAV", m_mgr.SavePerspective());
+        SettingModel::instance().saveString("AUIPERSPECTIVE_NAV", m_mgr.SavePerspective());
         m_mgr.GetPane("Navigation").Hide();
     }
     else {
@@ -4059,14 +4063,14 @@ void mmGUIFrame::OnViewLinksUpdateUI(wxUpdateUIEvent &event)
 
 void mmGUIFrame::OnHideShareAccounts(wxCommandEvent &WXUNUSED(event))
 {
-    PrefModel::instance().setHideShareAccounts(!PrefModel::instance().getHideShareAccounts());
+    PrefModel::instance().saveHideShareAccounts(!PrefModel::instance().getHideShareAccounts());
     NavigatorTypes::instance().SetShareAccountStatus(!PrefModel::instance().getHideShareAccounts());
     RefreshNavigationTree();
 }
 
 void mmGUIFrame::OnHideDeletedTransactions(wxCommandEvent& WXUNUSED(event))
 {
-    PrefModel::instance().setHideDeletedTransactions(!PrefModel::instance().getHideDeletedTransactions());
+    PrefModel::instance().saveHideDeletedTransactions(!PrefModel::instance().getHideDeletedTransactions());
     NavigatorTypes::instance().SetTrashStatus(!PrefModel::instance().getHideDeletedTransactions());
     RefreshNavigationTree();
 }
@@ -4137,37 +4141,37 @@ wxTreeItemId mmGUIFrame::findItemByData(wxTreeItemId itemId, mmTreeItemData& sea
 
 void mmGUIFrame::OnViewBudgetFinancialYears(wxCommandEvent& WXUNUSED(event))
 {
-    PrefModel::instance().setBudgetFinancialYears(!PrefModel::instance().getBudgetFinancialYears());
+    PrefModel::instance().saveBudgetFinancialYears(!PrefModel::instance().getBudgetFinancialYears());
     refreshPanelData();
 }
 
 void mmGUIFrame::OnViewBudgetTransferTotal(wxCommandEvent& WXUNUSED(event))
 {
-    PrefModel::instance().setBudgetIncludeTransfers(!PrefModel::instance().getBudgetIncludeTransfers());
+    PrefModel::instance().saveBudgetIncludeTransfers(!PrefModel::instance().getBudgetIncludeTransfers());
     refreshPanelData();
 }
 
 void mmGUIFrame::OnViewBudgetCategorySummary(wxCommandEvent& WXUNUSED(event))
 {
-    PrefModel::instance().setBudgetSummaryWithoutCategories(!PrefModel::instance().getBudgetSummaryWithoutCategories());
+    PrefModel::instance().saveBudgetSummaryWithoutCategories(!PrefModel::instance().getBudgetSummaryWithoutCategories());
     refreshPanelData();
 }
 
 void mmGUIFrame::OnViewIgnoreFutureTransactions(wxCommandEvent& WXUNUSED(event))
 {
-    PrefModel::instance().setIgnoreFutureTransactions(!PrefModel::instance().getIgnoreFutureTransactions());
+    PrefModel::instance().saveIgnoreFutureTransactions(!PrefModel::instance().getIgnoreFutureTransactions());
     RefreshNavigationTree();
 }
 
 void mmGUIFrame::OnViewShowToolTips(wxCommandEvent& WXUNUSED(event))
 {
-    PrefModel::instance().setShowToolTips(!PrefModel::instance().getShowToolTips());
+    PrefModel::instance().saveShowToolTips(!PrefModel::instance().getShowToolTips());
     RefreshNavigationTree();
 }
 
 void mmGUIFrame::OnViewShowMoneyTips(wxCommandEvent& WXUNUSED(event))
 {
-    PrefModel::instance().setShowMoneyTips(!PrefModel::instance().getShowMoneyTips());
+    PrefModel::instance().saveShowMoneyTips(!PrefModel::instance().getShowMoneyTips());
     RefreshNavigationTree();
 }
 //----------------------------------------------------------------------------
@@ -4233,7 +4237,7 @@ void mmGUIFrame::autocleanDeletedTransactions() {
     );
     wxDateTime earliestDate = wxDateTime().Now().ToUTC().Subtract(days);
     TrxModel::DataA deleted_trx_a = TrxModel::instance().find(
-        TrxCol::DELETEDTIME(OP_NE, wxEmptyString),
+        TrxModel::IS_DELETED(true),
         TrxCol::DELETEDTIME(OP_LE, earliestDate.FormatISOCombined())
     );
     if (deleted_trx_a.empty())
@@ -4316,7 +4320,7 @@ void mmGUIFrame::OnToggleFullScreen(wxCommandEvent& WXUNUSED(event))
 
 void mmGUIFrame::OnResetView(wxCommandEvent& WXUNUSED(event))
 {
-    SettingModel::instance().setBool("SHOWTOOLBAR", true);
+    SettingModel::instance().saveBool("SHOWTOOLBAR", true);
     m_mgr.GetPane("toolbar").Show(true).Dock().Top().Position(0);
     m_mgr.GetPane("Navigation").Show(true).Dock().Left();
     m_mgr.Update();

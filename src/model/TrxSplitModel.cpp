@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -21,16 +22,11 @@
 #include "CategoryModel.h"
 #include "TrxModel.h"
 
+// -- static
+
 const RefTypeN TrxSplitModel::s_ref_type = RefTypeN(RefTypeN::e_trx_split);
 
-TrxSplitModel::TrxSplitModel() :
-    TableFactory<TrxSplitTable, TrxSplitData>()
-{
-}
-
-TrxSplitModel::~TrxSplitModel()
-{
-}
+// -- constructor
 
 // Initialize the global TrxSplitModel table.
 // Reset the TrxSplitModel table or create the table if it does not exist.
@@ -50,11 +46,15 @@ TrxSplitModel& TrxSplitModel::instance()
     return Singleton<TrxSplitModel>::instance();
 }
 
+// -- override
+
 bool TrxSplitModel::purge_id(int64 tp_id)
 {
     TagLinkModel::instance().purge_ref(s_ref_type, tp_id);
     return unsafe_remove_id(tp_id);
 }
+
+// -- methods
 
 const TagLinkModel::DataA TrxSplitModel::find_id_gl_a(int64 tp_id)
 {

@@ -2,6 +2,7 @@
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2013 - 2022 Nikolay Akimov
  Copyright (C) 2022  Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -36,14 +37,7 @@ constexpr auto LIMIT = 1e-10;
 static wxString s_locale;
 static wxString s_use_locale;
 
-CurrencyModel::CurrencyModel() :
-    TableFactory<CurrencyTable, CurrencyData>()
-{
-}
-
-CurrencyModel::~CurrencyModel()
-{
-}
+// -- constructor
 
 // Initialize the global CurrencyModel table.
 // Reset the CurrencyModel table or create the table if it does not exist.
@@ -66,10 +60,7 @@ CurrencyModel& CurrencyModel::instance()
     return Singleton<CurrencyModel>::instance();
 }
 
-CurrencyCol::CURRENCY_TYPE CurrencyModel::CURRENCY_TYPE(OP op, CurrencyType currency_type)
-{
-    return CurrencyCol::CURRENCY_TYPE(op, currency_type.name());
-}
+// -- override
 
 int CurrencyModel::find_id_dep_c(int64 currency_id)
 {
@@ -103,6 +94,8 @@ bool CurrencyModel::purge_id(int64 currency_id)
 
     return unsafe_remove_id(currency_id);
 }
+
+// -- methods
 
 // Return the Data record of the base currency.
 const CurrencyData* CurrencyModel::get_base_data_n()

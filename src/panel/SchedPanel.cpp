@@ -238,14 +238,14 @@ int SchedPanel::initList(int64 sched_id_n)
 
 wxString SchedPanel::getItem(long item, int col_id)
 {
-    const SchedModel::DataExt& sched_dx = this->m_sched_xa.at(item);
+    SchedModel::DataExt& sched_dx = m_sched_xa.at(item);
 
     switch (col_id)
     {
     case SchedList::LIST_ID_ID:
         return wxString::Format("%lld", sched_dx.m_id).Trim();
     case SchedList::LIST_ID_PAYMENT_DATE:
-        return mmGetDateTimeForDisplay(sched_dx.m_date_time.isoDateTime());
+        return mmGetDateTimeForDisplay(sched_dx.m_isoDateTime());
     case SchedList::LIST_ID_DUE_DATE:
         return mmGetDateTimeForDisplay(sched_dx.m_due_date.isoDate());
     case SchedList::LIST_ID_ACCOUNT:
@@ -330,9 +330,10 @@ wxString SchedPanel::getItem(long item, int col_id)
     }
 }
 
-const wxString SchedPanel::getRemainingDays(const SchedData& sched_d) const
+const wxString SchedPanel::getRemainingDays(SchedData& sched_d)
 {
-    int payment_days = sched_d.m_date().daysSince(m_today);
+    mmDate pay_date = sched_d.m_date();
+    int pay_days = pay_date.daysSince(m_today);
     int due_days = sched_d.m_due_date.daysSince(m_today);
 
     // add a warning marker (*) in front, such that it is visible
@@ -342,14 +343,14 @@ const wxString SchedPanel::getRemainingDays(const SchedData& sched_d) const
             wxPLURAL( "%d day overdue", "%d days overdue", -due_days),
             -due_days
         )
-        : (payment_days < 0)
+        : (pay_days < 0)
         ? "*" + wxString::Format(
-            wxPLURAL("%d day delay", "%d days delay", -payment_days),
-            -payment_days
+            wxPLURAL("%d day delay", "%d days delay", -pay_days),
+            -pay_days
         )
         : wxString::Format(
-            wxPLURAL("%d day", "%d days", payment_days),
-            payment_days
+            wxPLURAL("%d day", "%d days", pay_days),
+            pay_days
         );
 }
 

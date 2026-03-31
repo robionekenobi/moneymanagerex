@@ -86,7 +86,7 @@ mmQIFImportDialog::mmQIFImportDialog(
 
 mmQIFImportDialog::~mmQIFImportDialog()
 {
-    InfoModel::instance().setSize(DIALOG_SIZE, GetSize());
+    InfoModel::instance().saveSize(DIALOG_SIZE, GetSize());
 }
 
 wxString mmQIFImportDialog::OnGetItemText(long item, long column) const
@@ -1006,7 +1006,7 @@ void mmQIFImportDialog::compilePayeeRegEx() {
 
     // only look at payees that have a match pattern set
     PayeeModel::DataA payee_a = PayeeModel::instance().find(
-        PayeeCol::PATTERN(OP_NE, wxEmptyString)
+        PayeeCol::PATTERN(OP_NEN, "")
     );
     for (const auto& payee_d : payee_a) {
         Document json_doc;
@@ -1338,11 +1338,11 @@ bool mmQIFImportDialog::mergeTransferPair(
         bool pair_found = false;
         for (auto& src_trx_d : src_trx_a) {
             ++i;
+            if (dst_trx_d.m_datetime        != src_trx_d.m_datetime)        continue;
             if (dst_trx_d.m_account_id      != src_trx_d.m_to_account_id_n) continue;
             if (dst_trx_d.m_to_account_id_n != src_trx_d.m_account_id)      continue;
             if (dst_trx_d.m_number          != src_trx_d.m_number)          continue;
             if (dst_trx_d.m_notes           != src_trx_d.m_notes)           continue;
-            if (dst_trx_d.m_date_time       != src_trx_d.m_date_time)       continue;
             dst_trx_d.m_to_amount = src_trx_d.m_amount;
             src_trx_a.erase(src_trx_a.begin() + i);
             // a match is found so erase the 'from' taglinks
@@ -1414,7 +1414,7 @@ bool mmQIFImportDialog::completeTransaction(
     wxDateTime dtdt;
     wxString::const_iterator end;
     if (dtdt.ParseFormat(dateStr, m_dateFormatStr, &end))
-        trx_n->m_date_time = mmDateTime(dtdt);
+        trx_n->m_datetime = mmDateTime(dtdt);
     else {
         *log_field_ << _t("Date format or date mask is incorrect") << "\n";
         return false;
@@ -1655,29 +1655,29 @@ int64 mmQIFImportDialog::getOrCreateAccounts()
             : AccountModel::instance().get_name_data_n(item.first);
 
         if (!account_n) {
-            AccountData account_d = AccountData();
-            account_d.m_favorite = AccountFavorite(true);
+            AccountData new_account_d = AccountData();
+            new_account_d.m_favorite = AccountFavorite(true);
 
             const auto type = item.second.find(QIF_ID_AccountType) != item.second.end() ? item.second.at(QIF_ID_AccountType) : "";
-            account_d.m_type_ = mmExportTransaction::mm_acc_type(type);
+            new_account_d.m_type_ = mmExportTransaction::mm_acc_type(type);
             //NavigatorTypes::TYPE_NAME_CHECKING;
-            account_d.m_name         = item.first;
-            account_d.m_open_balance = 0;
-            account_d.m_open_date    = mmDate::today();
-            account_d.m_currency_id  = CurrencyModel::instance().get_base_data_n()->m_id;
+            new_account_d.m_name         = item.first;
+            new_account_d.m_open_balance = 0;
+            new_account_d.m_open_date    = mmDate::today();
+            new_account_d.m_currency_id  = CurrencyModel::instance().get_base_data_n()->m_id;
             const wxString c = (item.second.find(QIF_ID_Description) == item.second.end()
                 ? ""
                 : item.second.at(QIF_ID_Description)
             );
             for (const auto& curr : CurrencyModel::instance().find_all()) {
                 if (wxString::Format("[%s]", curr.m_symbol) == c) {
-                    account_d.m_currency_id = curr.m_id;
+                    new_account_d.m_currency_id = curr.m_id;
                     break;
                 }
             }
 
-            AccountModel::instance().add_data_n(account_d);
-            account_id = account_d.m_id;
+            AccountModel::instance().add_data_n(new_account_d);
+            account_id = new_account_d.m_id;
             wxString sMsg = wxString::Format(_t("Added account: %s"), item.first);
             *log_field_ << sMsg << "\n";
         }

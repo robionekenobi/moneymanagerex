@@ -1,5 +1,6 @@
 /*******************************************************
  Copyright (C) 2014 Gabriele-V
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -21,14 +22,7 @@
 
 #include "AttachmentModel.h"
 
-AttachmentModel::AttachmentModel() :
-    TableFactory<AttachmentTable, AttachmentData>()
-{
-}
-
-AttachmentModel::~AttachmentModel()
-{
-}
+// -- constructor
 
 // Initialize the global AttachmentModel table.
 // Reset the AttachmentModel table or create the table if it does not exist.
@@ -47,6 +41,8 @@ AttachmentModel& AttachmentModel::instance()
 {
     return Singleton<AttachmentModel>::instance();
 }
+
+// -- methods
 
 // Return the number of attachments linked to a specific object
 int AttachmentModel::find_ref_c(RefTypeN ref_type, const int64 ref_id)

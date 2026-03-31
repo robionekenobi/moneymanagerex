@@ -18,204 +18,191 @@
 
 #pragma once
 
-#include "base/defs.h"
-#include <optional>
-#include <wx/datetime.h>
+#include "mmDate.h"
 
-#include "_primitive.h"
-
-// mmDateTime represents a date and time, with resolution of a second.
-// The underlying data structure is wxDateTime.
-// The underlying value cannot be wxInvalidDateTime.
+// mmDateTime represents a datetime (date and time), with resolution of a second.
+// The underlying data structure is an mmDate, which represents the date part,
+// a string in ISO time format "hh:mm:ss", and a wxDateTime which represents
+// the datetime (both the date part and the time part together).
+// The date string (stored inside mmDate) and time string are always available
+// after construction, and they are used for date or datetime comparisons.
+// The date wxDateTime representation (stored inside mmDate) and the datetime
+// wxDateTime representation are caclulated and cached on demand, (for date
+// or datetime arithmetic), otherwise they are set to wxInvalidDateTime.
+// For efficiency, the time part is stored separately from the date part.
+// Notice that the MMEX application does not perform arithmetic on time,
+// as it does on date, and most datetime operations have granularity of a day.
 //
 // mmDateTimeN is an optional (nullable) mmDateTime.
-// The underlying null value is wxInvalidDateTime.
+// The underlying null value is { mmDateN(), "", wxInvalidDateTime }.
+//
+// mmDateTime::invalid() is not a valid mmDateTime.
+// See the comments on mmDate::invalid() in `mmDate.h`.
+//
+// An optional argument `withTime` is provided for convenience in a few methods.
+// When time is disabled in MMEX application, transactions datetime (TRANSDATE)
+// is stored in ISO datetime format, but the time part is not shown in GUI.
+// New transactions get a dummy time (12:00:00), however existing transactions
+// may have a non-default time (e.g., if they were created with time enabled).
+// The invisible time part of existing transactions shall be preserved in the
+// database, such that it re-appears in GUI when users enable time again.
+// `withTime` can be used to selectively get information with or without time.
 
 struct mmDateTime
 {
     friend struct mmDateTimeN;
 
-protected:
-    wxDateTime m_dateTime;
+// -- state
+
+private:
+    mmDate m_date;
+    wxString m_isoTime;
+    wxDateTime c_dateTimeN;
+
+// -- constructor
+
+private:
+    mmDateTime(mmDate date, const wxString isoTime, wxDateTime dateTimeN) :
+        m_date(date), m_isoTime(isoTime), c_dateTimeN(dateTimeN) {}
 
 public:
-    mmDateTime(wxDateTime dateTime);
+    mmDateTime(mmDate date, const wxString& isoTime = "12:00:00") :
+        mmDateTime(date, isoTime, wxInvalidDateTime) {}
     mmDateTime(const wxString& isoDateTime);
+    mmDateTime(wxDateTime dateTime);
 
 public:
-    static const wxTimeSpan htol; // half-second tolerance
-    static mmDateTime now();
-    static mmDateTime from_utc(const wxString& utcDateTime);
+    static mmDateTime invalid() {
+        return mmDateTime(mmDate::invalid(), "", wxInvalidDateTime);
+    }
+    static mmDateTime now(bool withTime = true) {
+        return withTime
+            ? mmDateTime(wxDateTime::Now())
+            : mmDateTime(mmDate::today());
+    }
+
+// -- methods
 
 public:
-    auto getDateTime() const -> wxDateTime;
-    auto isoDateTime() const -> const wxString;
-    auto utcDateTime() const -> const wxString;
+    auto date() const -> const mmDate& { return m_date; }
+    auto isoDate() const -> const wxString { return m_date.isoDate(); }
+    auto isoTime(bool withTime = true) const -> const wxString {
+        return withTime ? m_isoTime : "12:00:00";
+    }
+    auto isoDateTime(bool withTime = true) const -> const wxString {
+        return m_date.isoDate() + "T" + isoTime(withTime);
+    }
+
+private:
+    auto cache_dateTime() -> wxDateTime;
+    void cache_dateTime(wxDateTime dateTime);
+
+public:
+    auto dateTime(bool withTime = true) -> wxDateTime {
+        return withTime
+            ? (c_dateTimeN.IsValid() ? c_dateTimeN : cache_dateTime())
+            : m_date.dateTime();
+    }
     void addDateSpan(wxDateSpan dateSpan);
-    void addTimeSpan(wxTimeSpan timeSpan);
+    void subDateSpan(wxDateSpan dateSpan);
     auto plusDateSpan(wxDateSpan dateSpan) -> mmDateTime;
-    auto plusTimeSpan(wxTimeSpan timeSpan) -> mmDateTime;
     auto minusDateSpan(wxDateSpan dateSpan) -> mmDateTime;
-    auto minusTimeSpan(wxTimeSpan timeSpan) -> mmDateTime;
+    auto fromLocalToUtc() -> mmDateTime;
+    auto fromUtcToLocal() -> mmDateTime;
+
+// -- operators
 
 public:
-    bool operator== (const mmDateTime& other) const;
-    bool operator!= (const mmDateTime& other) const;
-    bool operator<  (const mmDateTime& other) const;
-    bool operator>  (const mmDateTime& other) const;
-    bool operator<= (const mmDateTime& other) const;
-    bool operator>= (const mmDateTime& other) const;
+    bool operator== (const mmDateTime& other) const {
+        return m_date == other.m_date && m_isoTime == other.m_isoTime;
+    }
+    bool operator!= (const mmDateTime& other) const {
+        return m_date != other.m_date || m_isoTime != other.m_isoTime;
+    }
+    bool operator< (const mmDateTime& other) const {
+        return m_date < other.m_date ||
+            (m_date == other.m_date && m_isoTime < other.m_isoTime);
+    }
+    bool operator> (const mmDateTime& other) const {
+        return m_date > other.m_date ||
+            (m_date == other.m_date && m_isoTime > other.m_isoTime);
+    }
+    bool operator<= (const mmDateTime& other) const {
+        return m_date < other.m_date ||
+            (m_date == other.m_date && m_isoTime <= other.m_isoTime);
+    }
+    bool operator>= (const mmDateTime& other) const {
+        return m_date > other.m_date ||
+            (m_date == other.m_date && m_isoTime >= other.m_isoTime);
+    }
 };
 
 struct mmDateTimeN
 {
     friend struct mmDateTime;
 
+// -- state
+
+public:
+    mmDateN m_dateN;
+    wxString m_isoTimeN;
+    wxDateTime c_dateTimeN;
+
+// -- constructor
+
 private:
-    wxDateTime m_dateTimeN;
+    mmDateTimeN(mmDateN dateN, const wxString isoTimeN, wxDateTime dateTimeN) :
+        m_dateN(dateN), m_isoTimeN(isoTimeN), c_dateTimeN(dateTimeN) {}
 
 public:
-    mmDateTimeN() = default;
-    mmDateTimeN(mmDateTime dateTime);
-    mmDateTimeN(wxDateTime dateTimeN);
+    mmDateTimeN() :
+        mmDateTimeN(mmDateN(), "", wxInvalidDateTime) {}
+    mmDateTimeN(mmDateTime dateTime) :
+        mmDateTimeN(mmDateN(dateTime.m_date), dateTime.m_isoTime, dateTime.c_dateTimeN) {}
+    mmDateTimeN(mmDate date, const wxString& isoTime = "12:00:00") :
+        mmDateTimeN(mmDateN(date), isoTime, wxInvalidDateTime) {}
     mmDateTimeN(const wxString& isoDateTimeN);
+    mmDateTimeN(wxDateTime dateTimeN);
+
+// -- methods
 
 public:
-    static mmDateTimeN from_utc(const wxString& utcDateTimeN);
+    bool has_value() const { return m_dateN.has_value(); }
+    auto value() const -> mmDateTime {
+        return mmDateTime(m_dateN.value(), m_isoTimeN, c_dateTimeN);
+    }
+    auto value_or(mmDateTime def_dateTime) const -> mmDateTime {
+        return has_value() ? value() : def_dateTime;
+    }
 
 public:
-    bool has_value() const;
-    auto value() const -> mmDateTime;
-    auto value_or(mmDateTime defDateTime) const -> mmDateTime;
+    auto dateN() const -> const mmDateN& { return m_dateN; }
+    auto isoDateN() const -> const wxString { return m_dateN.isoDateN(); }
+    auto isoTimeN(bool withTime = true) const -> const wxString {
+        return has_value() ? (withTime ? m_isoTimeN : "12:00:00") : "";
+    }
+    auto isoDateTimeN(bool withTime = true) const -> const wxString {
+        return has_value() ? m_dateN.isoDateN() + "T" + isoTimeN(withTime) : "";
+    }
+
+private:
+    auto cache_dateTimeN() -> wxDateTime;
+    void cache_dateTimeN(wxDateTime dateTimeN);
 
 public:
-    auto getDateTimeN() const -> wxDateTime;
-    auto isoDateTimeN() const -> const wxString;
-    auto utcDateTimeN() const -> const wxString;
+    auto dateTimeN(bool withTime = true) -> wxDateTime {
+        return withTime
+            ? (!has_value() || c_dateTimeN.IsValid()) ? c_dateTimeN : cache_dateTimeN()
+            : m_dateN.dateTimeN();
+    }
+    auto fromLocalToUtcN() -> mmDateTimeN;
+    auto fromUtcToLocalN() -> mmDateTimeN;
 
 public:
-    bool operator== (const mmDateTimeN& other) const;
-    bool operator!= (const mmDateTimeN& other) const;
+    bool operator== (const mmDateTimeN& other) const {
+        return m_dateN == other.m_dateN && m_isoTimeN == other.m_isoTimeN;
+    }
+    bool operator!= (const mmDateTimeN& other) const {
+        return m_dateN != other.m_dateN || m_isoTimeN != other.m_isoTimeN;
+    }
 };
-
-inline mmDateTime mmDateTime::now()
-{
-    return mmDateTime(wxDateTime::Now());
-}
-inline mmDateTime mmDateTime::from_utc(const wxString& utcDateTime)
-{
-    return mmDateTime(parseDateTime(utcDateTime).FromUTC());
-}
-
-inline wxDateTime mmDateTime::getDateTime() const
-{
-    return m_dateTime;
-}
-
-inline const wxString mmDateTime::isoDateTime() const
-{
-    return m_dateTime.FormatISOCombined();
-}
-inline const wxString mmDateTime::utcDateTime() const
-{
-    return m_dateTime.ToUTC().FormatISOCombined();
-}
-
-inline void mmDateTime::addDateSpan(wxDateSpan dateSpan)
-{
-    // assumption: dateSpan has granularity of a day or larger
-    m_dateTime += dateSpan;
-}
-inline void mmDateTime::addTimeSpan(wxTimeSpan timeSpan)
-{
-    // assumption: timeSpan has granularity of a second or larger
-    m_dateTime += timeSpan;
-}
-inline mmDateTime mmDateTime::plusDateSpan(wxDateSpan dateSpan)
-{
-    return mmDateTime(m_dateTime + dateSpan);
-}
-inline mmDateTime mmDateTime::plusTimeSpan(wxTimeSpan timeSpan)
-{
-    return mmDateTime(m_dateTime + timeSpan);
-}
-inline mmDateTime mmDateTime::minusDateSpan(wxDateSpan dateSpan)
-{
-    return mmDateTime(m_dateTime - dateSpan);
-}
-inline mmDateTime mmDateTime::minusTimeSpan(wxTimeSpan timeSpan)
-{
-    return mmDateTime(m_dateTime - timeSpan);
-}
-
-// The milliseconds in both operands is set to zero, therefore
-// a simple comparison of m_dateTime is sufficient.
-// For more robustness we compare with a tolerance of half second.
-inline bool mmDateTime::operator== (const mmDateTime& other) const
-{
-    return (m_dateTime < other.m_dateTime + htol && m_dateTime + htol >= other.m_dateTime);
-}
-inline bool mmDateTime::operator!= (const mmDateTime& other) const
-{
-    return (m_dateTime >= other.m_dateTime + htol || m_dateTime + htol < other.m_dateTime);
-}
-inline bool mmDateTime::operator< (const mmDateTime& other) const
-{
-    return m_dateTime + htol < other.m_dateTime;
-}
-inline bool mmDateTime::operator> (const mmDateTime& other) const
-{
-    return m_dateTime >= other.m_dateTime + htol;
-}
-inline bool mmDateTime::operator<= (const mmDateTime& other) const
-{
-    return (m_dateTime < other.m_dateTime + htol);
-}
-inline bool mmDateTime::operator>= (const mmDateTime& other) const
-{
-    return (m_dateTime + htol >= other.m_dateTime);
-}
-
-inline mmDateTimeN mmDateTimeN::from_utc(const wxString& utcDateTimeN)
-{
-    wxDateTime dateTimeN = parseDateTime(utcDateTimeN);
-    return dateTimeN.IsValid() ? mmDateTimeN(dateTimeN.FromUTC()) : mmDateTimeN();
-}
-
-inline bool mmDateTimeN::has_value() const
-{
-    return m_dateTimeN.IsValid();
-}
-inline mmDateTime mmDateTimeN::value() const
-{
-    return mmDateTime(m_dateTimeN);
-}
-inline mmDateTime mmDateTimeN::value_or(mmDateTime defDateTime) const
-{
-    return m_dateTimeN.IsValid() ? mmDateTime(m_dateTimeN) : defDateTime;
-}
-
-inline wxDateTime mmDateTimeN::getDateTimeN() const
-{
-    return m_dateTimeN;
-}
-inline const wxString mmDateTimeN::isoDateTimeN() const
-{
-    return has_value() ? value().isoDateTime() : "";
-}
-inline const wxString mmDateTimeN::utcDateTimeN() const
-{
-    return has_value() ? value().utcDateTime() : "";
-}
-
-inline bool mmDateTimeN::operator== (const mmDateTimeN& other) const
-{
-    return (!has_value() && !other.has_value())
-        || (has_value() && other.has_value() && value() == other.value());
-}
-inline bool mmDateTimeN::operator!= (const mmDateTimeN& other) const
-{
-    return (has_value() || other.has_value())
-        && (!has_value() || !other.has_value() || value() != other.value());
-}
-

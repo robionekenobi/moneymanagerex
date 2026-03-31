@@ -195,7 +195,7 @@ void ListBase::savePref()
     json_writer.EndObject();
     const wxString& key = "LIST_" + m_setting_name;
     const wxString& value = wxString::FromUTF8(json_buffer.GetString());
-    SettingModel::instance().setRaw(key, value);
+    SettingModel::instance().saveRaw(key, value);
 }
 
 void ListBase::loadPref()
@@ -294,14 +294,14 @@ void ListBase::savePref_v190()
         wxString order_str;
         for (int col_id : m_col_id_nr)
             order_str.Append((order_str.IsEmpty() ? "" : "|") + wxString::Format("%i", col_id));
-        SettingModel::instance().setString(getColOrderKey_v190(), order_str);
+        SettingModel::instance().saveString(getColOrderKey_v190(), order_str);
     }
 
     // save m_col_width_id, m_col_hidden_id
     if (!o_col_width_prefix.IsEmpty()) {
         for (int col_nr = 0; col_nr < GetColumnCount(); ++col_nr) {
             int col_id = getColId_Nr(col_nr);
-            SettingModel::instance().setInt(
+            SettingModel::instance().saveInt(
                 getColWidthKey_v190(col_id), GetColumnWidth(col_nr)
             );
         }
@@ -310,7 +310,7 @@ void ListBase::savePref_v190()
     // save m_sort_col_id, m_sort_asc
     bool asc_isInt = (m_sort_col_id.size() == 2);
     for (int i = 0; i < static_cast<int>(m_sort_col_id.size()); ++i) {
-        SettingModel::instance().setInt(getSortColKey_v190(i), getSortColNr(i));
+        SettingModel::instance().saveInt(getSortColKey_v190(i), getSortColNr(i));
         saveBoolInt(getSortAscKey_v190(i), getSortAsc(i), asc_isInt);
     }
 }
@@ -381,9 +381,9 @@ void ListBase::loadPref_v190()
 void ListBase::saveBoolInt(const wxString& key, bool value, bool isInt)
 {
     if (isInt)
-        SettingModel::instance().setInt(key, (value ? 1 : 0));
+        SettingModel::instance().saveInt(key, (value ? 1 : 0));
     else
-        SettingModel::instance().setBool(key, value);
+        SettingModel::instance().saveBool(key, value);
 }
 
 bool ListBase::loadBoolInt(const wxString& key, bool default_value, bool isInt) const

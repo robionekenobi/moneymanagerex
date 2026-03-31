@@ -248,7 +248,7 @@ bool GeneralPref::SaveFinancialYearStart()
 {
     //Save Financial Year Start Month
     wxDateTime::Month month = wxDateTime::Month(m_month_selection->GetSelection());
-    PrefModel::instance().setFinancialFirstMonth(month);
+    PrefModel::instance().saveFinancialFirstMonth(month);
     int last_month_day = wxDateTime(1, month, 2015).GetLastMonthDay().GetDay();
 
     //Save Financial Year Start Day
@@ -257,7 +257,7 @@ bool GeneralPref::SaveFinancialYearStart()
     if (last_month_day < day)
         day = last_month_day;
 
-    PrefModel::instance().setFinancialFirstDay(day);
+    PrefModel::instance().saveFinancialFirstDay(day);
     return last_month_day < day;
 }
 
@@ -282,25 +282,25 @@ bool GeneralPref::SaveSettings()
                 return false;
         }
 
-        PrefModel::instance().setBaseCurrencyID(m_currency_id);
+        PrefModel::instance().saveBaseCurrencyID(m_currency_id);
     }
 
     wxTextCtrl* stun = static_cast<wxTextCtrl*>(FindWindow(ID_DIALOG_OPTIONS_TEXTCTRL_USERNAME));
-    PrefModel::instance().setUserName(stun->GetValue());
+    PrefModel::instance().saveUserName(stun->GetValue());
 
     wxComboBox* cbln = static_cast<wxComboBox*>(FindWindow(ID_DIALOG_OPTIONS_LOCALE));
     wxString value;
     if (doFormatDoubleValue(cbln->GetValue(), value)) {
-        PrefModel::instance().setLocaleName(cbln->GetValue());
+        PrefModel::instance().saveLocaleName(cbln->GetValue());
     }
     else {
         mmErrorDialogs::ToolTip4Object(m_itemListOfLocales, _t("Invalid value"), _t("Locale"), wxICON_ERROR);
         return false;
     }
 
-    PrefModel::instance().setUseCurrencyHistory(m_currency_history->GetValue());
+    PrefModel::instance().saveUseCurrencyHistory(m_currency_history->GetValue());
 
-    PrefModel::instance().setDateFormat(m_date_format);
+    PrefModel::instance().saveDateFormat(m_date_format);
     SaveFinancialYearStart();
 
     return true;

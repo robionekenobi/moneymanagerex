@@ -31,7 +31,6 @@ FieldValueRow FieldValueData::to_row() const
 {
     FieldValueRow row;
 
-
     row.FIELDATADID = m_id;
     row.FIELDID     = m_field_id;
     row.REFID       = FieldValueData::encode_REFID(m_ref_type, m_ref_id);

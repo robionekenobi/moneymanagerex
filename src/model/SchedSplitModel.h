@@ -1,5 +1,6 @@
 /*******************************************************
  Copyright (C) 2013,2014 James Higley
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -27,23 +28,33 @@
 
 class SchedSplitModel : public TableFactory<SchedSplitTable, SchedSplitData>
 {
+// -- static
+
 public:
     static const RefTypeN s_ref_type;
 
+// -- constructor
+
 public:
-    SchedSplitModel();
-    ~SchedSplitModel();
+    SchedSplitModel() :
+        TableFactory<SchedSplitTable, SchedSplitData>() {}
+    ~SchedSplitModel() {}
 
 public:
     static SchedSplitModel& instance(wxSQLite3Database* db);
     static SchedSplitModel& instance();
 
+// -- override
+
 public:
+    // override TableFactory
     virtual bool purge_id(int64 qp_id) override;
 
+// -- methods
+
+public:
     auto get_data_amount(const DataA& qp_a) -> double;
     auto find_id_gl_a(int64 qp_id) -> const TagLinkModel::DataA;
     auto find_all_mSchedId() -> std::map<int64, DataA>;
     int  update(int64 dst_sched_id, DataA& src_qp_a);
 };
-

@@ -40,7 +40,7 @@ struct mmCache
     using Map   = std::unordered_map<Key, Value*>;
 
 public:
-    Map m_key_value;
+    Map m_key_value_m;
     mmCacheStat m_stat;
 
 public:
@@ -57,6 +57,6 @@ public:
     void clear();
     void reset();
 
-    auto get_map() const -> const Map& { return m_key_value; }
+    auto get_map() const -> const Map& { return m_key_value_m; }
     auto get_stat() const -> const mmCacheStat& { return m_stat; }
 };

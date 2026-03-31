@@ -184,7 +184,7 @@ void TrxShareDialog::DataToControls()
             PrefModel::instance().getSharePrecision()
         );
         m_share_lot_ctrl->SetValue(m_stock_n->m_id.ToString());
-        m_transaction_panel->TransactionDate(m_stock_n->m_purchase_date.getDateTime());
+        m_transaction_panel->TransactionDate(m_stock_n->m_purchase_date.dateTime());
         m_transaction_panel->SetTransactionValue(
             GetAmount(m_stock_n->m_num_shares, m_stock_n->m_purchase_price, m_stock_n->m_commission),
             true
@@ -207,14 +207,18 @@ void TrxShareDialog::DataToControls()
             m_share_lot_ctrl->SetValue(m_ts_n->m_lot);
 
             if (m_tl_n) {
-                const TrxData* trx_n = TrxModel::instance().get_id_data_n(m_tl_n->m_trx_id);
+                TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(m_tl_n->m_trx_id);
                 if (trx_n) {
-                    m_transaction_panel->TransactionDate(trx_n->m_date_time.getDateTime());
+                    m_transaction_panel->TransactionDate(
+                        trx_n->m_datetime.dateTime()
+                    );
                     m_transaction_panel->SetTransactionValue(
                         GetAmount(std::abs(m_ts_n->m_number), m_ts_n->m_price, m_ts_n->m_commission),
                         true
                     );
-                    m_transaction_panel->SetTransactionAccount(AccountModel::instance().get_id_name(trx_n->m_account_id));
+                    m_transaction_panel->SetTransactionAccount(
+                        AccountModel::instance().get_id_name(trx_n->m_account_id)
+                    );
                     m_transaction_panel->SetTransactionStatus(trx_n->m_status.id());
                     m_transaction_panel->SetTransactionPayee(trx_n->m_payee_id_n);
                     m_transaction_panel->SetTransactionCategory(trx_n->m_category_id_n);

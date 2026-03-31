@@ -1,5 +1,6 @@
 /*******************************************************
  Copyright (C) 2016 Gabriele-V
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -25,19 +26,28 @@
 
 class FieldValueModel : public TableFactory<FieldValueTable, FieldValueData>
 {
+// -- static
+
 public:
-    FieldValueModel();
-    ~FieldValueModel();
+    static FieldValueCol::REFID REFTYPEID(RefTypeN ref_type, int64 ref_id) {
+        return FieldValueCol::REFID(FieldValueData::encode_REFID(ref_type, ref_id));
+    }
+
+// -- constructor
+
+public:
+    FieldValueModel() :
+        TableFactory<FieldValueTable, FieldValueData>() {}
+    ~FieldValueModel() {}
 
 public:
     static FieldValueModel& instance(wxSQLite3Database* db);
     static FieldValueModel& instance();
 
-    static FieldValueCol::REFID REFTYPEID(RefTypeN ref_type, int64 ref_id);
+// -- methods
 
 public:
     bool purge_ref(RefTypeN ref_type, int64 ref_id);
     auto get_key_data_n(int64 field_id, RefTypeN ref_type, int64 ref_id) -> const Data*;
     auto find_refType_mRefId(RefTypeN ref_type) -> std::map<int64, DataA>;
 };
-

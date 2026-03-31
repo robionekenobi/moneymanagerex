@@ -188,7 +188,7 @@ void ToolBarEntries::Save() {
         }
     }
     j_doc.AddMember("data", array, j_doc.GetAllocator());
-    SettingModel::instance().setJdoc(TOOLBAR_INFO_KEY, j_doc);
+    SettingModel::instance().saveJdoc(TOOLBAR_INFO_KEY, j_doc);
 
     if (m_toolbarParent) {  // update toolbar
         m_toolbarParent->PopulateToolBar();

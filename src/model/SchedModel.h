@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  COPYRIGHT (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -31,6 +32,8 @@
 
 class SchedModel : public TableFactory<SchedTable, SchedData>
 {
+// -- static
+
 public:
     using SplitDataA = SchedSplitModel::DataA;
 
@@ -44,7 +47,7 @@ public:
         TagLinkModel::DataA m_gl_a;
         wxString TAGNAMES;
 
-        DataExt();
+        DataExt() {}
         explicit DataExt(const Data& sched_d);
 
         wxString real_payee_name() const;
@@ -55,26 +58,35 @@ public:
     static const RefTypeN s_ref_type;
 
 public:
-    SchedModel();
-    ~SchedModel();
+    static auto TYPE(OP op, TrxType sched_type) -> SchedCol::TRANSCODE;
+    static auto STATUS(OP op, TrxStatus sched_status) -> SchedCol::STATUS;
+    static auto IS_VOID(bool value) -> SchedCol::STATUS;
+
+// -- constructor
+
+public:
+    SchedModel() :
+        TableFactory<SchedTable, SchedData>() {}
+    ~SchedModel() {}
 
 public:
     static SchedModel& instance(wxSQLite3Database* db);
     static SchedModel& instance();
 
-public:
-    static auto TYPE(OP op, TrxType sched_type) -> SchedCol::TRANSCODE;
-    static auto STATUS(OP op, TrxStatus sched_status) -> SchedCol::STATUS;
-    static auto IS_VOID(bool value) -> SchedCol::STATUS;
+// -- override
 
 public:
     // override TableFactory
     virtual bool purge_id(int64 sched_id) override;
 
+// -- methods
+
     auto find_id_qp_a(int64 sched_id) -> const SchedSplitModel::DataA;
     auto find_id_gl_a(int64 sched_id) -> const TagLinkModel::DataA;
     bool is_data_allowed(const Data& sched_d);
     void reschedule_id(int64 sched_id);
+
+// -- sorter
 
 public:
     struct SorterByACCOUNTNAME

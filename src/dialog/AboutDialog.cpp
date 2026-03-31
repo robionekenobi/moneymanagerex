@@ -42,7 +42,7 @@ AboutDialog::AboutDialog()
 AboutDialog::~AboutDialog()
 {
     const bool v = m_send_data->GetValue();
-    PrefModel::instance().setSendUsageStats(v);
+    PrefModel::instance().saveSendUsageStats(v);
 }
 
 

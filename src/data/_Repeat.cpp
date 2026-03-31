@@ -73,59 +73,59 @@ void Repeat::to_row(int64& row_REPEATS, int64& row_NUMOCCURRENCES) const
     row_NUMOCCURRENCES = static_cast<int64>(num);
 }
 
-const wxDateTime Repeat::next_datetime(
-    const wxDateTime dateTime,
-    bool reverse
-) {
+mmDate Repeat::next_date(mmDate& date, bool reverse)
+{
     int k = reverse ? -1 : 1;
 
-    wxDateTime next_dateTime = dateTime;
+    wxDateTime d = date.dateTime();
     if (m_freq.id() == RepeatFreq::e_1_day)
-        next_dateTime.Add(wxDateSpan::Days(1 * k));
+        d.Add(wxDateSpan::Days(1 * k));
     else if (m_freq.id() == RepeatFreq::e_1_week)
-        next_dateTime.Add(wxTimeSpan::Weeks(1 * k));
+        d.Add(wxTimeSpan::Weeks(1 * k));
     else if (m_freq.id() == RepeatFreq::e_2_weeks)
-        next_dateTime.Add(wxTimeSpan::Weeks(2 * k));
+        d.Add(wxTimeSpan::Weeks(2 * k));
     else if (m_freq.id() == RepeatFreq::e_4_weeks)
-        next_dateTime.Add(wxDateSpan::Weeks(4 * k));
+        d.Add(wxDateSpan::Weeks(4 * k));
     else if (m_freq.id() == RepeatFreq::e_1_month)
-        next_dateTime.Add(wxDateSpan::Months(1 * k));
+        d.Add(wxDateSpan::Months(1 * k));
     else if (m_freq.id() == RepeatFreq::e_month_last_day ||
              m_freq.id() == RepeatFreq::e_month_last_business_day)
     {
-        next_dateTime.Add(wxDateSpan::Months(k));
-        next_dateTime.SetToLastMonthDay(next_dateTime.GetMonth(), next_dateTime.GetYear());
+        d.Add(wxDateSpan::Months(k));
+        d.SetToLastMonthDay(d.GetMonth(), d.GetYear());
         if (m_freq.id() == RepeatFreq::e_month_last_business_day) {
             // last weekday of month
-            if (next_dateTime.GetWeekDay() == wxDateTime::Sun ||
-                next_dateTime.GetWeekDay() == wxDateTime::Sat
+            if (d.GetWeekDay() == wxDateTime::Sun ||
+                d.GetWeekDay() == wxDateTime::Sat
             )
-                next_dateTime.SetToPrevWeekDay(wxDateTime::Fri);
+                d.SetToPrevWeekDay(wxDateTime::Fri);
         }
     }
     else if (m_freq.id() == RepeatFreq::e_2_months)
-        next_dateTime.Add(wxDateSpan::Months(2 * k));
+        d.Add(wxDateSpan::Months(2 * k));
     else if (m_freq.id() == RepeatFreq::e_3_months)
-        next_dateTime.Add(wxDateSpan::Months(3 * k));
+        d.Add(wxDateSpan::Months(3 * k));
     else if (m_freq.id() == RepeatFreq::e_4_months)
-        next_dateTime.Add(wxDateSpan::Months(4 * k));
+        d.Add(wxDateSpan::Months(4 * k));
     else if (m_freq.id() == RepeatFreq::e_6_months)
-        next_dateTime.Add(wxDateSpan::Months(6 * k));
+        d.Add(wxDateSpan::Months(6 * k));
     else if (m_freq.id() == RepeatFreq::e_1_year)
-        next_dateTime.Add(wxDateSpan::Years(1 * k));
+        d.Add(wxDateSpan::Years(1 * k));
     else if (m_freq.id() == RepeatFreq::e_in_x_days)
-        next_dateTime.Add(wxDateSpan::Days(m_x * k));
+        d.Add(wxDateSpan::Days(m_x * k));
     else if (m_freq.id() == RepeatFreq::e_in_x_months)
-        next_dateTime.Add(wxDateSpan::Months(m_x * k));
+        d.Add(wxDateSpan::Months(m_x * k));
     else if (m_freq.id() == RepeatFreq::e_every_x_days)
-        next_dateTime.Add(wxDateSpan::Days(m_x * k));
+        d.Add(wxDateSpan::Days(m_x * k));
     else if (m_freq.id() == RepeatFreq::e_every_x_months)
-        next_dateTime.Add(wxDateSpan::Months(m_x * k));
+        d.Add(wxDateSpan::Months(m_x * k));
+
+    mmDate next_date = mmDate(d);
 
     if (0) wxLogDebug("init date: %s -> next date: %s",
-        dateTime.FormatISOCombined(), next_dateTime.FormatISOCombined()
+        date.isoDate(), next_date.isoDate()
     );
-    return next_dateTime;
+    return next_date;
 }
 
 void Repeat::next_repeat() {

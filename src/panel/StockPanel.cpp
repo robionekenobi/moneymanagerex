@@ -334,7 +334,7 @@ void StockPanel::fillListRow(
     const TrxData& trx_d,
     const TrxShareData& ts_d
 ) {
-    listCtrl->SetItem(index, 0, mmGetDateTimeForDisplay(trx_d.m_date_time.isoDateTime()));
+    listCtrl->SetItem(index, 0, mmGetDateTimeForDisplay(trx_d.m_isoDateTime()));
     listCtrl->SetItem(index, 1, ts_d.m_lot);
 
     int precision = ts_d.m_number == floor(ts_d.m_number) ? 0 : PrefModel::instance().getSharePrecision();
@@ -351,17 +351,23 @@ void StockPanel::bindListEvents(wxListCtrl* listCtrl)
 {
     listCtrl->Bind(wxEVT_LIST_ITEM_ACTIVATED, [listCtrl, this](wxListEvent& event) {
         long index = event.GetIndex();
-        TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(event.GetData());
+        TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(
+            event.GetData()
+        );
         if (!trx_n)
             return;
 
-        const TrxLinkData* tl_n = TrxLinkModel::instance().get_trx_data_n(trx_n->m_id);
+        const TrxLinkData* tl_n = TrxLinkModel::instance().get_trx_data_n(
+            trx_n->m_id
+        );
         TrxLinkData tl_d = tl_n ? *tl_n : TrxLinkData();
         TrxShareDialog dlg(listCtrl, &tl_d, trx_n);
         dlg.ShowModal();
 
         // Update the modified row
-        const TrxShareData* ts_n = TrxShareModel::instance().get_trxId_data_n(trx_n->m_id);
+        const TrxShareData* ts_n = TrxShareModel::instance().get_trxId_data_n(
+            trx_n->m_id
+        );
         if (ts_n) {
             this->fillListRow(listCtrl, index, *trx_n, *ts_n);
         }
@@ -369,9 +375,9 @@ void StockPanel::bindListEvents(wxListCtrl* listCtrl)
         // Re-sort the list
         // FIXME: change type to int64
         listCtrl->SortItems([](wxIntPtr item1, wxIntPtr item2, wxIntPtr) -> int {
-            auto date1 = TrxModel::instance().get_id_data_n(item1)->m_date_time.getDateTime();
-            auto date2 = TrxModel::instance().get_id_data_n(item2)->m_date_time.getDateTime();
-            return date1.IsEarlierThan(date2) ? -1 : (date1.IsLaterThan(date2) ? 1 : 0);
+            auto date1 = TrxModel::instance().get_id_data_n(item1)->m_datetime;
+            auto date2 = TrxModel::instance().get_id_data_n(item2)->m_datetime;
+            return (date1 < date2) ? -1 : (date1 > date2) ? 1 : 0;
         }, 0);
     });
 
@@ -577,7 +583,7 @@ bool StockPanel::onlineQuoteRefresh(wxString& msg)
         m_last_refresh.FormatTime(),
         mmGetDateTimeForDisplay(m_last_refresh.FormatISODate())
     );
-    InfoModel::instance().setString("STOCKS_LAST_REFRESH_DATETIME", m_last_update);
+    InfoModel::instance().saveString("STOCKS_LAST_REFRESH_DATETIME", m_last_update);
 
     return true;
 }

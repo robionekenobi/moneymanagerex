@@ -30,7 +30,7 @@ public:
         e_closed,
         size
     };
-    static mmChoiceNameA s_choice_a;
+    static mmChoiceKeyNameA s_choice_a;
 
 private:
     mmChoiceId m_id;
@@ -38,10 +38,11 @@ private:
 public:
     AccountStatus(mmChoiceId id = s_choice_a.default_id_n()) :
         m_id(s_choice_a.valid_id_n(id)) {}
-    AccountStatus(const wxString& name) :
-        m_id(AccountStatus::s_choice_a.find_name_n(name)) {}
+    AccountStatus(const wxString& key) :
+        m_id(AccountStatus::s_choice_a.find_key_n(key)) {}
 
     mmChoiceId id() const { return m_id; }
+    const wxString key() const { return AccountStatus::s_choice_a.get_key(m_id); }
     const wxString name() const { return AccountStatus::s_choice_a.get_name(m_id); }
 };
 
@@ -54,7 +55,7 @@ public:
         e_true,
         size
     };
-    static mmChoiceNameA s_choice_a;
+    static mmChoiceKeyA s_choice_a;
 
 private:
     mmChoiceId m_id;
@@ -62,13 +63,13 @@ private:
 public:
     AccountFavorite(mmChoiceId id = s_choice_a.default_id_n()) :
         m_id(s_choice_a.valid_id_n(id)) {}
-    AccountFavorite(const wxString& name) :
-        m_id(AccountFavorite::s_choice_a.find_name_n(name)) {}
+    AccountFavorite(const wxString& key) :
+        m_id(AccountFavorite::s_choice_a.find_key_n(key)) {}
     AccountFavorite(bool is_favorite) :
         m_id(is_favorite ? e_true : e_false) {}
 
     mmChoiceId id() const { return m_id; }
-    const wxString name() const { return AccountFavorite::s_choice_a.get_name(m_id); }
+    const wxString key() const { return AccountFavorite::s_choice_a.get_key(m_id); }
 };
 
 struct AssetType
@@ -85,7 +86,7 @@ public:
         e_other,
         size
     };
-    static mmChoiceNameA s_choice_a;
+    static mmChoiceKeyNameA s_choice_a;
 
 private:
     mmChoiceId m_id;
@@ -93,10 +94,11 @@ private:
 public:
     AssetType(mmChoiceId id = s_choice_a.default_id_n()) :
         m_id(s_choice_a.valid_id_n(id)) {}
-    AssetType(const wxString& name) :
-        m_id(AssetType::s_choice_a.find_name_n(name)) {}
+    AssetType(const wxString& key) :
+        m_id(AssetType::s_choice_a.find_key_n(key)) {}
 
     mmChoiceId id() const { return m_id; }
+    const wxString key() const { return AssetType::s_choice_a.get_key(m_id); }
     const wxString name() const { return AssetType::s_choice_a.get_name(m_id); }
 };
 
@@ -109,7 +111,7 @@ public:
         e_open,
         size
     };
-    static mmChoiceNameA s_choice_a;
+    static mmChoiceKeyNameA s_choice_a;
 
 private:
     mmChoiceId m_id;
@@ -117,10 +119,11 @@ private:
 public:
     AssetStatus(mmChoiceId id = s_choice_a.default_id_n()) :
         m_id(s_choice_a.valid_id_n(id)) {}
-    AssetStatus(const wxString& name) :
-        m_id(AssetStatus::s_choice_a.find_name_n(name)) {}
+    AssetStatus(const wxString& key) :
+        m_id(AssetStatus::s_choice_a.find_key_n(key)) {}
 
     mmChoiceId id() const { return m_id; }
+    const wxString key() const { return AssetStatus::s_choice_a.get_key(m_id); }
     const wxString name() const { return AssetStatus::s_choice_a.get_name(m_id); }
 };
 
@@ -134,7 +137,7 @@ public:
         e_depreciates,
         size
     };
-    static mmChoiceNameA s_choice_a;
+    static mmChoiceKeyNameA s_choice_a;
 
 private:
     mmChoiceId m_id;
@@ -142,10 +145,11 @@ private:
 public:
     AssetChange(mmChoiceId id = s_choice_a.default_id_n()) :
         m_id(s_choice_a.valid_id_n(id)) {}
-    AssetChange(const wxString& name) :
-        m_id(AssetChange::s_choice_a.find_name_n(name)) {}
+    AssetChange(const wxString& key) :
+        m_id(AssetChange::s_choice_a.find_key_n(key)) {}
 
     mmChoiceId id() const { return m_id; }
+    const wxString key() const { return AssetChange::s_choice_a.get_key(m_id); }
     const wxString name() const { return AssetChange::s_choice_a.get_name(m_id); }
 };
 
@@ -158,7 +162,7 @@ public:
         e_linear,
         size
     };
-    static mmChoiceNameA s_choice_a;
+    static mmChoiceKeyNameA s_choice_a;
 
 private:
     mmChoiceId m_id;
@@ -166,10 +170,11 @@ private:
 public:
     AssetChangeMode(mmChoiceId id = s_choice_a.default_id_n()) :
         m_id(s_choice_a.valid_id_n(id)) {}
-    AssetChangeMode(const wxString& name) :
-        m_id(AssetChangeMode::s_choice_a.find_name_n(name)) {}
+    AssetChangeMode(const wxString& key) :
+        m_id(AssetChangeMode::s_choice_a.find_key_n(key)) {}
 
     mmChoiceId id() const { return m_id; }
+    const wxString key() const { return AssetChangeMode::s_choice_a.get_key(m_id); }
     const wxString name() const { return AssetChangeMode::s_choice_a.get_name(m_id); }
 };
 
@@ -189,7 +194,7 @@ public:
         e_daily,
         size
     };
-    static mmChoiceNameA s_choice_a;
+    static mmChoiceKeyNameA s_choice_a;
 
 private:
     mmChoiceId m_id;
@@ -197,10 +202,11 @@ private:
 public:
     BudgetFreq(mmChoiceId id = s_choice_a.default_id_n()) :
         m_id(s_choice_a.valid_id_n(id)) {}
-    BudgetFreq(const wxString& name) :
-        m_id(BudgetFreq::s_choice_a.find_name_n(name)) {}
+    BudgetFreq(const wxString& key) :
+        m_id(BudgetFreq::s_choice_a.find_key_n(key)) {}
 
     mmChoiceId id() const { return m_id; }
+    const wxString key() const { return BudgetFreq::s_choice_a.get_key(m_id); }
     const wxString name() const { return BudgetFreq::s_choice_a.get_name(m_id); }
     int times_per_year() const {
         int a[size] = { 0, 52, 26, 12, 6, 4, 2, 1, 365 };
@@ -220,7 +226,7 @@ public:
         e_crypto,
         size
     };
-    static mmChoiceNameA s_choice_a;
+    static mmChoiceKeyNameA s_choice_a;
 
 private:
     mmChoiceId m_id;
@@ -228,10 +234,11 @@ private:
 public:
     CurrencyType(mmChoiceId id = s_choice_a.default_id_n()) :
         m_id(s_choice_a.valid_id_n(id)) {}
-    CurrencyType(const wxString& name) :
-        m_id(CurrencyType::s_choice_a.find_name_n(name)) {}
+    CurrencyType(const wxString& key) :
+        m_id(CurrencyType::s_choice_a.find_key_n(key)) {}
 
     mmChoiceId id() const { return m_id; }
+    const wxString key() const { return CurrencyType::s_choice_a.get_key(m_id); }
     const wxString name() const { return CurrencyType::s_choice_a.get_name(m_id); }
 };
 
@@ -250,7 +257,7 @@ public:
         e_multi_choice,
         size
     };
-    static mmChoiceNameA s_choice_a;
+    static mmChoiceKeyNameA s_choice_a;
 
 private:
     mmChoiceIdN m_id_n;
@@ -258,11 +265,14 @@ private:
 public:
     FieldTypeN(mmChoiceIdN id_n = s_choice_a.default_id_n()) :
         m_id_n(s_choice_a.valid_id_n(id_n)) {}
-    FieldTypeN(const wxString& name) :
-        m_id_n(FieldTypeN::s_choice_a.find_name_n(name)) {}
+    FieldTypeN(const wxString& key) :
+        m_id_n(FieldTypeN::s_choice_a.find_key_n(key)) {}
 
     bool has_value() const { return m_id_n >= 0; }
     mmChoiceIdN id_n() const { return m_id_n; }
+    const wxString key_n() const {
+        return has_value() ? FieldTypeN::s_choice_a.get_key(m_id_n) : "";
+    }
     const wxString name_n() const {
         return has_value() ? FieldTypeN::s_choice_a.get_name(m_id_n) : "";
     }
@@ -278,7 +288,7 @@ public:
         e_transfer,
         size
     };
-    static mmChoiceNameA s_choice_a;
+    static mmChoiceKeyNameA s_choice_a;
 
 private:
     mmChoiceId m_id;
@@ -286,10 +296,11 @@ private:
 public:
     TrxType(mmChoiceId id = s_choice_a.default_id_n()) :
         m_id(s_choice_a.valid_id_n(id)) {}
-    TrxType(const wxString& name) :
-        m_id(TrxType::s_choice_a.find_name_n(name)) {}
+    TrxType(const wxString& key) :
+        m_id(TrxType::s_choice_a.find_key_n(key)) {}
 
     mmChoiceId id() const { return m_id; }
+    const wxString key() const { return TrxType::s_choice_a.get_key(m_id); }
     const wxString name() const { return TrxType::s_choice_a.get_name(m_id); }
     const wxString trade_name() const {
         static const wxArrayString trade_name_a = {
@@ -311,7 +322,7 @@ public:
         e_duplicate,
         size
     };
-    static mmChoiceKeyNameA s_choice_a;
+    static mmChoiceKeyKeyNameA s_choice_a;
 
 private:
     mmChoiceId m_id;
@@ -319,8 +330,8 @@ private:
 public:
     TrxStatus(mmChoiceId id = s_choice_a.default_id_n()) :
         m_id(s_choice_a.valid_id_n(id)) {}
-    TrxStatus(const wxString& keyname) :
-        m_id(TrxStatus::s_choice_a.find_keyname_n(keyname)) {}
+    TrxStatus(const wxString& key) :
+        m_id(TrxStatus::s_choice_a.find_key_n(key)) {}
 
     mmChoiceId id() const { return m_id; }
     const wxString key() const { return TrxStatus::s_choice_a.get_key(m_id); }
@@ -415,7 +426,7 @@ public:
         e_sched_split,
         size
     };
-    static mmChoiceNameA s_choice_a;
+    static mmChoiceKeyNameA s_choice_a;
 
 private:
     mmChoiceIdN m_id_n;
@@ -423,8 +434,8 @@ private:
 public:
     RefTypeN(mmChoiceIdN id_n = s_choice_a.default_id_n()) :
         m_id_n(s_choice_a.valid_id_n(id_n)) {}
-    RefTypeN(const wxString& name) :
-        m_id_n(RefTypeN::s_choice_a.find_name_n(name)) {}
+    RefTypeN(const wxString& key) :
+        m_id_n(RefTypeN::s_choice_a.find_key_n(key)) {}
 
     static mmChoiceIdN field_id_n(mmChoiceIdN id_n) {
         switch (id_n) {
@@ -442,6 +453,9 @@ public:
 
     bool has_value() const { return m_id_n >= 0; }
     mmChoiceIdN id_n() const { return m_id_n; }
+    const wxString key_n() const {
+        return has_value() ? RefTypeN::s_choice_a.get_key(m_id_n) : "";
+    }
     const wxString name_n() const {
         return has_value() ? RefTypeN::s_choice_a.get_name(m_id_n) : "";
     }
@@ -479,4 +493,3 @@ public:
     int code() const { return UpdateType::s_choice_a.get_code(m_id); }
     const wxString name() const { return UpdateType::s_choice_a.get_name(m_id); }
 };
-

@@ -375,7 +375,7 @@ wxString mmReportCategoryOverTimePerformance::getHTMLText()
     mmDate ed = mmDate(m_date_range->end_date()).plusDateSpan(
         wxDateSpan::Months(m_date_selection.GetValue())
     );
-    mmDateRange* date_range = new mmSpecifiedRange(sd.getDateTime(), ed.getDateTime());
+    mmDateRange* date_range = new mmSpecifiedRange(sd.dateTime(), ed.dateTime());
 
     //Get statistic
     std::map<int64, std::map<int, double>> categoryStats;
@@ -422,11 +422,11 @@ wxString mmReportCategoryOverTimePerformance::getHTMLText()
     mmHTMLBuilder hb;
     hb.init();
     hb.addReportHeader(getTitle(), m_date_range->startDay(), m_date_range->isFutureIgnored());
-    hb.displayDateHeading(sd.getDateTime(), ed.getDateTime(), true);
+    hb.displayDateHeading(sd.dateTime(), ed.dateTime(), true);
     hb.displayFooter(getAccountNames());
     // Prime the filter
     m_filter.clear();
-    m_filter.setDateRange(sd.getDateTime(), ed.getDateTime());
+    m_filter.setDateRange(sd.dateTime(), ed.dateTime());
     m_filter.setAccountList(m_account_a);
 
     const wxDateTime start_date = date_range->start_date();

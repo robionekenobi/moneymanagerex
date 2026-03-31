@@ -1,7 +1,9 @@
 Common prefix symbols (to avoid name collision with methods):
+  prefix c_ : cache
   prefix e_ : enumeration case
   prefix m_ : member variable
   prefix s_ : static (non-instance) constant or variable
+  prefix u_ : unused variable (can be removed)
   prefix w_ : widget member variable (derived from wxWidgets class)
 
 Common suffix symols (to indicate the variable content):
@@ -11,5 +13,6 @@ Common suffix symols (to indicate the variable content):
   suffix _m : ordered map, unordered map, set
   suffix _n : nullable (e.g., nullptr, nullopt, value out of range)
   suffix _p : non-null (e.g., pointer which is always non-null)
+  suffix _s : string (e.g., serialized data)
   suffix _t : typedef
 

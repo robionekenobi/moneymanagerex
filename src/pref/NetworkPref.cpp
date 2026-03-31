@@ -210,22 +210,22 @@ void NetworkPref::OnUpdateCheckChanged(wxCommandEvent& WXUNUSED(event))
 
 bool NetworkPref::SaveSettings()
 {
-    SettingModel::instance().setString("PROXYIP", m_proxy_address->GetValue().Trim(false).Trim());
-    SettingModel::instance().setInt("PROXYPORT", m_proxy_port->GetValue());
+    SettingModel::instance().saveString("PROXYIP", m_proxy_address->GetValue().Trim(false).Trim());
+    SettingModel::instance().saveInt("PROXYPORT", m_proxy_port->GetValue());
 
     wxTextCtrl* WebAppURL = static_cast<wxTextCtrl*>(FindWindow(ID_DIALOG_OPTIONS_TEXTCTRL_WEBAPPURL));
-    InfoModel::instance().setString("WEBAPPURL", WebAppURL->GetValue().Trim(false).Trim());
+    InfoModel::instance().saveString("WEBAPPURL", WebAppURL->GetValue().Trim(false).Trim());
 
     wxTextCtrl* WebAppGUID = static_cast<wxTextCtrl*>(FindWindow(ID_DIALOG_OPTIONS_TEXTCTRL_WEBAPPGUID));
-    InfoModel::instance().setString("WEBAPPGUID", WebAppGUID->GetValue().Trim(false).Trim());
+    InfoModel::instance().saveString("WEBAPPGUID", WebAppGUID->GetValue().Trim(false).Trim());
 
-    PrefModel::instance().setSendUsageStats(m_send_data->GetValue());
-    PrefModel::instance().setCheckNews(m_check_news->GetValue());
+    PrefModel::instance().saveSendUsageStats(m_send_data->GetValue());
+    PrefModel::instance().saveCheckNews(m_check_news->GetValue());
 
-    SettingModel::instance().setInt("NETWORKTIMEOUT", m_network_timeout->GetValue());
+    SettingModel::instance().saveInt("NETWORKTIMEOUT", m_network_timeout->GetValue());
 
-    SettingModel::instance().setBool("UPDATECHECK", m_check_update->GetValue());
-    SettingModel::instance().setInt("UPDATESOURCE", m_update_source->GetSelection());
+    SettingModel::instance().saveBool("UPDATECHECK", m_check_update->GetValue());
+    SettingModel::instance().saveInt("UPDATESOURCE", m_update_source->GetSelection());
 
     return true;
 }

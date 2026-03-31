@@ -54,6 +54,8 @@ struct JournalKey
 
 class Journal
 {
+// -- static
+
 public:
     struct Data: public TrxData
     {
@@ -63,7 +65,7 @@ public:
         Data();
         explicit Data(const TrxData& t);
         explicit Data(const SchedData& sched_d);
-        Data(const SchedData& sched_d, mmDateTime date, int repeat_i);
+        Data(const SchedData& sched_d, mmDateTime datetime, int repeat_i);
         ~Data();
 
         JournalKey key() const {
@@ -84,8 +86,8 @@ public:
             const std::map<int64, TagLinkModel::DataA>& trxId_glA_m
         );
         DataExt(const SchedData& sched_d);
-        DataExt(const SchedData& sched_d, mmDateTime date, int repeat_i);
-        DataExt(const SchedData& sched_d, mmDateTime date, int repeat_i,
+        DataExt(const SchedData& sched_d, mmDateTime datetime, int repeat_i);
+        DataExt(const SchedData& sched_d, mmDateTime datetime, int repeat_i,
             const std::map<int64, SchedSplitModel::DataA>& schedId_qpA_m,
             const std::map<int64, TagLinkModel::DataA>& schedId_glA_m
         );
@@ -97,8 +99,8 @@ public:
     };
     typedef std::vector<DataExt> DataExtA;
 
-    static auto execute_bill(const SchedData& sched_d, mmDateTime date_time) -> TrxData;
-    static auto execute_bill_full(const SchedData& sched_d, mmDateTime date_time) -> TrxModel::DataExt;
+    static auto execute_bill(const SchedData& sched_d, mmDateTime datetime) -> TrxData;
+    static auto execute_bill_full(const SchedData& sched_d, mmDateTime datetime) -> TrxModel::DataExt;
     static auto execute_splits(const SchedSplitModel::DataA& rs) -> TrxSplitModel::DataA;
 
     static void setEmptyData(Data& journal_d, int64 account_id);
@@ -106,6 +108,8 @@ public:
     static auto split(Data& journal_d) -> const TrxSplitModel::DataA;
     static auto get_id_data(JournalKey journal_key) -> Journal::Data;
     static auto get_id_data_x(JournalKey journal_key) -> Journal::DataExt;
+
+// -- sorter
 
     struct SorterByJOURNALID
     { 

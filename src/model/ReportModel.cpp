@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2026 Klaus Wich
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -48,7 +49,7 @@ const std::vector<ReportParam> ReportParam::get_param_a()
         { "&end_date", "mmDatePickerCtrl", def_date,
             ReportPanel::ID_END_DATE_PICKER, _t("End date:") },
         { "&single_date", "mmDatePickerCtrl", def_date,
-            ReportPanel::RepPanel::ID_SINGLE_DATE_PICKER, _t("Date:") },
+            ReportPanel::ID_SINGLE_DATE_PICKER, _t("Date:") },
         { "&single_time", "wxTimePickerCtrl", def_time,
             ReportPanel::ID_TIME_PICKER, _t("Time:") },
         { "&only_years", "wxChoice", def_date,
@@ -123,14 +124,7 @@ bool ReportParam::prepare_sql(wxString& query, std::map<wxString, wxString>& lab
     return true;
 }
 
-ReportModel::ReportModel() :
-    TableFactory<ReportTable, ReportData>()
-{
-}
-
-ReportModel::~ReportModel()
-{
-}
+// -- constructor
 
 // Initialize the single ReportModel table.
 // Reset the ReportModel table or create the table if it does not exist.
@@ -149,6 +143,8 @@ ReportModel& ReportModel::instance()
 {
     return Singleton<ReportModel>::instance();
 }
+
+// -- methods
 
 const ReportData* ReportModel::get_name_data_n(const wxString& name)
 {

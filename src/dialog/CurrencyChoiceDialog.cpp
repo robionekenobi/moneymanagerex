@@ -62,7 +62,7 @@ wxBEGIN_EVENT_TABLE(CurrencyChoiceDialog, wxDialog)
 
 CurrencyChoiceDialog::~CurrencyChoiceDialog()
 {
-    InfoModel::instance().setSize("CURRENCY_DIALOG_SIZE", GetSize());
+    InfoModel::instance().saveSize("CURRENCY_DIALOG_SIZE", GetSize());
 }
 
 CurrencyChoiceDialog::CurrencyChoiceDialog(
@@ -594,7 +594,7 @@ void CurrencyChoiceDialog::OnItemRightClick(wxDataViewEvent& event)
 
 void CurrencyChoiceDialog::OnShowHiddenChbClick(wxCommandEvent& WXUNUSED(event))
 {
-    InfoModel::instance().setBool("SHOW_HIDDEN_CURRENCIES", w_show_all_cb->IsChecked());
+    InfoModel::instance().saveBool("SHOW_HIDDEN_CURRENCIES", w_show_all_cb->IsChecked());
     fillControls();
 }
 
@@ -622,24 +622,26 @@ void CurrencyChoiceDialog::ShowCurrencyHistory()
     }
 
     const CurrencyData* currency = CurrencyModel::instance().get_id_data_n(m_currency_id);
-    CurrencyHistoryModel::DataA histData = CurrencyHistoryModel::instance().find(
+    CurrencyHistoryModel::DataA uh_a = CurrencyHistoryModel::instance().find(
         CurrencyHistoryCol::CURRENCYID(m_currency_id)
     );
-    std::stable_sort(histData.begin(), histData.end(), CurrencyHistoryData::SorterByCURRDATE());
-    std::reverse(histData.begin(), histData.end());
-    if (!histData.empty()) {
+    std::stable_sort(uh_a.begin(), uh_a.end(), CurrencyHistoryData::SorterByCURRDATE());
+    std::reverse(uh_a.begin(), uh_a.end());
+    if (!uh_a.empty()) {
         int idx = 0;
-        for (const auto& ch_d : histData) {
+        for (const CurrencyHistoryData& uh_d : uh_a) {
             wxListItem item;
             item.SetId(idx);
-            item.SetData(reinterpret_cast<void*>(ch_d.m_id.GetValue()));
+            item.SetData(reinterpret_cast<void*>(uh_d.m_id.GetValue()));
             w_history_list->InsertItem(item);
-            const wxString dispAmount = CurrencyModel::instance().toString(ch_d.m_base_conv_rate, currency, 6);
-            w_history_list->SetItem(idx, 0, mmGetDateTimeForDisplay(ch_d.m_date.isoDate()));
+            const wxString dispAmount = CurrencyModel::instance().toString(
+                uh_d.m_base_conv_rate, currency, 6
+            );
+            w_history_list->SetItem(idx, 0, mmGetDateTimeForDisplay(uh_d.m_date.isoDate()));
             w_history_list->SetItem(idx, 1, dispAmount);
 
 
-            const wxString& priceAmount = "* M"[ch_d.m_update_type.id()];
+            const wxString& priceAmount = "* M"[uh_d.m_update_type.id()];
             w_history_list->SetItem(idx, 2, priceAmount);
             idx++;
         }
@@ -716,11 +718,13 @@ void CurrencyChoiceDialog::OnHistoryUpdate(wxCommandEvent& WXUNUSED(event))
     bool isCheckDate = (msgResult == wxNO);
 
     wxString msg;
-    const std::set<mmDate> date_m = CurrencyModel::instance().find_id_date_m(m_currency_id);
-    wxDateTime begin_date = (isCheckDate && !date_m.empty())
-        ? date_m.begin()->getDateTime()
-        : wxDateTime::Now().Subtract(wxDateSpan::Years(1));
-    wxLogDebug("Begin Date: %s", begin_date.FormatISODate());
+    std::set<mmDate> date_m = CurrencyModel::instance().find_id_date_m(
+        m_currency_id
+    );
+    mmDate begin_date = (isCheckDate && !date_m.empty())
+        ? *date_m.begin()
+        : mmDate::today().minusDateSpan(wxDateSpan::Years(1));
+    wxLogDebug("Begin Date: %s", begin_date.isoDate());
 
     std::map<mmDate, double> date_rate_m;
     bool isUpdStatus = GetOnlineHistory(
@@ -819,10 +823,12 @@ void CurrencyChoiceDialog::OnHistorySelected(wxListEvent& event)
 {
     long selectedIndex = event.GetIndex();
     int64 histId = w_history_list->GetItemData(selectedIndex);
-    const CurrencyHistoryData* ch_n = CurrencyHistoryModel::instance().get_id_data_n(histId);
+    CurrencyHistoryData* ch_n = CurrencyHistoryModel::instance().unsafe_get_id_data_n(
+        histId
+    );
 
     if (ch_n->m_id > 0) {
-        w_date_picker->SetValue(ch_n->m_date.getDateTime());
+        w_date_picker->SetValue(ch_n->m_date.dateTime());
         w_value_text->SetValue(wxString::Format("%f", ch_n->m_base_conv_rate));
     }
 }
@@ -847,7 +853,7 @@ bool CurrencyChoiceDialog::SetBaseCurrency(int64& baseCurrencyID)
         return true;
     }
 
-    PrefModel::instance().setBaseCurrencyID(baseCurrencyID);
+    PrefModel::instance().saveBaseCurrencyID(baseCurrencyID);
 
     // Update base_conv_rate
     CurrencyModel::instance().db_savepoint();
@@ -924,7 +930,7 @@ void CurrencyChoiceDialog::OnTextChanged(wxCommandEvent& event)
 
 bool CurrencyChoiceDialog::GetOnlineHistory(
     const wxString& symbol,
-    wxDateTime begin_date,
+    mmDate begin_date,
     std::map<mmDate, double>& date_rate_m,
     wxString& msg
 ) {
@@ -938,7 +944,8 @@ bool CurrencyChoiceDialog::GetOnlineHistory(
     if (!g_fiat_curr().Contains(symbol))
         s = "%s-%s";
 
-    const wxString period1 = wxString::Format("%lld", begin_date.GetTicks()); //"1577836800";
+    time_t begin_ticks = begin_date.dateTime().GetTicks();
+    const wxString period1 = wxString::Format("%lld", begin_ticks); //"1577836800";
     const wxString URL = wxString::Format(mmex::weblink::YahooQuotesHistory,
         wxString::Format(s, symbol, base_currency_symbol),
         wxString::Format("period1=%s&period2=9999999999&interval=1d", period1)
@@ -993,14 +1000,14 @@ bool CurrencyChoiceDialog::GetOnlineHistory(
         return false;
 
     std::map<mmDate, double> date_close_m;
-    const mmDate today = mmDate::today();
+    mmDate today = mmDate::today();
     mmDate first_date = today;
     double first_rate = 0;
 
     bool only_1 = true;
     for (rapidjson::SizeType i = 0; i < timestamp.Size(); i++) {
         wxASSERT(timestamp[i].IsInt());
-        const mmDate date = mmDate(wxDateTime(static_cast<time_t>(timestamp[i].GetInt())));
+        mmDate date = mmDate(wxDateTime(static_cast<time_t>(timestamp[i].GetInt())));
         if (quotes_closed[i].IsFloat()) {
             double rate = quotes_closed[i].GetFloat();
             date_close_m[date] = rate;
@@ -1014,7 +1021,7 @@ bool CurrencyChoiceDialog::GetOnlineHistory(
         else {
             wxLogDebug("%s %s",
                 date.isoDate(),
-                wxDateTime::GetWeekDayName(date.getDateTime().GetWeekDay())
+                wxDateTime::GetWeekDayName(date.dateTime().GetWeekDay())
             );
         }
     }

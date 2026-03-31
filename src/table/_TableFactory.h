@@ -111,16 +111,17 @@ public:
     //   produces the SQL statement condition: ASSETID = 2 AND ASSETTYPE = "Jewellery"
     // Return an empty array if no records are found.
     // 
-    // TODO: do not store all record in a vactor; return an iterator instead.
+    // TODO: do not store all results in a vactor; return an iterator instead.
     template<typename... Args>
     auto find_where(bool op_and, const Args&... args) -> const DataA
     {
         DataA result;
         try {
-            wxString query = this->m_select_query + " WHERE ";
+            wxString query = this->m_select_query + " WHERE";
             write_condition(query, op_and, args...);
             wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
-            bind_at(stmt, 1, args...);
+            int index = 0;
+            bind_at(stmt, index, args...);
             wxSQLite3ResultSet q = stmt.ExecuteQuery();
 
             while (q.NextRow()) {
@@ -148,43 +149,53 @@ public:
     template<typename Arg1>
     void write_condition(wxString& out, bool /*op_and*/, const Arg1& arg1)
     {
-        out += Arg1::col_name();
-        switch (arg1.m_operator) {
-            case OP_GT: out += " > ? ";  break;
-            case OP_GE: out += " >= ? "; break;
-            case OP_LT: out += " < ? ";  break;
-            case OP_LE: out += " <= ? "; break;
-            case OP_NE: out += " != ? "; break;
-            default:    out += " = ? ";  break;
+        wxString col = Arg1::col_name();
+        switch (arg1.m_operator)
+        {
+            case OP_EQ:  out += " " + col + " = ?"; break;
+            case OP_NE:  out += " " + col +" != ?"; break;
+            case OP_GT:  out += " " + col + " > ?"; break;
+            case OP_LT:  out += " " + col + " < ?"; break;
+            case OP_GE:  out += " " + col +" >= ?"; break;
+            case OP_LE:  out += " " + col +" <= ?"; break;
+            case OP_EQN: out += " IFNULL(" + col + ", ?)" +  " = ?"; break;
+            case OP_NEN: out += " IFNULL(" + col + ", ?)" + " != ?"; break;
         }
     }
 
     template<typename Arg1, typename... Args>
     void write_condition(wxString& out, bool op_and, const Arg1& arg1, const Args&... args)
     {
-        out += Arg1::col_name();
-        switch (arg1.m_operator) {
-        case OP_GT: out += " > ? ";  break;
-        case OP_GE: out += " >= ? "; break;
-        case OP_LT: out += " < ? ";  break;
-        case OP_LE: out += " <= ? "; break;
-        case OP_NE: out += " != ? "; break;
-        default:    out += " = ? ";  break;
-        }
-        out += op_and? " AND " : " OR ";
+        write_condition(out, op_and, arg1);
+        out += op_and ? " AND" : " OR";
         write_condition(out, op_and, args...);
     }
 
     template<typename Arg1>
-    void bind_at(wxSQLite3Statement& stmt, int index, const Arg1& arg1)
+    void bind_at(wxSQLite3Statement& stmt, int& index, const Arg1& arg1)
     {
-        stmt.Bind(index, arg1.m_value);
+        switch (arg1.m_operator)
+        {
+            case OP_EQ:
+            case OP_NE:
+            case OP_GT:
+            case OP_LT:
+            case OP_GE:
+            case OP_LE:
+                stmt.Bind(++index, arg1.m_value);
+                break;
+            case OP_EQN:
+            case OP_NEN:
+                stmt.Bind(++index, arg1.m_value);
+                stmt.Bind(++index, arg1.m_value);
+                break;
+        }
     }
 
     template<typename Arg1, typename... Args>
-    void bind_at(wxSQLite3Statement& stmt, int index, const Arg1& arg1, const Args&... args)
+    void bind_at(wxSQLite3Statement& stmt, int& index, const Arg1& arg1, const Args&... args)
     {
-        stmt.Bind(index, arg1.m_value);
-        bind_at(stmt, index+1, args...);
+        bind_at(stmt, index, arg1);
+        bind_at(stmt, index, args...);
     }
 };

@@ -36,6 +36,7 @@
 #include "util/mmCalcValidator.h"
 
 #include "model/_all.h"
+#include "model/PrefModel.h"
 #include "model/Journal.h"
 
 #include "mmframe.h"
@@ -54,43 +55,112 @@
 #include "uicontrols/reconciledialog.h"
 #include "uicontrols/navigatortypes.h"
 
-//----------------------------------------------------------------------------
+// -- static
 
-const std::vector<std::pair<JournalPanel::FILTER_ID, wxString> > JournalPanel::FILTER_NAME =
+const std::vector<std::pair<JournalPanel::FILTER_ID, wxString>> JournalPanel::FILTER_NAME =
 {
-    { JournalPanel::FILTER_ID_DATE,        wxString("Date") },
-    { JournalPanel::FILTER_ID_DATE_RANGE,  wxString("mmDateRange") },
-    { JournalPanel::FILTER_ID_DATE_PICKER, wxString("DatePicker") }
+    { FILTER_ID_DATE,        "Date" },
+    { FILTER_ID_DATE_RANGE,  "DateRange" },
+    { FILTER_ID_DATE_PICKER, "DatePicker" },
 };
 
-//----------------------------------------------------------------------------
+const wxString JournalPanel::filter_id_name(FILTER_ID id) {
+    return FILTER_NAME[id].second;
+}
 
 wxBEGIN_EVENT_TABLE(JournalPanel, wxPanel)
-    EVT_BUTTON(wxID_NEW,                  JournalPanel::onNewTrx)
-    EVT_BUTTON(wxID_EDIT,                 JournalPanel::onEditTrx)
-    EVT_BUTTON(wxID_DUPLICATE,            JournalPanel::onDuplicateTrx)
-    EVT_BUTTON(wxID_UNDELETE,             JournalPanel::onRestoreTrx)
-    EVT_BUTTON(wxID_REMOVE,               JournalPanel::onDeleteTrx)
-    EVT_BUTTON(wxID_PASTE,                JournalPanel::onEnterSched)
-    EVT_BUTTON(wxID_IGNORE,               JournalPanel::onSkipSched)
-    EVT_BUTTON(wxID_FILE,                 JournalPanel::onOpenAttachment)
-    EVT_BUTTON(ID_FILTER,                 JournalPanel::onFilterPopup)
-    EVT_BUTTON(ID_FILTER_TRANS,           JournalPanel::onFilterAdvanced)
-    EVT_MENU(ID_FILTER_ADVANCED,          JournalPanel::onFilterAdvanced)
-    EVT_MENU(ID_DATE_RANGE_EDIT,          JournalPanel::onEditDateRanges)
-    EVT_TOGGLEBUTTON(ID_SCHEDULED,        JournalPanel::onScheduled)
+    EVT_BUTTON(wxID_NEW,                   JournalPanel::onNewTrx)
+    EVT_BUTTON(wxID_EDIT,                  JournalPanel::onEditTrx)
+    EVT_BUTTON(wxID_DUPLICATE,             JournalPanel::onDuplicateTrx)
+    EVT_BUTTON(wxID_UNDELETE,              JournalPanel::onRestoreTrx)
+    EVT_BUTTON(wxID_REMOVE,                JournalPanel::onDeleteTrx)
+    EVT_BUTTON(wxID_PASTE,                 JournalPanel::onEnterSched)
+    EVT_BUTTON(wxID_IGNORE,                JournalPanel::onSkipSched)
+    EVT_BUTTON(wxID_FILE,                  JournalPanel::onOpenAttachment)
+    EVT_BUTTON(ID_DATE_RANGE_BUTTON,       JournalPanel::onDateRangePopup)
+    EVT_BUTTON(ID_FILTER_BUTTON,           JournalPanel::onFilter)
+    EVT_MENU(ID_FILTER_ADVANCED,           JournalPanel::onFilter)
+    EVT_MENU(ID_DATE_RANGE_EDIT,           JournalPanel::onDateRangeEdit)
+    EVT_TOGGLEBUTTON(ID_SCHEDULED_BUTTON,  JournalPanel::onScheduled)
     EVT_MENU_RANGE(
         ID_DATE_RANGE_MIN,
-        ID_DATE_RANGE_MAX,                JournalPanel::onFilterDate)
+        ID_DATE_RANGE_MAX,                 JournalPanel::onDateRangeSelect)
     EVT_MENU_RANGE(
         TrxType::e_withdrawal,
-        TrxType::e_transfer,              JournalPanel::onNewTrx)
-    EVT_SEARCHCTRL_SEARCH_BTN(wxID_FIND,  JournalPanel::onSearchTxtEntered)
-    EVT_DATE_CHANGED(ID_DATE_PICKER_LOW,  JournalPanel::onDatePickLow)
-    EVT_DATE_CHANGED(ID_DATE_PICKER_HIGH, JournalPanel::onDatePickHigh)
+        TrxType::e_transfer,               JournalPanel::onNewTrx)
+    EVT_SEARCHCTRL_SEARCH_BTN(wxID_FIND,   JournalPanel::onSearchTxtEntered)
+    EVT_DATE_CHANGED(ID_START_DATE_PICKER, JournalPanel::onStartDateChanged)
+    EVT_DATE_CHANGED(ID_END_DATE_PICKER,   JournalPanel::onEndDateChanged)
 wxEND_EVENT_TABLE()
 
-//----------------------------------------------------------------------------
+void JournalPanel::loadDateRanges(
+    std::vector<mmDateRange2::Range>* date_range_a,
+    int* date_range_m,
+    bool all_ranges
+) {
+    date_range_a->clear();
+    *date_range_m = -1;
+    int src_i = 0;
+    int src_m = PrefModel::instance().getCheckingRangeM();
+    for (const auto& range : PrefModel::instance().getCheckingRangeA()) {
+        if (date_range_a->size() > ID_DATE_RANGE_MAX - ID_DATE_RANGE_MIN) {
+            break;
+        }
+        if (src_i == src_m) {
+            *date_range_m = date_range_a->size();
+        }
+        if (all_ranges || !range.hasPeriodS()) {
+            date_range_a->push_back(range);
+        }
+        src_i++;
+    }
+    if (*date_range_m < 0) {
+        *date_range_m = date_range_a->size();
+    }
+}
+
+void JournalPanel::mmPlayTransactionSound()
+{
+    int play = SettingModel::instance().getInt(INIDB_USE_TRANSACTION_SOUND, 0);
+    if (!play)
+        return;
+
+    wxString wav_path = mmex::getPathResource(
+        (play == 2) ? mmex::TRANS_SOUND2 : mmex::TRANS_SOUND1
+    );
+    wxLogDebug("%s", wav_path);
+
+    wxSound registerSound(wav_path);
+    if (registerSound.IsOk())
+        registerSound.Play(wxSOUND_ASYNC);
+}
+
+// -- state
+
+wxString JournalPanel::getPanelTitle() const
+{
+    if (isAllTrans())
+        return _t("All Transactions");
+    else if (isDeletedTrans())
+        return _t("Deleted Transactions");
+    else if (isGroup()) {
+        if (m_account_group_id == -3)
+            return _t("Favorites");
+        else {
+            int account_Type = -(static_cast<int>(m_account_group_id.GetValue()) + 4);
+            if (account_Type >= NavigatorTypes::TYPE_ID_size) {
+                account_Type += NavigatorTypes::NAV_IDXDIFF;
+            }
+            return NavigatorTypes::instance().getAccountSectionName(account_Type);
+        }
+    }
+    else if (m_account_n)
+        return wxString::Format(_t("Account View: %s"), m_account_n->m_name);
+    else
+        return "";
+}
+
+// -- constructor
 
 JournalPanel::JournalPanel(
     mmGUIFrame* frame,
@@ -114,14 +184,14 @@ JournalPanel::JournalPanel(
         m_currency_n = CurrencyModel::instance().get_base_data_n();
     }
     m_use_account_specific_filter = PrefModel::instance().getUsePerAccountFilter();
-    loadDateRanges(&m_date_range_a, &m_date_range_m, isAccount());
 
     create(perent_win);
     mmThemeAutoColour(this);
     Fit();
 }
 
-// We cannot use OnClose() event because this class deletes via DestroyChildren() of its parent.
+// We cannot use OnClose() event because this class deletes
+// via DestroyChildren() of its parent.
 JournalPanel::~JournalPanel()
 {
 }
@@ -140,36 +210,12 @@ bool JournalPanel::create(
     this->windowsFreezeThaw();
 
     createControls();
-    setFilterAdvanced(true);
+    loadFilter();
 
     this->windowsFreezeThaw();
     UsageModel::instance().pageview(this);
     return true;
 }
-
-// Refresh account screen with new details
-void JournalPanel::loadAccount(int64 account_id)
-{
-    wxASSERT (account_id >= 1);
-
-    w_list->setVisibleItemIndex(-1);
-    m_account_group_id = account_id;
-    m_account_id = account_id;
-    m_account_id_m = {};
-    m_account_n = AccountModel::instance().get_id_data_n(m_account_id);
-    m_currency_n = AccountModel::instance().get_data_currency_p(*m_account_n);
-    m_use_account_specific_filter = PrefModel::instance().getUsePerAccountFilter();
-
-    loadFilterSettings();
-    updateFilter();
-    updateFilterTooltip();
-
-    //refreshList();
-    showTips();
-    enableButtons(false, false, false, false, false, false);
-}
-
-//----------------------------------------------------------------------------
 
 void JournalPanel::createControls()
 {
@@ -194,30 +240,27 @@ void JournalPanel::createControls()
     sizerVHeader->Add(sizerHInfo, g_flagsBorder1V);
 
     wxBoxSizer* sizerHCtrl = new wxBoxSizer(wxHORIZONTAL);
-    w_range_btn = new wxButton(this, ID_FILTER);
+    w_range_btn = new wxButton(this, ID_DATE_RANGE_BUTTON);
     w_range_btn->SetBitmap(mmBitmapBundle(png::TRANSFILTER, mmBitmapButtonSize));
     sizerHCtrl->Add(w_range_btn, g_flagsH);
 
     w_range_btn->SetMinSize(wxSize(200 + PrefModel::instance().getIconSize() * 2, -1));
 
-    mmDateRange2 tmprange = mmDateRange2();
-    tmprange.setRange(m_date_range_a[0]);  // set to all
-
-    w_start_date = new wxDatePickerCtrl(this, ID_DATE_PICKER_LOW, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN|wxDP_ALLOWNONE);
-    w_start_date->SetValue(
-        tmprange.rangeStartN().value_or(mmDate::min()).getDateTime()
+    w_start_date = new wxDatePickerCtrl(this, ID_START_DATE_PICKER,
+        wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
+        wxDP_DROPDOWN | wxDP_ALLOWNONE
     );
     w_start_date->SetRange(wxInvalidDateTime, wxDateTime::Now());
     sizerHCtrl->Add(w_start_date, g_flagsH);
 
-    w_end_date = new wxDatePickerCtrl(this, ID_DATE_PICKER_HIGH, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN|wxDP_ALLOWNONE);
-    w_end_date->SetValue(
-        tmprange.rangeEndN().value_or(mmDate::today()).getDateTime()
+    w_end_date = new wxDatePickerCtrl(this, ID_END_DATE_PICKER,
+        wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
+        wxDP_DROPDOWN | wxDP_ALLOWNONE
     );
     sizerHCtrl->Add(w_end_date, g_flagsH);
 
     // Filter for transaction details
-    w_filter_btn = new wxButton(this, ID_FILTER_TRANS, _tu("Filter…"));
+    w_filter_btn = new wxButton(this, ID_FILTER_BUTTON, _tu("Filter…"));
     w_filter_btn->SetMinSize(wxSize(150 + PrefModel::instance().getIconSize() * 2, -1));
     sizerHCtrl->Add(
         w_filter_btn,
@@ -231,7 +274,7 @@ void JournalPanel::createControls()
     );
     mmToolTip(w_filter_reset_btn, _t("Reset filter"));
     w_filter_reset_btn->Bind(wxEVT_COMMAND_BUTTON_CLICKED,
-        &JournalPanel::onFilterAdvancedCancel, this
+        &JournalPanel::onFilterCancel, this
     );
     sizerHCtrl->Add(
         w_filter_reset_btn,
@@ -244,7 +287,7 @@ void JournalPanel::createControls()
         sizerHCtrl->AddSpacer(15);
         const auto& size = w_range_btn->GetSize().GetY();
         w_header_scheduled = new wxBitmapToggleButton(
-            this, ID_SCHEDULED, mmBitmapBundle(png::RECURRING),
+            this, ID_SCHEDULED_BUTTON, mmBitmapBundle(png::RECURRING),
             wxDefaultPosition, wxSize(size, size)
         );
         sizerHCtrl->Add(w_header_scheduled, g_flagsH);
@@ -257,7 +300,9 @@ void JournalPanel::createControls()
         sizerHCtrl->AddStretchSpacer(1);
         sizerHCtrl->AddSpacer(100);
 
-        wxBitmapButton* btn = new wxBitmapButton(this, wxID_ANY, mmBitmapBundle(png::TRXNUM, mmBitmapButtonSize));
+        wxBitmapButton* btn = new wxBitmapButton(this, wxID_ANY,
+            mmBitmapBundle(png::TRXNUM, mmBitmapButtonSize)
+        );
         mmToolTip(btn, _t("Reconcile"));
         btn->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &JournalPanel::onReconcile, this);
         sizerHCtrl->Add(btn, 0, wxALIGN_CENTER_VERTICAL, 5);
@@ -266,7 +311,9 @@ void JournalPanel::createControls()
     sizerV->Add(sizerHCtrl, 0, wxEXPAND | wxALL, 10);
 
     w_range_btn->Connect(wxEVT_RIGHT_DOWN,
-        wxMouseEventHandler(JournalPanel::onButtonRightDown), nullptr, this);
+        wxMouseEventHandler(JournalPanel::onButtonRightDown),
+        nullptr, this
+    );
 
     /* ---------------------- */
 
@@ -397,261 +444,237 @@ void JournalPanel::createControls()
     mmToolTip(w_info_text, _t("Click to copy to clipboard"));
 
     w_info_text->Bind(wxEVT_LEFT_DOWN,
-                       [this, infoPanel = w_info_text](wxMouseEvent& event)
-                       {
-                           onInfoPanelClick(event, infoPanel);
-                       });
+        [this, infoPanel = w_info_text](wxMouseEvent& event) {
+            onInfoPanelClick(event, infoPanel);
+        }
+    );
 
     this->Fit();
     //Show tips when no any transaction selected
     showTips();
 }
 
-void JournalPanel::updateHeader()
+// -- methods
+
+// Refresh account screen with new details
+void JournalPanel::loadAccount(int64 account_id)
 {
-    w_header_text->SetLabelText(getPanelTitle());
-    w_header_credit->Hide();
-    if (m_account_n) {
-        wxString summary = wxString::Format("%s%s",
-            _t("Account Bal: "),
-            AccountModel::instance().value_number_currency(*m_account_n, m_balance)
-        );
-        if (m_show_reconciled) summary.Append(wxString::Format("     %s%s     %s%s",
-            _t("Reconciled Bal: "),
-            AccountModel::instance().value_number_currency(*m_account_n, m_reconciled_balance),
-            _t("Diff: "),
-            AccountModel::instance().value_number_currency(*m_account_n, m_balance - m_reconciled_balance)
-        ));
-        summary.Append(wxString::Format("     %s%s",
-            _t("Filtered Flow: "),
-            AccountModel::instance().value_number_currency(*m_account_n, m_flow)
-        ));
-        if (m_account_n->m_credit_limit != 0.0) {
-            double limit = 100.0 * ((m_balance < 0.0) ? -m_balance / m_account_n->m_credit_limit : 0.0);
-            summary.Append(wxString::Format("   %s %.1f%%",
-                _t("Credit Limit:"),
-                limit
-            ));
-            w_header_credit->SetRange(std::max(100.0, limit));
-            w_header_credit->SetValue(limit);
-            w_header_credit->Show();
-        }
-        if (AccountModel::type_id(*m_account_n) == NavigatorTypes::TYPE_ID_INVESTMENT ||
-            AccountModel::type_id(*m_account_n) == NavigatorTypes::TYPE_ID_ASSET
-        ) {
-            std::pair<double, double> investment_bal = AccountModel::instance().get_data_investment_balance(*m_account_n);
-            summary.Append(wxString::Format("     %s%s",
-                _t("Market Value: "),
-                AccountModel::instance().value_number_currency(*m_account_n, investment_bal.first)
-            ));
-            summary.Append(wxString::Format("     %s%s",
-                _t("Invested: "),
-                AccountModel::instance().value_number_currency(*m_account_n, investment_bal.second)
-            ));
-        }
-        w_header_balance->SetLabelText(summary);
-    }
-    this->Layout();
+    wxASSERT (account_id >= 1);
+
+    w_list->setVisibleItemIndex(-1);
+    m_account_group_id = account_id;
+    m_account_id = account_id;
+    m_account_id_m = {};
+    m_account_n = AccountModel::instance().get_id_data_n(m_account_id);
+    m_currency_n = AccountModel::instance().get_data_currency_p(*m_account_n);
+    m_use_account_specific_filter = PrefModel::instance().getUsePerAccountFilter();
+
+    loadFilter();
+
+    showTips();
+    enableButtons(false, false, false, false, false, false);
 }
-
-void JournalPanel::updateFilter(bool firstinit)
-{
-    if (m_filter_id == FILTER_ID_DATE_RANGE) {
-        w_range_btn->SetLabel(m_current_date_range.rangeName());
-        // Set active if other than 'all'
-        w_range_btn->SetBitmap(mmBitmapBundle(
-            (m_current_date_range.rangeName() == m_date_range_a[0].getName())
-                ? png::TRANSFILTER : png::TRANSFILTER_ACTIVE,
-            mmBitmapButtonSize
-        ));
-        w_start_date->SetValue(
-            m_current_date_range.rangeStartN().value_or(mmDate::min()).getDateTime()
-        );
-        w_end_date->SetValue(
-            m_current_date_range.rangeEndN().value_or(mmDate::today()).getDateTime()
-        );
-    }
-    else if (m_filter_id == FILTER_ID_DATE_PICKER) {
-        w_range_btn->SetLabel(_t("Date range"));
-        w_range_btn->SetBitmap(mmBitmapBundle(png::TRANSFILTER_ACTIVE, mmBitmapButtonSize));
-        if (firstinit) {
-            // FIXME: get[ST]Date are not the start and end date
-            w_start_date->SetValue(
-                m_current_date_range.getSDateN().getDateTimeN()
-            );
-            w_end_date->SetValue(
-                m_current_date_range.getTDate().getDateTime()
-            );
-        }
-    }
-    else if (firstinit) {
-        m_current_date_range.setRange(m_date_range_a[0]); // init with 'all'
-        w_range_btn->SetLabel(m_current_date_range.rangeName());
-        w_range_btn->SetBitmap(mmBitmapBundle(png::TRANSFILTER, mmBitmapButtonSize));
-    }
-
-    w_filter_btn->SetBitmap(mmBitmapBundle(
-        m_filter_advanced
-            ? png::TRANSFILTER_ACTIVE
-            : png::TRANSFILTER,
-        mmBitmapButtonSize
-    ));
-
-    w_filter_reset_btn->Enable(m_filter_advanced);
-
-    if (!isDeletedTrans()) {
-        w_header_scheduled->SetValue(m_scheduled_selected);
-        w_header_scheduled->Enable(m_scheduled_enable);
-        updateScheduledToolTip();
-    }
-}
-
-void JournalPanel::updateFilterTooltip()
-{
-    if (w_filter_dlg && w_filter_dlg->mmIsSomethingChecked()) {
-        w_filter_btn->SetToolTip(w_filter_dlg->mmGetDescriptionToolTip());
-    }
-    else {
-        w_filter_btn->UnsetToolTip();
-    }
-}
-
-void JournalPanel::setFilterDate(mmDateRange2::Range& range)
-{
-    m_filter_id = FILTER_ID_DATE;
-    m_current_date_range = mmDateRange2();
-    if (isAccount()) {
-        m_current_date_range.setSDateN(m_account_n->m_stmt_date_n);
-    }
-    m_current_date_range.setRange(range);
-    m_scheduled_enable = !isDeletedTrans() && m_current_date_range.rangeEndN().has_value();
-    saveFilterSettings();
-    updateFilter();
-}
-
-void JournalPanel::setFilterAdvanced(bool firstinit)
-{
-    loadFilterSettings();
-    updateFilter(firstinit);
-    updateFilterTooltip();
-    refreshList();
-}
-
-//----------------------------------------------------------------------------
-
-void JournalPanel::loadFilterSettings()
-{
-    Document j_doc;
-    m_scheduled_selected = false;
-
-    j_doc = InfoModel::instance().getJdoc(m_use_account_specific_filter ? wxString::Format("CHECK_FILTER_DEDICATED_%lld", m_account_group_id) : "CHECK_FILTER_ALL", "{}");
-    int fid = 0;
-
-    if (JSON_GetIntValue(j_doc, "FILTER_ID", fid)) {
-        m_filter_id = static_cast<FILTER_ID>(fid);
-    } else
-    {
-        m_filter_id = FILTER_ID_DATE_RANGE;
-        m_current_date_range.setRange(m_date_range_a[0]); // init with 'all'
-    }
-    if (m_filter_id == FILTER_ID_DATE_RANGE) {
-        wxString j_filter;
-        if (JSON_GetStringValue(j_doc, "FILTER_DATE", j_filter)) {
-            // get range specification:
-            bool notfound = true;
-            for (const auto& range : m_date_range_a) {
-                if (range.getName() == j_filter) {
-                    m_current_date_range.setRange(range);
-                    notfound = false;
-                    break;
-                }
-            }
-            if (notfound) {
-                m_current_date_range.setRange(m_date_range_a[0]); // init with 'all'
-            }
-        }
-        if (isAccount()) {
-            m_current_date_range.setSDateN(m_account_n->m_stmt_date_n);
-        }
-    }
-    else if (m_filter_id == FILTER_ID_DATE_PICKER) {
-        wxString p_filter;
-        wxDateTime newdate;
-        wxString::const_iterator end;
-        if (JSON_GetStringValue(j_doc, "FILTER_DATE_BEGIN", p_filter)) {
-            // FIXME: setSDateN is the account statement date, not the start date
-            m_current_date_range.setSDateN(
-                newdate.ParseFormat(p_filter, "%Y-%m-%d", &end)
-                ? mmDate(newdate)
-                : mmDateN()
-            );
-        }
-        if (JSON_GetStringValue(j_doc, "FILTER_DATE_END", p_filter)) {
-            // FIXME: setTDate is the date of today, should not be changed here
-            m_current_date_range.setTDate(
-                newdate.ParseFormat(p_filter, "%Y-%m-%d", &end)
-                ? mmDate(newdate)
-                : mmDate::today()
-            );
-        }
-    }
-
-    if (!isDeletedTrans()) {
-        JSON_GetBoolValue(j_doc, "SCHEDULED", m_scheduled_selected);
-    }
-
-    wxString j_str = InfoModel::instance().getString(
-            wxString::Format("CHECK_FILTER_ID_ADV_%lld", m_account_group_id),"{}");
-    w_filter_dlg.reset(new TrxFilterDialog(this, m_account_id, false, j_str));
-    m_filter_advanced = w_filter_dlg->mmIsSomethingChecked();
-    updateScheduledEnable();
-}
-
-void  JournalPanel::updateScheduledEnable()
-{
-    // FIXME: get[ST]Date are not the start and end date
-    m_scheduled_enable = !isDeletedTrans() && (
-        m_filter_id == FILTER_ID_DATE_PICKER
-        ? m_current_date_range.getTDate() >= mmDate::today()
-        : !m_current_date_range.rangeEndN().has_value()
-            || m_current_date_range.rangeEndN().value() >= mmDate::today()
-    );
-}
-
-void JournalPanel::saveFilterSettings()
-{
-    wxString key = m_use_account_specific_filter ? wxString::Format("CHECK_FILTER_DEDICATED_%lld", m_account_group_id) : "CHECK_FILTER_ALL";
-    Document j_doc = InfoModel::instance().getJdoc(key, "{}");
-    InfoModel::saveFilterInt(j_doc, "FILTER_ID", m_filter_id);
-    InfoModel::saveFilterString(j_doc, "FILTER_NAME", FILTER_NAME[m_filter_id].second);
-    InfoModel::saveFilterString(j_doc, "FILTER_DATE", m_current_date_range.getRange().getName());
-    InfoModel::saveFilterString(j_doc, "FILTER_DATE_BEGIN", w_start_date->GetValue().IsValid() ? w_start_date->GetValue().FormatISODate() : "");
-    InfoModel::saveFilterString(j_doc, "FILTER_DATE_END", w_end_date->GetValue().IsValid() ? w_end_date->GetValue().FormatISODate() : "");
-    if (!isDeletedTrans()) {
-        InfoModel::saveFilterBool(j_doc, "SCHEDULED", m_scheduled_selected);
-    }
-    InfoModel::instance().setJdoc(key, j_doc);
-
-    key = wxString::Format("CHECK_FILTER_ID_ADV_%lld", m_account_group_id);
-    InfoModel::instance().setString(key, m_filter_advanced ? w_filter_dlg->mmGetJsonSettings() : "{}");
-}
-
-//----------------------------------------------------------------------------
 
 void JournalPanel::refreshList()
 {
     w_list->refreshVisualList();
 }
 
+void JournalPanel::resetColumnView()
+{
+    w_list->DeleteAllColumns();
+    w_list->setColumnsInfo();
+    w_list->createColumns();
+    w_list->refreshVisualList();
+}
+
+void JournalPanel::setSelectedTransaction(JournalKey journal_key)
+{
+    w_list->setSelectedId(journal_key);
+    refreshList();
+    w_list->SetFocus();
+}
+
+// -- methods
+
+void JournalPanel::loadFilter()
+{
+    loadFilterSettings();
+    updateFilter();
+    updateFilterTooltip();
+    refreshList();
+}
+
+void JournalPanel::loadFilterSettings()
+{
+    wxString key = m_use_account_specific_filter
+        ? wxString::Format("CHECK_FILTER_DEDICATED_%lld", m_account_group_id)
+        : "CHECK_FILTER_ALL";
+    Document j_doc = InfoModel::instance().getJdoc(key, "{}");
+
+    int fid = 0;
+    if (JSON_GetIntValue(j_doc, "FILTER_ID", fid)) {
+        m_filter_id = static_cast<FILTER_ID>(fid);
+    }
+    else {
+        m_filter_id = FILTER_ID_DATE_RANGE;
+    }
+
+    loadDateRanges(&m_date_range_a, &m_date_range_m, isAccount());
+
+    if (m_filter_id == FILTER_ID_DATE_RANGE) {
+        // recreate m_date_range in order to reload parameters from setting,
+        // refresh the date of today, and clear the default start/end dates
+        m_date_range = mmDateRange2();
+
+        // load m_date_range from settings.
+        // the start/end date pickers are configured later in updateFilter().
+        wxString j_filter;
+        bool found = false;
+        if (JSON_GetStringValue(j_doc, "FILTER_DATE", j_filter)) {
+            // find range specification
+            for (const auto& range : m_date_range_a) {
+                if (range.getName() == j_filter) {
+                    m_date_range.setRange(range);
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            // init with 'all'
+            m_date_range.setRange(m_date_range_a[0]);
+        }
+        if (isAccount()) {
+            m_date_range.setSDateN(m_account_n->m_stmt_date_n);
+        }
+    }
+    else if (m_filter_id == FILTER_ID_DATE_PICKER) {
+        // Load start/end date pickers from settings.
+        // The date range is configured later in updateFilter().
+        wxString date_str;
+        wxString::const_iterator end;
+        wxDateTime start_dateTime, end_dateTime;
+        if (JSON_GetStringValue(j_doc, "FILTER_DATE_BEGIN", date_str)) {
+            start_dateTime.ParseFormat(date_str, "%Y-%m-%d", &end);
+        }
+        if (JSON_GetStringValue(j_doc, "FILTER_DATE_END", date_str)) {
+            end_dateTime.ParseFormat(date_str, "%Y-%m-%d", &end);
+        }
+        // initialize pickers (also when start/end dates are undefined)
+        w_start_date->SetValue(start_dateTime);
+        w_end_date->SetValue(end_dateTime);
+    }
+
+    m_scheduled_enable = !isDeletedTrans();
+    m_scheduled_selected = false;
+    if (!isDeletedTrans()) {
+        JSON_GetBoolValue(j_doc, "SCHEDULED", m_scheduled_selected);
+    }
+
+    wxString j_str = InfoModel::instance().getString(
+        wxString::Format("CHECK_FILTER_ID_ADV_%lld", m_account_group_id),
+        "{}"
+    );
+    w_filter_dlg.reset(new TrxFilterDialog(this, m_account_id, false, j_str));
+    m_filter_advanced = w_filter_dlg->mmIsSomethingChecked();
+}
+
+void JournalPanel::saveFilterSettings()
+{
+    wxString key = m_use_account_specific_filter
+        ? wxString::Format("CHECK_FILTER_DEDICATED_%lld", m_account_group_id)
+        : "CHECK_FILTER_ALL";
+    Document j_doc = InfoModel::instance().getJdoc(key, "{}");
+    InfoModel::saveFilterInt(j_doc, "FILTER_ID", m_filter_id);
+    InfoModel::saveFilterString(j_doc, "FILTER_NAME", filter_id_name(m_filter_id));
+
+    if (m_filter_id == FILTER_ID_DATE_RANGE) {
+        if (!m_date_range.rangeName().IsEmpty()) {
+            InfoModel::saveFilterString(j_doc, "FILTER_DATE", m_date_range.rangeName());
+            InfoModel::saveFilterString(j_doc, "FILTER_DATE_BEGIN", "");
+            InfoModel::saveFilterString(j_doc, "FILTER_DATE_END", "");
+        }
+        else {
+            wxLogError("JournalPanel::saveFilterSettings(): m_date_range.rangeName() is empty");
+        }
+    }
+    else if (m_filter_id == FILTER_ID_DATE_PICKER) {
+        InfoModel::saveFilterString(j_doc, "FILTER_DATE", "");
+        InfoModel::saveFilterString(j_doc,
+            "FILTER_DATE_BEGIN",
+            mmDateN(w_start_date->GetValue()).isoDateN()
+        );
+        InfoModel::saveFilterString(j_doc,
+            "FILTER_DATE_END",
+            mmDateN(w_end_date->GetValue()).isoDateN()
+        );
+    }
+
+    if (!isDeletedTrans()) {
+        InfoModel::saveFilterBool(j_doc,
+            "SCHEDULED",
+            m_scheduled_selected
+        );
+    }
+    InfoModel::instance().saveJdoc(key, j_doc);
+
+    key = wxString::Format("CHECK_FILTER_ID_ADV_%lld", m_account_group_id);
+    InfoModel::instance().saveString(key,
+        m_filter_advanced
+            ? w_filter_dlg->mmGetJsonSettings()
+            : "{}"
+    );
+}
+
 void JournalPanel::filterList()
 {
-    w_list->m_journal_xa.clear();
+    bool ignore_future = PrefModel::instance().getIgnoreFutureTransactions();
+    mmDate range_start = m_date_range.rangeStartN().value();
+    mmDate range_end = m_date_range.rangeEndN().value();
 
     int sn = 0; // sequence number
     m_flow = 0.0;
     m_balance = m_account_n ? m_account_n->m_open_balance : 0.0;
     m_reconciled_balance = m_today_reconciled_balance = m_balance;
     m_show_reconciled = false;
+
+    w_list->m_journal_xa.clear();
+
+    TrxModel::DataA trx_a =
+        isDeletedTrans() ? TrxModel::instance().find(
+            TrxModel::DATE(OP_GE, range_start),
+            TrxModel::DATE(OP_LE, range_end),
+            TrxModel::IS_DELETED(true)
+        )
+        : isAccount() ? TrxModel::instance().find_or(
+            // TODO: fetch transactions until range_end
+            // TODO: filter out deleted transactions
+            TrxCol::ACCOUNTID(m_account_n->m_id),
+            TrxCol::TOACCOUNTID(m_account_n->m_id)
+        )
+        : TrxModel::instance().find(
+            TrxModel::DATE(OP_GE, range_start),
+            TrxModel::DATE(OP_LE, range_end),
+            TrxModel::IS_DELETED(false)
+        );
+    if (PrefModel::instance().getUseTransDateTime()) {
+        std::sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTimeId());
+    }
+    else {
+        std::sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateId());
+    }
+
+    const auto trxId_tpA_m = TrxSplitModel::instance().find_all_mTrxId();
+    const auto trxId_glA_m = TagLinkModel::instance().find_refType_mRefId(
+        TrxModel::s_ref_type
+    );
+    const auto trxId_fvA_m = FieldValueModel::instance().find_refType_mRefId(
+        TrxModel::s_ref_type
+    );
+    const auto trxId_attA_m = AttachmentModel::instance().find_refType_mRefId(
+        TrxModel::s_ref_type
+    );
 
     static wxArrayString udfc_fields = FieldModel::UDFC_FIELDS();
     int64 udfc_id[5];
@@ -660,110 +683,114 @@ void JournalPanel::filterList()
     for (int i = 0; i < 5; i++) {
         // note: udfc_fields starts with ""
         wxString field = udfc_fields[i+1];
-        udfc_id[i] = FieldModel::instance().get_udfc_id_n(TrxModel::s_ref_type, field);
-        udfc_type[i] = FieldModel::instance().get_udfc_type_n(TrxModel::s_ref_type, field);
+        udfc_id[i] = FieldModel::instance().get_udfc_id_n(
+            TrxModel::s_ref_type, field
+        );
+        udfc_type[i] = FieldModel::instance().get_udfc_type_n(
+            TrxModel::s_ref_type, field
+        );
         udfc_scale[i] = FieldModel::getDigitScale(
-            FieldModel::instance().get_udfc_properties_n(TrxModel::s_ref_type, field)
+            FieldModel::instance().get_udfc_properties_n(
+                TrxModel::s_ref_type,
+                field
+            )
         );
     }
 
-    auto trxId_fvA_m = FieldValueModel::instance().find_refType_mRefId(TrxModel::s_ref_type);
-    auto schedId_fvA_m = FieldValueModel::instance().find_refType_mRefId(SchedModel::s_ref_type);
-
-    bool ignore_future = PrefModel::instance().getIgnoreFutureTransactions();
-    const wxString today_date = PrefModel::instance().UseTransDateTime() ?
-        wxDateTime::Now().FormatISOCombined() :
-        wxDateTime(23, 59, 59, 999).FormatISOCombined();
-
-    const auto trx_a = m_account_n
-        ? AccountModel::instance().find_id_trx_aBySN(m_account_n->m_id)
-        : TrxModel::instance().find_all_aDateTimeId();
-    const auto trxId_tpA_m = TrxSplitModel::instance().find_all_mTrxId();
-    const auto trxId_glA_m = TagLinkModel::instance().find_refType_mRefId(
-        TrxModel::s_ref_type
-    );
-    const auto refId_attA_m = AttachmentModel::instance().find_refType_mRefId(
-        TrxModel::s_ref_type
-    );
-
-    mmDateN range_start_n, range_end_n;
-    mmDate range_end_default = mmDate::today().plusDateSpan(wxDateSpan::Days(30));
-    if (m_filter_id == FILTER_ID_DATE_PICKER) {
-        range_start_n = mmDateN(w_start_date->GetValue()).value_or(mmDate::min());
-        range_end_n = mmDateN(w_end_date->GetValue()).value_or(range_end_default);
-    } else {
-        range_start_n = m_current_date_range.rangeStartN();
-        // find last un-deleted transaction and use that if later than current date + 30 days
-        for (auto it = trx_a.rbegin(); it != trx_a.rend(); ++it) {
-            const TrxData* trx_n = &(*it);
-            if (trx_n && (isDeletedTrans() || !trx_n->is_deleted())) {
-                if (range_end_default < trx_n->m_date())
-                    range_end_default = trx_n->m_date();
-                // FIXME: early break
-                break;
-            }
-        }
-        range_end_n = m_current_date_range.rangeEndN().value_or(range_end_default);
-    }
+    SchedModel::DataA sched_a;
     std::map<int64, SchedSplitModel::DataA> schedId_qpA_m;
     std::map<int64, TagLinkModel::DataA> schedId_glA_m;
+    std::map<int64, FieldValueModel::DataA> schedId_fvA_m;
     std::map<int64, AttachmentModel::DataA> schedId_attA_m;
-    SchedModel::DataA sched_a;
     typedef std::tuple<
-        int      /* i */,
-        wxString /* date; TODO: mmDateTime */,
-        int      /* repeat_id */
-    > bills_index_t;
-    std::vector<bills_index_t> bills_index;
+        int    /* sched_i: index into sched_a */,
+        mmDate /* date */,
+        int    /* repeat_id */
+    > SchedIndex;
+    std::vector<SchedIndex> sched_index_a;
+
     if (m_scheduled_enable && m_scheduled_selected) {
+        sched_a = m_account_n
+            ? AccountModel::instance().find_id_sched_a(m_account_n->m_id)
+            : SchedModel::instance().find_all();
         schedId_qpA_m = SchedSplitModel::instance().find_all_mSchedId();
         schedId_glA_m = TagLinkModel::instance().find_refType_mRefId(
+            SchedModel::s_ref_type
+        );
+        schedId_fvA_m = FieldValueModel::instance().find_refType_mRefId(
             SchedModel::s_ref_type
         );
         schedId_attA_m = AttachmentModel::instance().find_refType_mRefId(
             SchedModel::s_ref_type
         );
-        sched_a = m_account_n
-            ? AccountModel::instance().find_id_sched_a(m_account_n->m_id)
-            : SchedModel::instance().find_all();
-        for (unsigned int i = 0; i < sched_a.size(); ++i) {
+
+        for (unsigned int sched_i = 0; sched_i < sched_a.size(); ++sched_i) {
             int limit = 1000;  // this is enough for daily repetitions for one year
-            auto date_time_a = sched_a[i].unroll(range_end_n.value(), limit);
-            for (unsigned int repeat_id = 1; repeat_id <= date_time_a.size(); ++repeat_id)
-                bills_index.push_back({i, date_time_a[repeat_id-1].isoDateTime(), repeat_id});
-        }
-        std::stable_sort(
-            bills_index.begin(), bills_index.end(),
-            [](const bills_index_t& a, const bills_index_t& b) -> bool {
-                return std::get<1>(a) < std::get<1>(b);
+            std::vector<mmDate> date_a = sched_a[sched_i].unroll(range_end, limit);
+            for (unsigned int repeat_id = 1; repeat_id <= date_a.size(); ++repeat_id) {
+                sched_index_a.push_back({
+                    sched_i, date_a[repeat_id-1], repeat_id
+                });
             }
-        );
+        }
+        if (PrefModel::instance().getUseTransDateTime()) {
+            std::sort(sched_index_a.begin(), sched_index_a.end(),
+                [sched_a](const SchedIndex& a, const SchedIndex& b) -> bool {
+                    int a_sched_i = std::get<0>(a);
+                    int b_sched_i = std::get<0>(b);
+                    const wxString a_date = std::get<1>(a).isoDate();
+                    const wxString b_date = std::get<1>(b).isoDate();
+                    const wxString a_isoTime = sched_a[a_sched_i].m_isoTime();
+                    const wxString b_isoTime = sched_a[b_sched_i].m_isoTime();
+                    return a_date < b_date || (a_date == b_date && (
+                        a_isoTime < b_isoTime || (a_isoTime == b_isoTime &&
+                            a_sched_i < b_sched_i
+                        )
+                    ));
+                }
+            );
+        }
+        else {
+            std::sort(sched_index_a.begin(), sched_index_a.end(),
+                [](const SchedIndex& a, const SchedIndex& b) -> bool {
+                    int a_sched_i = std::get<0>(a);
+                    int b_sched_i = std::get<0>(b);
+                    const wxString a_date = std::get<1>(a).isoDate();
+                    const wxString b_date = std::get<1>(b).isoDate();
+                    return a_date < b_date || (a_date == b_date &&
+                        a_sched_i < b_sched_i
+                    );
+                }
+            );
+        }
     }
 
     auto trx_it = trx_a.begin();
-    auto bills_it = bills_index.begin();
-    while (trx_it != trx_a.end() || bills_it != bills_index.end()) {
-        int bill_i = 0;
-        wxString tran_date;
+    auto sched_index_it = sched_index_a.begin();
+    while (trx_it != trx_a.end() || sched_index_it != sched_index_a.end()) {
+        int sched_i = -1;
+        mmDateTime trx_dateTime = mmDateTime::invalid();
         int repeat_id = -1;
-        TrxData bill_tran;
+        TrxData sched_trx_d;
         const TrxData* trx_n = nullptr;
 
-        if (trx_it != trx_a.end())
-            tran_date = trx_it->m_date_time.isoDateTime();
-        if (trx_it != trx_a.end() &&
-            (bills_it == bills_index.end() || tran_date.Left(10) <= std::get<1>(*bills_it).Left(10))
-        ) {
+        if (trx_it != trx_a.end() && (sched_index_it == sched_index_a.end() ||
+            trx_it->m_date() <= std::get<1>(*sched_index_it)
+        )) {
+            trx_dateTime = trx_it->m_datetime;
             trx_n = &(*trx_it);
             trx_it++;
         }
         else {
-            bill_i = std::get<0>(*bills_it);
-            tran_date = std::get<1>(*bills_it);
-            repeat_id = std::get<2>(*bills_it);
-            bill_tran = Journal::execute_bill(sched_a[bill_i], mmDateTime(tran_date));
-            trx_n = &bill_tran;
-            bills_it++;
+            sched_i = std::get<0>(*sched_index_it);
+            mmDate trx_date = std::get<1>(*sched_index_it);
+            trx_dateTime = PrefModel::instance().getUseTransDateTime()
+                ? mmDateTime(trx_date, sched_a[sched_i].m_isoTime())
+                : mmDateTime(trx_date);
+            repeat_id = std::get<2>(*sched_index_it);
+            sched_trx_d = Journal::execute_bill(sched_a[sched_i], trx_dateTime);
+            trx_n = &sched_trx_d;
+            sched_index_it++;
         }
 
         if (isGroup() &&
@@ -773,7 +800,11 @@ void JournalPanel::filterList()
             continue;
         if (isDeletedTrans() != trx_n->is_deleted())
             continue;
-        if (ignore_future && tran_date > today_date)
+
+        // check if trx_n is in future, with granularity of a day
+        bool is_future = trx_n->m_date() > mmDate::today();
+
+        if (ignore_future && is_future)
             break;
 
         // update m_balance even if tran is filtered out
@@ -784,19 +815,21 @@ void JournalPanel::filterList()
             m_balance += account_flow;
             if (trx_n->is_reconciled()) {
                 m_reconciled_balance += account_flow;
-                if (tran_date <= today_date)
+                if (!is_future)
                     m_today_reconciled_balance += account_flow;
             }
             else
                 m_show_reconciled = true;
         }
 
-        if (tran_date < range_start_n.isoStartN() || tran_date > range_end_n.isoEndN())
+        if (trx_dateTime.date() < range_start || trx_dateTime.date() > range_end)
             continue;
 
-        Journal::DataExt journal_dx = (repeat_id < 0) ?
-            Journal::DataExt(*trx_n, trxId_tpA_m, trxId_glA_m) :
-            Journal::DataExt(sched_a[bill_i], tran_date, repeat_id, schedId_qpA_m, schedId_glA_m);
+        Journal::DataExt journal_dx = (repeat_id < 0)
+            ? Journal::DataExt(*trx_n, trxId_tpA_m, trxId_glA_m)
+            : Journal::DataExt(sched_a[sched_i], trx_dateTime, repeat_id,
+                schedId_qpA_m, schedId_glA_m
+            );
 
         bool expandSplits = false;
         if (m_filter_advanced) {
@@ -821,11 +854,15 @@ void JournalPanel::filterList()
             journal_dx.m_account_balance = m_balance;
         }
 
-        if (repeat_id < 0 && refId_attA_m.find(trx_n->m_id) != refId_attA_m.end()) {
-            for (const auto& att_d : refId_attA_m.at(trx_n->m_id))
+        if (repeat_id < 0 &&
+            trxId_attA_m.find(trx_n->m_id) != trxId_attA_m.end()
+        ) {
+            for (const auto& att_d : trxId_attA_m.at(trx_n->m_id))
                 journal_dx.ATTACHMENT_DESCRIPTION.Add(att_d.m_description);
         }
-        else if (repeat_id > 0 && schedId_attA_m.find(journal_dx.m_sched_id) != schedId_attA_m.end()) {
+        else if (repeat_id > 0 &&
+            schedId_attA_m.find(journal_dx.m_sched_id) != schedId_attA_m.end()
+        ) {
             for (const auto& att_d : schedId_attA_m.at(journal_dx.m_sched_id))
                 journal_dx.ATTACHMENT_DESCRIPTION.Add(att_d.m_description);
         }
@@ -835,7 +872,9 @@ void JournalPanel::filterList()
             journal_dx.UDFC_value[i] = -DBL_MAX;
         }
 
-        if (repeat_id < 0 && trxId_fvA_m.find(trx_n->m_id) != trxId_fvA_m.end()) {
+        if (repeat_id < 0 &&
+            trxId_fvA_m.find(trx_n->m_id) != trxId_fvA_m.end()
+        ) {
             for (const auto& udfc : trxId_fvA_m.at(trx_n->m_id)) {
                 for (int i = 0; i < 5; i++) {
                     if (udfc.m_field_id == udfc_id[i]) {
@@ -849,7 +888,9 @@ void JournalPanel::filterList()
                 }
             }
         }
-        else if (repeat_id > 0 && schedId_fvA_m.find(journal_dx.m_sched_id) != schedId_fvA_m.end()) {
+        else if (repeat_id > 0 &&
+            schedId_fvA_m.find(journal_dx.m_sched_id) != schedId_fvA_m.end()
+        ) {
             for (const auto& udfc : schedId_fvA_m.at(journal_dx.m_sched_id)) {
                 for (int i = 0; i < 5; i++) {
                     if (udfc.m_field_id == udfc_id[i]) {
@@ -882,10 +923,12 @@ void JournalPanel::filterList()
         wxString tranDisplaySN = journal_dx.displaySN;
         wxString tranDisplayID = journal_dx.displayID;
         for (const auto& tp_d : journal_dx.m_tp_a) {
-            if (m_filter_advanced) {
-              if (!w_filter_dlg->mmIsSplitRecordMatches<TrxSplitModel>(tp_d))
+            if (m_filter_advanced &&
+                !w_filter_dlg->mmIsSplitRecordMatches<TrxSplitModel>(tp_d)
+            ) {
                   continue;
             }
+
             journal_dx.displaySN = tranDisplaySN + "." + wxString::Format("%i", splitIndex);
             journal_dx.displayID = tranDisplayID + "." + wxString::Format("%i", splitIndex);
             splitIndex++;
@@ -903,6 +946,7 @@ void JournalPanel::filterList()
             ) {
                 continue;
             }
+
             if (isAccount()) {
                 journal_dx.m_account_flow = journal_trx_dx.account_flow(m_account_id);
                 m_flow += journal_dx.m_account_flow;
@@ -915,22 +959,158 @@ void JournalPanel::filterList()
             )) {
                 tag_names.Append(tag_name_id.first + " ");
             }
-            if (!tag_names.IsEmpty())
+            if (!tag_names.IsEmpty()) {
                 journal_dx.TAGNAMES.Append(
                     (journal_dx.TAGNAMES.IsEmpty() ? "" : ", ") +
                     tag_names.Trim()
                 );
+            }
             w_list->m_journal_xa.push_back(journal_dx);
         }
     }
 }
 
-void JournalPanel::sortList()
+// -- methods
+
+void JournalPanel::updateHeader()
 {
-    w_list->sortList();
+    w_header_text->SetLabelText(getPanelTitle());
+    w_header_credit->Hide();
+    if (m_account_n) {
+        wxString summary = wxString::Format("%s%s",
+            _t("Account Bal: "),
+            AccountModel::instance().value_number_currency(*m_account_n, m_balance)
+        );
+        if (m_show_reconciled) summary.Append(wxString::Format("     %s%s     %s%s",
+            _t("Reconciled Bal: "),
+            AccountModel::instance().value_number_currency(
+                *m_account_n,
+                m_reconciled_balance
+            ),
+            _t("Diff: "),
+            AccountModel::instance().value_number_currency(
+                *m_account_n,
+                m_balance - m_reconciled_balance
+            )
+        ));
+        summary.Append(wxString::Format("     %s%s",
+            _t("Filtered Flow: "),
+            AccountModel::instance().value_number_currency(*m_account_n, m_flow)
+        ));
+        if (m_account_n->m_credit_limit != 0.0) {
+            double limit = (m_balance < 0.0)
+                ? 100.0 * (-m_balance) / m_account_n->m_credit_limit
+                : 0.0;
+            summary.Append(wxString::Format("   %s %.1f%%",
+                _t("Credit Limit:"),
+                limit
+            ));
+            w_header_credit->SetRange(std::max(100.0, limit));
+            w_header_credit->SetValue(limit);
+            w_header_credit->Show();
+        }
+        if (AccountModel::type_id(*m_account_n) == NavigatorTypes::TYPE_ID_INVESTMENT ||
+            AccountModel::type_id(*m_account_n) == NavigatorTypes::TYPE_ID_ASSET
+        ) {
+            std::pair<double, double> investment_bal =
+                AccountModel::instance().get_data_investment_balance(*m_account_n);
+            summary.Append(wxString::Format("     %s%s",
+                _t("Market Value: "),
+                AccountModel::instance().value_number_currency(
+                    *m_account_n,
+                    investment_bal.first
+                )
+            ));
+            summary.Append(wxString::Format("     %s%s",
+                _t("Invested: "),
+                AccountModel::instance().value_number_currency(
+                    *m_account_n,
+                    investment_bal.second
+                )
+            ));
+        }
+        w_header_balance->SetLabelText(summary);
+    }
+    this->Layout();
 }
 
-//----------------------------------------------------------------------------
+void JournalPanel::updateFilter()
+{
+    if (m_filter_id < FILTER_ID_DATE_RANGE || m_filter_id > FILTER_ID_DATE_PICKER)
+        m_filter_id = FILTER_ID_DATE_RANGE;
+
+    if (m_filter_id == FILTER_ID_DATE_RANGE) {
+        w_range_btn->SetLabel(m_date_range.rangeName());
+        w_range_btn->SetBitmap(mmBitmapBundle(
+            // FIXME: refine the condition below
+            (m_date_range.rangeName() != m_date_range_a[0].getName()
+                ? png::TRANSFILTER_ACTIVE
+                : png::TRANSFILTER
+            ),
+            mmBitmapButtonSize
+        ));
+        // TODO: calculate default start/end dates from model
+        m_date_range.setDefStartDateN(mmDate::min());
+        m_date_range.setDefEndDateN(mmDate::today().plusDateSpan(wxDateSpan::Days(30)));
+        // copy from date range to start/end pickers
+        w_start_date->SetValue(
+            m_date_range.rangeStartN().value().dateTime()
+        );
+        w_end_date->SetValue(
+            m_date_range.rangeEndN().value().dateTime()
+        );
+    }
+    else if (m_filter_id == FILTER_ID_DATE_PICKER) {
+        w_range_btn->SetLabel(_t("Date range"));
+        w_range_btn->SetBitmap(mmBitmapBundle(
+            png::TRANSFILTER_ACTIVE,
+            mmBitmapButtonSize
+        ));
+        // set date range to default ('All') and copy default start/end dates from pickers.
+        m_date_range = mmDateRange2();
+        mmDateRange2::Range range = m_date_range.getRange();
+        range.setName(_t("Date range"));
+        m_date_range.setRange(range);
+        m_date_range.setDefStartDateN(mmDateN(w_start_date->GetValue()));
+        m_date_range.setDefEndDateN(mmDateN(w_end_date->GetValue()));
+        if (isAccount()) {
+            m_date_range.setSDateN(m_account_n->m_stmt_date_n);
+        }
+    }
+
+    w_filter_btn->SetBitmap(mmBitmapBundle(
+        m_filter_advanced
+            ? png::TRANSFILTER_ACTIVE
+            : png::TRANSFILTER,
+        mmBitmapButtonSize
+    ));
+
+    w_filter_reset_btn->Enable(m_filter_advanced);
+
+    if (!isDeletedTrans()) {
+        w_header_scheduled->SetValue(m_scheduled_selected);
+        w_header_scheduled->Enable(m_scheduled_enable);
+        updateScheduledToolTip();
+    }
+}
+
+void JournalPanel::updateFilterTooltip()
+{
+    if (w_filter_dlg && w_filter_dlg->mmIsSomethingChecked()) {
+        w_filter_btn->SetToolTip(w_filter_dlg->mmGetDescriptionToolTip());
+    }
+    else {
+        w_filter_btn->UnsetToolTip();
+    }
+}
+
+void JournalPanel::updateScheduledToolTip()
+{
+   mmToolTip(w_header_scheduled,
+        !m_scheduled_enable ?
+        _t("Scheduled transactions are not available, because the current filter ends in the past") : !m_scheduled_selected ? _t("Click to show scheduled transactions. This feature works best with filter choices that extend into the future (e.g., Current Month).") :
+        _t("Click to hide scheduled transactions."));
+}
 
 void JournalPanel::updateExtraTransactionData(bool single, int repeat_id, bool foreign)
 {
@@ -1001,7 +1181,9 @@ void JournalPanel::updateExtraTransactionData(bool single, int repeat_id, bool f
                 }
             }
         }
-        m_info_panel_selectedbal.clear(); // Not displaying any selected transactions in w_info_text, clear selected transaction balance var
+        // Not displaying any selected transactions in w_info_text, clear selected
+        // transaction balance var
+        m_info_panel_selectedbal.clear();
         w_info_text->SetLabelText(notesStr);
     }
     else /* !single */ {
@@ -1025,8 +1207,8 @@ void JournalPanel::updateExtraTransactionData(bool single, int repeat_id, bool f
             );
 
             double flow = 0;
-            mmDateN min_date;
-            mmDateN max_date;
+            mmDateN min_dateN;
+            mmDateN max_dateN;
             long item = -1;
             while (true) {
                 item = w_list->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
@@ -1046,13 +1228,14 @@ void JournalPanel::updateExtraTransactionData(bool single, int repeat_id, bool f
                     (m_account_id < 0) ? w_list->m_journal_xa[item].m_account_id : m_account_id
                 );
                 mmDate date = w_list->m_journal_xa[item].m_date();
-                if (!min_date.has_value() || date < min_date.value())
-                    min_date = date;
-                if (!max_date.has_value() || max_date.value() < date)
-                    max_date = date;
+                if (!min_dateN.has_value() || date < min_dateN.value())
+                    min_dateN = date;
+                if (!max_dateN.has_value() || max_dateN.value() < date)
+                    max_dateN = date;
             }
 
-            int days = max_date.value().daysSince(min_date.value());
+            mmDate min_date = min_dateN.value();
+            int days = max_dateN.value().daysSince(min_date);
 
             wxString msg;
             wxString selectedBal = CurrencyModel::instance().toCurrency(flow, m_currency_n);
@@ -1080,8 +1263,9 @@ void JournalPanel::updateExtraTransactionData(bool single, int repeat_id, bool f
     }
 }
 
-void JournalPanel::enableButtons(bool edit, bool dup, bool del, bool enter, bool skip, bool attach)
-{
+void JournalPanel::enableButtons(
+    bool edit, bool dup, bool del, bool enter, bool skip, bool attach
+) {
     if (!isDeletedTrans()) {
         w_edit_btn->Enable(edit);
         w_dup_btn->Enable(dup);
@@ -1096,7 +1280,19 @@ void JournalPanel::enableButtons(bool edit, bool dup, bool del, bool enter, bool
     }
 }
 
-//----------------------------------------------------------------------------
+void JournalPanel::showTips(const wxString& tip)
+{
+    // Not displaying any selected transactions in w_info_text,
+    // clear selected transaction balance var
+    m_info_panel_selectedbal.clear();
+
+    w_info_text->SetLabelText(
+        PrefModel::instance().getShowMoneyTips()
+            ? tip
+            : ""
+    );
+    m_show_tips = true;
+}
 
 void JournalPanel::showTips()
 {
@@ -1117,31 +1313,34 @@ void JournalPanel::showTips()
     w_info_text->SetLabelText(tip);
 }
 
-void JournalPanel::showTips(const wxString& tip)
-{
-    // Not displaying any selected transactions in w_info_text,
-    // clear selected transaction balance var
-    m_info_panel_selectedbal.clear();
-
-    w_info_text->SetLabelText(
-        PrefModel::instance().getShowMoneyTips()
-            ? tip
-            : ""
-    );
-    m_show_tips = true;
+void JournalPanel::datePickProceed() {
+    m_filter_id = FILTER_ID_DATE_PICKER;
+    updateFilter();
+    saveFilterSettings();
+    refreshList();
 }
 
-void JournalPanel::updateScheduledToolTip()
+void JournalPanel::displaySplitCategories(JournalKey journal_key)
 {
-   mmToolTip(w_header_scheduled,
-        !m_scheduled_enable ?
-        _t("Scheduled transactions are not available, because the current filter ends in the past") : !m_scheduled_selected ? _t("Click to show scheduled transactions. This feature works best with filter choices that extend into the future (e.g., Current Month).") :
-        _t("Click to hide scheduled transactions."));
+    Journal::Data journal = Journal::get_id_data(journal_key);
+    std::vector<Split> splits;
+    for (const auto& tp_d : Journal::split(journal)) {
+        Split split_d;
+        split_d.m_category_id = tp_d.m_category_id;
+        split_d.m_amount      = tp_d.m_amount;
+        split_d.m_notes       = tp_d.m_notes;
+        splits.push_back(split_d);
+    }
+    if (splits.empty()) return;
+    SplitDialog splitTransDialog(this, splits, m_account_id, true);
+
+    //splitTransDialog.SetDisplaySplitCategories();
+    splitTransDialog.ShowModal();
 }
 
-//----------------------------------------------------------------------------
+// -- event handlers
 
-void JournalPanel::onFilterPopup(wxCommandEvent& event)
+void JournalPanel::onDateRangePopup(wxCommandEvent& event)
 {
     wxMenu menu;
     int i = 0;
@@ -1150,7 +1349,8 @@ void JournalPanel::onFilterPopup(wxCommandEvent& event)
         i++;
     }
 
-    if (i +1 < static_cast<int>(m_date_range_a.size())) { //only add separator if there are more entries
+    // add separator if there are more entries
+    if (i + 1 < static_cast<int>(m_date_range_a.size())) {
         menu.AppendSeparator();
     }
     if (i < static_cast<int>(m_date_range_a.size())) {
@@ -1161,7 +1361,6 @@ void JournalPanel::onFilterPopup(wxCommandEvent& event)
             i++;
         }
     }
-
     menu.AppendSeparator();
     menu.Append(ID_DATE_RANGE_EDIT, _tu("Edit date ranges…"));
 
@@ -1170,73 +1369,48 @@ void JournalPanel::onFilterPopup(wxCommandEvent& event)
     event.Skip();
 }
 
-void JournalPanel::onFilterDate(wxCommandEvent& event)
+void JournalPanel::onDateRangeSelect(wxCommandEvent& event)
 {
     int i = event.GetId() - ID_DATE_RANGE_MIN;
     if (i < 0 || i >= static_cast<int>(m_date_range_a.size()))
         return;
 
-    m_filter_id = FILTER_ID_DATE_RANGE;
-    m_current_date_range = mmDateRange2();
+    // recreate m_date_range in order to reload parameters from setting,
+    // refresh the date of today, and clear the default start/end dates
+    m_date_range = mmDateRange2();
+    m_date_range.setRange(m_date_range_a[i]);
     if (isAccount()) {
-        m_current_date_range.setSDateN(m_account_n->m_stmt_date_n);
+        m_date_range.setSDateN(m_account_n->m_stmt_date_n);
     }
-    m_current_date_range.setRange(m_date_range_a[i]);
-    updateScheduledEnable();
-    saveFilterSettings();
+
+    m_filter_id = FILTER_ID_DATE_RANGE;
     updateFilter();
-
-    w_range_btn->SetLabel(m_current_date_range.rangeName());
-    w_range_btn->SetBitmap(mmBitmapBundle((i > 0 ? png::TRANSFILTER_ACTIVE : png::TRANSFILTER), mmBitmapButtonSize));
-
-    w_start_date->SetValue(
-        m_current_date_range.rangeStartN().value_or(mmDate::min()).getDateTime()
-    );
-    w_end_date->SetValue(
-        m_current_date_range.rangeEndN().value_or(mmDate::today()).getDateTime()
-    );
-
+    saveFilterSettings();
     refreshList();
 }
 
-void JournalPanel::onDatePickLow(wxDateEvent& event) {
+void JournalPanel::onStartDateChanged(wxDateEvent& event) {
     // Check if low date < = high date
-    if (w_end_date->GetValue().IsValid() && event.GetDate().IsLaterThan(w_end_date->GetValue())) {
-        wxLogDebug("onDatePickLow to Date =>: %s", event.GetDate().FormatISODate());
+    if (w_end_date->GetValue().IsValid() &&
+        event.GetDate().IsLaterThan(w_end_date->GetValue())
+    ) {
+        wxLogDebug("onStartDateChanged to Date =>: %s", event.GetDate().FormatISODate());
         w_end_date->SetValue(event.GetDate());
     }
     datePickProceed();
 }
 
-void JournalPanel::onDatePickHigh(wxDateEvent& event) {
+void JournalPanel::onEndDateChanged(wxDateEvent& event) {
     // Check if high date <= low date
-    if (w_start_date->GetValue().IsValid() && event.GetDate().IsEarlierThan(w_start_date->GetValue())) {
+    if (w_start_date->GetValue().IsValid() &&
+        event.GetDate().IsEarlierThan(w_start_date->GetValue())
+    ) {
         w_start_date->SetValue(event.GetDate());
     }
     datePickProceed();
 }
 
-void JournalPanel::datePickProceed() {
-    w_range_btn->SetLabel(_t("Date range"));
-    m_filter_id = FILTER_ID_DATE_PICKER;
-    // FIXME: setSDateN is the account statement date, not the start date
-    m_current_date_range.setSDateN(
-        mmDateN(w_start_date->GetValue()).value_or(mmDate::min())
-    );
-    // FIXME: setTDate is the date of today, should not be changed here
-    m_current_date_range.setTDate(
-        mmDateN(w_end_date->GetValue())
-            .value_or(mmDate(wxDateTime::Now().Add(wxDateSpan(0,0,0,30))))
-    );
-
-    w_range_btn->SetBitmap(mmBitmapBundle(png::TRANSFILTER_ACTIVE, mmBitmapButtonSize));
-    updateScheduledEnable();
-    saveFilterSettings();
-    updateFilter();
-    refreshList();
-}
-
-void JournalPanel::onFilterAdvanced(wxCommandEvent& WXUNUSED(event))
+void JournalPanel::onFilter(wxCommandEvent& WXUNUSED(event))
 {
     wxString j_str = InfoModel::instance().getString(
         wxString::Format("CHECK_FILTER_ID_ADV_%lld", m_account_group_id),
@@ -1246,19 +1420,21 @@ void JournalPanel::onFilterAdvanced(wxCommandEvent& WXUNUSED(event))
         new TrxFilterDialog(this, m_account_group_id, false, j_str)
     );
     w_filter_dlg->ShowModal();
-    setFilterAdvanced();
+
+    loadFilter();
 }
 
-void JournalPanel::onFilterAdvancedCancel(wxCommandEvent& WXUNUSED(event))
+void JournalPanel::onFilterCancel(wxCommandEvent& WXUNUSED(event))
 {
-    InfoModel::instance().setString(
+    InfoModel::instance().saveString(
         wxString::Format("CHECK_FILTER_ID_ADV_%lld", m_account_group_id),
         ""
     );
-    setFilterAdvanced();
+
+    loadFilter();
 }
 
-void JournalPanel::onEditDateRanges(wxCommandEvent& WXUNUSED(event))
+void JournalPanel::onDateRangeEdit(wxCommandEvent& WXUNUSED(event))
 {
     DateRangeManager dlg(this, DateRangeManager::TYPE_ID_CHECKING);
     if (dlg.ShowModal() != wxID_OK)
@@ -1266,20 +1442,30 @@ void JournalPanel::onEditDateRanges(wxCommandEvent& WXUNUSED(event))
 
     loadDateRanges(&m_date_range_a, &m_date_range_m, isAccount());
 
-    // Verify if current filter is still valid otherwise reset to "ALL"
     if (m_filter_id == FILTER_ID_DATE_RANGE) {
-        wxString curname = m_current_date_range.rangeName();
-        bool isDeleted = true;
+        // recreate m_date_range in order to reload parameters from setting,
+        // refresh the date of today, and clear the default start/end dates
+        m_date_range = mmDateRange2();
+
+        // find and reload the range specification (it may have been changed)
+        bool found = false;
         for (const auto& range : m_date_range_a) {
-            if (range.getName() == curname) {
-                isDeleted = false;
+            if (range.getName() == m_date_range.rangeName()) {
+                m_date_range.setRange(range);
+                found = true;
                 break;
             }
         }
-        if (isDeleted) {
-            wxCommandEvent evt = wxCommandEvent(wxEVT_NULL, ID_DATE_RANGE_MIN);
-            onFilterDate(evt);
+        if (!found) {
+            // set range to 'All'
+            m_date_range.setRange(m_date_range_a[0]);
         }
+        if (isAccount()) {
+            m_date_range.setSDateN(m_account_n->m_stmt_date_n);
+        }
+
+        updateFilter();
+        saveFilterSettings();
     }
 }
 
@@ -1293,8 +1479,6 @@ void JournalPanel::onScheduled(wxCommandEvent&)
     refreshList();
 }
 
-//----------------------------------------------------------------------------
-
 void JournalPanel::onSearchTxtEntered(wxCommandEvent& event)
 {
     const wxString search_string = event.GetString();
@@ -1306,10 +1490,11 @@ void JournalPanel::onSearchTxtEntered(wxCommandEvent& event)
 void JournalPanel::onButtonRightDown(wxMouseEvent& event)
 {
     int id = event.GetId();
-    switch (id) {
-    case ID_FILTER: {
+    switch (id)
+    {
+    case ID_DATE_RANGE_BUTTON: {
         wxCommandEvent evt(wxID_ANY, ID_FILTER_ADVANCED);
-        onFilterAdvanced(evt);
+        onFilter(evt);
         break;
     }
     case wxID_FILE: {
@@ -1337,13 +1522,10 @@ void JournalPanel::onButtonRightDown(wxMouseEvent& event)
 
 void JournalPanel::onInfoPanelClick(wxMouseEvent& event, wxStaticText* infoPanel)
 {
-    wxString clipboardValue = "";
-    if (!m_info_panel_selectedbal.IsEmpty()) {
-        clipboardValue = m_info_panel_selectedbal;
-    }
-    else {
-        clipboardValue = infoPanel->GetLabel();
-    }
+    wxString clipboardValue = !m_info_panel_selectedbal.IsEmpty()
+        ? m_info_panel_selectedbal
+        : infoPanel->GetLabel();
+
     if (!clipboardValue.IsEmpty()) {
         // Copy to clipboard
         if (wxTheClipboard->Open()) {
@@ -1362,115 +1544,5 @@ void JournalPanel::onReconcile(wxCommandEvent& WXUNUSED(event))
     mmReconcileDialog dlg(wxGetTopLevelParent(this), m_account_n, this);
     if (dlg.ShowModal() == wxID_OK) {
         refreshList();
-    }
-}
-
-//----------------------------------------------------------------------------
-
-wxString JournalPanel::getPanelTitle() const
-{
-    if (isAllTrans())
-        return _t("All Transactions");
-    else if (isDeletedTrans())
-        return _t("Deleted Transactions");
-    else if (isGroup()) {
-        if (m_account_group_id == -3)
-            return _t("Favorites");
-        else {
-            int account_Type = -(static_cast<int>(m_account_group_id.GetValue()) + 4);
-            if (account_Type >= NavigatorTypes::TYPE_ID_size) {
-                account_Type += NavigatorTypes::NAV_IDXDIFF;
-            }
-            return NavigatorTypes::instance().getAccountSectionName(account_Type);
-        }
-    }
-    else if (m_account_n)
-        return wxString::Format(_t("Account View: %s"), m_account_n->m_name);
-    else
-        return "";
-}
-
-wxString JournalPanel::buildPage() const
-{
-    return w_list->buildPage(m_account_n ? getPanelTitle() : "");
-}
-
-void JournalPanel::resetColumnView()
-{
-    w_list->DeleteAllColumns();
-    w_list->setColumnsInfo();
-    w_list->createColumns();
-    w_list->refreshVisualList();
-}
-
-void JournalPanel::setSelectedTransaction(JournalKey journal_key)
-{
-    w_list->setSelectedId(journal_key);
-    refreshList();
-    w_list->SetFocus();
-}
-
-void JournalPanel::displaySplitCategories(JournalKey journal_key)
-{
-    Journal::Data journal = Journal::get_id_data(journal_key);
-    std::vector<Split> splits;
-    for (const auto& tp_d : Journal::split(journal)) {
-        Split split_d;
-        split_d.m_category_id = tp_d.m_category_id;
-        split_d.m_amount      = tp_d.m_amount;
-        split_d.m_notes       = tp_d.m_notes;
-        splits.push_back(split_d);
-    }
-    if (splits.empty()) return;
-    SplitDialog splitTransDialog(this, splits, m_account_id, true);
-
-    //splitTransDialog.SetDisplaySplitCategories();
-    splitTransDialog.ShowModal();
-}
-
-void JournalPanel::mmPlayTransactionSound()
-{
-    int play = SettingModel::instance().getInt(INIDB_USE_TRANSACTION_SOUND, 0);
-    if (!play)
-        return;
-
-    wxString wav_path = mmex::getPathResource(
-      (play == 2) ? mmex::TRANS_SOUND2 : mmex::TRANS_SOUND1
-    );
-    wxLogDebug("%s", wav_path);
-
-    wxSound registerSound(wav_path);
-    if (registerSound.IsOk())
-        registerSound.Play(wxSOUND_ASYNC);
-}
-
-//--- static support function -----------------------------------------------------
-wxString JournalPanel::getFilterName(FILTER_ID id) {
-    return JournalPanel::FILTER_NAME[id].second;
-}
-
-void JournalPanel::loadDateRanges(
-    std::vector<mmDateRange2::Range>* date_range_a,
-    int* date_range_m,
-    bool all_ranges
-) {
-    date_range_a->clear();
-    *date_range_m = -1;
-    int src_i = 0;
-    int src_m = PrefModel::instance().getCheckingRangeM();
-    for (const auto& range : PrefModel::instance().getCheckingRangeA()) {
-        if (date_range_a->size() > ID_DATE_RANGE_MAX - ID_DATE_RANGE_MIN) {
-            break;
-        }
-        if (src_i == src_m) {
-            *date_range_m = date_range_a->size();
-        }
-        if (all_ranges || !range.hasPeriodS()) {
-            date_range_a->push_back(range);
-        }
-        src_i++;
-    }
-    if (*date_range_m < 0) {
-        *date_range_m = date_range_a->size();
     }
 }

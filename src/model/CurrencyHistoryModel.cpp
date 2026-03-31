@@ -1,33 +1,27 @@
 /*******************************************************
-Copyright (C) 2015 Gabriele-V
+ Copyright (C) 2015 Gabriele-V
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
 #include "CurrencyModel.h"
 #include "CurrencyHistoryModel.h"
 #include "PrefModel.h"
 
-CurrencyHistoryModel::CurrencyHistoryModel() :
-    TableFactory<CurrencyHistoryTable, CurrencyHistoryData>()
-{
-}
-
-CurrencyHistoryModel::~CurrencyHistoryModel()
-{
-}
+// -- constructor
 
 // Initialize the global CurrencyHistoryModel table.
 // Reset the CurrencyHistoryModel table or create the table if it does not exist.
@@ -46,10 +40,7 @@ CurrencyHistoryModel& CurrencyHistoryModel::instance()
     return Singleton<CurrencyHistoryModel>::instance();
 }
 
-CurrencyHistoryCol::CURRDATE CurrencyHistoryModel::CURRDATE(OP op, const mmDate& date)
-{
-    return CurrencyHistoryCol::CURRDATE(op, date.isoDate());
-}
+// -- methods
 
 const CurrencyHistoryData* CurrencyHistoryModel::get_key_data_n(
     int64 currency_id,
@@ -57,14 +48,14 @@ const CurrencyHistoryData* CurrencyHistoryModel::get_key_data_n(
 ) {
     const Data* uh_n = search_cache_n(
         CurrencyHistoryCol::CURRENCYID(currency_id),
-        CurrencyHistoryModel::CURRDATE(OP_EQ, date)
+        CurrencyHistoryModel::DATE(OP_EQ, date)
     );
     if (uh_n)
         return uh_n;
 
     const DataA uh_a = find(
         CurrencyHistoryCol::CURRENCYID(currency_id),
-        CurrencyHistoryModel::CURRDATE(OP_EQ, date)
+        CurrencyHistoryModel::DATE(OP_EQ, date)
     );
     if (!uh_a.empty())
         uh_n = get_id_data_n(uh_a[0].m_id);
@@ -84,7 +75,7 @@ double CurrencyHistoryModel::get_id_date_rate(int64 currency_id_n, const mmDate&
 
     const DataA uh_a = CurrencyHistoryModel::instance().find(
         CurrencyHistoryCol::CURRENCYID(OP_EQ, currency_id_n),
-        CurrencyHistoryModel::CURRDATE(OP_EQ, date)
+        CurrencyHistoryModel::DATE(OP_EQ, date)
     );
     if (!uh_a.empty()) {
         // Rate found for specified day
@@ -98,21 +89,20 @@ double CurrencyHistoryModel::get_id_date_rate(int64 currency_id_n, const mmDate&
 
     // Rate not found for specified day, look at previous and next
     // FIXME: sort by date
-    const CurrencyHistoryModel::DataA prev_uh_a = find(
+    CurrencyHistoryModel::DataA prev_uh_a = find(
         CurrencyHistoryCol::CURRENCYID(currency_id_n),
-        CurrencyHistoryModel::CURRDATE(OP_LE, date)
+        CurrencyHistoryModel::DATE(OP_LE, date)
     );
     CurrencyHistoryModel::DataA next_uh_a = find(
         CurrencyHistoryCol::CURRENCYID(currency_id_n),
-        CurrencyHistoryModel::CURRDATE(OP_GE, date)
+        CurrencyHistoryModel::DATE(OP_GE, date)
     );
 
     if (!prev_uh_a.empty() && !next_uh_a.empty()) {
-        const wxTimeSpan prev_span = date.getDateTime().
-            Subtract(prev_uh_a.back().m_date.getDateTime());
-        const wxTimeSpan next_span = next_uh_a[0].m_date.getDateTime().
-            Subtract(date.getDateTime());
-        return prev_span <= next_span
+        mmDate date_copy = date;
+        int prev_days = date_copy.daysSince(prev_uh_a.back().m_date);
+        int next_days = date_copy.daysUntil(next_uh_a[0].m_date);
+        return prev_days <= next_days
             ? prev_uh_a.back().m_base_conv_rate
             : next_uh_a[0].m_base_conv_rate;
     }

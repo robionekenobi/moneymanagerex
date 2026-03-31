@@ -71,7 +71,7 @@ mmEditSplitOther::mmEditSplitOther(
 
 mmEditSplitOther::~mmEditSplitOther()
 {
-    InfoModel::instance().setSize("EDITSPLITOTHER_DIALOG_SIZE", GetSize());
+    InfoModel::instance().saveSize("EDITSPLITOTHER_DIALOG_SIZE", GetSize());
 }
 
 void mmEditSplitOther::CreateControls()
@@ -157,7 +157,7 @@ SplitDialog::SplitDialog( )
 
 SplitDialog::~SplitDialog()
 {
-    InfoModel::instance().setSize("SPLITTRANSACTION_DIALOG_SIZE", GetSize());
+    InfoModel::instance().saveSize("SPLITTRANSACTION_DIALOG_SIZE", GetSize());
 }
 
 SplitDialog::SplitDialog(wxWindow* parent

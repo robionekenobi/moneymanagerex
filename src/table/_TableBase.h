@@ -34,11 +34,13 @@ class wxString;
 
 enum OP {
     OP_EQ = 0, // EQual
+    OP_NE,     // Not Equal
     OP_GT,     // Greater Than
     OP_LT,     // Less Than
     OP_GE,     // Greater or Equal
     OP_LE,     // Less or Equal
-    OP_NE      // Not Equal
+    OP_EQN,    // EQual to Null or argument
+    OP_NEN,    // Not (Equal to Null or argument)
 };
 
 template<typename V>
@@ -86,4 +88,3 @@ public:
     virtual auto stat_json() const -> const wxString = 0;
     virtual void debug_stat() const = 0;
 };
-

@@ -22,14 +22,7 @@
 #include "TrxModel.h"
 #include "TagModel.h"
 
-TagLinkModel::TagLinkModel() :
-    TableFactory<TagLinkTable, TagLinkData>()
-{
-}
-
-TagLinkModel::~TagLinkModel()
-{
-}
+// -- constructor
 
 // Initialize the global TagLinkModel.
 TagLinkModel& TagLinkModel::instance(wxSQLite3Database* db)
@@ -48,6 +41,8 @@ TagLinkModel& TagLinkModel::instance()
 {
     return Singleton<TagLinkModel>::instance();
 }
+
+// -- methods
 
 // Delete all tag links for a (REFTYPE, REFID)
 void TagLinkModel::purge_ref(RefTypeN ref_type, int64 ref_id)

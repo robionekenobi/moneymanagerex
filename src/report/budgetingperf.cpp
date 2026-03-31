@@ -75,7 +75,7 @@ wxString mmReportBudgetingPerformance::getHTMLText()
     // Readjust dates by the Budget Offset Option
     PrefModel::instance().addBudgetDateOffset(yearBegin);
     PrefModel::instance().addBudgetDateOffset(yearEnd);
-    mmSpecifiedRange date_range(yearBegin.getDateTime(), yearEnd.getDateTime());
+    mmSpecifiedRange date_range(yearBegin.dateTime(), yearEnd.dateTime());
 
     bool evaluateTransfer = false;
     if (PrefModel::instance().getBudgetIncludeTransfers()) {
@@ -112,7 +112,7 @@ wxString mmReportBudgetingPerformance::getHTMLText()
     hb.init();
 
     hb.addReportHeader(headingStr, 1, PrefModel::instance().getIgnoreFutureTransactions());
-    hb.displayDateHeading(yearBegin.getDateTime(), yearEnd.getDateTime());
+    hb.displayDateHeading(yearBegin.dateTime(), yearEnd.dateTime());
     // Prime the filter
     m_filter.clear();
     m_filter.setDateRange(yearBegin, yearEnd);

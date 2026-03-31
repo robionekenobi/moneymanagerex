@@ -202,35 +202,56 @@ inline void mmComboBoxCustom::init() {}
 
 class mmDatePickerCtrl : public wxPanel
 {
+// -- state
+
+private:
+    wxDateTime m_dateTime;
+
+    wxWindow*         w_parent       = nullptr;
+    wxStaticText*     w_weekday_text = nullptr;
+    wxSpinButton*     w_spin_btn     = nullptr;
+    wxDatePickerCtrl* w_date_picker  = nullptr;
+    wxTimePickerCtrl* w_time_picker  = nullptr;
 
 public:
-    mmDatePickerCtrl(wxWindow* parent, wxWindowID id
-        , wxDateTime dt=wxDateTime::Today(), wxPoint pos=wxDefaultPosition, wxSize size=wxDefaultSize
-        , long style=wxDP_DROPDOWN | wxDP_SHOWCENTURY);
+    wxDateTime GetValue() { return m_dateTime; }
+
+// -- constructor
+
+public:
+    mmDatePickerCtrl(
+        wxWindow* parent,
+        wxWindowID id,
+        wxDateTime dt = wxDateTime::Today(),
+        wxPoint pos = wxDefaultPosition,
+        wxSize size = wxDefaultSize,
+        long style = wxDP_DROPDOWN | wxDP_SHOWCENTURY
+    );
     ~mmDatePickerCtrl();
-    void SetValue(const wxDateTime &dt);    // Override
-    bool Enable(bool state=true);           // Override
-    bool Show(bool state=true);             // Override
+
+// -- override
+
+public:
+    void SetValue(const wxDateTime &dt);    // override
+    bool Enable(bool state = true);         // override
+    bool Show(bool state = true);           // override
+
+// -- methods
+
+public:
+    bool isItMyDateControl(wxObject* obj);
     wxBoxSizer* mmGetLayout(bool showTimeCtrl = true);
     wxBoxSizer* mmGetLayoutWithTime();
-    wxDateTime GetValue();
-    bool isItMyDateControl(wxObject* obj);
-
 private:
     wxStaticText* getTextWeek();
     wxSpinButton* getSpinButton();
-    wxDateTime dt_;
-    wxDatePickerCtrl* datePicker_ = nullptr;
-    wxTimePickerCtrl* timePicker_ = nullptr;
+
+// -- event handlers
+
+private:
     void OnDateChanged(wxDateEvent& event);
     void OnDateSpin(wxSpinEvent&);
-
-    wxWindow* parent_ = nullptr;
-    wxStaticText* itemStaticTextWeek_ = nullptr;
-    wxSpinButton* spinButton_ = nullptr;
 };
-
-inline wxDateTime mmDatePickerCtrl::GetValue() { return dt_; }
 
 /* -------------------------------------------- */
 

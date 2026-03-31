@@ -171,7 +171,7 @@ void NavigatorTypes::SaveSequenceAndState()
     }
     j_doc.AddMember("data", array, j_doc.GetAllocator());
 
-    InfoModel::instance().setJdoc(key, j_doc);
+    InfoModel::instance().saveJdoc(key, j_doc);
 
     sortEntriesBySeq();
 }

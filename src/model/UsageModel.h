@@ -1,6 +1,7 @@
 /*******************************************************
-Copyright (C) 2013 - 2018 Guan Lisheng (guanlisheng@gmail.com)
-Copyright (C) 2018 Stefano Giorgio (stef145g)
+ Copyright (C) 2013 - 2018 Guan Lisheng (guanlisheng@gmail.com)
+ Copyright (C) 2018 Stefano Giorgio (stef145g)
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -27,17 +28,24 @@ class ReportBase;
 
 class UsageModel : public TableFactory<UsageTable, UsageData>
 {
+// -- state
+
 private:
     wxDateTime m_start;
     wxArrayString m_json_usage, m_json_cache;
 
+// -- constructor
+
 public:
-    UsageModel();
-    ~UsageModel();
+    UsageModel() :
+        TableFactory<UsageTable, UsageData>() {}
+    ~UsageModel() {}
 
 public:
     static UsageModel& instance(wxSQLite3Database* db);
     static UsageModel& instance();
+
+// -- methods
 
 public:
     void append_usage(const wxString& json_string);

@@ -164,7 +164,7 @@ table {
     }
 
     // Display the data for each row
-    for (auto& trx_dx : trx_xa) {
+    for (TrxModel::DataExt& trx_dx : trx_xa) {
         if (trx_dx.is_deleted())
             continue;
 
@@ -178,11 +178,11 @@ table {
         else if (groupBy == TrxFilterDialog::GROUPBY_TYPE)
             sortLabel = wxGetTranslation(trx_dx.m_type.name());
         else if (groupBy == TrxFilterDialog::GROUPBY_DAY)
-            sortLabel = mmGetDateTimeForDisplay(trx_dx.m_date_time.isoDateTime());
+            sortLabel = mmGetDateTimeForDisplay(trx_dx.m_isoDateTime());
         else if (groupBy == TrxFilterDialog::GROUPBY_MONTH)
-            sortLabel = trx_dx.m_date_time.getDateTime().Format("%Y-%m");
+            sortLabel = trx_dx.m_datetime.dateTime().Format("%Y-%m");
         else if (groupBy == TrxFilterDialog::GROUPBY_YEAR)
-            sortLabel = trx_dx.m_date_time.getDateTime().Format("%Y");
+            sortLabel = trx_dx.m_datetime.dateTime().Format("%Y");
 
         if (sortLabel != lastSortLabel) {
             if (lastSortLabel != "") {
@@ -299,7 +299,7 @@ table {
                     hb.addTableCellDate(trx_dx.m_date().isoDate());
                 }
                 if (showColumnById(TrxFilterDialog::COL_TIME))
-                    hb.addTableCell(mmGetTimeForDisplay(trx_dx.m_date_time.isoDateTime()));
+                    hb.addTableCell(mmGetTimeForDisplay(trx_dx.m_isoDateTime()));
                 if (showColumnById(TrxFilterDialog::COL_NUMBER))
                     hb.addTableCell(trx_dx.m_number);
                 if (showColumnById(TrxFilterDialog::COL_ACCOUNT)) {
@@ -646,7 +646,7 @@ void TrxReport::Run(wxSharedPtr<TrxFilterDialog>& dlg)
 
 bool TrxReport::showColumnById(int num)
 {
-    if (num == TrxFilterDialog::COL_TIME && !PrefModel::instance().UseTransDateTime())
+    if (num == TrxFilterDialog::COL_TIME && !PrefModel::instance().getUseTransDateTime())
         return false;
 
     if (m_transDialog->mmIsHideColumnsChecked()) {

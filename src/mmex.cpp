@@ -92,7 +92,7 @@ bool mmGUIApp::setGUILanguage(wxLanguage lang)
     ) {
         wxTranslations::Set(trans);
         this->m_lang = lang;
-        PrefModel::instance().setLanguage(lang);
+        PrefModel::instance().saveLanguage(lang);
         return true;
     }
     else {
@@ -134,7 +134,7 @@ bool mmGUIApp::setGUILanguage(wxLanguage lang)
                 languages_list
             );
             m_lang = wxLANGUAGE_DEFAULT;
-            PrefModel::instance().setLanguage(m_lang);
+            PrefModel::instance().saveLanguage(m_lang);
         }
 
         wxDELETE(trans);

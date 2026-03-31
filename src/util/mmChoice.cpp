@@ -18,9 +18,9 @@
 
 #include "mmChoice.h"
 
-// -- mmChoiceNameA --
+// -- mmChoiceKeyA
 
-mmChoiceIdN mmChoiceNameA::valid_id_n(mmChoiceIdN id_n) const
+mmChoiceIdN mmChoiceKeyA::valid_id_n(mmChoiceIdN id_n) const
 {
     wxASSERT(
         (id_n >= 0 && id_n < static_cast<mmChoiceId>(m_choice_a.size())) ||
@@ -29,33 +29,121 @@ mmChoiceIdN mmChoiceNameA::valid_id_n(mmChoiceIdN id_n) const
     return id_n;
 }
 
-const wxString mmChoiceNameA::get_name(mmChoiceId id) const
+const wxString mmChoiceKeyA::get_key(mmChoiceId id) const
+{
+    wxASSERT(id >= 0 && id < static_cast<mmChoiceId>(m_choice_a.size()));
+    wxASSERT(m_choice_a[id].id == id);
+    return m_choice_a[id].key;
+}
+
+mmChoiceIdN mmChoiceKeyA::find_key_n(const wxString& key)
+{
+    if (const auto it = m_key_id_m.find(key); it != m_key_id_m.end())
+        return it->second;
+
+    mmChoiceIdN id_n = m_default_id_n;
+    for (const Choice& choice : m_choice_a) {
+        bool match = m_nocase
+            ? (key.CmpNoCase(choice.key) == 0)
+            : (key == choice.key);
+        if (match) {
+            id_n = choice.id;
+            break;
+        }
+    }
+    m_key_id_m.insert({key, id_n});
+    return id_n;
+}
+
+// -- mmChoiceKeyNameA
+
+mmChoiceIdN mmChoiceKeyNameA::valid_id_n(mmChoiceIdN id_n) const
+{
+    wxASSERT(
+        (id_n >= 0 && id_n < static_cast<mmChoiceId>(m_choice_a.size())) ||
+        id_n == m_default_id_n
+    );
+    return id_n;
+}
+
+const wxString mmChoiceKeyNameA::get_key(mmChoiceId id) const
+{
+    wxASSERT(id >= 0 && id < static_cast<mmChoiceId>(m_choice_a.size()));
+    wxASSERT(m_choice_a[id].id == id);
+    return m_choice_a[id].key;
+}
+
+const wxString mmChoiceKeyNameA::get_name(mmChoiceId id) const
 {
     wxASSERT(id >= 0 && id < static_cast<mmChoiceId>(m_choice_a.size()));
     wxASSERT(m_choice_a[id].id == id);
     return m_choice_a[id].name;
 }
 
-mmChoiceIdN mmChoiceNameA::find_name_n(const wxString& name)
+mmChoiceIdN mmChoiceKeyNameA::find_key_n(const wxString& key)
 {
-    if (const auto it = m_name_id_m.find(name); it != m_name_id_m.end())
+    if (const auto it = m_key_id_m.find(key); it != m_key_id_m.end())
         return it->second;
 
     mmChoiceIdN id_n = m_default_id_n;
     for (const Choice& choice : m_choice_a) {
         bool match = m_nocase
-            ? (name.CmpNoCase(choice.name) == 0)
-            : (name == choice.name);
+            ? (key.CmpNoCase(choice.key) == 0)
+            : (key == choice.key);
         if (match) {
             id_n = choice.id;
             break;
         }
     }
-    m_name_id_m.insert({name, id_n});
+    m_key_id_m.insert({key, id_n});
     return id_n;
 }
 
-// -- mmChoiceCodeNameA --
+// -- mmChoiceKeyKeyNameA
+
+mmChoiceIdN mmChoiceKeyKeyNameA::valid_id_n(mmChoiceIdN id_n) const
+{
+    wxASSERT(
+        (id_n >= 0 && id_n < static_cast<mmChoiceId>(m_choice_a.size())) ||
+        id_n == m_default_id_n
+    );
+    return id_n;
+}
+
+const wxString mmChoiceKeyKeyNameA::get_key(mmChoiceId id) const
+{
+    wxASSERT(id >= 0 && id < static_cast<mmChoiceId>(m_choice_a.size()));
+    wxASSERT(m_choice_a[id].id == id);
+    return m_choice_a[id].key;
+}
+
+const wxString mmChoiceKeyKeyNameA::get_name(mmChoiceId id) const
+{
+    wxASSERT(id >= 0 && id < static_cast<mmChoiceId>(m_choice_a.size()));
+    wxASSERT(m_choice_a[id].id == id);
+    return m_choice_a[id].name;
+}
+
+mmChoiceIdN mmChoiceKeyKeyNameA::find_key_n(const wxString& key)
+{
+    if (const auto it = m_key_id_m.find(key); it != m_key_id_m.end())
+        return it->second;
+
+    mmChoiceIdN id_n = m_default_id_n;
+    for (const Choice& choice : m_choice_a) {
+        bool match = m_nocase
+            ? (key.CmpNoCase(choice.key) == 0 || key.CmpNoCase(choice.key2) == 0)
+            : (key == choice.key || key == choice.key2);
+        if (match) {
+            id_n = choice.id;
+            break;
+        }
+    }
+    m_key_id_m.insert({key, id_n});
+    return id_n;
+}
+
+// -- mmChoiceCodeNameA
 
 mmChoiceIdN mmChoiceCodeNameA::valid_id_n(mmChoiceIdN id_n) const
 {
@@ -112,49 +200,5 @@ mmChoiceIdN mmChoiceCodeNameA::find_name_n(const wxString& name)
         }
     }
     m_name_id_m.insert({name, id_n});
-    return id_n;
-}
-
-// -- mmChoiceKeyNameA --
-
-mmChoiceIdN mmChoiceKeyNameA::valid_id_n(mmChoiceIdN id_n) const
-{
-    wxASSERT(
-        (id_n >= 0 && id_n < static_cast<mmChoiceId>(m_choice_a.size())) ||
-        id_n == m_default_id_n
-    );
-    return id_n;
-}
-
-const wxString mmChoiceKeyNameA::get_key(mmChoiceId id) const
-{
-    wxASSERT(id >= 0 && id < static_cast<mmChoiceId>(m_choice_a.size()));
-    wxASSERT(m_choice_a[id].id == id);
-    return m_choice_a[id].key;
-}
-
-const wxString mmChoiceKeyNameA::get_name(mmChoiceId id) const
-{
-    wxASSERT(id >= 0 && id < static_cast<mmChoiceId>(m_choice_a.size()));
-    wxASSERT(m_choice_a[id].id == id);
-    return m_choice_a[id].name;
-}
-
-mmChoiceIdN mmChoiceKeyNameA::find_keyname_n(const wxString& keyname)
-{
-    if (const auto it = m_keyname_id_m.find(keyname); it != m_keyname_id_m.end())
-        return it->second;
-
-    mmChoiceIdN id_n = m_default_id_n;
-    for (const Choice& choice : m_choice_a) {
-        bool match = m_nocase
-            ? (keyname.CmpNoCase(choice.key) == 0 || keyname.CmpNoCase(choice.name) == 0)
-            : (keyname == choice.key || keyname == choice.name);
-        if (match) {
-            id_n = choice.id;
-            break;
-        }
-    }
-    m_keyname_id_m.insert({keyname, id_n});
     return id_n;
 }

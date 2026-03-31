@@ -108,18 +108,18 @@ private:
     wxSharedPtr<FieldValueDialog> m_custom_fields;
     int                 w_focus             = wxID_ANY;
     wxSize              w_min_size;
-    wxBitmapButton*     w_calculator_btn    = nullptr;
-    mmCalculatorPopup*  w_calculator        = nullptr;
+    wxBitmapButton*     w_calc_btn          = nullptr;
+    mmCalculatorPopup*  w_calc              = nullptr;
     wxTextCtrl*         w_number_text       = nullptr;
     mmTextCtrl*         w_amount_text       = nullptr;
     mmTextCtrl*         w_to_amount_text    = nullptr;
     mmTextCtrl*         w_calculator_text   = nullptr;
     wxTextCtrl*         w_notes_text        = nullptr;
     wxTextCtrl*         w_repeat_num_text   = nullptr;
-    mmComboBoxCategory* w_category_cb       = nullptr;
-    mmComboBoxPayee*    w_payee_cb          = nullptr;
-    mmComboBoxAccount*  w_account_cb        = nullptr;
-    mmComboBoxAccount*  w_to_account_cb     = nullptr;
+    mmComboBoxCategory* w_cat_text          = nullptr;
+    mmComboBoxPayee*    w_payee_text        = nullptr;
+    mmComboBoxAccount*  w_account_text      = nullptr;
+    mmComboBoxAccount*  w_to_account_text   = nullptr;
     wxBitmapButton*     w_split_btn         = nullptr;
     wxBitmapButton*     w_attachment_btn    = nullptr;
     wxButton*           w_cancel_btn        = nullptr;
@@ -127,8 +127,8 @@ private:
     wxCheckBox*         w_advanced_cb       = nullptr;
     wxChoice*           w_status_choice     = nullptr;
     wxChoice*           w_type_choice       = nullptr;
-    mmDatePickerCtrl*   w_date_paid         = nullptr; // Stored in TRANSDATE
-    mmDatePickerCtrl*   w_date_due          = nullptr; // Stored in NEXTOCCURRENCEDATE
+    mmDatePickerCtrl*   w_pay_date          = nullptr; // Stored in TRANSDATE
+    mmDatePickerCtrl*   w_due_date          = nullptr; // Stored in NEXTOCCURRENCEDATE
     wxChoice*           w_freq_choice       = nullptr;
     wxCheckBox*         w_mode_suggested_cb = nullptr;
     wxCheckBox*         w_mode_automated_cb = nullptr;

@@ -222,7 +222,7 @@ void OtherPref::SaveStocksUrl()
     wxComboBox* url = static_cast<wxComboBox*>(FindWindow(ID_DIALOG_OPTIONS_TEXTCTRL_STOCKURL));
     wxString stockURL = url->GetValue().Trim(false).Trim();
     if (!stockURL.IsEmpty()) {
-        InfoModel::instance().setString("STOCKURL", stockURL);
+        InfoModel::instance().saveString("STOCKURL", stockURL);
     }
     else {
         InfoModel::DataA info_a = InfoModel::instance().find(
@@ -236,24 +236,24 @@ void OtherPref::SaveStocksUrl()
 bool OtherPref::SaveSettings()
 {
     SaveStocksUrl();
-    PrefModel::instance().setSharePrecision(m_share_precision->GetValue());
-    PrefModel::instance().setAssetCompounding(m_asset_compounding->GetSelection());
+    PrefModel::instance().saveSharePrecision(m_share_precision->GetValue());
+    PrefModel::instance().saveAssetCompounding(m_asset_compounding->GetSelection());
 
     wxCheckBox* itemCheckBox = static_cast<wxCheckBox*>(FindWindow(ID_DIALOG_OPTIONS_CHK_BACKUP));
-    SettingModel::instance().setBool("BACKUPDB", itemCheckBox->GetValue());
+    SettingModel::instance().saveBool("BACKUPDB", itemCheckBox->GetValue());
 
     wxCheckBox* itemCheckBoxUpdate = static_cast<wxCheckBox*>(FindWindow(ID_DIALOG_OPTIONS_CHK_BACKUP_UPDATE));
-    SettingModel::instance().setBool("BACKUPDB_UPDATE", itemCheckBoxUpdate->GetValue());
+    SettingModel::instance().saveBool("BACKUPDB_UPDATE", itemCheckBoxUpdate->GetValue());
 
-    SettingModel::instance().setInt("MAX_BACKUP_FILES", m_max_files->GetValue());
-    SettingModel::instance().setInt("DELETED_TRANS_RETAIN_DAYS", m_deleted_trans_retain_days->GetValue());
-    SettingModel::instance().setBool("REFRESH_STOCK_QUOTES_ON_OPEN", m_refresh_quotes_on_open->IsChecked());
+    SettingModel::instance().saveInt("MAX_BACKUP_FILES", m_max_files->GetValue());
+    SettingModel::instance().saveInt("DELETED_TRANS_RETAIN_DAYS", m_deleted_trans_retain_days->GetValue());
+    SettingModel::instance().saveBool("REFRESH_STOCK_QUOTES_ON_OPEN", m_refresh_quotes_on_open->IsChecked());
 
-    PrefModel::instance().setUsePerAccountFilter(m_store_account_specific_filter->IsChecked());
+    PrefModel::instance().saveUsePerAccountFilter(m_store_account_specific_filter->IsChecked());
 
     wxTextCtrl* st = static_cast<wxTextCtrl*>(FindWindow(ID_DIALOG_OPTIONS_TEXTCTRL_DELIMITER4));
     const wxString& delim = st->GetValue();
-    if (!delim.IsEmpty()) InfoModel::instance().setString("DELIMITER", delim);
+    if (!delim.IsEmpty()) InfoModel::instance().saveString("DELIMITER", delim);
 
     return true;
 }

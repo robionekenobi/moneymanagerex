@@ -40,10 +40,22 @@ class JournalPanel : public PanelBase
 {
     friend class JournalList;
 
-    wxDECLARE_EVENT_TABLE();
+// -- static
 
 public:
-    enum EIcons
+    enum FILTER_ID
+    {
+        FILTER_ID_DATE = 0,     // Not currently used
+        FILTER_ID_DATE_RANGE,
+        FILTER_ID_DATE_PICKER
+    };
+private:
+    static const std::vector<std::pair<FILTER_ID, wxString>> FILTER_NAME;
+public:
+    static const wxString filter_id_name(FILTER_ID id);
+
+public:
+    enum
     {
         ICON_UNRECONCILED,
         ICON_RECONCILED,
@@ -54,27 +66,30 @@ public:
         ICON_ASC,
     };
 
-    enum FILTER_ID
-    {
-        FILTER_ID_DATE = 0,     // Not currently used
-        FILTER_ID_DATE_RANGE,
-        FILTER_ID_DATE_PICKER
-    };
-
 private:
+    wxDECLARE_EVENT_TABLE();
     enum
     {
-        ID_FILTER = wxID_HIGHEST + 50,
+        ID_DATE_RANGE_BUTTON = wxID_HIGHEST + 50,
         ID_DATE_RANGE_MIN,
         ID_DATE_RANGE_MAX = ID_DATE_RANGE_MIN + 99,
         ID_FILTER_ADVANCED,
-        ID_FILTER_TRANS,
-        ID_DATE_PICKER_LOW,
-        ID_DATE_PICKER_HIGH,
+        ID_FILTER_BUTTON,
+        ID_START_DATE_PICKER,
+        ID_END_DATE_PICKER,
         ID_DATE_RANGE_EDIT,
-        ID_SCHEDULED,
+        ID_SCHEDULED_BUTTON,
     };
-    static const std::vector<std::pair<FILTER_ID, wxString>> FILTER_NAME;
+
+public:
+    static void loadDateRanges(
+        std::vector<mmDateRange2::Range>* date_range_a,
+        int* date_range_m,
+        bool all_ranges = false
+    );
+    static void mmPlayTransactionSound();
+
+// -- state
 
 private:
     // set by constructor or loadAccount()
@@ -92,9 +107,9 @@ private:
     int m_date_range_m = -1;
 
     // set by gui
+    mmDateRange2 m_date_range = mmDateRange2();
     FILTER_ID m_filter_id;
     bool m_filter_advanced;
-    mmDateRange2 m_current_date_range = mmDateRange2();
     bool m_scheduled_enable;
     bool m_scheduled_selected;
 
@@ -137,6 +152,17 @@ private:
     wxStaticText*         w_mini_text        = nullptr;
 
 public:
+    bool isAllTrans() const { return m_account_group_id == -1; }
+    bool isDeletedTrans() const { return m_account_group_id == -2; }
+    bool isGroup() const { return m_account_group_id <= -3; }
+    bool isAccount() const { return m_account_group_id >= 1; }
+    auto todayReconciledBalance() const -> double { return m_today_reconciled_balance; }
+private:
+    auto getPanelTitle() const -> wxString;
+
+// -- constructor
+
+public:
     JournalPanel(
         mmGUIFrame* frame,
         wxWindow* parent_win,
@@ -145,32 +171,7 @@ public:
     );
     ~JournalPanel();
 
-    //static support function
-    static wxString getFilterName(FILTER_ID id);
-    static void loadDateRanges(
-        std::vector<mmDateRange2::Range>* date_range_a,
-        int* date_range_m,
-        bool all_ranges = false
-    );
-
-    // override PanelBase
-    virtual auto buildPage() const -> wxString override;
-
-    bool isAllTrans() const { return m_account_group_id == -1; }
-    bool isDeletedTrans() const { return m_account_group_id == -2; }
-    bool isGroup() const { return m_account_group_id <= -3; }
-    bool isAccount() const { return m_account_group_id >= 1; }
-
-    void loadAccount(int64 account_id = -1);
-    void refreshList();
-    void resetColumnView();
-    void setSelectedTransaction(JournalKey journal_key);
-    void displaySplitCategories(JournalKey journal_key);
-    auto getTodayReconciledBalance() const -> double { return m_today_reconciled_balance; }
-
 private:
-    static void mmPlayTransactionSound();
-
     bool create(
         wxWindow* perent_win,
         const wxPoint& pos = wxDefaultPosition,
@@ -179,31 +180,53 @@ private:
         const wxString& name = "JournalPanel"
     );
     void createControls();
-    void updateHeader();
-    void updateFilter(bool firstinit = false);
-    void updateFilterTooltip();
-    void setFilterDate(mmDateRange2::Range& range);
-    void setFilterAdvanced(bool firstinit = false);
+
+// -- override
+
+public:
+    // override PanelBase
+    virtual wxString buildPage() const override {
+        return w_list->buildPage(m_account_n ? getPanelTitle() : "");
+    }
+    virtual void sortList() override {
+        w_list->sortList();
+    }
+
+// -- methods
+
+public:
+    void loadAccount(int64 account_id = -1);
+    void refreshList();
+    void resetColumnView();
+    void setSelectedTransaction(JournalKey journal_key);
+
+private:
+    void loadFilter();
     void loadFilterSettings();
     void saveFilterSettings();
     void filterList();
-    void sortList();
+
+    void updateHeader();
+    void updateFilter();
+    void updateFilterTooltip();
+    void updateScheduledToolTip();
     void updateExtraTransactionData(bool single, int repeat_num, bool foreign);
     void enableButtons(bool edit, bool dup, bool del, bool enter, bool skip, bool attach);
-    void showTips();
     void showTips(const wxString& tip);
-    void updateScheduledEnable();
-    void updateScheduledToolTip();
+    void showTips();
     void datePickProceed();
-    auto getPanelTitle() const -> wxString;
+    void displaySplitCategories(JournalKey journal_key);
 
-    void onFilterPopup(wxCommandEvent& event);
-    void onFilterDate(wxCommandEvent& event);
-    void onDatePickLow(wxDateEvent& event);
-    void onDatePickHigh(wxDateEvent& event);
-    void onFilterAdvanced(wxCommandEvent& event);
-    void onFilterAdvancedCancel(wxCommandEvent& event);
-    void onEditDateRanges(wxCommandEvent& event);
+// -- event handlers
+
+private:
+    void onDateRangePopup(wxCommandEvent& event);
+    void onDateRangeSelect(wxCommandEvent& event);
+    void onStartDateChanged(wxDateEvent& event);
+    void onEndDateChanged(wxDateEvent& event);
+    void onFilter(wxCommandEvent& event);
+    void onFilterCancel(wxCommandEvent& event);
+    void onDateRangeEdit(wxCommandEvent& event);
     void onScheduled(wxCommandEvent& event);
     void onNewTrx(wxCommandEvent& event) { w_list->onNewTrx(event); }
     void onEditTrx(wxCommandEvent& event) {

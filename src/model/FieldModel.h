@@ -1,5 +1,6 @@
 /*******************************************************
  Copyright (C) 2016 Gabriele-V
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -25,14 +26,9 @@
 
 class FieldModel : public TableFactory<FieldTable, FieldData>
 {
-public:
-    FieldModel();
-    ~FieldModel();
+// -- static
 
 public:
-    static FieldModel& instance(wxSQLite3Database* db);
-    static FieldModel& instance();
-
     static auto UDFC_FIELDS() -> const wxArrayString;
 
     // TODO: create struct FieldProperties; move to FieldProperties
@@ -49,9 +45,24 @@ public:
         const int DigitScale, const wxString& udfc_str
     ) -> const wxString;
 
+// -- constructor
+
+public:
+    FieldModel() :
+        TableFactory<FieldTable, FieldData>() {}
+    ~FieldModel() {}
+
+public:
+    static FieldModel& instance(wxSQLite3Database* db);
+    static FieldModel& instance();
+
+// -- override
+
 public:
     // override TableFactory
     virtual bool purge_id(int64 field_id) override;
+
+// -- methods
 
     auto find_id_value_a(const int64 FieldID) -> wxArrayString;
     auto get_udfc_data_n(RefTypeN ref_type, const wxString& udfc) -> const Data*;

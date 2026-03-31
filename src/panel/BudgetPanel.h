@@ -31,16 +31,6 @@ class BudgetPanel : public PanelBase
 {
     friend class BudgetList;
 
-    wxDECLARE_EVENT_TABLE();
-
-public:
-    enum EIcons
-    {
-        ICON_RECONCILLED,
-        ICON_VOID,
-        ICON_FOLLOWUP
-    };
-
 public:
     static const wxString VIEW_ALL;
     static const wxString VIEW_NON_ZERO;
@@ -48,6 +38,17 @@ public:
     static const wxString VIEW_INCOME;
     static const wxString VIEW_EXPENSE;
     static const wxString VIEW_SUMM;
+
+public:
+    enum
+    {
+        ICON_RECONCILLED,
+        ICON_VOID,
+        ICON_FOLLOWUP
+    };
+
+private:
+    wxDECLARE_EVENT_TABLE();
 
 private:
     int64 m_bp_id;

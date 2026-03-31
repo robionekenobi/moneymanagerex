@@ -34,6 +34,8 @@ class JournalList : public ListBase
     DECLARE_NO_COPY_CLASS(JournalList)
     wxDECLARE_EVENT_TABLE();
 
+// -- static
+
 private:
     enum LIST_ID
     {
@@ -116,6 +118,8 @@ private:
         ID_PANEL_CHECKING_STATIC_BITMAP_VIEW,
     };
 
+// -- state
+
 private:
     Journal::DataExtA m_journal_xa;
     long m_top_item_n = -1; // where to display the list again after refresh
@@ -148,6 +152,11 @@ private:
     wxSharedPtr<wxListItemAttr> w_attr26; // user-defined style 6 for not reconciled
     wxSharedPtr<wxListItemAttr> w_attr27; // user-defined style 7 for not reconciled
 
+    auto getSelectKeyA() const -> std::vector<JournalKey> { return m_select_key_a; }
+    auto getCopyKeyA() const -> std::vector<JournalKey> { return m_copy_key_a; }
+
+// -- constructor
+
 public:
     JournalList(
         JournalPanel* panel,
@@ -155,6 +164,8 @@ public:
         const wxWindowID win_id = wxID_ANY
     );
     ~JournalList();
+
+// -- override
 
     // override ListBase
     virtual void onColClick(wxListEvent& event) override;
@@ -164,6 +175,8 @@ public:
     virtual auto OnGetItemText(long item, long col_nr) const -> wxString override;
     virtual auto OnGetItemAttr(long item) const -> wxListItemAttr* override;
     virtual int  OnGetItemColumnImage(long item, long col_nr) const override;
+
+// -- methods
 
 private:
     void setColumnsInfo();
@@ -177,8 +190,6 @@ private:
     void setExtraTransactionData(const bool single);
     void markItem(long selectedItem);
     void setSelectedId(JournalKey journal_key);
-    auto getSelectKeyA() const -> std::vector<JournalKey> { return m_select_key_a; }
-    auto getCopyKeyA() const -> std::vector<JournalKey> { return m_copy_key_a; }
     void setSelectKeyA();
     int  getColNr_X(int xPos);
     void doSearchText(const wxString& value);
@@ -189,37 +200,39 @@ private:
     bool checkTransactionLocked(int64 account_id, mmDate date);
     void setAutomaticColumnSize();
 
-    void onChar(wxKeyEvent& event);
-    void onMouseRightClick(wxMouseEvent& event);
-    void onListItemActivated(wxListEvent& event);
-    void onListItemSelected(wxListEvent&);
-    void onListItemDeSelected(wxListEvent&);
-    void onListItemFocused(wxListEvent& WXUNUSED(event));
-    void onListKeyDown(wxListEvent& event);
-    void onNewTrx(wxCommandEvent& event);
-    void onDeleteTrx(wxCommandEvent& event);
-    void onRestoreTrx(wxCommandEvent& event);
-    void onRestoreViewedTrx(wxCommandEvent&);
-    void onEditTrx(wxCommandEvent& event);
-    void onMoveTrx(wxCommandEvent& event);
-    void onViewOtherAccount(wxCommandEvent& event);
-    void onViewTrxSplit(wxCommandEvent& event);
-    void onOrganizeAttachments(wxCommandEvent& event);
-    void onCreateReoccurance(wxCommandEvent& event);
-    void onFind(wxCommandEvent&);
-    void onCopyText(wxCommandEvent&);
-    void onMarkTrx(wxCommandEvent& event);
-    void onDeleteViewedTrx(wxCommandEvent& event);
-    void onSelectAll(wxCommandEvent& WXUNUSED(event));
-    void onCopy(wxCommandEvent& WXUNUSED(event));
-    void onPaste(wxCommandEvent& WXUNUSED(event));
-    void onDuplicateTrx(wxCommandEvent& event);
-    void onEnterSched(wxCommandEvent& event);
-    void onSkipSched(wxCommandEvent& event);
-    void onSetUserColour(wxCommandEvent& event);
-    void onOpenAttachment(wxCommandEvent& event);
-    void onSize(wxSizeEvent& event);
-    //void onListLeftClick(wxMouseEvent& event);
+// -- event handlers
+
+    void onChar(                wxKeyEvent&     event);
+    void onMouseRightClick(     wxMouseEvent&   event);
+    void onListItemActivated(   wxListEvent&    event);
+    void onListItemSelected(    wxListEvent&);
+    void onListItemDeSelected(  wxListEvent&);
+    void onListItemFocused(     wxListEvent&    WXUNUSED(event));
+    void onListKeyDown(         wxListEvent&    event);
+    void onNewTrx(              wxCommandEvent& event);
+    void onDeleteTrx(           wxCommandEvent& event);
+    void onRestoreTrx(          wxCommandEvent& event);
+    void onRestoreViewedTrx(    wxCommandEvent&);
+    void onEditTrx(             wxCommandEvent& event);
+    void onMoveTrx(             wxCommandEvent& event);
+    void onViewOtherAccount(    wxCommandEvent& event);
+    void onViewTrxSplit(        wxCommandEvent& event);
+    void onOrganizeAttachments( wxCommandEvent& event);
+    void onCreateReoccurance(   wxCommandEvent& event);
+    void onFind(                wxCommandEvent&);
+    void onCopyText(            wxCommandEvent&);
+    void onMarkTrx(             wxCommandEvent& event);
+    void onDeleteViewedTrx(     wxCommandEvent& event);
+    void onSelectAll(           wxCommandEvent& WXUNUSED(event));
+    void onCopy(                wxCommandEvent& WXUNUSED(event));
+    void onPaste(               wxCommandEvent& WXUNUSED(event));
+    void onDuplicateTrx(        wxCommandEvent& event);
+    void onEnterSched(          wxCommandEvent& event);
+    void onSkipSched(           wxCommandEvent& event);
+    void onSetUserColour(       wxCommandEvent& event);
+    void onOpenAttachment(      wxCommandEvent& event);
+    void onSize(                wxSizeEvent&    event);
+    //void onListLeftClick(     wxMouseEvent&   event);
 };
 
 //----------------------------------------------------------------------------

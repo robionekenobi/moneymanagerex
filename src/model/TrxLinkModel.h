@@ -2,6 +2,7 @@
  Copyright (C) 2013,2014 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2016 Stefano Giorgio
  Copyright (C) 2025 Klaus Wich
+ Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -32,23 +33,31 @@
 
 class TrxLinkModel : public TableFactory<TrxLinkTable, TrxLinkData>
 {
+// -- static
+
 public:
     // TODO: move to *Data
-    enum CHECKING_TYPE {
+    enum CHECKING_TYPE
+    {
         AS_INCOME_EXPENSE = 32701,
         AS_TRANSFER /* Transfers ignore accounting */
     };
 
+    // TODO: move to *Data
+    static CHECKING_TYPE type_checking(const int64 tt);
+
+// -- constructor
+
 public:
-    TrxLinkModel();
-    ~TrxLinkModel();
+    TrxLinkModel() :
+        TableFactory<TrxLinkTable, TrxLinkData>() {}
+    ~TrxLinkModel() {}
 
 public:
     static TrxLinkModel& instance(wxSQLite3Database* db);
     static TrxLinkModel& instance();
 
-    // TODO: move to *Data
-    static CHECKING_TYPE type_checking(const int64 tt);
+// -- methods
 
 public:
     void purge_ref(RefTypeN ref_type, int64 ref_id);

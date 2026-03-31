@@ -32,6 +32,15 @@ struct std::hash<int64> {
     }
 };
 
+// make wxDateTime hashable
+template<>
+struct std::hash<wxDateTime> {
+    size_t operator()(const wxDateTime& x) const {
+        wxLongLong value = x.GetValue();
+        return std::hash<long>{}(value.GetHi()) ^ std::hash<unsigned long>{}(value.GetLo());
+    }
+};
+
 #if (wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1)
 // wx 3.1 has implemented such hash
 #else

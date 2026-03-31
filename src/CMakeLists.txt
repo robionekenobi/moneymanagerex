@@ -62,12 +62,6 @@ endif()
 
 add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     build.h
-    mmcombobox.h
-    mmex.cpp
-    mmex.h
-    mmframe.cpp
-    mmframe.h
-    mmframereport.cpp
     resource.h
 
     base/constants.cpp
@@ -479,6 +473,13 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     wizard/wizard_newdb.h
     wizard/wizard_update.cpp
     wizard/wizard_update.h
+
+    mmcombobox.h
+    mmex.cpp
+    mmex.h
+    mmframe.cpp
+    mmframe.h
+    mmframereport.cpp
 
     "${CMAKE_CURRENT_BINARY_DIR}/versions.h"
     "base/platfdep_${MMEX_PLATFDEP}"
