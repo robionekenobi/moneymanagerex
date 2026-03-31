@@ -98,12 +98,6 @@ private:
 
     void sortList();
     void createSummary();
-    auto getGainLoss(long item) const -> double {
-        return m_stock_a[item].current_gain();
-    }
-    auto getRealGainLoss(long item) const -> double {
-        return StockList::getRealGainLoss(m_stock_a[item]);
-    }
 
     void onNewStocks(wxCommandEvent& event);
     void onDeleteStocks(wxCommandEvent& event);
