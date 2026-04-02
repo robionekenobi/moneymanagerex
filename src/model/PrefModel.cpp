@@ -275,9 +275,9 @@ void PrefModel::loadCurrencyHistoryDays()
 {
     m_currency_history_days = InfoModel::instance().getInt("USECURRENCYHISTORYDAYS", true);
 }
-void PrefModel::setCurrencyHistoryDays(const int value)
+void PrefModel::saveCurrencyHistoryDays(const int value)
 {
-    InfoModel::instance().setInt("USECURRENCYHISTORYDAYS", value);
+    InfoModel::instance().saveInt("USECURRENCYHISTORYDAYS", value);
     m_currency_history_days = value;
 }
 

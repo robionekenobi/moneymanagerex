@@ -316,7 +316,7 @@ bool GeneralPref::SaveSettings()
     int day = hisDay->GetValue();
     if (day < 90)
         day = 90;
-    PrefModel::instance().setCurrencyHistoryDays(day);
+    PrefModel::instance().saveCurrencyHistoryDays(day);
 
     PrefModel::instance().saveDateFormat(m_date_format);
     SaveFinancialYearStart();

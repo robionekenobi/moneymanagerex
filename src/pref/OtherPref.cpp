@@ -334,7 +334,7 @@ bool OtherPref::SaveSettings()
     const wxString& delim = st->GetValue();
     if (!delim.IsEmpty()) InfoModel::instance().saveString("DELIMITER", delim);
 
-    InfoModel::instance().setString("IMPORTFOLDER:" + mmPlatformType(), m_import_path->GetValue().Trim());
+    InfoModel::instance().saveString("IMPORTFOLDER:" + mmPlatformType(), m_import_path->GetValue().Trim());
     
     return true;
 }
