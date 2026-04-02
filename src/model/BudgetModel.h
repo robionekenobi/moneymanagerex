@@ -33,7 +33,7 @@ class BudgetModel : public TableFactory<BudgetTable, BudgetData>
 
 public:
     static BudgetCol::PERIOD FREQUENCY(OP op, BudgetFreq freq) {
-        return BudgetCol::PERIOD(op, freq.name());
+        return BudgetCol::PERIOD(op, freq.key());
     }
 
 // -- constructor

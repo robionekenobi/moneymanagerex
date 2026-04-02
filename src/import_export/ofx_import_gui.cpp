@@ -53,21 +53,21 @@ EVT_BUTTON(wxID_OK, mmOFXImportSummaryDialog::OnOK)
 wxEND_EVENT_TABLE()
 
 wxBEGIN_EVENT_TABLE(mmPayeeSelectionDialog, wxDialog)
-EVT_RADIOBUTTON(ID_USE_EXISTING, mmPayeeSelectionDialog::OnUseExistingPayee)
-EVT_RADIOBUTTON(ID_CREATE_NEW, mmPayeeSelectionDialog::OnCreateNewPayee)
-EVT_CHECKBOX(wxID_ANY, mmPayeeSelectionDialog::OnUpdateRegex)
-EVT_BUTTON(wxID_OK, mmPayeeSelectionDialog::OnOK)
-EVT_BUTTON(wxID_CANCEL, mmPayeeSelectionDialog::OnCancel)
-EVT_CHOICE(wxID_ANY, mmPayeeSelectionDialog::OnPayeeChoice)
-EVT_BUTTON(ID_TITLE_CASE, mmPayeeSelectionDialog::OnTitleCase)
-EVT_GRID_LABEL_LEFT_CLICK(mmPayeeSelectionDialog::OnGridLabelLeftClick)
-EVT_BUTTON(ID_UPDATE_CATEGORY, mmPayeeSelectionDialog::OnUpdateCategoryToggle)
-EVT_BUTTON(ID_INSERT_ROW, mmPayeeSelectionDialog::OnInsertRow)
-EVT_BUTTON(ID_DELETE_ROW, mmPayeeSelectionDialog::OnDeleteRow)
-EVT_CHOICE(wxID_ANY, mmPayeeSelectionDialog::OnCategorySelection)
-EVT_SET_FOCUS(mmPayeeSelectionDialog::OnCategoryFocus)
-EVT_INIT_DIALOG(mmPayeeSelectionDialog::OnInitDialog)
-EVT_BUTTON(wxID_CANCEL, mmPayeeSelectionDialog::OnCancel)
+    EVT_RADIOBUTTON(ID_USE_EXISTING, mmPayeeSelectionDialog::OnUseExistingPayee)
+    EVT_RADIOBUTTON(ID_CREATE_NEW,   mmPayeeSelectionDialog::OnCreateNewPayee)
+    EVT_CHECKBOX(wxID_ANY,           mmPayeeSelectionDialog::OnUpdateRegex)
+    EVT_BUTTON(wxID_OK,              mmPayeeSelectionDialog::OnOK)
+    EVT_BUTTON(wxID_CANCEL,          mmPayeeSelectionDialog::OnCancel)
+    EVT_CHOICE(wxID_ANY,             mmPayeeSelectionDialog::OnPayeeChoice)
+    EVT_BUTTON(ID_TITLE_CASE,        mmPayeeSelectionDialog::OnTitleCase)
+    EVT_GRID_LABEL_LEFT_CLICK(       mmPayeeSelectionDialog::OnGridLabelLeftClick)
+    EVT_BUTTON(ID_UPDATE_CATEGORY,   mmPayeeSelectionDialog::OnUpdateCategoryToggle)
+    EVT_BUTTON(ID_INSERT_ROW,        mmPayeeSelectionDialog::OnInsertRow)
+    EVT_BUTTON(ID_DELETE_ROW,        mmPayeeSelectionDialog::OnDeleteRow)
+    EVT_CHOICE(wxID_ANY,             mmPayeeSelectionDialog::OnCategorySelection)
+    EVT_SET_FOCUS(                   mmPayeeSelectionDialog::OnCategoryFocus)
+    EVT_INIT_DIALOG(                 mmPayeeSelectionDialog::OnInitDialog)
+    EVT_BUTTON(wxID_CANCEL,          mmPayeeSelectionDialog::OnCancel)
 wxEND_EVENT_TABLE()
 
 wxString DecodeHTMLEntities(const wxString& input)
@@ -563,8 +563,13 @@ void mmPayeeSelectionDialog::LoadRegexPatterns(const wxString& payeeName)
     regexGrid_->SetCellValue(1, 0, "");
 }
 
-void mmPayeeSelectionDialog::AddCategoryToChoice(wxChoice* choice, long long categId, const std::map<long long, CategoryData>& catMap, int level)
-{
+void mmPayeeSelectionDialog::AddCategoryToChoice(
+    wxChoice* choice,
+    long long categId,
+    const std::map<long long,
+    CategoryData>& catMap,
+    int level
+) {
     auto it = catMap.find(categId);
     if (it == catMap.end())
         return;
@@ -585,35 +590,83 @@ void mmPayeeSelectionDialog::AddCategoryToChoice(wxChoice* choice, long long cat
     }
 }
 
-mmPayeeSelectionDialog::mmPayeeSelectionDialog(wxWindow* parent, const wxString& memo, const wxString& suggestedPayeeName, const wxString& fitid,
-                                               const wxString& date, const wxString& amount, const wxString& transType, int currentTransaction,
-                                               int newTransactions, wxLongLong importStartTime, double matchConfidence, const wxString& matchMethod,
-                                               int totalTransactions)
-    : wxDialog(parent, wxID_ANY, _("Payee Confirmation Required"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER),
-      matchConfidence_(matchConfidence), matchMethod_(matchMethod), confidenceLabel_(nullptr), suggestedPayeeName_(suggestedPayeeName),
-      useExistingRadio_(nullptr), createNewRadio_(nullptr), payeeChoice_(nullptr), newPayeeTextCtrl_(nullptr), titleCaseButton_(nullptr),
-      categoryChoice_(nullptr), updateRegexCheckBox_(nullptr), regexGrid_(nullptr), okButton_(nullptr), updateCategoryButton_(nullptr),
-      insertRowButton_(nullptr), deleteRowButton_(nullptr), existingPayeeLabel_(nullptr), newPayeeLabel_(nullptr), payeeSizer_(nullptr),
-      selectedPayee_(suggestedPayeeName), regexPattern_(memo), shouldUpdateRegex_(false), updatePayeeCategory_(false), memoAdded_(false),
-      initialCategoryId_(-1), currentTransaction_(currentTransaction), newTransactions_(newTransactions), importStartTime_(importStartTime),
-      categoryManuallyChanged_(false), totalTransactions_(totalTransactions), memo_(memo)
+mmPayeeSelectionDialog::mmPayeeSelectionDialog(
+    wxWindow* parent,
+    const wxString& memo,
+    const wxString& suggestedPayeeName,
+    const wxString& fitid,
+    const wxString& date,
+    const wxString& amount,
+    const wxString& transType,
+    int currentTransaction,
+    int newTransactions,
+    wxLongLong importStartTime,
+    double matchConfidence,
+    const wxString& matchMethod,
+    int totalTransactions
+) :
+    wxDialog(parent, wxID_ANY,
+        _("Payee Confirmation Required"),
+        wxDefaultPosition, wxDefaultSize,
+        wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER
+    ),
+    matchConfidence_(matchConfidence),
+    matchMethod_(matchMethod),
+    confidenceLabel_(nullptr),
+    suggestedPayeeName_(suggestedPayeeName),
+    useExistingRadio_(nullptr),
+    createNewRadio_(nullptr),
+    payeeChoice_(nullptr),
+    newPayeeTextCtrl_(nullptr),
+    titleCaseButton_(nullptr),
+    categoryChoice_(nullptr),
+    updateRegexCheckBox_(nullptr),
+    regexGrid_(nullptr),
+    okButton_(nullptr),
+    updateCategoryButton_(nullptr),
+    insertRowButton_(nullptr),
+    deleteRowButton_(nullptr),
+    existingPayeeLabel_(nullptr),
+    newPayeeLabel_(nullptr),
+    payeeSizer_(nullptr),
+    selectedPayee_(suggestedPayeeName),
+    regexPattern_(memo),
+    shouldUpdateRegex_(false),
+    updatePayeeCategory_(false),
+    memoAdded_(false),
+    initialCategoryId_(-1),
+    currentTransaction_(currentTransaction),
+    newTransactions_(newTransactions),
+    importStartTime_(importStartTime),
+    categoryManuallyChanged_(false),
+    totalTransactions_(totalTransactions),
+    memo_(memo)
 {
-    wxLogDebug("PayeeSelectionDialog: Initialized with current=%d, new=%d, total=%d", currentTransaction_, newTransactions_, totalTransactions_);
+    wxLogDebug("PayeeSelectionDialog: Initialized with current=%d, new=%d, total=%d",
+        currentTransaction_, newTransactions_, totalTransactions_
+    );
 
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
     // Progress and ETA
     wxLongLong currentTime = wxGetUTCTimeMillis();
     double elapsedTimeSec = (currentTime - importStartTime_).ToDouble() / 1000.0;
-    double avgTimePerTrans = (currentTransaction_ > 0) ? elapsedTimeSec / currentTransaction_ : 0.0;
+    double avgTimePerTrans = (currentTransaction_ > 0) ?
+        elapsedTimeSec / currentTransaction_
+        : 0.0;
     int remainingTrans = totalTransactions_ - currentTransaction_;
     double estimatedTimeSec = avgTimePerTrans * remainingTrans;
     double estimatedTimeMin = estimatedTimeSec / 60.0;
 
-    wxStaticText* progressLabel = new wxStaticText(
-        this, wxID_ANY, wxString::Format(_("Transaction %1$d of %2$d (%3$d total in file)"), currentTransaction_ + 1, newTransactions_, totalTransactions_));
+    wxStaticText* progressLabel = new wxStaticText(this, wxID_ANY,
+        wxString::Format(_("Transaction %1$d of %2$d (%3$d total in file)"),
+            currentTransaction_ + 1, newTransactions_, totalTransactions_
+        )
+    );
     mainSizer->Add(progressLabel, 0, wxALL, 5);
-    wxString etaText = (avgTimePerTrans > 0) ? wxString::Format(_("Estimated completion time: %.1f minutes"), estimatedTimeMin) : _tu("Estimating time…");
+    wxString etaText = (avgTimePerTrans > 0)
+        ? wxString::Format(_("Estimated completion time: %.1f minutes"), estimatedTimeMin)
+        : _tu("Estimating time…");
     mainSizer->Add(new wxStaticText(this, wxID_ANY, etaText), 0, wxALL, 5);
 
     // Transaction info
@@ -637,14 +690,13 @@ mmPayeeSelectionDialog::mmPayeeSelectionDialog(wxWindow* parent, const wxString&
 
     // Show original memo and match result
     mainSizer->Add(new wxStaticText(this, wxID_ANY, wxString::Format(_("Memo: %s"), memo_)), 0, wxALL, 5);
-    if (matchMethod_ == "None" || suggestedPayeeName_ == memo_)
-    {
+    if (matchMethod_ == "None" || suggestedPayeeName_ == memo_) {
         mainSizer->Add(new wxStaticText(this, wxID_ANY, _("No matching payee found.")), 0, wxALL, 5);
         confidenceLabel_ = new wxStaticText(this, wxID_ANY, wxString::Format(_("Match Confidence: %.1f%% (%s)"), matchConfidence_, matchMethod_));
         mainSizer->Add(confidenceLabel_, 0, wxALL, 5);
     }
-    else if (matchConfidence_ > 50.0) // Show suggested payee and confidence only if confidence > 50%
-    {
+    // Show suggested payee and confidence only if confidence > 50%
+    else if (matchConfidence_ > 50.0) {
         mainSizer->Add(new wxStaticText(this, wxID_ANY, wxString::Format(_tu("Suggested Payee: “%s”"), suggestedPayeeName_)), 0, wxALL, 5);
         confidenceLabel_ = new wxStaticText(this, wxID_ANY, wxString::Format(_("Match Confidence: %.1f%% (%s)"), matchConfidence_, matchMethod_));
         mainSizer->Add(confidenceLabel_, 0, wxALL, 5);
@@ -665,9 +717,15 @@ mmPayeeSelectionDialog::mmPayeeSelectionDialog(wxWindow* parent, const wxString&
     }
     // If confidence <= 50%, neither suggested payee nor confidence is shown
 
-    mainSizer->Add(new wxStaticText(this, wxID_ANY, _("Do you want to use an existing payee or create a new one?")), 0, wxALL, 5);
+    mainSizer->Add(new wxStaticText(this, wxID_ANY,
+        _("Do you want to use an existing payee or create a new one?")
+    ), 0, wxALL, 5);
 
-    useExistingRadio_ = new wxRadioButton(this, ID_USE_EXISTING, _("Use Existing Payee"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+    useExistingRadio_ = new wxRadioButton(this, ID_USE_EXISTING,
+        _("Use Existing Payee"),
+        wxDefaultPosition, wxDefaultSize,
+        wxRB_GROUP
+    );
     createNewRadio_ = new wxRadioButton(this, ID_CREATE_NEW, _("Create New Payee"));
     useExistingRadio_->SetValue(true);
     mainSizer->Add(useExistingRadio_, 0, wxALL, 5);
@@ -683,23 +741,23 @@ mmPayeeSelectionDialog::mmPayeeSelectionDialog(wxWindow* parent, const wxString&
     payeeChoice_->Append("", new wxInt64ClientData(-1));
     int suggestedPayeeIndex = wxNOT_FOUND;
 
-    for (size_t i = 0; i < payees.size(); ++i)
-    {
-        int index = payeeChoice_->Append(payees[i].m_name, new wxInt64ClientData(payees[i].m_id.GetValue()));
+    for (size_t i = 0; i < payees.size(); ++i) {
+        int index = payeeChoice_->Append(
+            payees[i].m_name,
+            new wxInt64ClientData(payees[i].m_id.GetValue())
+        );
         // Only pre-select the suggested payee if confidence > 50%
         if (matchConfidence_ > 50.0 && payees[i].m_name.IsSameAs(suggestedPayeeName_, false))
             suggestedPayeeIndex = index;
     }
 
     // Set selection only if we have a suggested payee with confidence > 50%
-    if (suggestedPayeeIndex != wxNOT_FOUND)
-    {
+    if (suggestedPayeeIndex != wxNOT_FOUND) {
         payeeChoice_->SetSelection(suggestedPayeeIndex);
         wxLogDebug("PayeeSelectionDialog: Pre-selected suggested payee '%s' at index %d (confidence %.1f%%)", suggestedPayeeName_, suggestedPayeeIndex,
                    matchConfidence_);
     }
-    else
-    {
+    else {
         payeeChoice_->SetSelection(0); // Select the blank entry by default
         wxLogDebug("PayeeSelectionDialog: No pre-selection (confidence %.1f%% ≤ 50%% or no match), defaulting to blank entry", matchConfidence_);
     }
@@ -721,12 +779,10 @@ mmPayeeSelectionDialog::mmPayeeSelectionDialog(wxWindow* parent, const wxString&
     categoryChoice_->Append(_("Uncategorized"), new wxStringClientData("-1"));
     CategoryModel::DataA categories = CategoryModel::instance().find_all(CategoryCol::COL_ID_CATEGNAME);
     categoryMap.clear();
-    for (const auto& cat : categories)
-    {
+    for (const auto& cat : categories) {
         categoryMap[cat.m_id.GetValue()] = cat;
     }
-    for (const auto& cat : categories)
-    {
+    for (const auto& cat : categories) {
         if (cat.m_parent_id_n.GetValue() == -1)
             AddCategoryToChoice(categoryChoice_, cat.m_id.GetValue(), categoryMap, 0);
     }
@@ -782,21 +838,19 @@ mmPayeeSelectionDialog::mmPayeeSelectionDialog(wxWindow* parent, const wxString&
     categoryChoice_->Bind(wxEVT_CHOICE, &mmPayeeSelectionDialog::OnCategorySelection, this);
     categoryChoice_->Bind(wxEVT_SET_FOCUS, &mmPayeeSelectionDialog::OnCategoryFocus, this);
 
-    regexGrid_->Bind(wxEVT_SIZE,
-                     [this](wxSizeEvent& event)
-                     {
-                         int dialogWidth = GetClientSize().GetWidth();
-                         int scrollbarWidth = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
-                         int padding = (10 * 2 + 2 * 2);
-                         int availableWidth = dialogWidth - padding - scrollbarWidth - 50;
+    regexGrid_->Bind(wxEVT_SIZE, [this](wxSizeEvent& event) {
+        int dialogWidth = GetClientSize().GetWidth();
+        int scrollbarWidth = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
+        int padding = (10 * 2 + 2 * 2);
+        int availableWidth = dialogWidth - padding - scrollbarWidth - 50;
 
-                         if (availableWidth > 50)
-                             regexGrid_->SetColSize(0, availableWidth);
-                         else
-                             regexGrid_->SetColSize(0, 50);
-                         regexGrid_->ForceRefresh();
-                         event.Skip();
-                     });
+        if (availableWidth > 50)
+            regexGrid_->SetColSize(0, availableWidth);
+        else
+            regexGrid_->SetColSize(0, 50);
+        regexGrid_->ForceRefresh();
+        event.Skip();
+    });
 
     int dialogWidth = GetClientSize().GetWidth();
     int scrollbarWidth = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
@@ -1596,7 +1650,7 @@ bool mmOFXImportDialog::ImportTransactions(wxXmlNode* banktranlist, wxLongLong a
                                 existing_trx_d.m_to_amount = existingAmount;
                             }
                             else {
-                                wxLogWarning("FITID='%s' incompatible (Existing=%s, New=%.2f), skipping", fitid, existing_trx_d.m_type.name(), amount);
+                                wxLogWarning("FITID='%s' incompatible (Existing=%s, New=%.2f), skipping", fitid, existing_trx_d.m_type.key(), amount);
                                 stats.skippedErrors++;
                                 result.imported = false;
                                 result.importedPayee = "TRANSFER ERROR";
@@ -1642,7 +1696,7 @@ bool mmOFXImportDialog::ImportTransactions(wxXmlNode* banktranlist, wxLongLong a
                 ? TrxType::e_deposit
                 : TrxType::e_withdrawal
             );
-            result.transType = new_trx_d.m_type.name();
+            result.transType = new_trx_d.m_type.key();
 
             double matchConfidence = 0.0;
             wxString matchMethod;
@@ -1675,7 +1729,7 @@ bool mmOFXImportDialog::ImportTransactions(wxXmlNode* banktranlist, wxLongLong a
                 mmPayeeSelectionDialog payeeDlg(this,
                     memo, payeeName, fitid, mmDate(date).isoDate(),
                     wxString::Format("%.2f", amount),
-                    new_trx_d.m_type.name(),
+                    new_trx_d.m_type.key(),
                     transactionIndex, newTransactions,
                     importStartTime_, matchConfidence, matchMethod, totalTransactions
                 );

@@ -97,7 +97,7 @@ mmUnivCSVDialog::mmUnivCSVDialog(
     m_account_id(account_id),
     m_file_path(file_path),
     decimal_(CurrencyModel::instance().get_base_data_n()->m_decimal_point),
-    depositType_(TrxType(TrxType::e_deposit).name())
+    depositType_(TrxType(TrxType::e_deposit).key())
 {
     CSVFieldName_[UNIV_CSV_ID].first                    = _n("ID");
     CSVFieldName_[UNIV_CSV_DATE].first                  = _n("Date");
@@ -343,7 +343,7 @@ void mmUnivCSVDialog::CreateControls()
 
     //Custom Fields
     FieldModel::DataA field_a = FieldModel::instance().find(
-        FieldCol::REFTYPE(TrxModel::s_ref_type.name_n())
+        FieldCol::REFTYPE(TrxModel::s_ref_type.key_n())
     );
     if (!field_a.empty()) {
         std::sort(field_a.begin(), field_a.end(), FieldData::SorterByDESCRIPTION());
@@ -1851,7 +1851,7 @@ void mmUnivCSVDialog::OnExport(wxCommandEvent& WXUNUSED(event))
                             itemType = ITransactionsFile::TYPE_NUMBER;
                             break;
                         case UNIV_CSV_TYPE:
-                            entry = trx_d.m_type.name();
+                            entry = trx_d.m_type.key();
                             break;
                         case UNIV_CSV_ID:
                             entry = wxString::Format("%lld", trx_dx.m_id);
@@ -2238,7 +2238,7 @@ void mmUnivCSVDialog::update_preview()
                                 text << inQuotes(CurrencyModel::instance().toString(account_balance, currency), delimit);
                                 break;
                             case UNIV_CSV_TYPE:
-                                text << trx_d.m_type.name();
+                                text << trx_d.m_type.key();
                                 break;
                             default:
                                 // Custom Fields
@@ -2861,7 +2861,7 @@ void mmUnivCSVDialog::parseToken(int index, const wxString& orig_token, tran_hol
             }
         ) == csvFieldOrder_.end()) {
             if ((amount > 0.0 && !m_reverce_sign) || (amount <= 0.0 && m_reverce_sign)) {
-                holder.Type = TrxType(TrxType::e_deposit).name();
+                holder.Type = TrxType(TrxType::e_deposit).key();
             }
         }
 
@@ -2970,7 +2970,7 @@ void mmUnivCSVDialog::parseToken(int index, const wxString& orig_token, tran_hol
             break;
 
         holder.Amount = fabs(amount);
-        holder.Type = TrxType(TrxType::e_withdrawal).name();
+        holder.Type = TrxType(TrxType::e_withdrawal).key();
         break;
 
     case UNIV_CSV_DEPOSIT:
@@ -2988,7 +2988,7 @@ void mmUnivCSVDialog::parseToken(int index, const wxString& orig_token, tran_hol
             break;
 
         holder.Amount = fabs(amount);
-        holder.Type = TrxType(TrxType::e_deposit).name();
+        holder.Type = TrxType(TrxType::e_deposit).key();
         break;
 
         // A number of type options are supported to make amount positive
@@ -2996,14 +2996,14 @@ void mmUnivCSVDialog::parseToken(int index, const wxString& orig_token, tran_hol
     case UNIV_CSV_TYPE:
         if (m_choiceAmountFieldSign->GetSelection() == DefindByType) {
             if (depositType_.CmpNoCase(token) == 0) {
-                holder.Type = TrxType(TrxType::e_deposit).name();
+                holder.Type = TrxType(TrxType::e_deposit).key();
                 break;
             }
         }
         else {
             for (const wxString entry : { "debit", "deposit", "+" }) {
                 if (entry.CmpNoCase(token) == 0) {
-                    holder.Type = TrxType(TrxType::e_deposit).name();
+                    holder.Type = TrxType(TrxType::e_deposit).key();
                     break;
                 }
             }
@@ -3226,7 +3226,7 @@ bool mmUnivCSVDialog::validateCustomFieldData(
 
     if (!value.IsEmpty()) {
         const FieldData* field_n = FieldModel::instance().get_id_data_n(fieldId);
-        wxString type_name = field_n->m_type_n.name_n();
+        wxString type_name = wxGetTranslation(field_n->m_type_n.name_n());
         switch (field_n->m_type_n.id_n()) {
         case FieldTypeN::e_integer:
             // Check if string can be read as an integer. Will fail if passed a double.

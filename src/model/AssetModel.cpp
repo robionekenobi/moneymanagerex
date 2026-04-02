@@ -96,7 +96,7 @@ const std::pair<double, double> AssetModel::get_data_value_date(
 
     TrxLinkModel::DataA tl_a = TrxLinkModel::instance().find(
         TrxLinkCol::LINKRECORDID(asset_d.m_id),
-        TrxLinkCol::LINKTYPE(s_ref_type.name_n())
+        TrxLinkCol::LINKTYPE(s_ref_type.key_n())
     );
 
     TrxModel::DataA trx_a;

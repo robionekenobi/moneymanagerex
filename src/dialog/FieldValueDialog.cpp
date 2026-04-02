@@ -49,7 +49,7 @@ FieldValueDialog::FieldValueDialog(
 {
     m_dialog = dialog;
     m_field_a = FieldModel::instance().find(
-        FieldCol::REFTYPE(RefTypeN::field_ref_type_n(m_ref_type).name_n())
+        FieldCol::REFTYPE(RefTypeN::field_ref_type_n(m_ref_type).key_n())
     );
     std::sort(m_field_a.begin(), m_field_a.end(), FieldData::SorterByDESCRIPTION());
     m_data_changed.clear();
@@ -109,11 +109,14 @@ bool FieldValueDialog::FillCustomFields(wxBoxSizer* box_sizer)
         wxWindowID controlID = GetBaseID() + field_index++ * FIELDMULTIPLIER;
         wxWindowID labelID = controlID + CONTROLOFFSET;
 
+        // TODO: field_d.m_type_n: use translated name_n() instead of key_n()
         wxCheckBox* Description = new wxCheckBox(
             scrolled_window,
-            labelID, field_d.m_description,
+            labelID,
+            field_d.m_description,
             wxDefaultPosition, wxDefaultSize, wxCHK_2STATE,
-            wxDefaultValidator, field_d.m_type_n.name_n()
+            wxDefaultValidator,
+            field_d.m_type_n.key_n()
         );
         Description->Connect(labelID, wxEVT_CHECKBOX,
             wxCommandEventHandler(FieldValueDialog::OnCheckBoxActivated), nullptr, this
@@ -343,8 +346,8 @@ void FieldValueDialog::OnMultiChoice(wxCommandEvent& event)
     const auto& name = button->GetName();
 
     FieldModel::DataA field_a = FieldModel::instance().find(
-        FieldCol::REFTYPE(m_ref_type.name_n()),
-        FieldCol::TYPE(FieldTypeN(FieldTypeN::e_multi_choice).name_n()),
+        FieldCol::REFTYPE(m_ref_type.key_n()),
+        FieldCol::TYPE(FieldTypeN(FieldTypeN::e_multi_choice).key_n()),
         FieldCol::DESCRIPTION(name)
     );
     wxArrayString all_choices = FieldModel::getChoices(field_a.begin()->m_properties);
@@ -533,7 +536,7 @@ bool FieldValueDialog::SaveCustomValues(RefTypeN ref_type, int64 ref_id)
             fv_d.m_content  = data;
             wxLogDebug("Control:%i Type:%s Value:%s",
                 controlID,
-                field_d.m_type_n.name_n(),
+                field_d.m_type_n.key_n(),
                 data
             );
 
@@ -665,7 +668,7 @@ int FieldValueDialog::GetWidgetType(wxWindowID controlID) const
 {
     int control_id = (controlID - GetBaseID()) / FIELDMULTIPLIER;
     for (const auto& field_d : FieldModel::instance().find(
-        FieldCol::REFTYPE(m_ref_type.name_n())
+        FieldCol::REFTYPE(m_ref_type.key_n())
     )) {
         if (field_d.m_id == m_field_a[control_id].m_id) {
             return field_d.m_type_n.id_n();

@@ -53,7 +53,7 @@ TrxCol::TRANSDATE TrxModel::DATE(OP op, const mmDate& date)
 
 TrxCol::TRANSCODE TrxModel::TYPE(OP op, TrxType trx_type)
 {
-    return TrxCol::TRANSCODE(op, trx_type.name());
+    return TrxCol::TRANSCODE(op, trx_type.key());
 }
 
 TrxCol::STATUS TrxModel::STATUS(OP op, TrxStatus trx_status)
@@ -221,7 +221,7 @@ const TrxSplitModel::DataA TrxModel::find_id_tp_a(int64 trx_id)
 const TagLinkModel::DataA TrxModel::find_id_gl_a(int64 trx_id)
 {
     return TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(TrxModel::s_ref_type.name_n()),
+        TagLinkCol::REFTYPE(TrxModel::s_ref_type.key_n()),
         TagLinkCol::REFID(trx_id)
     );
 }

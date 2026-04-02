@@ -32,49 +32,67 @@ class TagManager : public wxDialog
     wxDECLARE_DYNAMIC_CLASS(TagManager);
     wxDECLARE_EVENT_TABLE();
 
-public:
-    TagManager();
-    ~TagManager();
-    TagManager(wxWindow* parent, bool isSelection = false, const wxArrayString& selectedTags = wxArrayString());
-
-    bool getRefreshRequested() const;
-    wxArrayString getSelectedTags() const;
+// -- state
 
 private:
-    bool Create(wxWindow* parent, wxWindowID id = wxID_ANY,
+    bool m_is_selection;
+    wxArrayString m_selected_tag_a;
+    wxArrayString m_tag_a;
+    wxString m_mask_s = wxEmptyString;
+    bool m_refresh_requested = false;
+    //wxString searchText_;
+
+    wxSearchCtrl*  w_search_ctrl = nullptr;
+    wxListBox*     w_tag_list    = nullptr;
+    wxButton*      w_edit_btn    = nullptr;
+    wxButton*      w_add_btn     = nullptr;
+    wxButton*      w_delete_btn  = nullptr;
+
+public:
+    auto getSelectedTags() const -> wxArrayString { return m_selected_tag_a; }
+    bool getRefreshRequested() const { return m_refresh_requested; }
+
+// -- constructor
+
+public:
+    TagManager();
+    TagManager(
+        wxWindow* parent_win,
+        bool is_selection = false,
+        const wxArrayString& selected_tag_a = wxArrayString()
+    );
+    ~TagManager();
+
+private:
+    bool create(
+        wxWindow* parent_win,
+        wxWindowID win_id = wxID_ANY,
         const wxString& caption = _t("Tag Manager"),
         const wxString& name = "Organize Tags",
         const wxPoint& pos = wxDefaultPosition,
         const wxSize& size = wxDefaultSize,
-        long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX | wxRESIZE_BORDER);
+        long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX | wxRESIZE_BORDER
+    );
+    void createControls();
 
-    void CreateControls();
+// -- methods
 
-    void OnAdd(wxCommandEvent& event);
-    void OnEdit(wxCommandEvent& event);
-    void OnDelete(wxCommandEvent& event);
-    void OnTextChanged(wxCommandEvent& event);
-    void OnListSelChanged(wxCommandEvent& event);
-    void OnCheckboxSelChanged(wxCommandEvent& event);
-    void OnOk(wxCommandEvent& event);
-    void OnCancel(wxCommandEvent& event);
-    void fillControls();
-    bool refreshRequested_ = false;
+private:
+    int  getTagIndex(const wxString& tag);
     bool validateName(const wxString& name);
+    void fillControls();
     void setSelectedItem(int index);
     void setSelectedString(const wxString& name);
 
-    wxSearchCtrl* searchCtrl_ = nullptr;
-    wxString searchText_;
-    wxListBoxBase* tagListBox_ = nullptr;
-    wxButton* buttonEdit_ = nullptr;
-    wxButton* buttonAdd_ = nullptr;
-    wxButton* buttonDelete_ = nullptr;
-    bool isSelection_;
-    wxArrayString tagList_;
-    wxArrayString selectedTags_;
-    wxString mask_string_ = wxEmptyString;
-};
+// -- event handlers
 
-inline bool TagManager::getRefreshRequested() const { return refreshRequested_; }
-inline wxArrayString TagManager::getSelectedTags() const { return selectedTags_; }
+private:
+    void OnAdd(                wxCommandEvent& event);
+    void OnEdit(               wxCommandEvent& event);
+    void OnDelete(             wxCommandEvent& event);
+    void OnTextChanged(        wxCommandEvent& event);
+    void OnListSelChanged(     wxCommandEvent& event);
+    void OnCheckboxSelChanged( wxCommandEvent& event);
+    void OnOk(                 wxCommandEvent& event);
+    void OnCancel(             wxCommandEvent& event);
+};

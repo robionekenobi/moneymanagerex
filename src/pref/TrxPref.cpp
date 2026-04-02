@@ -90,11 +90,12 @@ void TrxPref::Create()
         , wxDefaultPosition, wxDefaultSize, default_values);
     defaultCategoryNonTransferChoice->SetSelection(PrefModel::instance().getTransCategoryNone());
 
-    wxChoice* default_status = new wxChoice(transSettingsStaticBox
-        , ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_STATUS);
-    for (int i = 0; i < TrxStatus::size; ++i) {
-        wxString status = TrxStatus(i).name();
-        default_status->Append(wxGetTranslation(status), new wxStringClientData(status));
+    wxChoice* default_status = new wxChoice(transSettingsStaticBox,
+        ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_STATUS
+    );
+    for (int status_id = 0; status_id < TrxStatus::size; ++status_id) {
+        wxString name = TrxStatus(status_id).name();
+        default_status->Append(wxGetTranslation(name), new wxStringClientData(name));
     }
     default_status->SetSelection(PrefModel::instance().getTransStatusReconciled());
 

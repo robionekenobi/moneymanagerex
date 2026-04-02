@@ -41,7 +41,7 @@ public:
     static const RefTypeN s_ref_type;
 
     static AccountCol::STATUS STATUS(OP op, AccountStatus status) {
-        return AccountCol::STATUS(op, status.name());
+        return AccountCol::STATUS(op, status.key());
     }
 
     // TODO: move to AccountData

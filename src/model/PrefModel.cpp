@@ -820,6 +820,7 @@ int PrefModel::getHtmlScale() const noexcept
 
 int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool ignoreClosure)
 {
+    // TODO: change type of acctStatus to AccountStatus
     wxString acctStatus = VIEW_ACCOUNTS_OPEN_STR;
     NavigatorTypes::TYPE_ID acctType = NavigatorTypes::TYPE_ID_CHECKING;
     int selectedImage = img::SAVINGS_ACC_NORMAL_PNG; //Default value
@@ -827,7 +828,7 @@ int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool
     const AccountData* account_n = AccountModel::instance().get_id_data_n(account_id);
     if (account_n) {
         acctType = AccountModel::type_id(*account_n);
-        acctStatus = account_n->m_status.name();
+        acctStatus = account_n->m_status.key();
     }
 
     if (!def && !ignoreClosure && (acctStatus == "Closed"))
@@ -835,7 +836,10 @@ int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool
 
     int max = acc_img::MAX_ACC_ICON - static_cast<int>(img::LAST_NAVTREE_PNG);
     int min = 1;
-    int custom_img_id = InfoModel::instance().getInt(wxString::Format("ACC_IMAGE_ID_%lld", account_id), 0);
+    int custom_img_id = InfoModel::instance().getInt(
+        wxString::Format("ACC_IMAGE_ID_%lld", account_id),
+        0
+    );
     if (custom_img_id > max) custom_img_id = custom_img_id - 20; //Bug #963 fix
     if (!def && (custom_img_id >= min && custom_img_id <= max))
         return custom_img_id + img::LAST_NAVTREE_PNG - 1;

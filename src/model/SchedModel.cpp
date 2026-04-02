@@ -36,7 +36,7 @@ const RefTypeN SchedModel::s_ref_type = RefTypeN(RefTypeN::e_sched);
 
 SchedCol::TRANSCODE SchedModel::TYPE(OP op, TrxType sched_type)
 {
-    return SchedCol::TRANSCODE(op, sched_type.name());
+    return SchedCol::TRANSCODE(op, sched_type.key());
 }
 
 SchedCol::STATUS SchedModel::STATUS(OP op, TrxStatus sched_status)
@@ -100,7 +100,7 @@ const SchedSplitModel::DataA SchedModel::find_id_qp_a(int64 sched_id)
 const TagLinkModel::DataA SchedModel::find_id_gl_a(int64 sched_id)
 {
     return TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(SchedModel::s_ref_type.name_n()),
+        TagLinkCol::REFTYPE(SchedModel::s_ref_type.key_n()),
         TagLinkCol::REFID(sched_id)
     );
 }

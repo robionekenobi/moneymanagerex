@@ -48,7 +48,7 @@ AttachmentModel& AttachmentModel::instance()
 int AttachmentModel::find_ref_c(RefTypeN ref_type, const int64 ref_id)
 {
     return AttachmentModel::instance().find(
-        AttachmentCol::REFTYPE(ref_type.name_n()),
+        AttachmentCol::REFTYPE(ref_type.key_n()),
         AttachmentCol::REFID(ref_id)
     ).size();
 }
@@ -60,8 +60,8 @@ const AttachmentModel::DataA AttachmentModel::find_ref_data_a(
 ) {
     DataA att_a;
     for (const Data& att_d : find_all(Col::COL_ID_DESCRIPTION)) {
-        if (att_d.m_ref_type_n.name_n().Lower().Matches(
-            ref_type.name_n().Lower().Append("*")
+        if (att_d.m_ref_type_n.key_n().Lower().Matches(
+            ref_type.key_n().Lower().Append("*")
         ) && att_d.m_ref_id == ref_id)
             att_a.push_back(att_d);
     }
@@ -90,7 +90,7 @@ std::map<int64, AttachmentModel::DataA> AttachmentModel::find_refType_mRefId(
 ) {
     std::map<int64, AttachmentModel::DataA> refId_dataA_m;
     for (const auto& att_d : find(
-        AttachmentCol::REFTYPE(ref_type.name_n())
+        AttachmentCol::REFTYPE(ref_type.key_n())
     )) {
         refId_dataA_m[att_d.m_ref_id].push_back(att_d);
     }

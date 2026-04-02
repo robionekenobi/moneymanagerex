@@ -233,11 +233,8 @@ void SchedDialog::dataToControls()
     for (int i = 0; i < TrxType::size; ++i) {
         if (i == TrxType::e_transfer && AccountModel::instance().find_all().size() < 2)
             break;
-        wxString type_name = TrxType(i).name();
-        w_type_choice->Append(
-            wxGetTranslation(type_name),
-            new wxStringClientData(type_name)
-        );
+        wxString name = TrxType(i).name();
+        w_type_choice->Append(wxGetTranslation(name), new wxStringClientData(name));
     }
     w_type_choice->SetSelection(TrxType::e_withdrawal);
 
@@ -517,8 +514,8 @@ void SchedDialog::CreateControls()
     w_status_choice = new wxChoice(this, ID_DIALOG_TRANS_STATUS);
 
     for (int i = 0; i < TrxStatus::size; ++i) {
-        wxString status = TrxStatus(i).name();
-        w_status_choice->Append(wxGetTranslation(status), new wxStringClientData(status));
+        wxString name = TrxStatus(i).name();
+        w_status_choice->Append(wxGetTranslation(name), new wxStringClientData(name));
     }
     w_status_choice->SetSelection(PrefModel::instance().getTransStatusReconciled());
     mmToolTip(w_status_choice, _t("Specify the status for the transaction"));

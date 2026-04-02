@@ -66,7 +66,7 @@ TrxLinkDialog::TrxLinkDialog(
         )) {
             wxArrayInt64 tag_id_a;
             for (const auto& gl_d : TagLinkModel::instance().find(
-                TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.name_n()),
+                TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.key_n()),
                 TagLinkCol::REFID(tp_d.m_id)
             )) {
                 tag_id_a.push_back(gl_d.m_tag_id);
@@ -175,8 +175,8 @@ bool TrxLinkDialog::Create(
         , wxDefaultPosition, std_half_size);
 
     for (int i = 0; i < TrxStatus::size; ++i) {
-        wxString status = TrxStatus(i).name();
-        m_status_selector->Append(wxGetTranslation(status), new wxStringClientData(status));
+        wxString name = TrxStatus(i).name();
+        m_status_selector->Append(wxGetTranslation(name), new wxStringClientData(name));
     }
 
     m_status_selector->SetSelection(TrxStatus::e_reconciled);
