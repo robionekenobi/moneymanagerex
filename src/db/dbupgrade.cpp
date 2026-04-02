@@ -17,7 +17,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/filedlg.h>
 #include <wx/filename.h>
 #include <wx/msgdlg.h>
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include <wx/textfile.h>
 #include <wx/tokenzr.h>
 
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "util/_util.h"
 #include "dbupgrade.h"
 

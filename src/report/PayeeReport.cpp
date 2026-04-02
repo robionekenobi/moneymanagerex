@@ -18,9 +18,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <algorithm>
-#include "util/mmDateRange.h"
+#include "base/mmDateRange.h"
 
 #include "model/AccountModel.h"
 #include "model/CurrencyHistoryModel.h"

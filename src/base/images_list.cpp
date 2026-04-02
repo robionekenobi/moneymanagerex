@@ -18,7 +18,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *******************************************************/
 
-#include "defs.h"
+#include "_defs.h"
 #include <memory>
 #include <map>
 #include <array>
@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <wx/mstream.h>
 #include <wx/tokenzr.h>
 
-#include "platfdep.h"
+#include "_platfdep.h"
 #include "paths.h"
 #include "util/_util.h"
 

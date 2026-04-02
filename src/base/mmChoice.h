@@ -20,7 +20,7 @@
 #pragma once
 
 #include <unordered_map>
-#include "base/defs.h"
+#include "_defs.h"
 
 typedef int mmChoiceId;   // choice id (enum case), always >= 0
 typedef int mmChoiceIdN;  // nullable choice id, either -1 or >= 0

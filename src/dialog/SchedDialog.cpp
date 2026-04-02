@@ -20,16 +20,16 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/calctrl.h>
 #include <wx/valnum.h>
 
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "base/paths.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 #include "util/_simple.h"
-#include "util/mmDate.h"
+#include "base/mmDate.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
 

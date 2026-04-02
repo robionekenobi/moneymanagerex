@@ -16,10 +16,10 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "base/images_list.h"
-#include "util/mmDate.h"
-#include "util/mmDateRange.h"
+#include "base/mmDate.h"
+#include "base/mmDateRange.h"
 #include "util/mmCalcValidator.h"
 
 #include "model/AccountModel.h"

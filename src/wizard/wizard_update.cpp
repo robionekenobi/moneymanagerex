@@ -18,16 +18,16 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/webview.h>
 #include <wx/webviewfshandler.h>
 #include <wx/fs_mem.h>
 #include <rapidjson/error/en.h>
 
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "base/paths.h"
 #include "util/_util.h"
-#include "util/mmTips.h"
+#include "base/mmTips.h"
 
 #include "model/SettingModel.h"
 #include "wizard_update.h"

@@ -64,15 +64,29 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     build.h
     resource.h
 
-    base/constants.cpp
-    base/constants.h
-    base/defs.h
+    base/_constants.cpp
+    base/_constants.h
+    base/_defs.h
+    base/_platfdep.h
+    base/_types.h
     base/images_list.cpp
     base/images_list.h
+    base/mmCache.h
+    base/mmCache.tpp
+    base/mmChoice.cpp
+    base/mmChoice.h
+    base/mmDate.cpp
+    base/mmDate.h
+    base/mmDateRange.cpp
+    base/mmDateRange.h
+    base/mmDateRange2.cpp
+    base/mmDateRange2.h
+    base/mmDateTime.cpp
+    base/mmDateTime.h
+    base/mmSingleton.h
+    base/mmTips.h
     base/paths.cpp
     base/paths.h
-    base/platfdep.h
-    base/types.h
 
     util/_primitive.cpp
     util/_primitive.h
@@ -80,30 +94,16 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     util/_simple.h
     util/_util.cpp
     util/_util.h
-    util/mmCache.h
-    util/mmCache.tpp
-    util/mmChoice.cpp
-    util/mmChoice.h
-    util/mmDate.cpp
-    util/mmDate.h
-    util/mmDateRange.cpp
-    util/mmDateRange.h
-    util/mmDateRange2.cpp
-    util/mmDateRange2.h
-    util/mmDateTime.cpp
-    util/mmDateTime.h
+    util/mmCalcValidator.h
     util/mmFileHistory.cpp
     util/mmFileHistory.h
     util/mmMiniEditor.cpp
     util/mmMiniEditor.h
     util/mmSQLite3Hook.h
-    util/mmSingleton.h
     util/mmTextCtrl.cpp
     util/mmTextCtrl.h
-    util/mmTips.h
     util/mmTreeItemData.cpp
     util/mmTreeItemData.h
-    util/mmCalcValidator.h
 
     table/AccountTable.cpp
     table/AccountTable.h
@@ -482,7 +482,7 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     mmframereport.cpp
 
     "${CMAKE_CURRENT_BINARY_DIR}/versions.h"
-    "base/platfdep_${MMEX_PLATFDEP}"
+    "base/_platfdep_${MMEX_PLATFDEP}"
 
     "${MACOSX_APP_ICON_FILE}"
     "${MMEX_RC}")

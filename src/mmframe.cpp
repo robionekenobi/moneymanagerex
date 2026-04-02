@@ -22,14 +22,14 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <stack>
 #include <unordered_set>
 #include <wx/fs_mem.h>
 #include <wx/busyinfo.h>
 
 #include "mmex.h"
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 #include "util/_simple.h"

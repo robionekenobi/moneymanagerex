@@ -27,12 +27,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #pragma hdrstop
 #endif
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/display.h>
 #include <wx/regex.h>
 #include <wx/valnum.h>
 
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "base/paths.h"
 #include "base/images_list.h"
 #include "util/_util.h"

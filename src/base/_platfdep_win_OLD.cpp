@@ -1,6 +1,5 @@
 /*******************************************************
 Copyright (C) 2009 VaDiM
-Copyright (C) 2021 Mark Whalley (mark@ipx.co.uk)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,38 +16,27 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-//----------------------------------------------------------------------------
-#include "platfdep.h"
+#include "base/_defs.h"
 #include <wx/stdpaths.h>
 #include <wx/filename.h>
-//----------------------------------------------------------------------------
+#include "base/_platfdep.h"
 
-const wxFileName mmex::GetSharedDir()
+/*
+    The root directory of the installation of MMEX.
+*/
+const wxFileName mmex::GetInstallDir()
 {
-    static wxFileName fname(wxFileName::DirName(wxStandardPaths::Get().GetDataDir()));
+    const wxStandardPathsBase &p = wxStandardPaths::Get();
+    wxFileName fname(p.GetExecutablePath());
+    
+    const wxArrayString &dirs = fname.GetDirs();
+
+    if (dirs.Last().Lower() == "bin") // something like a /usr/bin or /usr/local/bin
+        fname.RemoveLastDir();
+    
     return fname;
 }
-//----------------------------------------------------------------------------
 
-const wxFileName mmex::GetDocDir()
-{
-    static wxFileName fname;
-
-    if (!fname.IsOk())
-    {
-        fname = GetSharedDir();
-        fname.AppendDir("doc");
-    }
-
-    return fname;
-}
-//----------------------------------------------------------------------------
-
-const wxFileName mmex::GetResourceDir()
-{
-    static wxFileName fname(wxFileName::DirName(wxStandardPaths::Get().GetResourcesDir()));
-    return fname;
-}
 //----------------------------------------------------------------------------
 
 const wxString mmex::GetAppName()
@@ -57,15 +45,28 @@ const wxString mmex::GetAppName()
 }
 //----------------------------------------------------------------------------
 
-// Objective-C functions to access Mac environment settings
-
-#import <Cocoa/Cocoa.h>
-
-bool mmex::isDarkMode()
+const wxFileName mmex::GetSharedDir()
 {
-    NSAppearance *appearance = NSAppearance.currentAppearance;
-    if (@available(*, macOS 10.14)) {
-        return appearance.name == NSAppearanceNameDarkAqua;
+    static wxFileName fname(GetInstallDir());
+    return fname;
+}
+//----------------------------------------------------------------------------
+
+const wxFileName mmex::GetDocDir()
+{
+    return GetSharedDir();
+}
+//----------------------------------------------------------------------------
+
+const wxFileName mmex::GetResourceDir()
+{
+    static wxFileName fname;
+
+    if (!fname.IsOk()) 
+    {
+        fname = GetSharedDir();
+        fname.AppendDir("res");
     }
-    return NO;
+
+    return fname;
 }

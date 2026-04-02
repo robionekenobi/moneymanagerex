@@ -22,8 +22,8 @@
 #include <string>
 #include <iomanip>
 #include <wx/wrapsizer.h>
-#include "base/defs.h"
-#include "base/platfdep.h"
+#include "base/_defs.h"
+#include "base/_platfdep.h"
 #include "base/paths.h"
 #include "base/images_list.h"
 #include "util/_util.h"

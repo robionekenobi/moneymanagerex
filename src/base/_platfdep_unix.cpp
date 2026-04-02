@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "defs.h"
-#include "platfdep.h"
+#include "_defs.h"
+#include "_platfdep.h"
 #include <wx/stdpaths.h>
 #include <wx/filename.h>
 #include <wx/settings.h>

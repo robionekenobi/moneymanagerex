@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "base/defs.h"
-#include "base/constants.h"
+#include "base/_defs.h"
+#include "base/_constants.h"
 #include "generic/generictreelistdialog.h"
 #include "toolbartypes.h"
 

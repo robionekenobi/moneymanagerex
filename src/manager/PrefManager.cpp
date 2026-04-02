@@ -21,7 +21,7 @@
 
 #include <wx/bookctrl.h>
 
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "base/paths.h"
 #include "base/images_list.h"
 #include "util/_util.h"

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "util/mmDateRange.h"
+#include "base/mmDateRange.h"
 
 #include "BalanceReport.h"
 #include "CategoryReport.h"

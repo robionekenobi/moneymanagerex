@@ -16,55 +16,18 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/stdpaths.h>
 #include <wx/filename.h>
-#include "base/platfdep.h"
+#include "base/_platfdep.h"
 
-namespace 
-{
-
-void SetInstallPrefix()
-{
-    wxStandardPathsBase &p = wxStandardPaths::Get();
-
-    wxFileName fname(p.GetExecutablePath());
-    fname.SetFullName(wxGetEmptyString());
-    
-    const wxArrayString &dirs = fname.GetDirs();
-
-    if (dirs.Last().Upper() == "BIN") // something like a /usr/bin or /usr/local/bin
-        fname.RemoveLastDir();
-    
-    if (wxStandardPaths *pp = dynamic_cast<wxStandardPaths*>(&p))
-    pp->SetInstallPrefix(fname.GetFullPath());
-}
-
-} // namespace 
-
-//----------------------------------------------------------------------------
-
-/*
-    $(prefix)/share/mmex.
-    Default install prefix is /usr (often /usr/local).
-*/
 const wxFileName mmex::GetSharedDir()
 {
-    static wxFileName fname;
-
-    if (!fname.IsOk()) 
-    {
-        SetInstallPrefix();
-        fname = wxFileName::DirName(wxStandardPaths::Get().GetDataDir());
-    }
-
+    static wxFileName fname(wxFileName::DirName(wxStandardPaths::Get().GetDataDir()));
     return fname;
 }
 //----------------------------------------------------------------------------
 
-/*
-    $(prefix)/share/doc/mmex
-*/
 const wxFileName mmex::GetDocDir()
 {
     static wxFileName fname;
@@ -72,38 +35,22 @@ const wxFileName mmex::GetDocDir()
     if (!fname.IsOk()) 
     {
         fname = GetSharedDir();
-
-        const wxArrayString &dirs = fname.GetDirs();
-        if (dirs.Last().Lower() == GetAppName())
-            fname.RemoveLastDir(); // mmex folder
-
         fname.AppendDir("doc");
-        fname.AppendDir(GetAppName());
     }
 
     return fname;
 }
 //----------------------------------------------------------------------------
 
-/*
-    $(prefix)/share/mmex/res
-*/
 const wxFileName mmex::GetResourceDir()
 {
-    static wxFileName fname;
-
-    if (!fname.IsOk()) 
-    {
-        fname = GetSharedDir();
-        fname.AppendDir("res");
-    }
-
+    static wxFileName fname(wxFileName::DirName(wxStandardPaths::Get().GetResourcesDir()));
     return fname;
 }
 //----------------------------------------------------------------------------
 
 const wxString mmex::GetAppName()
 {
-    return "mmex";
+    return "MoneyManagerEx";
 }
 //----------------------------------------------------------------------------

@@ -19,10 +19,10 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "base/images_list.h"
 #include "util/_util.h"
-#include "util/mmSingleton.h"
+#include "base/mmSingleton.h"
 
 #include "AccountModel.h"
 #include "CurrencyHistoryModel.h"

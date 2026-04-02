@@ -19,8 +19,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #pragma once
 
-#include "base/defs.h"
-#include "base/constants.h"
+#include "base/_defs.h"
+#include "base/_constants.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
 

@@ -18,12 +18,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/timectrl.h>
 #include <wx/collpane.h>
 #include <wx/spinctrl.h>
 
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmCalcValidator.h"

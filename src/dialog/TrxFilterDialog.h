@@ -23,11 +23,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #pragma interface "TrxFilterDialog.cpp"
 #endif
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/dialog.h>
 
 #include "util/_simple.h"
-#include "util/mmDateRange.h"
+#include "base/mmDateRange.h"
 #include "util/mmTextCtrl.h"
 
 #include "FieldValueDialog.h"

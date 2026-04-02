@@ -17,7 +17,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/cmdline.h>
 #include <wx/display.h>
 #include <wx/fs_arc.h>
@@ -26,12 +26,12 @@
 #include <wx/imagpng.h>
 #include <wx/mstream.h>
 
-#include "base/constants.h"
-#include "base/platfdep.h"
+#include "base/_constants.h"
+#include "base/_platfdep.h"
 #include "mmex.h"
 #include "base/paths.h"
 #include "util/_util.h"
-#include "util/mmDateRange2.h"
+#include "base/mmDateRange2.h"
 
 #include "model/SettingModel.h"
 #include "model/UsageModel.h"

@@ -20,7 +20,7 @@
 
 #include <algorithm>
 #include "base/images_list.h"
-#include "util/mmDateRange.h"
+#include "base/mmDateRange.h"
 
 #include "model/CategoryModel.h"
 #include "model/PrefModel.h"

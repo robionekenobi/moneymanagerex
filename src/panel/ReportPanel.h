@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/spinctrl.h>
 #include <wx/timectrl.h>
 

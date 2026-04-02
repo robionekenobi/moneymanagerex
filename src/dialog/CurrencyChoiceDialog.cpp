@@ -18,14 +18,14 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <vector>
 #include <wx/sstream.h>
 #include <wx/xml/xml.h>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
 
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "base/paths.h"
 #include "base/images_list.h"
 #include "util/_util.h"

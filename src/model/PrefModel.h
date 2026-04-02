@@ -20,9 +20,9 @@
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include "util/_primitive.h"
-#include "util/mmDateRange2.h"
+#include "base/mmDateRange2.h"
 
 // mmOptions caches the options for MMEX so that we don't hit the DB
 // that often for data.

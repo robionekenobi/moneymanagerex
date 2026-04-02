@@ -38,13 +38,13 @@
 #include <wx/dataview.h>
 
 #include "build.h"
-#include "base/constants.h"
-#include "base/platfdep.h"
+#include "base/_constants.h"
+#include "base/_platfdep.h"
+#include "util/mmCalcValidator.h"
 #include "base/paths.h"
 #include "base/images_list.h"
 #include "_util.h"
 #include "_simple.h"
-#include "mmCalcValidator.h"
 
 #include "model/CurrencyHistoryModel.h"
 #include "model/CurrencyModel.h"

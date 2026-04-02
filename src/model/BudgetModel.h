@@ -21,9 +21,9 @@
 #pragma once
 
 #include <float.h>
-#include "base/defs.h"
-#include "util/mmDateRange.h"
-#include "util/mmSingleton.h"
+#include "base/_defs.h"
+#include "base/mmDateRange.h"
+#include "base/mmSingleton.h"
 #include "table/_TableFactory.h"
 #include "data/BudgetData.h"
 

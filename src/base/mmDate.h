@@ -21,7 +21,7 @@
 #include <wx/datetime.h>
 #include <wx/string.h>
 #include <wx/log.h>
-#include "base/types.h"
+#include "_types.h"
 #include "mmCache.h"
 
 // mmDate represents the date part of a datetime (without time information).

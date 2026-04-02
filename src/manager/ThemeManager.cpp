@@ -16,13 +16,13 @@ Copyright (C) 2021 Mark Whalley (mark@ipx.co.uk)
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <memory>
 #include <wx/mstream.h>
 #include <wx/fs_mem.h>
 #include <wx/zipstrm.h>
 
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "base/paths.h"
 #include "base/images_list.h"
 #include "util/_util.h"

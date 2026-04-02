@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include "base/defs.h"
-#include "util/mmSingleton.h"
+#include "base/_defs.h"
+#include "base/mmSingleton.h"
 #include "table/_TableFactory.h"
 #include "data/TrxSplitData.h"
 

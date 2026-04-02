@@ -18,9 +18,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <tuple>
-#include "util/mmDateRange.h"
+#include "base/mmDateRange.h"
 
 #include "AccountModel.h"
 #include "CategoryModel.h"

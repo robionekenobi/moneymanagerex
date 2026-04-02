@@ -19,7 +19,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/dcbuffer.h>
 #include <wx/popupwin.h>
 #include <wx/spinctrl.h>
@@ -28,13 +28,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <wx/richtooltip.h>
 
 #include "mmex.h"
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "base/paths.h"
 #include "base/images_list.h"
-#include "base/platfdep.h"
+#include "base/_platfdep.h"
 #include "_util.h"
 #include "_simple.h"
-#include "mmCalcValidator.h"
+#include "util/mmCalcValidator.h"
 
 #include "model/AccountModel.h"
 #include "model/CategoryModel.h"

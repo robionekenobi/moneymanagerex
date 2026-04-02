@@ -147,3 +147,17 @@ under src/ in increasing chronological order.
   webapp                             -> import_export/webapp
   webappdialog                       -> import_export/webappdialog
 
+. PR ? (?)
+  base/constants                     -> base/_constants
+  base/defs.h                        -> base/_defs.h
+  base/platfdep*                     -> base/_platfdep*
+  base/types.h                       -> base/_types.h
+  util/mmCache                       -> base/mmCache
+  util/mmChoice                      -> base/mmChoice
+  util/mmDate                        -> base/mmDate
+  util/mmDateRange                   -> base/mmDateRange
+  util/mmDateRange2                  -> base/mmDateRange2
+  util/mmDateTime                    -> base/mmDateTime
+  util/mmSingleton.h                 -> base/mmSingleton.h
+  util/mmTips.h                      -> base/mmTips.h
+

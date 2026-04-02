@@ -22,8 +22,8 @@ Copyright (C) 2025, 2026 Klaus Wich
 #include <cmath>
 #include <html_template.h>
 
-#include "base/constants.h"
-#include "util/mmDate.h"
+#include "base/_constants.h"
+#include "base/mmDate.h"
 
 #include "model/AssetModel.h"
 #include "model/CategoryModel.h"

@@ -23,7 +23,7 @@ Copyright (C) 2026 Klaus Wich
 #include <cmath>
 #include <html_template.h>
 
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "base/images_list.h"
 #include "mmex.h"
 #include "base/paths.h"

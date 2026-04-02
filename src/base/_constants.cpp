@@ -18,14 +18,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "defs.h"
+#include "_defs.h"
 #include <wx/string.h>
 #include <wx/filefn.h>
 #include <wx/regex.h>
 #include <curl/curl.h>
 #include <rapidjson/rapidjson.h>
 
-#include "constants.h"
+#include "_constants.h"
 #include "build.h"
 #include "table/_TableUpgrade.h"
 

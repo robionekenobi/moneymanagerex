@@ -19,7 +19,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <memory>
 #include <wx/thread.h>
 #include <wx/richtooltip.h>
@@ -28,8 +28,8 @@
 #include <wx/wxsqlite3.h>
 #include <rapidjson/error/en.h>
 
-#include "base/constants.h"
-#include "base/platfdep.h"
+#include "base/_constants.h"
+#include "base/_platfdep.h"
 #include "base/paths.h"
 #include "base/images_list.h"
 #include "util/_util.h"

@@ -20,9 +20,10 @@
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include "_primitive.h"
-#include "model/PrefModel.h"
+
+#include "model/InfoModel.h"
 #include "report/_ReportBase.h"
 
 class mmTreeItemData : public wxTreeItemData
@@ -60,20 +61,14 @@ public:
     mmTreeItemData(int type, int64 id, const wxString& data);
     mmTreeItemData(const wxString& data, ReportBase* report);
     mmTreeItemData(ReportBase* report, const wxString& data);
-    
     ~mmTreeItemData() {}
 
-    int getType() const;
-    int64 getId() const;
-    const wxString getString() const;
-    ReportBase* getReport() const;
-    bool isReadOnly() const;
+    int getType() const { return type_; }
+    int64 getId() const { return id_; }
+    const wxString getString() const { return stringData_; }
+    ReportBase* getReport() const { return report_.get(); }
+    //bool isReadOnly() const;
 };
-
-inline int mmTreeItemData::getType() const { return type_; }
-inline int64 mmTreeItemData::getId() const { return id_; }
-inline const wxString mmTreeItemData::getString() const { return stringData_; }
-inline ReportBase* mmTreeItemData::getReport() const { return report_.get(); }
 
 inline bool operator==(const mmTreeItemData& lhs, const mmTreeItemData& rhs)
 {
@@ -83,4 +78,3 @@ inline bool operator==(const mmTreeItemData& lhs, const mmTreeItemData& rhs)
         lhs.getString() == rhs.getString()
     );
 };
-

@@ -22,11 +22,11 @@ Copyright (C) 2025 Klaus Wich
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/tglbtn.h>
 #include <map>
 
-#include "base/constants.h"
+#include "base/_constants.h"
 
 #include "model/AccountModel.h"
 #include "model/Journal.h"

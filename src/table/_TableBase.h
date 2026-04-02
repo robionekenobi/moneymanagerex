@@ -28,7 +28,7 @@ using namespace rapidjson;
 #include <html_template.h>
 using namespace tmpl;
 
-#include "base/types.h"
+#include "base/_types.h"
 
 class wxString;
 
