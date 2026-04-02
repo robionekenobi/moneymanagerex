@@ -400,9 +400,9 @@ void AssetPanel::onMouseLeftDown (wxCommandEvent& event)
     wxMenu menu;
     menu.Append(++i, _t("All"));
 
-    for (int typeId = 0; typeId < AssetType::size; ++typeId) {
-        wxString type = AssetType(typeId).name();
-        menu.Append(++i, wxGetTranslation(type));
+    for (int type_id = 0; type_id < AssetType::size; ++type_id) {
+        wxString name = AssetType(type_id).name();
+        menu.Append(++i, wxGetTranslation(name));
     }
     PopupMenu(&menu);
 
@@ -472,9 +472,13 @@ void AssetPanel::addAssetTrans(const int selected_index)
     AssetData* asset = &m_asset_a[selected_index];
     AssetDialog asset_dialog(this, asset, true);
     const AccountData* account = AccountModel::instance().get_name_data_n(asset->m_name);
-    const AccountData* account2 = AccountModel::instance().get_name_data_n(asset->m_type.name());
+    // TODO: use translated name() instead of key()
+    const AccountData* account2 = AccountModel::instance().get_name_data_n(asset->m_type.key());
     if (account || account2) {
-        asset_dialog.SetTransactionAccountName(account ? asset->m_name : asset->m_type.name());
+        asset_dialog.SetTransactionAccountName(account
+            ? asset->m_name
+            : asset->m_type.key()
+        );
     }
     else {
         TrxLinkModel::DataA tl_a = TrxLinkModel::instance().find_ref_data_a(

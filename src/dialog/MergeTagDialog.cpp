@@ -197,19 +197,19 @@ void MergeTagDialog::IsOkOk()
         destTagID_ = dst_tag_n->m_id;
 
     int trxs_size = (sourceTagID_ < 0) ? 0 : TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(TrxModel::s_ref_type.name_n()),
+        TagLinkCol::REFTYPE(TrxModel::s_ref_type.key_n()),
         TagLinkCol::TAGID(sourceTagID_)
     ).size();
     int split_size = (sourceTagID_ < 0) ? 0 : TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.name_n()),
+        TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.key_n()),
         TagLinkCol::TAGID(sourceTagID_)
     ).size();
     int bills_size = (sourceTagID_ < 0) ? 0 : TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(SchedModel::s_ref_type.name_n()),
+        TagLinkCol::REFTYPE(SchedModel::s_ref_type.key_n()),
         TagLinkCol::TAGID(sourceTagID_)
     ).size();
     int bill_split_size = (sourceTagID_ < 0) ? 0 : TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(SchedSplitModel::s_ref_type.name_n()),
+        TagLinkCol::REFTYPE(SchedSplitModel::s_ref_type.key_n()),
         TagLinkCol::TAGID(sourceTagID_)
     ).size();
 

@@ -687,13 +687,13 @@ wxString mmWebApp::downloadAttachment(
 ) {
     const wxString file_ext = wxFileName(attachment_w_name).GetExt().MakeLower();
     const wxString file_name =
-        TrxModel::s_ref_type.name_n() + "_" +
+        TrxModel::s_ref_type.key_n() + "_" +
         wxString::Format("%lld", trx_id) +
         "_Attach" + wxString::Format("%i", attachment_number) +
         "." + file_ext;
     const wxString file_path =
         mmex::getPathAttachment(mmAttachmentManage::InfotablePathSetting()) +
-        TrxModel::s_ref_type.name_n() + wxFileName::GetPathSeparator() +
+        TrxModel::s_ref_type.key_n() + wxFileName::GetPathSeparator() +
         file_name;
 
     CURLcode curlStatus = http_download_file(

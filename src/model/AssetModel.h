@@ -35,7 +35,7 @@ public:
     static const RefTypeN s_ref_type;
 
     static AssetCol::ASSETTYPE ASSETTYPE(OP op, AssetType type) {
-        return AssetCol::ASSETTYPE(op, type.name());
+        return AssetCol::ASSETTYPE(op, type.key());
     }
     static AssetCol::STARTDATE STARTDATE(OP op, const mmDate& date);
 

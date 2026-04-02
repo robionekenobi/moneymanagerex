@@ -1523,14 +1523,13 @@ void mmTagTextCtrl::OnDropDown(wxCommandEvent& )
 void mmTagTextCtrl::OnKeyPressed(wxKeyEvent& event)
 {
     int keyCode = event.GetKeyCode();
-    if (keyCode == WXK_RETURN || keyCode == WXK_NUMPAD_ENTER)
-    {
+    if (keyCode == WXK_RETURN || keyCode == WXK_NUMPAD_ENTER) {
         int ip = textCtrl_->GetInsertionPoint();
-        if (textCtrl_->GetText().IsEmpty() || ip == 0 || textCtrl_->GetTextRange(ip - 1, ip) == " ")
-        {
+        if (textCtrl_->GetText().IsEmpty() ||
+            ip == 0 || textCtrl_->GetTextRange(ip - 1, ip) == " "
+        ) {
             TagManager dlg(this, true, parseTags(textCtrl_->GetText()));
-            if (dlg.ShowModal() == wxID_OK)
-            {
+            if (dlg.ShowModal() == wxID_OK) {
                 wxString selection;
                 for (const auto& tag : dlg.getSelectedTags())
                     selection.Append(tag + " ");
@@ -1540,26 +1539,25 @@ void mmTagTextCtrl::OnKeyPressed(wxKeyEvent& event)
             if (dlg.getRefreshRequested())
                 init();
         }
-        else if (textCtrl_->AutoCompActive())
-        {
+        else if (textCtrl_->AutoCompActive()) {
             textCtrl_->AutoCompComplete();
         }
 
         ValidateTagText();
         return;
     }
-    else if (keyCode == WXK_TAB && !event.AltDown())
-    {
+    else if (keyCode == WXK_TAB && !event.AltDown()) {
         bool prev = event.ShiftDown();
         wxWindow* next_control = prev ? GetPrevSibling() : GetNextSibling();
         while (next_control && !next_control->IsFocusable())
-            next_control = prev ? next_control->GetPrevSibling() : next_control->GetNextSibling();
+            next_control = prev
+                ? next_control->GetPrevSibling()
+                : next_control->GetNextSibling();
         if (next_control)
             next_control->SetFocus();
         return;
     }
-    else if (keyCode == WXK_SPACE)
-    {
+    else if (keyCode == WXK_SPACE) {
         textCtrl_->AutoCompCancel();
         textCtrl_->InsertText(textCtrl_->GetInsertionPoint(), " ");
         ValidateTagText();
@@ -1573,7 +1571,9 @@ void mmTagTextCtrl::init()
     // Initialize the tag map and dropdown checkboxes
     tag_map_.clear();
     tagCheckListBox_->Clear();
-    for (const auto& tag_d : TagModel::instance().find_all(TagCol::COL_ID_TAGNAME)) {
+    for (const auto& tag_d : TagModel::instance().find_all(
+        TagCol::COL_ID_TAGNAME
+    )) {
         tag_map_[tag_d.m_name] = tag_d.m_id;
         tagCheckListBox_->Append(tag_d.m_name);
     }

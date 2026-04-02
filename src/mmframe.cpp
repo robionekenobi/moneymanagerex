@@ -651,7 +651,7 @@ void mmGUIFrame::OnAutoRepeatTransactionsTimer(wxTimerEvent& /*event*/)
 
                     wxArrayInt64 tags;
                     for (const auto& gl_d : TagLinkModel::instance().find(
-                        TagLinkCol::REFTYPE(SchedSplitModel::s_ref_type.name_n()),
+                        TagLinkCol::REFTYPE(SchedSplitModel::s_ref_type.key_n()),
                         TagLinkCol::REFID(qp_d.m_id)
                     )) {
                         tags.push_back(gl_d.m_tag_id);
@@ -694,7 +694,7 @@ void mmGUIFrame::OnAutoRepeatTransactionsTimer(wxTimerEvent& /*event*/)
                 // Save base transaction tags
                 TagLinkModel::DataA new_gl_a;
                 for (const auto& gl_d : TagLinkModel::instance().find(
-                    TagLinkCol::REFTYPE(SchedModel::s_ref_type.name_n()),
+                    TagLinkCol::REFTYPE(SchedModel::s_ref_type.key_n()),
                     TagLinkCol::REFID(sched_d.m_id)
                 )) {
                     TagLinkData new_gl_d = TagLinkData();

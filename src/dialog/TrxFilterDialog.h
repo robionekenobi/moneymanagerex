@@ -230,7 +230,7 @@ private:
     bool mmIsStatusMatches(const wxString& itemStatus) const;
 
     bool mmIsTypeChecked() const;
-    bool mmIsTypeMaches(const wxString& typeState, int64 accountid, int64 toaccountid) const;
+    bool mmIsTypeMaches(const TrxType trx_type, int64 accountid, int64 toaccountid) const;
     bool mmIsPayeeChecked() const;
     bool mmIsNumberChecked() const;
     bool mmIsNotesChecked() const;

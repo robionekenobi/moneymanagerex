@@ -246,7 +246,7 @@ const FieldData* FieldModel::get_udfc_data_n(RefTypeN ref_type, const wxString& 
 {
     Document json_doc;
     for (const auto& field_d : find(
-        FieldCol::REFTYPE(ref_type.name_n())
+        FieldCol::REFTYPE(ref_type.key_n())
     )) {
         if (!json_doc.Parse(field_d.m_properties.utf8_str()).HasParseError() &&
             json_doc.HasMember("UDFC") &&
@@ -298,7 +298,7 @@ const wxArrayString FieldModel::get_data_udfc_a(const FieldData* field_n)
 {
     wxArrayString udfc_a = UDFC_FIELDS();
     for (const auto& field_d : FieldModel::instance().find(
-        FieldCol::REFTYPE(TrxModel::s_ref_type.name_n())
+        FieldCol::REFTYPE(TrxModel::s_ref_type.key_n())
     )) {
         const wxString udfc = FieldModel::getUDFC(field_d.m_properties);
         if (!udfc.empty() && udfc_a.Index(udfc) != wxNOT_FOUND) {

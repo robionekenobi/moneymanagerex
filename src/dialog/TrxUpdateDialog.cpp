@@ -160,8 +160,8 @@ void TrxUpdateDialog::CreateControls()
     w_status_choice = new wxChoice(this, wxID_ANY
         , wxDefaultPosition, wxDefaultSize);
     for (int i = 0; i < TrxStatus::size; ++i) {
-        wxString status = TrxStatus(i).name();
-        w_status_choice->Append(wxGetTranslation(status), new wxStringClientData(status));
+        wxString name = TrxStatus(i).name();
+        w_status_choice->Append(wxGetTranslation(name), new wxStringClientData(name));
     }
 
     w_status_choice->Enable(false);
@@ -178,8 +178,8 @@ void TrxUpdateDialog::CreateControls()
         , wxDefaultPosition, wxDefaultSize);
     for (int i = 0; i < TrxType::size; ++i) {
         if (!(m_hasSplits && i == TrxType::e_transfer)) {
-            wxString type = TrxType(i).name();
-            w_type_choice->Append(wxGetTranslation(type), new wxStringClientData(type));
+            wxString name = TrxType(i).name();
+            w_type_choice->Append(wxGetTranslation(name), new wxStringClientData(name));
         }
     }
     w_type_choice->Enable(false);
@@ -474,7 +474,7 @@ void TrxUpdateDialog::OnOk(wxCommandEvent& WXUNUSED(event))
             if (tag_append_checkbox_->IsChecked()) {
                 // Since we are appending, start with the existing tags
                 gl_a = TagLinkModel::instance().find(
-                    TagLinkCol::REFTYPE(TrxModel::s_ref_type.name_n()),
+                    TagLinkCol::REFTYPE(TrxModel::s_ref_type.key_n()),
                     TagLinkCol::REFID(trx_n->m_id)
                 );
                 // Remove existing tags from the new list to avoid duplicates

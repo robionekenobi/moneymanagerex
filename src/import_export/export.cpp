@@ -88,7 +88,7 @@ const wxString mmExportTransaction::getTransactionCSV(
             buffer << inQuotes(wxString::Format("%lld", trx_dx.m_id), delimiter) << delimiter;
             buffer << inQuotes(mmGetDateTimeForDisplay(trx_dx.m_isoDateTime(), dateMask), delimiter) << delimiter;
             buffer << inQuotes(trx_dx.m_status.key(), delimiter) << delimiter;
-            buffer << inQuotes(trx_dx.m_type.name(), delimiter) << delimiter;
+            buffer << inQuotes(trx_dx.m_type.key(), delimiter) << delimiter;
 
             buffer << inQuotes(acc_in->m_name, delimiter) << delimiter;
 
@@ -107,7 +107,7 @@ const wxString mmExportTransaction::getTransactionCSV(
         buffer << inQuotes(wxString::Format("%lld", trx_dx.m_id), delimiter) << delimiter;
         buffer << inQuotes(mmGetDateTimeForDisplay(trx_dx.m_isoDateTime(), dateMask), delimiter) << delimiter;
         buffer << inQuotes(trx_dx.m_status.key(), delimiter) << delimiter;
-        buffer << inQuotes(trx_dx.m_type.name(), delimiter) << delimiter;
+        buffer << inQuotes(trx_dx.m_type.key(), delimiter) << delimiter;
 
         buffer << inQuotes(account, delimiter) << delimiter;
 
@@ -196,7 +196,7 @@ const wxString mmExportTransaction::getTransactionQIF(
         wxString split_categ = CategoryModel::instance().get_id_fullname(tp_d.m_category_id, ":");
         split_categ.Replace("/", "-");
         TagLinkModel::DataA splitTags = TagLinkModel::instance().find(
-            TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.name_n()),
+            TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.key_n()),
             TagLinkCol::REFID(tp_d.m_id)
         );
         if (!splitTags.empty()) {
@@ -465,7 +465,7 @@ void mmExportTransaction::getTransactionJSON(
         FieldValueModel::REFTYPEID(TrxModel::s_ref_type, trx_dx.m_id)
     );
     auto f = FieldModel::instance().find(
-        FieldCol::REFTYPE(TrxModel::s_ref_type.name_n())
+        FieldCol::REFTYPE(TrxModel::s_ref_type.key_n())
     );
     if (!fv_a.empty()) {
         json_writer.Key("CUSTOM_FIELDS");
@@ -473,7 +473,7 @@ void mmExportTransaction::getTransactionJSON(
         for (const auto& fv_d : fv_a) {
             // TODO: field_d.m_id is equal to fv_d.m_field_id
             auto field_a = FieldModel::instance().find(
-                FieldCol::REFTYPE(TrxModel::s_ref_type.name_n()),
+                FieldCol::REFTYPE(TrxModel::s_ref_type.key_n()),
                 FieldCol::FIELDID(fv_d.m_field_id)
             );
             for (const auto& field_d : field_a) {
@@ -505,7 +505,7 @@ void mmExportTransaction::getAttachmentsJSON(
     json_writer.Key("FULL_PATH");
     json_writer.String(AttachmentsFolder.utf8_str());
     json_writer.Key("REFTYPE");
-    json_writer.String(ref_type.name_n().utf8_str());
+    json_writer.String(ref_type.key_n().utf8_str());
 
     json_writer.Key("ATTACHMENTS_DATA");
     json_writer.StartArray();
@@ -558,7 +558,7 @@ void mmExportTransaction::getCustomFieldsJSON(
 
     //Settings
     FieldModel::DataA field_a = FieldModel::instance().find(
-        FieldCol::REFTYPE(TrxModel::s_ref_type.name_n())
+        FieldCol::REFTYPE(TrxModel::s_ref_type.key_n())
     );
 
     if (!field_a.empty()) {
@@ -576,11 +576,11 @@ void mmExportTransaction::getCustomFieldsJSON(
             json_writer.Key("ID");
             json_writer.Int64(field_d.m_id.GetValue());
             json_writer.Key("REFTYPE");
-            json_writer.String(field_d.m_ref_type.name_n().utf8_str());
+            json_writer.String(field_d.m_ref_type.key_n().utf8_str());
             json_writer.Key("DESCRIPTION");
             json_writer.String(field_d.m_description.utf8_str());
             json_writer.Key("TYPE");
-            json_writer.String(field_d.m_type_n.name_n().utf8_str());
+            json_writer.String(field_d.m_type_n.key_n().utf8_str());
             json_writer.Key("PROPERTIES");
             json_writer.RawValue(field_d.m_properties.utf8_str(), field_d.m_properties.utf8_str().length(), rapidjson::Type::kObjectType);
             json_writer.EndObject();

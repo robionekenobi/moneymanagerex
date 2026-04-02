@@ -660,7 +660,7 @@ bool mmQIFImportDialog::completeTransaction(
             else {
                 isTransfer = true;
                 trx[QIF_ID_Category] = _t("Transfer") + (!tags.IsEmpty() ? "/" + tags : "");
-                trx[QIF_ID_TrxType] = TrxType(TrxType::e_transfer).name();
+                trx[QIF_ID_TrxType] = TrxType(TrxType::e_transfer).key();
                 trx[QIF_ID_ToAccountName] = toAccName;
                 trx[QIF_ID_Memo] += (trx[QIF_ID_Memo].empty() ? "" : "\n") + trx[QIF_ID_Payee];
                 if (m_QIFaccounts.find(toAccName) == m_QIFaccounts.end()) {
@@ -701,9 +701,9 @@ bool mmQIFImportDialog::completeTransaction(
     wxString amtStr = (trx.find(QIF_ID_Amount) == trx.end() ? "" : trx[QIF_ID_Amount]);
     if (!isTransfer) {
         if (amtStr.Mid(0, 1) == "-")
-            trx[QIF_ID_TrxType] = TrxType(TrxType::e_withdrawal).name();
+            trx[QIF_ID_TrxType] = TrxType(TrxType::e_withdrawal).key();
         else if (!amtStr.empty())
-            trx[QIF_ID_TrxType] = TrxType(TrxType::e_deposit).name();
+            trx[QIF_ID_TrxType] = TrxType(TrxType::e_deposit).key();
     }
 
     return !amtStr.empty();
@@ -742,13 +742,28 @@ void mmQIFImportDialog::refreshTabs(int tabs)
             }
 
             data.push_back(wxVariant(dateStr));
-            data.push_back(wxVariant(trx.find(QIF_ID_TransNumber) != trx.end() ? trx.at(QIF_ID_TransNumber) : ""));
-            const wxString type = (trx.find(QIF_ID_TrxType) != trx.end() ? trx.at(QIF_ID_TrxType) : "");
-            if (type == TrxType(TrxType::e_transfer).name())
-                data.push_back(wxVariant(trx.find(QIF_ID_ToAccountName) != trx.end() ? trx.at(QIF_ID_ToAccountName) : ""));
+            data.push_back(wxVariant(trx.find(QIF_ID_TransNumber) != trx.end()
+                ? trx.at(QIF_ID_TransNumber)
+                : ""
+            ));
+            const wxString type = (trx.find(QIF_ID_TrxType) != trx.end()
+                ? trx.at(QIF_ID_TrxType)
+                : ""
+            );
+            if (type == TrxType(TrxType::e_transfer).key())
+                data.push_back(wxVariant(trx.find(QIF_ID_ToAccountName) != trx.end()
+                    ? trx.at(QIF_ID_ToAccountName)
+                    : ""
+                ));
             else
-                data.push_back(wxVariant(trx.find(QIF_ID_Payee) != trx.end() ? trx.at(QIF_ID_Payee) : ""));
-            data.push_back(wxVariant(trx.find(QIF_ID_TrxType) != trx.end() ? trx.at(QIF_ID_TrxType) : ""));
+                data.push_back(wxVariant(trx.find(QIF_ID_Payee) != trx.end()
+                    ? trx.at(QIF_ID_Payee)
+                    : ""
+                ));
+            data.push_back(wxVariant(trx.find(QIF_ID_TrxType) != trx.end()
+                ? trx.at(QIF_ID_TrxType)
+                : ""
+            ));
 
             wxString category;
             wxString tags;

@@ -132,7 +132,7 @@ TrxDialog::TrxDialog(
         for (const auto& tp_d : Journal::split(m_journal_d)) {
             wxArrayInt64 tag_id_a;
             for (const auto& gl_d : TagLinkModel::instance().find(
-                TagLinkCol::REFTYPE(split_ref_type.name_n()),
+                TagLinkCol::REFTYPE(split_ref_type.key_n()),
                 TagLinkCol::REFID(tp_d.m_id))
             )
                 tag_id_a.push_back(gl_d.m_tag_id);
@@ -417,7 +417,7 @@ void TrxDialog::dataToControls()
     if (!skip_tag_init_) {
         wxArrayInt64 tag_id_a;
         for (const auto& gl_d : GL.find(
-            TagLinkCol::REFTYPE(m_journal_d.key().ref_type().name_n()),
+            TagLinkCol::REFTYPE(m_journal_d.key().ref_type().key_n()),
             TagLinkCol::REFID(m_journal_d.key().ref_id())
         ))
             tag_id_a.push_back(gl_d.m_tag_id);
@@ -498,8 +498,8 @@ void TrxDialog::CreateControls()
 
     for (int i = 0; i < TrxType::size; ++i) {
         if (i != TrxType::e_transfer || AccountModel::instance().find_all().size() > 1) {
-            wxString type = TrxType(i).name();
-            transaction_type_->Append(wxGetTranslation(type), new wxStringClientData(type));
+            wxString name = TrxType(i).name();
+            transaction_type_->Append(wxGetTranslation(name), new wxStringClientData(name));
         }
     }
 
@@ -597,8 +597,8 @@ void TrxDialog::CreateControls()
     choiceStatus_ = new wxChoice(static_box, ID_DIALOG_TRANS_STATUS);
 
     for (int i = 0; i < TrxStatus::size; ++i) {
-        wxString status = TrxStatus(i).name();
-        choiceStatus_->Append(wxGetTranslation(status), new wxStringClientData(status));
+        wxString name = TrxStatus(i).name();
+        choiceStatus_->Append(wxGetTranslation(name), new wxStringClientData(name));
     }
 
     flex_sizer->Add(new wxStaticText(static_box, wxID_STATIC, _t("Status")), g_flagsH);
@@ -1325,7 +1325,7 @@ void TrxDialog::OnOk(wxCommandEvent& event)
         new_gl_a.push_back(new_gl_d);
     }
     TagLinkModel::instance().update(
-        TrxModel::s_ref_type.name_n(), m_journal_d.m_id,
+        TrxModel::s_ref_type.key_n(), m_journal_d.m_id,
         new_gl_a
     );
 
