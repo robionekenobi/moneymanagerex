@@ -696,7 +696,7 @@ int64 JournalList::pasteTrx(const TrxData* trx_n)
     // Clone transaction tags
     TagLinkModel::DataA new_gl_a;
     for (const auto& tl_d : TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(TrxModel::s_ref_type.name_n()),
+        TagLinkCol::REFTYPE(TrxModel::s_ref_type.key_n()),
         TagLinkCol::REFID(trx_n->m_id)
     )) {
         TagLinkData new_gl_d;
@@ -714,7 +714,7 @@ int64 JournalList::pasteTrx(const TrxData* trx_n)
 
         // Clone split tags
         for (const auto& tl_d : TagLinkModel::instance().find(
-            TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.name_n()),
+            TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.key_n()),
             TagLinkCol::REFID(tp_d.m_id)
         )) {
             TagLinkData new_gl_d;
@@ -1437,7 +1437,7 @@ void JournalList::onMouseRightClick(wxMouseEvent& event)
             }
             break;
         case LIST_ID_STATUS:
-            m_copy_text = menuItemText = m_journal_xa[row].m_status.name();
+            m_copy_text = menuItemText = m_journal_xa[row].m_status.key();
             m_filter = "{\n\"STATUS\": \"" + menuItemText + "\"\n}";
             break;
         case LIST_ID_CATEGORY:

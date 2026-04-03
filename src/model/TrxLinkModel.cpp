@@ -81,7 +81,7 @@ const TrxLinkData* TrxLinkModel::get_trx_data_n(int64 trx_id)
 TrxLinkModel::DataA TrxLinkModel::find_ref_data_a(RefTypeN ref_type, int64 ref_id)
 {
     return find(
-        TrxLinkCol::LINKTYPE(ref_type.name_n()),
+        TrxLinkCol::LINKTYPE(ref_type.key_n()),
         TrxLinkCol::LINKRECORDID(ref_id)
     );
 }

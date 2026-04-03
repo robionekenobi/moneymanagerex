@@ -131,8 +131,9 @@ void AssetList::onMouseRightClick(wxMouseEvent& event)
         );
         if (!asset_account)
             // ASSETTYPE <=> ACCOUNTNAME
+            // TODO: use translated name() instead of key()
             asset_account = AccountModel::instance().get_name_data_n(
-                w_panel->m_asset_a[m_selected_row].m_type.name()
+                w_panel->m_asset_a[m_selected_row].m_type.key()
             );
         menu.Enable(MENU_TREEPOPUP_GOTOACCOUNT, asset_account);
         menu.Enable(MENU_TREEPOPUP_VIEWTRANS, asset_account);

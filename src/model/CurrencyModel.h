@@ -36,7 +36,7 @@ class CurrencyModel : public TableFactory<CurrencyTable, CurrencyData>
 
 public:
     static CurrencyCol::CURRENCY_TYPE CURRENCY_TYPE(OP op, CurrencyType currency_type) {
-        return CurrencyCol::CURRENCY_TYPE(op, currency_type.name());
+        return CurrencyCol::CURRENCY_TYPE(op, currency_type.key());
     }
 
 // -- constructor

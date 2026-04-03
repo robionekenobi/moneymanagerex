@@ -128,11 +128,8 @@ void FieldDialog::CreateControls()
     for (int type_id = 0; type_id < RefTypeN::size; ++type_id) {
         if (RefTypeN::field_id_n(type_id) != type_id)
             continue;
-        wxString type_name = RefTypeN(type_id).name_n();
-        m_itemReference->Append(
-            wxGetTranslation(type_name),
-            new wxStringClientData(type_name)
-        );
+        wxString name = RefTypeN(type_id).name_n();
+        m_itemReference->Append(wxGetTranslation(name), new wxStringClientData(name));
     }
     mmToolTip(m_itemReference, _t("Select the item that the custom field is associated with"));
     itemFlexGridSizer6->Add(m_itemReference, g_flagsExpand);
@@ -148,11 +145,8 @@ void FieldDialog::CreateControls()
     itemFlexGridSizer6->Add(new wxStaticText(itemPanel5, wxID_STATIC, _t("Field Type")), g_flagsH);
     m_itemType = new wxChoice(itemPanel5, wxID_HIGHEST);
     for (int type_id = 0; type_id < FieldTypeN::size; ++type_id) {
-        wxString type_name = FieldTypeN(type_id).name_n();
-        m_itemType->Append(
-            wxGetTranslation(type_name),
-            new wxStringClientData(type_name)
-        );
+        wxString name = FieldTypeN(type_id).name_n();
+        m_itemType->Append(wxGetTranslation(name), new wxStringClientData(name));
     }
     mmToolTip(m_itemType, _t("Select the custom field type"));
     itemFlexGridSizer6->Add(m_itemType, g_flagsExpand);

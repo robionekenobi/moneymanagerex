@@ -116,6 +116,7 @@ void AssetDialog::dataToControls()
         w_assetName->Enable(false);
     w_dpc->SetValue(m_asset_n->m_start_date.dateTime());
     w_assetType->SetSelection(m_asset_n->m_type.id());
+    // TODO: translate asset type
     if (AccountModel::instance().get_name_data_n(m_asset_n->m_type.name()))
         w_assetType->Enable(false);
 
@@ -209,8 +210,8 @@ void AssetDialog::CreateControls()
 
     w_assetType = new wxChoice(asset_details_panel, wxID_STATIC);
     for (int i = 0; i < AssetType::size; ++i) {
-        wxString type = AssetType(i).name();
-        w_assetType->Append(wxGetTranslation(type), new wxStringClientData(type));
+        wxString name = AssetType(i).name();
+        w_assetType->Append(wxGetTranslation(name), new wxStringClientData(name));
     }
 
     mmToolTip(w_assetType, _t("Select type of asset"));
@@ -246,8 +247,8 @@ void AssetDialog::CreateControls()
 
     w_valueChange = new wxChoice(asset_details_panel, IDC_COMBO_TYPE);
     for (mmChoiceId i = 0; i < AssetChange::size; ++i) {
-        wxString change = AssetChange(i).name();
-        w_valueChange->Append(wxGetTranslation(change));
+        wxString name = AssetChange(i).name();
+        w_valueChange->Append(wxGetTranslation(name));
     }
 
     mmToolTip(w_valueChange, _t("Specify if the value of the asset changes over time"));
@@ -490,8 +491,11 @@ void AssetDialog::SetTransactionDate()
 
 void AssetDialog::CreateAssetAccount()
 {
+    // TODO: translate asset type
+    const wxString name = m_asset_n->m_type.name();
+
     AccountData new_account_d = AccountData();
-    new_account_d.m_name         = m_asset_n->m_type.name();
+    new_account_d.m_name         = name;
     new_account_d.m_type_        = NavigatorTypes::instance().getAssetAccountStr();
     new_account_d.m_open_balance = 0;
     new_account_d.m_open_date    = m_asset_n->m_start_date;
@@ -499,7 +503,7 @@ void AssetDialog::CreateAssetAccount()
     AccountModel::instance().add_data_n(new_account_d);
 
     AssetDialog dlg(this, m_asset_n, true);
-    dlg.SetTransactionAccountName(m_asset_n->m_type.name());
+    dlg.SetTransactionAccountName(name);
     dlg.SetTransactionDate();
     dlg.ShowModal();
 }

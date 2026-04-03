@@ -45,7 +45,7 @@ SchedRow SchedData::to_row() const
     row.ACCOUNTID          = m_account_id;
     row.TOACCOUNTID        = m_to_account_id_n;
     row.PAYEEID            = m_payee_id_n;
-    row.TRANSCODE          = m_type.name();
+    row.TRANSCODE          = m_type.key();
     row.TRANSAMOUNT        = m_amount;
     row.STATUS             = m_status.key();
     row.TRANSACTIONNUMBER  = m_number;

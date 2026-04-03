@@ -433,7 +433,7 @@ void TrxFilterDialog::mmDoDataToControls(const wxString& json)
     bool is_custom_found = false;
     int field_index = 0;
     for (const auto& field_d : FieldModel::instance().find(
-        FieldCol::REFTYPE(TrxModel::s_ref_type.name_n())
+        FieldCol::REFTYPE(TrxModel::s_ref_type.key_n())
     )) {
         const auto entry = wxString::Format("CUSTOM%lld", field_d.m_id);
         if (j_doc.HasMember(entry.c_str())) {
@@ -1286,14 +1286,13 @@ bool TrxFilterDialog::mmIsStatusMatches(const wxString& itemStatus) const
 }
 
 bool TrxFilterDialog::mmIsTypeMaches(
-    const wxString& typeState,
+    const TrxType trx_type,
     int64 accountid,
     int64 toaccountid
 ) const
 {
-    TrxType type = TrxType(typeState);
     bool result = false;
-    if (type.id() == TrxType::e_transfer && w_transferTo_cb->GetValue() && (
+    if (trx_type.id() == TrxType::e_transfer && w_transferTo_cb->GetValue() && (
         !mmIsAccountChecked() ||
         std::find(m_selected_accounts_id.begin(), m_selected_accounts_id.end(),
             accountid
@@ -1301,7 +1300,7 @@ bool TrxFilterDialog::mmIsTypeMaches(
     )) {
         result = true;
     }
-    else if (type.id() == TrxType::e_transfer && w_transferFrom_cb->GetValue() && (
+    else if (trx_type.id() == TrxType::e_transfer && w_transferFrom_cb->GetValue() && (
         !mmIsAccountChecked() ||
         std::find(m_selected_accounts_id.begin(), m_selected_accounts_id.end(),
             toaccountid
@@ -1309,10 +1308,10 @@ bool TrxFilterDialog::mmIsTypeMaches(
     )) {
         result = true;
     }
-    else if (type.id() == TrxType::e_withdrawal && w_withdrawal_cb->IsChecked()) {
+    else if (trx_type.id() == TrxType::e_withdrawal && w_withdrawal_cb->IsChecked()) {
         result = true;
     }
-    else if (type.id() == TrxType::e_deposit && w_deposit_cb->IsChecked()) {
+    else if (trx_type.id() == TrxType::e_deposit && w_deposit_cb->IsChecked()) {
         result = true;
     }
 
@@ -1507,7 +1506,7 @@ bool TrxFilterDialog::mmIsRecordMatches(const DATA& tran, bool mergeSplitTags)
         ok = false;
     else if (mmIsStatusChecked() && !mmIsStatusMatches(tran.m_status.key()))
         ok = false;
-    else if (mmIsTypeChecked() && !mmIsTypeMaches(tran.m_type.name(), tran.m_account_id, tran.m_to_account_id_n))
+    else if (mmIsTypeChecked() && !mmIsTypeMaches(tran.m_type, tran.m_account_id, tran.m_to_account_id_n))
         ok = false;
     else if (mmIsAmountRangeMinChecked() && mmGetAmountMin() > tran.m_amount)
         ok = false;
@@ -1523,13 +1522,13 @@ bool TrxFilterDialog::mmIsRecordMatches(const DATA& tran, bool mergeSplitTags)
     else if (mmIsCustomFieldChecked() && !mmIsCustomFieldMatches(tran.m_id))
         ok = false;
     else if (mmIsTagsChecked()) {
-        RefTypeN refType;
+        RefTypeN ref_type;
         // Check the Data type to determine the tag RefType
         if (typeid(tran).hash_code() == typeid(TrxData).hash_code())
-            refType = TrxModel::s_ref_type;
+            ref_type = TrxModel::s_ref_type;
         else if (typeid(tran).hash_code() == typeid(SchedData).hash_code())
-            refType = SchedModel::s_ref_type;
-        if (!mmIsTagMatches(refType, tran.m_id, mergeSplitTags))
+            ref_type = SchedModel::s_ref_type;
+        if (!mmIsTagMatches(ref_type, tran.m_id, mergeSplitTags))
             ok = false;
     }
     return ok;
@@ -1538,16 +1537,16 @@ bool TrxFilterDialog::mmIsRecordMatches(const DATA& tran, bool mergeSplitTags)
 template <class MODEL, class DATA>
 bool TrxFilterDialog::mmIsSplitRecordMatches(const DATA& split_d)
 {
-    RefTypeN refType;
+    RefTypeN ref_type;
 
     if (typeid(split_d).hash_code() == typeid(TrxSplitData).hash_code()) {
-        refType = TrxSplitModel::s_ref_type;
+        ref_type = TrxSplitModel::s_ref_type;
     }
     else if (typeid(split_d).hash_code() == typeid(SchedSplitData).hash_code()) {
-        refType = SchedSplitModel::s_ref_type;
+        ref_type = SchedSplitModel::s_ref_type;
     }
 
-    if (mmIsTagsChecked() && !mmIsTagMatches(refType, split_d.m_id))
+    if (mmIsTagsChecked() && !mmIsTagMatches(ref_type, split_d.m_id))
         return false;
 
     return true;

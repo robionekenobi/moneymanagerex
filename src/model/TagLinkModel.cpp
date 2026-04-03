@@ -48,7 +48,7 @@ TagLinkModel& TagLinkModel::instance()
 void TagLinkModel::purge_ref(RefTypeN ref_type, int64 ref_id)
 {
     const auto& gl_a = instance().find(
-        TagLinkCol::REFTYPE(ref_type.name_n()),
+        TagLinkCol::REFTYPE(ref_type.key_n()),
         TagLinkCol::REFID(ref_id)
     );
     instance().db_savepoint();
@@ -61,7 +61,7 @@ const TagLinkData* TagLinkModel::get_key_data_n(int64 tag_id, RefTypeN ref_type,
 {
     const Data* gl_n = search_cache_n(
         TagLinkCol::TAGID(tag_id),
-        TagLinkCol::REFTYPE(ref_type.name_n()),
+        TagLinkCol::REFTYPE(ref_type.key_n()),
         TagLinkCol::REFID(ref_id)
     );
     if (gl_n)
@@ -69,7 +69,7 @@ const TagLinkData* TagLinkModel::get_key_data_n(int64 tag_id, RefTypeN ref_type,
 
     DataA gl_a = find(
         TagLinkCol::TAGID(tag_id),
-        TagLinkCol::REFTYPE(ref_type.name_n()),
+        TagLinkCol::REFTYPE(ref_type.key_n()),
         TagLinkCol::REFID(ref_id)
     );
     if (!gl_a.empty())
@@ -81,7 +81,7 @@ std::map<wxString, int64> TagLinkModel::find_ref_mTagName(RefTypeN ref_type, int
 {
     std::map<wxString, int64> tag_name_id_m;
     for (const auto& gl_d : find(
-        TagLinkCol::REFTYPE(ref_type.name_n()),
+        TagLinkCol::REFTYPE(ref_type.key_n()),
         TagLinkCol::REFID(ref_id)
     )) {
         const TagData* tag_n = TagModel::instance().get_id_data_n(gl_d.m_tag_id);
@@ -95,7 +95,7 @@ std::map<int64, TagLinkModel::DataA> TagLinkModel::find_refType_mRefId(
 ) {
     std::map<int64, DataA> refId_dataA_m;
     for (const auto& gl_d : instance().find(
-        TagLinkCol::REFTYPE(ref_type.name_n())
+        TagLinkCol::REFTYPE(ref_type.key_n())
     )) {
         refId_dataA_m[gl_d.m_ref_id].push_back(gl_d);
     }
@@ -109,7 +109,7 @@ int TagLinkModel::update(RefTypeN ref_type, int64 ref_id, const DataA& src_gl_a)
     std::map<int, int64> index_id_m;
 
     DataA old_gl_a = instance().find(
-        TagLinkCol::REFTYPE(ref_type.name_n()),
+        TagLinkCol::REFTYPE(ref_type.key_n()),
         TagLinkCol::REFID(ref_id)
     );
     if (old_gl_a.size() != src_gl_a.size())

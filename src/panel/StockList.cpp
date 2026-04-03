@@ -225,12 +225,12 @@ wxString StockList::OnGetItemText(long item, long col_nr) const
         );
     case LIST_ID_REAL_GAIN_LOSS:
         return CurrencyModel::instance().toString(
-            getRealGainLoss(item),
+            getRealGainLoss(m_stock_a[item]),
             w_panel->m_currency_n
         );
     case LIST_ID_GAIN_LOSS:
         return CurrencyModel::instance().toString(
-            getGainLoss(item),
+            m_stock_a[item].current_gain(),
             w_panel->m_currency_n
         );
     case LIST_ID_CURRENT:
@@ -298,7 +298,7 @@ void StockList::onListLeftClick(wxMouseEvent& event)
 int StockList::OnGetItemImage(long item) const
 {
     /* Returns the icon to be shown for each entry */
-    double val = getGainLoss(item);
+    double val = m_stock_a[item].current_gain();
     if (val > 0.0) return static_cast<int>(ico::GAIN);
     else if (val < 0.0) return static_cast<int>(ico::LOSS);
     else return -1;
@@ -579,7 +579,7 @@ void StockList::sortList()
     case StockList::LIST_ID_REAL_GAIN_LOSS:
         std::stable_sort(m_stock_a.begin(), m_stock_a.end(),
             [](const StockData& x, const StockData& y) {
-                return getRealGainLoss(x) < getRealGainLoss(y);
+                return StockList::getRealGainLoss(x) < StockList::getRealGainLoss(y);
             }
         );
         break;
@@ -664,9 +664,10 @@ void StockList::getInvestmentBalance(double& invest_value, double& market_value)
 
 wxListItemAttr* StockList::OnGetItemAttr(long item) const
 {
+    bool has_loss = (m_stock_a[item].current_gain() < 0);
     return (item % 2 == 0)
-        ? (getGainLoss(item) < 0 ? w_loss_attr1.get() : w_attr1.get())
-        : (getGainLoss(item) < 0 ? w_loss_attr2.get() : w_attr2.get());
+        ? (has_loss ? w_loss_attr1.get() : w_attr1.get())
+        : (has_loss ? w_loss_attr2.get() : w_attr2.get());
 }
 
 wxString StockList::getStockInfo(int selectedIndex, bool with_symbol) const

@@ -33,7 +33,7 @@ struct mmCacheStat
 };
 
 template<typename KeyType, typename ValueType>
-struct mmCache
+class mmCache
 {
     using Key   = KeyType;
     using Value = ValueType;

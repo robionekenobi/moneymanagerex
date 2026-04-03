@@ -67,7 +67,7 @@ double SchedSplitModel::get_data_amount(const DataA& qp_a)
 const TagLinkModel::DataA SchedSplitModel::find_id_gl_a(int64 qp_id)
 {
     return TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(SchedSplitModel::s_ref_type.name_n()),
+        TagLinkCol::REFTYPE(SchedSplitModel::s_ref_type.key_n()),
         TagLinkCol::REFID(qp_id)
     );
 }

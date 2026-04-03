@@ -119,7 +119,7 @@ void FieldManager::fillControls()
         wxVector<wxVariant> data;
         if (debug_)
             data.push_back(wxVariant(wxString::Format("%lld", field_d.m_id)));
-        data.push_back(wxVariant(wxGetTranslation(field_d.m_ref_type.name_n())));
+        data.push_back(wxVariant(wxGetTranslation(field_d.m_ref_type.key_n())));
         data.push_back(wxVariant(field_d.m_description));
         data.push_back(wxVariant(wxGetTranslation(field_d.m_type_n.name_n())));
 
