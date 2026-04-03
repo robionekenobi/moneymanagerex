@@ -17,7 +17,7 @@
  ********************************************************/
 
 #include "base/_constants.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 
 #include "DateRangeDialog.h"

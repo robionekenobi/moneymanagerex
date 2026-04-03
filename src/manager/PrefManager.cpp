@@ -23,7 +23,7 @@
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 
 #include "model/PrefModel.h"
@@ -86,13 +86,13 @@ void PrefManager::CreateControls()
 {
     const int iconSize = 32;
     wxVector<wxBitmapBundle> images;
-    images.push_back(mmBitmapBundle(png::GENERAL, iconSize));
-    images.push_back(mmBitmapBundle(png::VIEW, iconSize));
-    images.push_back(mmBitmapBundle(png::HOME, iconSize));
-    images.push_back(mmBitmapBundle(png::NEW_TRX, iconSize));
-    images.push_back(mmBitmapBundle(png::ATTACHMENTS, iconSize));
-    images.push_back(mmBitmapBundle(png::NETWORK, iconSize));
-    images.push_back(mmBitmapBundle(png::OTHERS, iconSize));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::GENERAL, iconSize));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::VIEW, iconSize));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::HOME, iconSize));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::NEW_TRX, iconSize));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::ATTACHMENTS, iconSize));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::NETWORK, iconSize));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::OTHERS, iconSize));
 
     wxBoxSizer* mainDialogSizer = new wxBoxSizer(wxVERTICAL);
     this->SetSizer(mainDialogSizer);

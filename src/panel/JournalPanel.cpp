@@ -29,7 +29,7 @@
 #include "base/_constants.h"
 #include "mmex.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "base/mmTips.h"
@@ -241,7 +241,7 @@ void JournalPanel::createControls()
 
     wxBoxSizer* sizerHCtrl = new wxBoxSizer(wxHORIZONTAL);
     w_range_btn = new wxButton(this, ID_DATE_RANGE_BUTTON);
-    w_range_btn->SetBitmap(mmBitmapBundle(png::TRANSFILTER, mmBitmapButtonSize));
+    w_range_btn->SetBitmap(mmImage::bitmapBundle(mmImage::png::TRANSFILTER, mmImage::bitmapButtonSize));
     sizerHCtrl->Add(w_range_btn, g_flagsH);
 
     w_range_btn->SetMinSize(wxSize(200 + PrefModel::instance().getIconSize() * 2, -1));
@@ -270,7 +270,7 @@ void JournalPanel::createControls()
     );
 
     w_filter_reset_btn = new wxBitmapButton(this, wxID_ANY,
-        mmBitmapBundle(png::CLEAR, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::CLEAR, mmImage::bitmapButtonSize)
     );
     mmToolTip(w_filter_reset_btn, _t("Reset filter"));
     w_filter_reset_btn->Bind(wxEVT_COMMAND_BUTTON_CLICKED,
@@ -287,7 +287,7 @@ void JournalPanel::createControls()
         sizerHCtrl->AddSpacer(15);
         const auto& size = w_range_btn->GetSize().GetY();
         w_header_scheduled = new wxBitmapToggleButton(
-            this, ID_SCHEDULED_BUTTON, mmBitmapBundle(png::RECURRING),
+            this, ID_SCHEDULED_BUTTON, mmImage::bitmapBundle(mmImage::png::RECURRING),
             wxDefaultPosition, wxSize(size, size)
         );
         sizerHCtrl->Add(w_header_scheduled, g_flagsH);
@@ -301,7 +301,7 @@ void JournalPanel::createControls()
         sizerHCtrl->AddSpacer(100);
 
         wxBitmapButton* btn = new wxBitmapButton(this, wxID_ANY,
-            mmBitmapBundle(png::TRXNUM, mmBitmapButtonSize)
+            mmImage::bitmapBundle(mmImage::png::TRXNUM, mmImage::bitmapButtonSize)
         );
         mmToolTip(btn, _t("Reconcile"));
         btn->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &JournalPanel::onReconcile, this);
@@ -318,17 +318,19 @@ void JournalPanel::createControls()
     /* ---------------------- */
 
     mmSplitterWindow* splitterListFooter = new mmSplitterWindow(
-        this, wxID_ANY, wxDefaultPosition, wxSize(200, 200),
-        wxSP_3DBORDER | wxSP_3DSASH | wxNO_BORDER, mmThemeMetaColour(meta::COLOR_LISTPANEL)
+        this, wxID_ANY,
+        wxDefaultPosition, wxSize(200, 200),
+        wxSP_3DBORDER | wxSP_3DSASH | wxNO_BORDER,
+        mmImage::themeMetaColour(mmImage::COLOR_LISTPANEL)
     );
 
-    w_image_a.push_back(mmBitmapBundle(png::UNRECONCILED));
-    w_image_a.push_back(mmBitmapBundle(png::RECONCILED));
-    w_image_a.push_back(mmBitmapBundle(png::VOID_STAT));
-    w_image_a.push_back(mmBitmapBundle(png::FOLLOW_UP));
-    w_image_a.push_back(mmBitmapBundle(png::DUPLICATE_STAT));
-    w_image_a.push_back(mmBitmapBundle(png::UPARROW));
-    w_image_a.push_back(mmBitmapBundle(png::DOWNARROW));
+    w_image_a.push_back(mmImage::bitmapBundle(mmImage::png::UNRECONCILED));
+    w_image_a.push_back(mmImage::bitmapBundle(mmImage::png::RECONCILED));
+    w_image_a.push_back(mmImage::bitmapBundle(mmImage::png::VOID_STAT));
+    w_image_a.push_back(mmImage::bitmapBundle(mmImage::png::FOLLOW_UP));
+    w_image_a.push_back(mmImage::bitmapBundle(mmImage::png::DUPLICATE_STAT));
+    w_image_a.push_back(mmImage::bitmapBundle(mmImage::png::UPARROW));
+    w_image_a.push_back(mmImage::bitmapBundle(mmImage::png::DOWNARROW));
 
     w_list = new JournalList(this, splitterListFooter);
     w_list->SetSmallImages(w_image_a);
@@ -386,7 +388,7 @@ void JournalPanel::createControls()
 
         const auto& btnDupSize = w_dup_btn->GetSize();
         w_attachment_btn = new wxBitmapButton(
-            panelFooter, wxID_FILE, mmBitmapBundle(png::CLIP), wxDefaultPosition,
+            panelFooter, wxID_FILE, mmImage::bitmapBundle(mmImage::png::CLIP), wxDefaultPosition,
             wxSize(30, btnDupSize.GetY())
         );
         mmToolTip(w_attachment_btn, _t("Open attachments"));
@@ -1041,13 +1043,13 @@ void JournalPanel::updateFilter()
 
     if (m_filter_id == FILTER_ID_DATE_RANGE) {
         w_range_btn->SetLabel(m_date_range.rangeName());
-        w_range_btn->SetBitmap(mmBitmapBundle(
+        w_range_btn->SetBitmap(mmImage::bitmapBundle(
             // FIXME: refine the condition below
             (m_date_range.rangeName() != m_date_range_a[0].getName()
-                ? png::TRANSFILTER_ACTIVE
-                : png::TRANSFILTER
+                ? mmImage::png::TRANSFILTER_ACTIVE
+                : mmImage::png::TRANSFILTER
             ),
-            mmBitmapButtonSize
+            mmImage::bitmapButtonSize
         ));
         // TODO: calculate default start/end dates from model
         m_date_range.setDefStartDateN(mmDate::min());
@@ -1062,9 +1064,9 @@ void JournalPanel::updateFilter()
     }
     else if (m_filter_id == FILTER_ID_DATE_PICKER) {
         w_range_btn->SetLabel(_t("Date range"));
-        w_range_btn->SetBitmap(mmBitmapBundle(
-            png::TRANSFILTER_ACTIVE,
-            mmBitmapButtonSize
+        w_range_btn->SetBitmap(mmImage::bitmapBundle(
+            mmImage::png::TRANSFILTER_ACTIVE,
+            mmImage::bitmapButtonSize
         ));
         // set date range to default ('All') and copy default start/end dates from pickers.
         m_date_range = mmDateRange2();
@@ -1078,11 +1080,11 @@ void JournalPanel::updateFilter()
         }
     }
 
-    w_filter_btn->SetBitmap(mmBitmapBundle(
+    w_filter_btn->SetBitmap(mmImage::bitmapBundle(
         m_filter_advanced
-            ? png::TRANSFILTER_ACTIVE
-            : png::TRANSFILTER,
-        mmBitmapButtonSize
+            ? mmImage::png::TRANSFILTER_ACTIVE
+            : mmImage::png::TRANSFILTER,
+        mmImage::bitmapButtonSize
     ));
 
     w_filter_reset_btn->Enable(m_filter_advanced);

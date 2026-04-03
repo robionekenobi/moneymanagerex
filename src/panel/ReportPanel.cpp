@@ -25,7 +25,7 @@
 #include "base/_defs.h"
 #include "base/_platfdep.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 //#include "model/_all.h"
 #include "model/PrefModel.h"
@@ -199,7 +199,7 @@ void ReportPanel::createControls()
 
         if (rp & ReportBase::M_DATE_RANGE) {
             w_range_btn = new wxButton(itemPanel3, ID_DATE_RANGE_BUTTON, _tu("Period…"));
-            w_range_btn->SetBitmap(mmBitmapBundle(png::TRANSFILTER, mmBitmapButtonSize));
+            w_range_btn->SetBitmap(mmImage::bitmapBundle(mmImage::png::TRANSFILTER, mmImage::bitmapButtonSize));
             w_range_btn->SetMinSize(
                 wxSize(200 + PrefModel::instance().getIconSize() * 2, -1)
             );
@@ -444,7 +444,7 @@ void ReportPanel::createControls()
             itemBoxSizerHeader->Add(w_filter, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
 
             w_filter_cancel = new wxBitmapButton(itemPanel3, wxID_ANY,
-                mmBitmapBundle(png::CLEAR, mmBitmapButtonSize)
+                mmImage::bitmapBundle(mmImage::png::CLEAR, mmImage::bitmapButtonSize)
             );
             mmToolTip(w_filter_cancel, _t("Reset filter"));
             w_filter_cancel->Bind(
@@ -665,13 +665,13 @@ void ReportPanel::updateFilter()
     wxLogDebug("ReportPanel::updateFilter(): m_filter_id=%d", int(m_filter_id));
     if (m_filter_id == JournalPanel::FILTER_ID_DATE_RANGE) {
         w_range_btn->SetLabel(m_date_range.rangeName());
-        w_range_btn->SetBitmap(mmBitmapBundle(
+        w_range_btn->SetBitmap(mmImage::bitmapBundle(
             // FIXME: refine the condition below
             (m_date_range.rangeName() != m_date_range_a[0].getName()
-                ? png::TRANSFILTER_ACTIVE
-                : png::TRANSFILTER
+                ? mmImage::png::TRANSFILTER_ACTIVE
+                : mmImage::png::TRANSFILTER
             ),
-            mmBitmapButtonSize
+            mmImage::bitmapButtonSize
         ));
         // TODO: calculate default start/end dates from model
         m_date_range.setDefStartDateN(mmDate::min());
@@ -686,9 +686,9 @@ void ReportPanel::updateFilter()
     }
     else if (m_filter_id == JournalPanel::FILTER_ID_DATE_PICKER) {
         w_range_btn->SetLabel(_t("Date range"));
-        w_range_btn->SetBitmap(mmBitmapBundle(
-            png::TRANSFILTER_ACTIVE,
-            mmBitmapButtonSize
+        w_range_btn->SetBitmap(mmImage::bitmapBundle(
+            mmImage::png::TRANSFILTER_ACTIVE,
+            mmImage::bitmapButtonSize
         ));
         // set date range to default ('All') and copy default start/end dates from pickers.
         m_date_range = mmDateRange2();

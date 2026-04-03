@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
 #include "base/_defs.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmCalcValidator.h"
@@ -199,7 +199,7 @@ bool TrxLinkDialog::Create(
     m_category = new mmComboBoxCategory(this, ID_TRANS_CATEGORY_COMBOBOX, std_size, m_category_id, true);
     mmToolTip(m_category, _t("Specify the category for this transaction"));
 
-    wxBitmapButton* bSplit_ = new wxBitmapButton(this, mmID_CATEGORY_SPLIT, mmBitmapBundle(png::NEW_TRX, mmBitmapButtonSize));
+    wxBitmapButton* bSplit_ = new wxBitmapButton(this, mmID_CATEGORY_SPLIT, mmImage::bitmapBundle(mmImage::png::NEW_TRX, mmImage::bitmapButtonSize));
     bSplit_->Hide(); // TODO
     wxBoxSizer* split_sizer = new wxBoxSizer(wxHORIZONTAL);
     split_sizer->Add(m_category, g_flagsH);
@@ -219,7 +219,7 @@ bool TrxLinkDialog::Create(
     transPanelSizer->Add(new wxStaticText(this, wxID_STATIC, _t("Notes")), g_flagsH);
 
     // Attachment ---------------------------------------------
-    m_attachment = new wxBitmapButton(this, wxID_FILE, mmBitmapBundle(png::CLIP, mmBitmapButtonSize));
+    m_attachment = new wxBitmapButton(this, wxID_FILE, mmImage::bitmapBundle(mmImage::png::CLIP, mmImage::bitmapButtonSize));
     mmToolTip(m_attachment, _t("Manage transaction attachments"));
     //TODO: m_attachment Enable/disable
     //m_attachment->Enable(false);

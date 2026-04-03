@@ -20,7 +20,7 @@
  ********************************************************/
 
 #include "base/_constants.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "mmex.h"
 #include "base/mmDateRange.h"
 
@@ -219,7 +219,7 @@ void BudgetPanel::createControls()
     itemBoxSizerVHeader->Add(itemBoxSizerHHeader2, 0, wxALL, 1);
 
     w_filter_btn = new wxButton(itemPanel3, wxID_FILE2);
-    w_filter_btn->SetBitmap(mmBitmapBundle(png::TRANSFILTER, mmBitmapButtonSize));
+    w_filter_btn->SetBitmap(mmImage::bitmapBundle(mmImage::png::TRANSFILTER, mmImage::bitmapButtonSize));
     w_filter_btn->SetMinSize(wxSize(300, -1));
     itemBoxSizerHHeader2->Add(w_filter_btn, g_flagsBorder1H);
 
@@ -268,9 +268,9 @@ void BudgetPanel::createControls()
     /* ---------------------- */
 
     wxVector<wxBitmapBundle> images;
-    images.push_back(mmBitmapBundle(png::RECONCILED));
-    images.push_back(mmBitmapBundle(png::VOID_STAT));
-    images.push_back(mmBitmapBundle(png::FOLLOW_UP));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::RECONCILED));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::VOID_STAT));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::FOLLOW_UP));
 
     w_list = new BudgetList(this, this, wxID_ANY);
     w_list->SetSmallImages(images);

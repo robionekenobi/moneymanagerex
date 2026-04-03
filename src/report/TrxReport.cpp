@@ -494,7 +494,7 @@ table {
             gs.values.push_back(v);
         }
         gd.series.push_back(gs);
-        //gd.colors = { mmThemeMetaColour(meta::COLOR_REPORT_DELTA) };
+        //gd.colors = { mmImage::themeMetaColour(mmImage::COLOR_REPORT_DELTA) };
         gd.type = static_cast<GraphData::GraphType>(chart);
         hb.addChart(gd);
 

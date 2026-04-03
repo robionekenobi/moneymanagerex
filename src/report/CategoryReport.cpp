@@ -19,7 +19,7 @@
  ********************************************************/
 
 #include <algorithm>
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "base/mmDateRange.h"
 
 #include "model/CategoryModel.h"
@@ -476,9 +476,9 @@ wxString mmReportCategoryOverTimePerformance::getHTMLText()
         if (!gd.series.empty()) {
             gd.type = GraphData::BARLINE;
             gd.colors = {
-                mmThemeMetaColour(meta::COLOR_REPORT_DELTA),
-                mmThemeMetaColour(meta::COLOR_REPORT_CREDIT),
-                mmThemeMetaColour(meta::COLOR_REPORT_DEBIT)
+                mmImage::themeMetaColour(mmImage::COLOR_REPORT_DELTA),
+                mmImage::themeMetaColour(mmImage::COLOR_REPORT_CREDIT),
+                mmImage::themeMetaColour(mmImage::COLOR_REPORT_DEBIT)
             };
             hb.addChart(gd);
         }

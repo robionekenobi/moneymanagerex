@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "mmex.h"
 #include "base/_constants.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "base/_platfdep.h"
 #include "_util.h"
 #include "_simple.h"
@@ -811,12 +811,12 @@ void mmColorButton::OnColourButton(wxCommandEvent& event)
         menuItem->SetBackgroundColour(getUDColour(i)); //only available for the wxMSW port.
         menuItem->SetTextColour(*bestFontColour(getUDColour(i)));
 #endif
-        wxBitmap bitmap(mmBitmapBundle(png::EMPTY, mmBitmapButtonSize).GetDefaultSize());
+        wxBitmap bitmap(mmImage::bitmapBundle(mmImage::png::EMPTY, mmImage::bitmapButtonSize).GetDefaultSize());
         wxMemoryDC memoryDC(bitmap);
 
         memoryDC.SetBackground(wxBrush(getUDColour(i)));
         memoryDC.Clear();
-        memoryDC.DrawBitmap(mmBitmapBundle(png::EMPTY, mmBitmapButtonSize).GetBitmap(wxDefaultSize), 0, 0, true);
+        memoryDC.DrawBitmap(mmImage::bitmapBundle(mmImage::png::EMPTY, mmImage::bitmapButtonSize).GetBitmap(wxDefaultSize), 0, 0, true);
         memoryDC.SelectObject(wxNullBitmap);
         menuItem->SetBitmap(bitmap);
 
@@ -1198,8 +1198,8 @@ mmTagTextCtrl::mmTagTextCtrl(wxWindow* parent, wxWindowID id,
     fgColor = *bestFontColour(bgColorEnabled_);
 #else
     style |= wxBORDER_NONE;
-    bgColorEnabled_ = mmThemeMetaColour(COLOR_TEXTCONTROL);
-    fgColor = mmThemeMetaColour(COLOR_TEXTCONTROL_FONT);
+    bgColorEnabled_ = mmImage::themeMetaColour(COLOR_TEXTCONTROL);
+    fgColor = mmImage::themeMetaColour(COLOR_TEXTCONTROL_FONT);
 #endif
     Create(parent, id, pos, size, style);
     SetFont(parent->GetFont());

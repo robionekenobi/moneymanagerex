@@ -22,7 +22,7 @@
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
@@ -277,15 +277,25 @@ void AssetDialog::CreateControls()
     itemFlexGridSizer6->Add(w_valueChangeRate, g_flagsExpand);
     enableDisableRate(false);
 
-    itemFlexGridSizer6->Add(new wxStaticText( asset_details_panel, wxID_STATIC, _t("Notes")), g_flagsH);
+    itemFlexGridSizer6->Add(new wxStaticText(
+        asset_details_panel, wxID_STATIC,
+        _t("Notes")
+    ), g_flagsH);
 
-    w_attachments = new wxBitmapButton(asset_details_panel, wxID_FILE
-        , mmBitmapBundle(png::CLIP, mmBitmapButtonSize), wxDefaultPosition
-        , wxSize(w_valueChange->GetSize().GetY(), w_valueChange->GetSize().GetY()));
+    w_attachments = new wxBitmapButton(
+        asset_details_panel, wxID_FILE,
+        mmImage::bitmapBundle(mmImage::png::CLIP, mmImage::bitmapButtonSize),
+        wxDefaultPosition,
+        wxSize(w_valueChange->GetSize().GetY(), w_valueChange->GetSize().GetY())
+    );
     itemFlexGridSizer6->Add(w_attachments, wxSizerFlags(g_flagsV).Align(wxALIGN_RIGHT));
     mmToolTip(w_attachments, _t("Organize attachments of this asset"));
 
-    w_notes = new wxTextCtrl(details_frame, IDC_NOTES, wxGetEmptyString(), wxDefaultPosition, wxSize(220, 170), wxTE_MULTILINE);
+    w_notes = new wxTextCtrl(details_frame, IDC_NOTES,
+        wxGetEmptyString(),
+        wxDefaultPosition, wxSize(220, 170),
+        wxTE_MULTILINE
+    );
     mmToolTip(w_notes, _t("Enter notes associated with this asset"));
     details_frame_sizer->Add(w_notes, 0, wxGROW | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 

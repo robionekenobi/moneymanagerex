@@ -22,7 +22,7 @@
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
@@ -291,7 +291,7 @@ void TrxUpdateDialog::CreateControls()
     button_cancel->SetFocus();
 
     wxBitmapButton* button_hide = new wxBitmapButton(button_panel
-        , ID_BTN_CUSTOMFIELDS, mmBitmapBundle(png::RIGHTARROW, mmBitmapButtonSize));
+        , ID_BTN_CUSTOMFIELDS, mmImage::bitmapBundle(mmImage::png::RIGHTARROW, mmImage::bitmapButtonSize));
     mmToolTip(button_hide, _t("Show/Hide custom fields window"));
     if (m_custom_fields->GetCustomFieldsCount() == 0) {
         button_hide->Hide();
@@ -645,11 +645,11 @@ void TrxUpdateDialog::OnMoreFields(wxCommandEvent& WXUNUSED(event))
     wxBitmapButton* button = static_cast<wxBitmapButton*>(FindWindow(ID_BTN_CUSTOMFIELDS));
 
     if (button)
-        button->SetBitmap(mmBitmapBundle(
+        button->SetBitmap(mmImage::bitmapBundle(
             m_custom_fields->IsCustomPanelShown()
-                ? png::RIGHTARROW
-                : png::LEFTARROW,
-            mmBitmapButtonSize
+                ? mmImage::png::RIGHTARROW
+                : mmImage::png::LEFTARROW,
+            mmImage::bitmapButtonSize
         ));
 
     m_custom_fields->ShowHideCustomPanel();

@@ -42,7 +42,7 @@
 #include "base/_platfdep.h"
 #include "util/mmCalcValidator.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "_util.h"
 #include "_simple.h"
 
@@ -91,7 +91,7 @@ void mmThemeAutoColour([[maybe_unused]] wxWindow* object, [[maybe_unused]] bool 
     
     if (type == typeid(wxButton).hash_code() || type == typeid(wxBitmapButton).hash_code())
     {
-        bg = mmThemeMetaString(COLOR_BUTTON);
+        bg = mmImage::themeMetaString(COLOR_BUTTON);
         if (bg.empty())
         {
             fg = bg.empty() && darkMode ? "#FFFFFF" : "#000000";
@@ -99,22 +99,22 @@ void mmThemeAutoColour([[maybe_unused]] wxWindow* object, [[maybe_unused]] bool 
     }
     else if (type == typeid(wxTreeCtrl).hash_code())
     {
-        bg = mmThemeMetaString(COLOR_NAVPANEL);
-        fg = mmThemeMetaString(COLOR_NAVPANEL_FONT);
+        bg = mmImage::themeMetaString(COLOR_NAVPANEL);
+        fg = mmImage::themeMetaString(COLOR_NAVPANEL_FONT);
     }
     else if (type == typeid(wxDataViewListCtrl).hash_code())
     {
-        bg = mmThemeMetaString(COLOR_LIST);
+        bg = mmImage::themeMetaString(COLOR_LIST);
         recursive = false;
     }
     else if (type == typeid(wxListCtrl).hash_code())
     {
-        bg = mmThemeMetaString(COLOR_LIST);
+        bg = mmImage::themeMetaString(COLOR_LIST);
     }
     else if (type == typeid(mmComboBox).hash_code())
     {
-        bg = mmThemeMetaString(COLOR_TEXTCONTROL);
-        fg = mmThemeMetaString(COLOR_TEXTCONTROL_FONT);
+        bg = mmImage::themeMetaString(COLOR_TEXTCONTROL);
+        fg = mmImage::themeMetaString(COLOR_TEXTCONTROL_FONT);
 #ifdef __WXMSW__
         wxColour bgColor = wxColour(bg);
         wxColour fgColor = wxColour(fg);
@@ -130,15 +130,15 @@ void mmThemeAutoColour([[maybe_unused]] wxWindow* object, [[maybe_unused]] bool 
     }
     else if (type == typeid(wxTextCtrl).hash_code() || type == typeid(mmTextCtrl).hash_code())
     {
-        bg = mmThemeMetaString(COLOR_TEXTCONTROL);
-        fg = mmThemeMetaString(COLOR_TEXTCONTROL_FONT);
+        bg = mmImage::themeMetaString(COLOR_TEXTCONTROL);
+        fg = mmImage::themeMetaString(COLOR_TEXTCONTROL_FONT);
     }
     else
     {
         wxDialog* dlg = dynamic_cast<wxDialog*>(object);
         wxPanel* panel = dynamic_cast<wxPanel*>(object);
         if (darkMode || dlg || panel)
-            bg = mmThemeMetaString(COLOR_LISTPANEL);
+            bg = mmImage::themeMetaString(COLOR_LISTPANEL);
     }
 
     if (!bg.empty())

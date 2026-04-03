@@ -53,38 +53,38 @@ void ToolBarEntries::SetToDefault()
     m_toolbar_entries.clear();
 
     // init with default entries
-    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_NEW,                    "New",                    "New Database",                       0, -1, png::NEW_DB,          true,  TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_OPEN,                   "Open",                   "Open Database",                      1, -1, png::OPEN,            true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_NEW,                    "New",                    "New Database",                       0, -1, mmImage::png::NEW_DB,          true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_OPEN,                   "Open",                   "Open Database",                      1, -1, mmImage::png::OPEN,            true,  TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  ToolBarEntry{0,                                       "",                       "",                                   2, -1, -1,                   true,  TOOLBAR_SEPARATOR});
-    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_NEWACCT,                "New Account",            "New Account",                        4, -1, png::NEW_ACC,         true,  TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_HOMEPAGE,               "Dashboard",              "Open Dashboard",                     5, -1, png::HOME,            true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_NEWACCT,                "New Account",            "New Account",                        4, -1, mmImage::png::NEW_ACC,         true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_HOMEPAGE,               "Dashboard",              "Open Dashboard",                     5, -1, mmImage::png::HOME,            true,  TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  ToolBarEntry{0,                                       "",                       "",                                   6, -1, -1,                   true,  TOOLBAR_SEPARATOR});
-    m_toolbar_entries.push_back(new  ToolBarEntry{wxID_NEW,                                "New",                    "New Transaction",                    7, -1, png::NEW_TRX,         true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{wxID_NEW,                                "New",                    "New Transaction",                    7, -1, mmImage::png::NEW_TRX,         true,  TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  ToolBarEntry{0,                                       "",                       "",                                   8, -1, -1,                   true,  TOOLBAR_SEPARATOR});
-    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_ORGPAYEE,               "Payee Manager",          "Payee Manager",                      9, -1, png::PAYEE,           true,  TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_ORGCATEGS,              "Category Manager",       "Category Manager",                  10, -1, png::CATEGORY,        true,  TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_ORGTAGS,                "Tag Manager",            "Tag Manager",                       11, -1, png::TAG,             true,  TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_CURRENCY,               "Currency Manager",       "Currency Manager",                  12, -1, png::CURR,            true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_ORGPAYEE,               "Payee Manager",          "Payee Manager",                      9, -1, mmImage::png::PAYEE,           true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_ORGCATEGS,              "Category Manager",       "Category Manager",                  10, -1, mmImage::png::CATEGORY,        true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_ORGTAGS,                "Tag Manager",            "Tag Manager",                       11, -1, mmImage::png::TAG,             true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_CURRENCY,               "Currency Manager",       "Currency Manager",                  12, -1, mmImage::png::CURR,            true,  TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  ToolBarEntry{0,                                       "",                       "",                                  13, -1, -1,                   true,  TOOLBAR_SEPARATOR});
-    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_TRANSACTIONREPORT,      "Transaction Report",     "Transaction Report",                14, -1, png::FILTER,          true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_TRANSACTIONREPORT,      "Transaction Report",     "Transaction Report",                14, -1, mmImage::png::FILTER,          true,  TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  ToolBarEntry{0,                                       "",                       "",                                  15, -1, -1,                   true,  TOOLBAR_SEPARATOR});
-    m_toolbar_entries.push_back(new  ToolBarEntry{wxID_VIEW_LIST,                          "General Report Manager", "General Report Manager",            16, -1, png::GRM,             true,  TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_RATES,                  "Download Rates",         "Download currency and stock rates", 17, -1, png::CURRATES,        true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{wxID_VIEW_LIST,                          "General Report Manager", "General Report Manager",            16, -1, mmImage::png::GRM,             true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_RATES,                  "Download Rates",         "Download currency and stock rates", 17, -1, mmImage::png::CURRATES,        true,  TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  ToolBarEntry{0,                                       "",                       "",                                  18, -1, -1,                   true,  TOOLBAR_SEPARATOR});
-    m_toolbar_entries.push_back(new  ToolBarEntry{wxID_PRINT,                              "&Print",                 "Print",                             19, -1, png::PRINT,           true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{wxID_PRINT,                              "&Print",                 "Print",                             19, -1, mmImage::png::PRINT,           true,  TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  ToolBarEntry{0,                                       "",                       "",                                  20, -1, -1,                   true,  TOOLBAR_SEPARATOR});
     m_toolbar_entries.push_back(new  ToolBarEntry{0,                                       "",                       "",                                  21, -1, -1,                   true,  TOOLBAR_STRETCH});
     m_toolbar_entries.push_back(new  ToolBarEntry{0,                                       "",                       "",                                  22, -1, -1,                   true,  TOOLBAR_SEPARATOR});
-    m_toolbar_entries.push_back(new  ToolBarEntry{MENU_VIEW_TOGGLE_FULLSCREEN,             "Full Screen\tF11",       "Toggle full screen",                23, -1, png::FULLSCREEN,      true,  TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  ToolBarEntry{wxID_PREFERENCES,                        "&Settings",              "Settings",                          24, -1, png::OPTIONS,         true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{MENU_VIEW_TOGGLE_FULLSCREEN,             "Full Screen\tF11",       "Toggle full screen",                23, -1, mmImage::png::FULLSCREEN,      true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{wxID_PREFERENCES,                        "&Settings",              "Settings",                          24, -1, mmImage::png::OPTIONS,         true,  TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  ToolBarEntry{0,                                       "",                       "",                                  25, -1, -1,                   true,  TOOLBAR_SEPARATOR});
-    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_ANNOUNCEMENTMAILING,    "News",                   "News",                              26, -1, png::NEW_NEWS,        true,  TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  ToolBarEntry{wxID_ABOUT,                              "&About",                 "About",                             27, -1, png::ABOUT,           true,  TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  ToolBarEntry{wxID_HELP,                               "&Help\tF1",              "Help",                              28, -1, png::HELP,            true,  TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  ToolBarEntry{MENU_BILLSDEPOSITS,                      "Scheduled Transactions", "Scheduled Transactions",            29, -1, png::RECURRING,       false, TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  ToolBarEntry{MENU_BUDGETSETUPDIALOG,                  "Budget Planner",         "Budget Planner",                    30, -1, png::BUDGET,          false, TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  ToolBarEntry{MENU_TRANSACTIONS_ALL,                   "All Transactions",       "All Transactions",                  31, -1, png::ALLTRANSACTIONS, false, TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  ToolBarEntry{MENU_TRANSACTIONS_DEL,                   "Deleted Transactions",   "Deleted Transactions",              32, -1, png::TRASH,           false, TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{mmGUIFrame::MENU_ANNOUNCEMENTMAILING,    "News",                   "News",                              26, -1, mmImage::png::NEW_NEWS,        true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{wxID_ABOUT,                              "&About",                 "About",                             27, -1, mmImage::png::ABOUT,           true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{wxID_HELP,                               "&Help\tF1",              "Help",                              28, -1, mmImage::png::HELP,            true,  TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{MENU_BILLSDEPOSITS,                      "Scheduled Transactions", "Scheduled Transactions",            29, -1, mmImage::png::RECURRING,       false, TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{MENU_BUDGETSETUPDIALOG,                  "Budget Planner",         "Budget Planner",                    30, -1, mmImage::png::BUDGET,          false, TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{MENU_TRANSACTIONS_ALL,                   "All Transactions",       "All Transactions",                  31, -1, mmImage::png::ALLTRANSACTIONS, false, TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  ToolBarEntry{MENU_TRANSACTIONS_DEL,                   "Deleted Transactions",   "Deleted Transactions",              32, -1, mmImage::png::TRASH,           false, TOOLBAR_BTN});
 }
 
 void ToolBarEntries::SortEntriesBySeq()
@@ -101,7 +101,7 @@ wxImageList* ToolBarEntries::getImageList(){
     ToolBarEntries::ToolBarEntry* ainfo = getFirstEntry();
     while (ainfo != nullptr) {
         if (ainfo->type == TOOLBAR_BTN) {
-            wxBitmapBundle bundle = mmBitmapBundle(ainfo->imageId, toolbar_icon_size);
+            wxBitmapBundle bundle = mmImage::bitmapBundle(ainfo->imageId, toolbar_icon_size);
             imageList->Add(bundle.GetBitmap(wxSize(toolbar_icon_size, toolbar_icon_size)));
             ainfo->imageListID = iidx++;
         }

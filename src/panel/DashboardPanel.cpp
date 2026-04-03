@@ -24,7 +24,7 @@ Copyright (C) 2026 Klaus Wich
 #include <html_template.h>
 
 #include "base/_constants.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "mmex.h"
 #include "util/mmPath.h"
 #include "util/_util.h"
@@ -216,11 +216,11 @@ void DashboardPanel::insertDataIntoTemplate()
     htmlWidgetIncomeVsExpenses income_vs_expenses;
     m_htmlText_mLabel["INCOME_VS_EXPENSES"] = income_vs_expenses.getHTMLText();
     m_htmlText_mLabel["INCOME_VS_EXPENSES_FORECOLOR"] =
-        mmThemeMetaString(meta::COLOR_REPORT_FORECOLOR);
+        mmImage::themeMetaString(mmImage::COLOR_REPORT_FORECOLOR);
     m_htmlText_mLabel["INCOME_VS_EXPENSES_COLORS"] =
         wxString::Format("'%s', '%s'",
-            mmThemeMetaString(meta::COLOR_REPORT_CREDIT),
-            mmThemeMetaString(meta::COLOR_REPORT_DEBIT)
+            mmImage::themeMetaString(mmImage::COLOR_REPORT_CREDIT),
+            mmImage::themeMetaString(mmImage::COLOR_REPORT_DEBIT)
         );
     m_htmlText_mLabel["INCOME_VS_EXPENSES_CURR_PFX_SYMBOL"] = base_currency_n
         ? base_currency_n->m_prefix_symbol

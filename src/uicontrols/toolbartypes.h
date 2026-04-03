@@ -19,7 +19,7 @@
 #pragma once
 
 #include "base/_defs.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "mmframe.h"
 
 class ToolBarEntries

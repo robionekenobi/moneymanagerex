@@ -23,7 +23,7 @@
 #include "model/SettingModel.h"
 #include "_ListBase.h"
 #include "ReportPanel.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 
 PanelBase::PanelBase()
 {

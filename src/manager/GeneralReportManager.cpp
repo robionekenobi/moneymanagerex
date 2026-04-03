@@ -31,7 +31,7 @@
 #include "base/_constants.h"
 #include "base/_platfdep.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmMiniEditor.h"
@@ -366,7 +366,7 @@ void GeneralReportManager::fillControls()
         );
         m_treeCtrl->SetItemData(item, new MyTreeItemData(report_d.m_id, report_d.m_group_name));
         if (!report_d.m_active) {
-            m_treeCtrl->SetItemTextColour(item, mmThemeMetaColour(meta::COLOR_HIDDEN));
+            m_treeCtrl->SetItemTextColour(item, mmImage::themeMetaColour(mmImage::COLOR_HIDDEN));
         }
 
         if (m_selectedReportID == report_d.m_id) {
@@ -402,8 +402,8 @@ void GeneralReportManager::CreateControls()
 
     m_treeCtrl = new wxTreeCtrl(left_panel, ID_REPORT_LIST, wxDefaultPosition, wxDefaultSize,
         wxTR_SINGLE | wxTR_HAS_BUTTONS | wxTR_NO_LINES | wxTR_TWIST_BUTTONS);
-    mmThemeMetaColour(m_treeCtrl, meta::COLOR_NAVPANEL);
-    mmThemeMetaColour(m_treeCtrl, meta::COLOR_NAVPANEL_FONT, true);
+    mmImage::themeMetaColour(m_treeCtrl, mmImage::COLOR_NAVPANEL);
+    mmImage::themeMetaColour(m_treeCtrl, mmImage::COLOR_NAVPANEL_FONT, true);
     left_sizer->Add(m_treeCtrl, g_flagsExpand);
 
     left_panel->SetSizer(left_sizer);
@@ -537,8 +537,8 @@ void GeneralReportManager::createEditorTab(wxNotebook* editors_notebook, int typ
 #endif
         m_dbView = new wxTreeCtrl(splitter_sql, wxID_ANY, wxDefaultPosition
             , wxDefaultSize, treeCtrlFlags);
-        mmThemeMetaColour(m_dbView, meta::COLOR_NAVPANEL);
-        mmThemeMetaColour(m_dbView, meta::COLOR_NAVPANEL_FONT, true);
+        mmImage::themeMetaColour(m_dbView, mmImage::COLOR_NAVPANEL);
+        mmImage::themeMetaColour(m_dbView, mmImage::COLOR_NAVPANEL_FONT, true);
 
         splitter_sql->SplitVertically(templateText, m_dbView);
         splitter_sql->SetSashPosition(500);

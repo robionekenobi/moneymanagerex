@@ -30,7 +30,7 @@
 
 #include "mmex.h"
 #include "base/_constants.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmSQLite3Hook.h"
@@ -103,13 +103,16 @@ int REPEAT_FREQ_TRANS_DELAY_TIME = 3000; // 3 seconds
 
 void mmToolbarArt::DrawPlainBackground(wxDC& dc, wxWindow* WXUNUSED(wnd), const wxRect& rect)
 {
-    dc.GradientFillLinear(rect, mmThemeMetaColour(meta::COLOR_TOOLBAR), mmThemeMetaColour(meta::COLOR_TOOLBAR));
+    dc.GradientFillLinear(rect,
+        mmImage::themeMetaColour(mmImage::COLOR_TOOLBAR),
+        mmImage::themeMetaColour(mmImage::COLOR_TOOLBAR)
+    );
 }
 
 void mmToolbarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem& item, const wxRect& rect)
 {
-    //wxColour clr = mmThemeMetaColour(meta::COLOR_TOOLBAR);
-    bool dark = isDark(mmThemeMetaColour(meta::COLOR_TOOLBAR));
+    //wxColour clr = mmImage::themeMetaColour(mmImage::COLOR_TOOLBAR);
+    bool dark = isDark(mmImage::themeMetaColour(mmImage::COLOR_TOOLBAR));
     int bmpX = 0, bmpY = 0;
 
     const wxBitmap& bmp = item.GetCurrentBitmapFor(wnd);
@@ -267,6 +270,7 @@ EVT_CLOSE(                                     mmGUIFrame::OnClose)
 wxEND_EVENT_TABLE()
 
 //----------------------------------------------------------------------------
+
 mmGUIFrame::mmGUIFrame(
     mmGUIApp* app,
     const wxString& title,
@@ -298,20 +302,20 @@ mmGUIFrame::mmGUIFrame(
             dbpath = SettingModel::instance().getLastDbPath();
     }
 
-    //Read news, if checking enabled
+    // Read news, if checking enabled
     if (PrefModel::instance().getCheckNews())
         getNewsRSS(websiteNewsArray_);
 
     /* Create the Controls for the frame */
     mmFontSize(this);
-    LoadTheme();
+    mmImage::loadTheme();
     createMenu();
     createControls();
     createToolBar();
 
 #if wxUSE_STATUSBAR
     CreateStatusBar();
-    mmThemeMetaColour(GetStatusBar(), meta::COLOR_LISTPANEL);
+    mmImage::themeMetaColour(GetStatusBar(), mmImage::COLOR_LISTPANEL);
 #endif // wxUSE_STATUSBAR
     m_recentFiles = new mmFileHistory(); // TODO Max files
     m_recentFiles->SetMenuPathStyle(wxFH_PATH_SHOW_ALWAYS);
@@ -339,9 +343,9 @@ mmGUIFrame::mmGUIFrame(
 
     // change look and feel of wxAuiManager
     toolBar_->SetArtProvider(new mmToolbarArt);
-    m_mgr.GetArtProvider()->SetColour(wxAUI_DOCKART_BACKGROUND_COLOUR, mmThemeMetaColour(meta::COLOR_TOOLBAR));
-    m_mgr.GetArtProvider()->SetColour(wxAUI_DOCKART_SASH_COLOUR, mmThemeMetaColour(meta::COLOR_LISTPANEL));
-    m_mgr.GetArtProvider()->SetColour(wxAUI_DOCKART_BORDER_COLOUR, mmThemeMetaColour(meta::COLOR_LISTPANEL));
+    m_mgr.GetArtProvider()->SetColour(wxAUI_DOCKART_BACKGROUND_COLOUR, mmImage::themeMetaColour(mmImage::COLOR_TOOLBAR));
+    m_mgr.GetArtProvider()->SetColour(wxAUI_DOCKART_SASH_COLOUR, mmImage::themeMetaColour(mmImage::COLOR_LISTPANEL));
+    m_mgr.GetArtProvider()->SetColour(wxAUI_DOCKART_BORDER_COLOUR, mmImage::themeMetaColour(mmImage::COLOR_LISTPANEL));
     m_mgr.GetArtProvider()->SetMetric(16, 0);
     m_mgr.GetArtProvider()->SetMetric(3, 1);
 
@@ -402,8 +406,8 @@ mmGUIFrame::mmGUIFrame(
             this->GetEventHandler()->AddPendingEvent(evt);
         }
     }
-    wxColour c = mmThemeMetaColour(COLOR_LISTPANEL);
-    mmThemeMetaColour(this, isDark(c) ? c.ChangeLightness(140) : c.ChangeLightness(70));
+    wxColour c = mmImage::themeMetaColour(mmImage::COLOR_LISTPANEL);
+    mmImage::themeMetaColour(this, isDark(c) ? c.ChangeLightness(140) : c.ChangeLightness(70));
 }
 //----------------------------------------------------------------------------
 
@@ -440,7 +444,7 @@ void mmGUIFrame::cleanup()
     /* Delete the GUI */
     cleanupHomePanel(false);
     ShutdownDatabase();
-    CloseTheme();
+    mmImage::closeTheme();
 
     // Backup the database according to user requirements
     if (PrefModel::instance().getDatabaseUpdated() &&
@@ -837,11 +841,11 @@ void mmGUIFrame::createControls()
     );
 
     m_nav_tree_ctrl->SetMinSize(wxSize(100, 100));
-    mmThemeMetaColour(m_nav_tree_ctrl, meta::COLOR_NAVPANEL);
-    mmThemeMetaColour(m_nav_tree_ctrl, meta::COLOR_NAVPANEL_FONT, true);
+    mmImage::themeMetaColour(m_nav_tree_ctrl, mmImage::COLOR_NAVPANEL);
+    mmImage::themeMetaColour(m_nav_tree_ctrl, mmImage::COLOR_NAVPANEL_FONT, true);
 
     const auto navIconSize = PrefModel::instance().getNavigationIconSize();
-    m_nav_tree_ctrl->SetImages(navtree_images_list(navIconSize));
+    m_nav_tree_ctrl->SetImages(mmImage::navtree_bitmapBundle_a(navIconSize));
     m_nav_tree_ctrl->SetIndent(10);
 
     m_nav_tree_ctrl->Connect(
@@ -2270,7 +2274,7 @@ void mmGUIFrame::createToolBar()
 
     toolBar_ = new wxAuiToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, style);
     toolBar_->SetToolBorderPadding(1);
-    mmThemeMetaColour(toolBar_, meta::COLOR_LISTPANEL);
+    mmImage::themeMetaColour(toolBar_, mmImage::COLOR_LISTPANEL);
     toolBar_->Bind(wxEVT_RIGHT_DOWN, &mmGUIFrame::OnToolbarRightClick, this);
 
     PopulateToolBar(false);
@@ -2293,11 +2297,11 @@ void  mmGUIFrame::PopulateToolBar(bool update)
                         if (news_array.empty()) {
                             news_array = _t("News");
                         }
-                        const auto news_ico = (websiteNewsArray_.size() > 0) ? mmBitmapBundle(png::NEW_NEWS, toolbar_icon_size) : mmBitmapBundle(png::NEWS, toolbar_icon_size);
+                        const auto news_ico = (websiteNewsArray_.size() > 0) ? mmImage::bitmapBundle(mmImage::png::NEW_NEWS, toolbar_icon_size) : mmImage::bitmapBundle(mmImage::png::NEWS, toolbar_icon_size);
                         toolBar_->AddTool(MENU_ANNOUNCEMENTMAILING, _t("News"), news_ico, news_array);
                     }
                     else {
-                        toolBar_->AddTool(ainfo->toolId, ainfo->label, mmBitmapBundle(ainfo->imageId, toolbar_icon_size), wxGetTranslation(ainfo->helpstring));
+                        toolBar_->AddTool(ainfo->toolId, ainfo->label, mmImage::bitmapBundle(ainfo->imageId, toolbar_icon_size), wxGetTranslation(ainfo->helpstring));
                     }
                     break;
 
@@ -3429,7 +3433,7 @@ void mmGUIFrame::OnBeNotified(wxCommandEvent& /*event*/)
 
     int toolbar_icon_size = PrefModel::instance().getToolbarIconSize();
     //toolBar_->SetToolBitmapSize(wxSize(toolbar_icon_size, toolbar_icon_size));
-    toolBar_->SetToolBitmap(MENU_ANNOUNCEMENTMAILING, mmBitmapBundle(png::NEWS, toolbar_icon_size));
+    toolBar_->SetToolBitmap(MENU_ANNOUNCEMENTMAILING, mmImage::bitmapBundle(mmImage::png::NEWS, toolbar_icon_size));
 
     const auto b = toolBar_->FindTool(MENU_ANNOUNCEMENTMAILING);
     if (b) b->SetShortHelp(_t("News"));
@@ -4372,7 +4376,7 @@ void mmGUIFrame::DoUpdateBudgetNavigation(wxTreeItemId& parent_item)
             if (entry.second == bp_d.m_id) {
                 year_budget = addNavTreeItem(
                     parent_item, bp_d.m_name,
-                    img::CALENDAR_PNG, mmTreeItemData::BUDGET,
+                    mmImage::img::CALENDAR_PNG, mmTreeItemData::BUDGET,
                     bp_d.m_id
                 );
             }
@@ -4381,7 +4385,7 @@ void mmGUIFrame::DoUpdateBudgetNavigation(wxTreeItemId& parent_item)
             ) {
                 addNavTreeItem(
                     year_budget, bp_d.m_name,
-                    img::CALENDAR_PNG, mmTreeItemData::BUDGET,
+                    mmImage::img::CALENDAR_PNG, mmTreeItemData::BUDGET,
                     bp_d.m_id
                 );
 

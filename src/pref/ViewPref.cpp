@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "base/_defs.h"
 #include <wx/colordlg.h>
 
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 
 #include "ViewPref.h"

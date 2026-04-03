@@ -20,7 +20,7 @@
  ********************************************************/
 
 #include "base/_constants.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -92,24 +92,24 @@ StockList::StockList(
     ListBase(parent_win, win_id),
     w_panel(cp),
     w_loss_attr1(new wxListItemAttr(
-        mmThemeMetaColour(meta::COLOR_REPORT_DEBIT),
-        mmThemeMetaColour(meta::COLOR_LISTALT0),
+        mmImage::themeMetaColour(mmImage::COLOR_REPORT_DEBIT),
+        mmImage::themeMetaColour(mmImage::COLOR_LISTALT0),
         GetFont()
     )),
     w_loss_attr2(new wxListItemAttr(
-        mmThemeMetaColour(meta::COLOR_REPORT_DEBIT),
-        mmThemeMetaColour(meta::COLOR_LIST),
+        mmImage::themeMetaColour(mmImage::COLOR_REPORT_DEBIT),
+        mmImage::themeMetaColour(mmImage::COLOR_LIST),
         GetFont()
     ))
 {
     wxVector<wxBitmapBundle> image_a;
-    image_a.push_back(mmBitmapBundle(png::PROFIT));
-    image_a.push_back(mmBitmapBundle(png::LOSS));
-    image_a.push_back(mmBitmapBundle(png::DOWNARROW));
-    image_a.push_back(mmBitmapBundle(png::UPARROW));
+    image_a.push_back(mmImage::bitmapBundle(mmImage::png::PROFIT));
+    image_a.push_back(mmImage::bitmapBundle(mmImage::png::LOSS));
+    image_a.push_back(mmImage::bitmapBundle(mmImage::png::DOWNARROW));
+    image_a.push_back(mmImage::bitmapBundle(mmImage::png::UPARROW));
 
     SetSmallImages(image_a);
-    mmThemeMetaColour(this, meta::COLOR_LISTPANEL);
+    mmImage::themeMetaColour(this, mmImage::COLOR_LISTPANEL);
 
     m_setting_name = "STOCKS";
     o_col_order_prefix = "STOCKS";

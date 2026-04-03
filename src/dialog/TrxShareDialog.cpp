@@ -24,7 +24,7 @@
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
@@ -344,7 +344,7 @@ void TrxShareDialog::CreateControls()
     commission_sizer->Add(m_share_commission_ctrl, g_flagsH);
     mmToolTip(m_share_commission_ctrl, _t("Enter any commission paid"));
 
-    m_deductible_comm_split = new wxBitmapButton(stock_details_panel, mmID_COMM_SPLIT, mmBitmapBundle(png::NEW_TRX, mmBitmapButtonSize));
+    m_deductible_comm_split = new wxBitmapButton(stock_details_panel, mmID_COMM_SPLIT, mmImage::bitmapBundle(mmImage::png::NEW_TRX, mmImage::bitmapButtonSize));
     commission_sizer->Add(m_deductible_comm_split, g_flagsH);
     mmToolTip(m_deductible_comm_split, _t("Use Deductible Comm. split Categories"));
 
@@ -355,12 +355,12 @@ void TrxShareDialog::CreateControls()
     itemFlexGridSizer6->Add(new wxStaticText(stock_details_panel, wxID_STATIC, _t("Notes")), g_flagsH);
 
     //Attachments
-    m_attachments_btn = new wxBitmapButton(stock_details_panel, wxID_FILE, mmBitmapBundle(png::CLIP, mmBitmapButtonSize));
+    m_attachments_btn = new wxBitmapButton(stock_details_panel, wxID_FILE, mmImage::bitmapBundle(mmImage::png::CLIP, mmImage::bitmapButtonSize));
     mmToolTip(m_attachments_btn, _t("Manage stock attachments"));
     //TODO m_attachments not used here
     m_attachments_btn->Hide();
 
-    web_button = new wxBitmapButton(stock_details_panel, wxID_INDEX, mmBitmapBundle(png::WEB, mmBitmapButtonSize));
+    web_button = new wxBitmapButton(stock_details_panel, wxID_INDEX, mmImage::bitmapBundle(mmImage::png::WEB, mmImage::bitmapButtonSize));
     mmToolTip(web_button, _t("Display the web page for the specified Stock symbol"));
 
     wxBoxSizer* icon_sizer = new wxBoxSizer(wxHORIZONTAL);

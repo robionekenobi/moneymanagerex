@@ -17,7 +17,7 @@
  ********************************************************/
 
 #include "base/_constants.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 
 #include "model/AccountModel.h"
 #include "model/PrefModel.h"
@@ -58,7 +58,7 @@ void mmNavigatorDialog::createColumns() {
     // Add imagelist
     const auto navIconSize = PrefModel::instance().getNavigationIconSize();
     wxImageList* imageList = new wxImageList(navIconSize, navIconSize);
-    for (const auto& bundle : navtree_images_list(navIconSize)) {
+    for (const auto& bundle : mmImage::navtree_bitmapBundle_a(navIconSize)) {
         wxBitmap bitmap = bundle.GetBitmap(wxSize(navIconSize, navIconSize));
         imageList->Add(bitmap);
     }

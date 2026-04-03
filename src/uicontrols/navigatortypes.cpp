@@ -19,7 +19,7 @@
 #include "base/mmSingleton.h"
 #include "model/AccountModel.h"
 #include "navigatortypes.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 
 NavigatorTypes::NavigatorTypes()
 {
@@ -50,26 +50,26 @@ void NavigatorTypes::SetToDefault()
     m_navigator_entries.clear();
 
     // init with default entries
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_DASHBOARD,              _n("Dashboard"),              "",                "",            -1, img::HOUSE_PNG,              NAV_TYP_PANEL,   true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_ALL_TRANSACTIONS,       _n("All Transactions"),       "",                "",            -1, img::ALLTRANSACTIONS_PNG,    NAV_TYP_PANEL,   true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_SCHEDULED_TRANSACTIONS, _n("Scheduled Transactions"), "",                "",            -1, img::SCHEDULE_PNG,           NAV_TYP_PANEL,   true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_FAVORITES,              _n("Favorites"),              "",                "",            -1, img::FAVOURITE_PNG,          NAV_TYP_PANEL,   true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_DASHBOARD,              _n("Dashboard"),              "",                "",            -1, mmImage::img::HOUSE_PNG,              NAV_TYP_PANEL,   true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_ALL_TRANSACTIONS,       _n("All Transactions"),       "",                "",            -1, mmImage::img::ALLTRANSACTIONS_PNG,    NAV_TYP_PANEL,   true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_SCHEDULED_TRANSACTIONS, _n("Scheduled Transactions"), "",                "",            -1, mmImage::img::SCHEDULE_PNG,           NAV_TYP_PANEL,   true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_FAVORITES,              _n("Favorites"),              "",                "",            -1, mmImage::img::FAVOURITE_PNG,          NAV_TYP_PANEL,   true});
 
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_CHECKING,                 _n("Bank Accounts"),          _n("Checking"),    "Checking",    -1, img::SAVINGS_ACC_NORMAL_PNG, NAV_TYP_ACCOUNT, true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_CREDIT_CARD,              _n("Credit Card Accounts"),   _n("Credit Card"), "Credit Card", -1, img::CARD_ACC_NORMAL_PNG,    NAV_TYP_ACCOUNT, true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_CASH,                     _n("Cash Accounts"),          _n("Cash"),        "Cash",        -1, img::CASH_ACC_NORMAL_PNG,    NAV_TYP_ACCOUNT, true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_LOAN,                     _n("Loan Accounts"),          _n("Loan"),        "Loan",        -1, img::LOAN_ACC_NORMAL_PNG,    NAV_TYP_ACCOUNT, true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_TERM,                     _n("Term Accounts"),          _n("Term"),        "Term",        -1, img::TERMACCOUNT_NORMAL_PNG, NAV_TYP_ACCOUNT, true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_INVESTMENT,               _n("Stock Portfolios"),       _n("Investment"),  "Investment",  -1, img::STOCK_ACC_NORMAL_PNG,   NAV_TYP_STOCK,   true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_SHARES,                   _n("Share Accounts"),         _n("Shares"),      "Shares",      -1, img::STOCK_ACC_NORMAL_PNG,   NAV_TYP_OTHER,   true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_ASSET,                    _n("Assets"),                 _n("Asset"),       "Asset",       -1, img::ASSET_NORMAL_PNG,       NAV_TYP_OTHER,   true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_CHECKING,                 _n("Bank Accounts"),          _n("Checking"),    "Checking",    -1, mmImage::img::SAVINGS_ACC_NORMAL_PNG, NAV_TYP_ACCOUNT, true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_CREDIT_CARD,              _n("Credit Card Accounts"),   _n("Credit Card"), "Credit Card", -1, mmImage::img::CARD_ACC_NORMAL_PNG,    NAV_TYP_ACCOUNT, true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_CASH,                     _n("Cash Accounts"),          _n("Cash"),        "Cash",        -1, mmImage::img::CASH_ACC_NORMAL_PNG,    NAV_TYP_ACCOUNT, true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_LOAN,                     _n("Loan Accounts"),          _n("Loan"),        "Loan",        -1, mmImage::img::LOAN_ACC_NORMAL_PNG,    NAV_TYP_ACCOUNT, true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_TERM,                     _n("Term Accounts"),          _n("Term"),        "Term",        -1, mmImage::img::TERMACCOUNT_NORMAL_PNG, NAV_TYP_ACCOUNT, true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_INVESTMENT,               _n("Stock Portfolios"),       _n("Investment"),  "Investment",  -1, mmImage::img::STOCK_ACC_NORMAL_PNG,   NAV_TYP_STOCK,   true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_SHARES,                   _n("Share Accounts"),         _n("Shares"),      "Shares",      -1, mmImage::img::STOCK_ACC_NORMAL_PNG,   NAV_TYP_OTHER,   true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{TYPE_ID_ASSET,                    _n("Assets"),                 _n("Asset"),       "Asset",       -1, mmImage::img::ASSET_NORMAL_PNG,       NAV_TYP_OTHER,   true});
 
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_BUDGET_PLANNER,         _n("Budget Planner"),         "",                "",            -1, img::CALENDAR_PNG,           NAV_TYP_PANEL,   true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_TRANSACTION_REPORT,     _n("Transaction Report"),     "",                "",            -1, img::FILTER_PNG,             NAV_TYP_PANEL,   true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_REPORTS,                _n("Reports"),                "",                "",            -1, img::PIECHART_PNG,           NAV_TYP_PANEL,   true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_GRM,                    _n("General Report Manager"), "",                "",            -1, img::CUSTOMSQL_GRP_PNG,      NAV_TYP_PANEL,   true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_DELETED_TRANSACTIONS,   _n("Deleted Transactions"),   "",                "",            -1, img::TRASH_PNG,              NAV_TYP_PANEL,   true});
-    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_HELP,                   _n("Help"),                   "",                "",            -1, img::HELP_PNG,               NAV_TYP_PANEL,   true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_BUDGET_PLANNER,         _n("Budget Planner"),         "",                "",            -1, mmImage::img::CALENDAR_PNG,           NAV_TYP_PANEL,   true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_TRANSACTION_REPORT,     _n("Transaction Report"),     "",                "",            -1, mmImage::img::FILTER_PNG,             NAV_TYP_PANEL,   true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_REPORTS,                _n("Reports"),                "",                "",            -1, mmImage::img::PIECHART_PNG,           NAV_TYP_PANEL,   true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_GRM,                    _n("General Report Manager"), "",                "",            -1, mmImage::img::CUSTOMSQL_GRP_PNG,      NAV_TYP_PANEL,   true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_DELETED_TRANSACTIONS,   _n("Deleted Transactions"),   "",                "",            -1, mmImage::img::TRASH_PNG,              NAV_TYP_PANEL,   true});
+    m_navigator_entries.push_back(new  NavigatorTypesInfo{NAV_ENTRY_HELP,                   _n("Help"),                   "",                "",            -1, mmImage::img::HELP_PNG,               NAV_TYP_PANEL,   true});
 }
 
 bool NavigatorTypes::DeleteEntry(NavigatorTypesInfo* info)

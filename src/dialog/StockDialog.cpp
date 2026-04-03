@@ -26,7 +26,7 @@
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
@@ -282,9 +282,9 @@ void StockDialog::CreateControls()
     itemFlexGridSizer6->Add(new wxStaticText(itemPanel5, wxID_STATIC, _t("Notes")), wxSizerFlags().Left().Bottom().Border(wxLEFT, 5).Border(wxBOTTOM,0));
     wxBoxSizer* iconsSizer = new wxBoxSizer(wxHORIZONTAL);
     itemFlexGridSizer6->Add(iconsSizer, wxSizerFlags(g_flagsH).Align(wxALIGN_RIGHT));
-    m_bAttachments = new wxBitmapButton(itemPanel5, wxID_FILE, mmBitmapBundle(png::CLIP, mmBitmapButtonSize));
+    m_bAttachments = new wxBitmapButton(itemPanel5, wxID_FILE, mmImage::bitmapBundle(mmImage::png::CLIP, mmImage::bitmapButtonSize));
     mmToolTip(m_bAttachments, _t("Manage stock attachments"));
-    wxBitmapButton* itemButton31 = new wxBitmapButton(itemPanel5, wxID_INDEX, mmBitmapBundle(png::WEB, mmBitmapButtonSize));
+    wxBitmapButton* itemButton31 = new wxBitmapButton(itemPanel5, wxID_INDEX, mmImage::bitmapBundle(mmImage::png::WEB, mmImage::bitmapButtonSize));
     mmToolTip(itemButton31, _t("Display the web page for the specified Stock symbol"));
     iconsSizer->Add(m_bAttachments, g_flagsH);
     iconsSizer->Add(itemButton31, g_flagsH);
@@ -349,9 +349,9 @@ void StockDialog::CreateControls()
     m_history_price_ctrl->Enable(false);
 
     wxStdDialogButtonSizer*  std_buttons_sizer = new wxStdDialogButtonSizer;
-    wxBitmapButton* buttonDownload = new wxBitmapButton(buttons_panel, ID_BUTTON_DOWNLOAD, mmBitmapBundle(png::UPDATE, mmBitmapButtonSize));
+    wxBitmapButton* buttonDownload = new wxBitmapButton(buttons_panel, ID_BUTTON_DOWNLOAD, mmImage::bitmapBundle(mmImage::png::UPDATE, mmImage::bitmapButtonSize));
     mmToolTip(buttonDownload, _t("Download Stock Price history"));
-    wxBitmapButton* buttonImport = new wxBitmapButton(buttons_panel, ID_BUTTON_IMPORT, mmBitmapBundle(png::IMPORT, mmBitmapButtonSize));
+    wxBitmapButton* buttonImport = new wxBitmapButton(buttons_panel, ID_BUTTON_IMPORT, mmImage::bitmapBundle(mmImage::png::IMPORT, mmImage::bitmapButtonSize));
     mmToolTip(buttonImport, _t("Import Stock Price history (CSV Format)"));
     wxButton* buttonDel = new wxButton(buttons_panel, wxID_DELETE, _t("&Delete "));
     mmToolTip(buttonDel, _t("Delete selected Stock Price"));

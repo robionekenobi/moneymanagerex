@@ -26,7 +26,7 @@
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "base/mmDate.h"
@@ -422,7 +422,7 @@ void SchedDialog::CreateControls()
 
     w_repeat_prev_btn = new wxBitmapButton(this,
         ID_DIALOG_TRANS_BUTTONTRANSNUMPREV,
-        mmBitmapBundle(png::LEFTARROW, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::LEFTARROW, mmImage::bitmapButtonSize)
     );
     mmToolTip(w_repeat_prev_btn,
         _t("Back to the last occurring date with the specified values")
@@ -433,7 +433,7 @@ void SchedDialog::CreateControls()
     wxBoxSizer* repeatBoxSizer = new wxBoxSizer(wxHORIZONTAL);
     w_repeat_next_btn = new wxBitmapButton(this,
         ID_DIALOG_TRANS_BUTTONTRANSNUM,
-        mmBitmapBundle(png::RIGHTARROW, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::RIGHTARROW, mmImage::bitmapButtonSize)
     );
     mmToolTip(w_repeat_next_btn,
         _t("Advance the next occurring date with the specified values")
@@ -575,7 +575,7 @@ void SchedDialog::CreateControls()
     transPanelSizer->Add(amountSizer, wxSizerFlags(g_flagsExpand).Border(0));
 
     w_calc_btn = new wxBitmapButton(this, wxID_ANY,
-        mmBitmapBundle(png::CALCULATOR, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::CALCULATOR, mmImage::bitmapButtonSize)
     );
     w_calc_btn->Connect(wxID_ANY,
         wxEVT_COMMAND_BUTTON_CLICKED,
@@ -647,7 +647,7 @@ void SchedDialog::CreateControls()
         m_sched_d.m_category_id_n, true
     );
     w_cat_text->SetMinSize(w_cat_text->GetSize());
-    w_split_btn = new wxBitmapButton(this, ID_DIALOG_TRANS_BUTTONSPLIT, mmBitmapBundle(png::NEW_TRX, mmBitmapButtonSize));
+    w_split_btn = new wxBitmapButton(this, ID_DIALOG_TRANS_BUTTONSPLIT, mmImage::bitmapBundle(mmImage::png::NEW_TRX, mmImage::bitmapButtonSize));
     mmToolTip(w_split_btn, _t("Use split Categories"));
 
     transPanelSizer->Add(categ_label2, g_flagsH);
@@ -696,7 +696,7 @@ void SchedDialog::CreateControls()
 
     // Attachments
     w_attachment_btn = new wxBitmapButton(this, wxID_FILE,
-        mmBitmapBundle(png::CLIP, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::CLIP, mmImage::bitmapButtonSize)
     );
     mmToolTip(w_attachment_btn,
         _t("Organize attachments of this scheduled transaction")
@@ -744,7 +744,7 @@ void SchedDialog::CreateControls()
     mainBoxSizerOuter->Add(buttonsPanel, wxSizerFlags(g_flagsV).Center().Border(wxALL, 0));
     wxBitmapButton* button_hide = new wxBitmapButton(buttonsPanel,
         ID_BTN_CUSTOMFIELDS,
-        mmBitmapBundle(png::RIGHTARROW, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::RIGHTARROW, mmImage::bitmapButtonSize)
     );
     mmToolTip(button_hide, _t("Show/Hide custom fields window"));
     if (m_custom_fields->GetCustomFieldsCount() == 0) {
@@ -1542,7 +1542,7 @@ void SchedDialog::OnMoreFields(wxCommandEvent& WXUNUSED(event))
     wxBitmapButton* button = static_cast<wxBitmapButton*>(FindWindow(ID_BTN_CUSTOMFIELDS));
 
     if (button)
-        button->SetBitmap(mmBitmapBundle(m_custom_fields->IsCustomPanelShown() ? png::RIGHTARROW : png::LEFTARROW, mmBitmapButtonSize));
+        button->SetBitmap(mmImage::bitmapBundle(m_custom_fields->IsCustomPanelShown() ? mmImage::png::RIGHTARROW : mmImage::png::LEFTARROW, mmImage::bitmapButtonSize));
 
     m_custom_fields->ShowHideCustomPanel();
 

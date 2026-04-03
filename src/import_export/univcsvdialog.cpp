@@ -33,7 +33,7 @@
 #include "base/_constants.h"
 #include "base/_platfdep.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -307,12 +307,12 @@ void mmUnivCSVDialog::CreateControls()
         m_choice_preset_name->SetStringSelection(init_preset_name);
 
     wxBitmapButton* itemButton_Save = new wxBitmapButton(scrolledWindow, wxID_SAVEAS,
-        mmBitmapBundle(png::SAVE, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::SAVE, mmImage::bitmapButtonSize)
     );
     preset_box_sizer->Add(itemButton_Save, g_flagsH);
 
     wxBitmapButton* itemButtonClear = new wxBitmapButton(scrolledWindow, wxID_CLEAR,
-        mmBitmapBundle(png::CLEAR, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::CLEAR, mmImage::bitmapButtonSize)
     );
     preset_box_sizer->Add(itemButtonClear, g_flagsH);
 

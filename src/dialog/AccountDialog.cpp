@@ -22,7 +22,7 @@
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
@@ -62,7 +62,7 @@ wxBEGIN_EVENT_TABLE(AccountDialog, wxDialog)
     EVT_BUTTON(wxID_FILE,                          AccountDialog::OnAttachments)
     EVT_MENU_RANGE(
         wxID_HIGHEST,
-        wxID_HIGHEST + static_cast<int>(acc_img::MAX_ACC_ICON),
+        wxID_HIGHEST + static_cast<int>(mmImage::acc_img::MAX_ACC_ICON),
                                                    AccountDialog::OnCustonImage)
     EVT_CHOICE(ID_DIALOG_NEWACCT_COMBO_ACCTSTATUS, AccountDialog::OnAccountStatus)
 wxEND_EVENT_TABLE()
@@ -74,7 +74,7 @@ AccountDialog::AccountDialog()
 AccountDialog::AccountDialog(AccountData* account, wxWindow* parent) :
     m_account_n(account)
 {
-    m_images = navtree_images_list();
+    m_images = mmImage::navtree_bitmapBundle_a();
     m_currencyID = m_account_n->m_currency_id;
     [[maybe_unused]] const CurrencyData* currency = CurrencyModel::instance().get_id_data_n(m_currencyID);
     wxASSERT(currency);
@@ -292,7 +292,7 @@ void AccountDialog::CreateControls()
     m_bitmapButtons->Connect(wxID_STATIC, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(AccountDialog::OnImageButton), nullptr, this);
     itemBoxSizer28->Add(m_bitmapButtons, g_flagsH);
 
-    bAttachments_ = new wxBitmapButton(itemPanel27, wxID_FILE, mmBitmapBundle(png::CLIP));
+    bAttachments_ = new wxBitmapButton(itemPanel27, wxID_FILE, mmImage::bitmapBundle(mmImage::png::CLIP));
     mmToolTip(bAttachments_, _t("Organize attachments of this account"));
     itemBoxSizer28->Add(bAttachments_, g_flagsH);
 
@@ -436,17 +436,17 @@ void AccountDialog::OnAttachments(wxCommandEvent& /*event*/)
 void AccountDialog::OnImageButton(wxCommandEvent& /*event*/)
 {
     wxMenu mainMenu;
-    wxMenuItem* menuItem = new wxMenuItem(&mainMenu, wxID_HIGHEST + static_cast<int>(acc_img::ACC_ICON_MONEY) - 1, _t("Default Image"));
+    wxMenuItem* menuItem = new wxMenuItem(&mainMenu, wxID_HIGHEST + static_cast<int>(mmImage::acc_img::ACC_ICON_MONEY) - 1, _t("Default Image"));
 
     menuItem->SetBitmap(m_images.at(
         PrefModel::instance().AccountImageId(m_account_n->m_id, true)
     ));
     mainMenu.Append(menuItem);
 
-    for (int i = img::LAST_NAVTREE_PNG; i < acc_img::MAX_ACC_ICON; ++i)
+    for (int i = mmImage::img::LAST_NAVTREE_PNG; i < mmImage::acc_img::MAX_ACC_ICON; ++i)
     {
         menuItem = new wxMenuItem(&mainMenu, wxID_HIGHEST + i
-            , wxString::Format(_t("Image #%i"), i - img::LAST_NAVTREE_PNG + 1));
+            , wxString::Format(_t("Image #%i"), i - mmImage::img::LAST_NAVTREE_PNG + 1));
         menuItem->SetBitmap(m_images.at(i));
         mainMenu.Append(menuItem);
     }
@@ -456,7 +456,7 @@ void AccountDialog::OnImageButton(wxCommandEvent& /*event*/)
 
 void AccountDialog::OnCustonImage(wxCommandEvent& event)
 {
-    int selectedImage = (event.GetId() - wxID_HIGHEST) - img::LAST_NAVTREE_PNG + 1;
+    int selectedImage = (event.GetId() - wxID_HIGHEST) - mmImage::img::LAST_NAVTREE_PNG + 1;
     int image_id = PrefModel::instance().AccountImageId(m_account_n->m_id, true);
 
     InfoModel::instance().saveInt(
@@ -464,7 +464,7 @@ void AccountDialog::OnCustonImage(wxCommandEvent& event)
         selectedImage
     );
     if (selectedImage != 0)
-        image_id = selectedImage + img::LAST_NAVTREE_PNG - 1;
+        image_id = selectedImage + mmImage::img::LAST_NAVTREE_PNG - 1;
 
     m_bitmapButtons->SetBitmap(m_images.at(image_id));
 }

@@ -20,7 +20,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "model/SettingModel.h"
 #include "_ListBase.h"
 
@@ -47,13 +47,13 @@ ListBase::ListBase(wxWindow* parent_win, wxWindowID win_id) :
         wxLC_REPORT | wxLC_HRULES | wxLC_VRULES | wxLC_VIRTUAL | wxLC_SINGLE_SEL | wxLC_AUTOARRANGE
     ),
     w_attr1(new wxListItemAttr(
-        *bestFontColour(mmThemeMetaColour(meta::COLOR_LISTALT0)),
-        mmThemeMetaColour(meta::COLOR_LISTALT0),
+        *bestFontColour(mmImage::themeMetaColour(mmImage::COLOR_LISTALT0)),
+        mmImage::themeMetaColour(mmImage::COLOR_LISTALT0),
         wxNullFont
     )),
     w_attr2(new wxListItemAttr(
-        *bestFontColour(mmThemeMetaColour(meta::COLOR_LIST)),
-        mmThemeMetaColour(meta::COLOR_LIST),
+        *bestFontColour(mmImage::themeMetaColour(mmImage::COLOR_LIST)),
+        mmImage::themeMetaColour(mmImage::COLOR_LIST),
         wxNullFont
     ))
 {

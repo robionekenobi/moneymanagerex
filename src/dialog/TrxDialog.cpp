@@ -28,7 +28,7 @@
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
@@ -484,7 +484,7 @@ void TrxDialog::CreateControls()
     dpc_ = new mmDatePickerCtrl(static_box, ID_DIALOG_TRANS_BUTTONDATE);
     flex_sizer->Add(dpc_->mmGetLayout());
 
-    wxBitmapBundle bundle = mmBitmapBundle(png::ACC_CLOCK, mmBitmapButtonSize);
+    wxBitmapBundle bundle = mmImage::bitmapBundle(mmImage::png::ACC_CLOCK, mmImage::bitmapButtonSize);
     wxBitmapButton* today = new wxBitmapButton(static_box, ID_DIALOG_TRANS_TODAY, bundle);
     today->Connect(wxID_ANY, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(TrxDialog::OnToday), nullptr, this);
 
@@ -533,7 +533,7 @@ void TrxDialog::CreateControls()
     flex_sizer->Add(amount_label, g_flagsH);
     flex_sizer->Add(amountSizer, wxSizerFlags(g_flagsExpand).Border(0));
 
-    bCalc_ = new wxBitmapButton(static_box, wxID_ANY, mmBitmapBundle(png::CALCULATOR, mmBitmapButtonSize));
+    bCalc_ = new wxBitmapButton(static_box, wxID_ANY, mmImage::bitmapBundle(mmImage::png::CALCULATOR, mmImage::bitmapButtonSize));
     bCalc_->Connect(wxID_ANY, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(TrxDialog::OnCalculator), nullptr, this);
     mmToolTip(bCalc_, _t("Open Calculator"));
     flex_sizer->Add(bCalc_, g_flagsH);
@@ -549,7 +549,7 @@ void TrxDialog::CreateControls()
     flex_sizer->Add(account_label_, g_flagsH);
     flex_sizer->Add(cbAccount_, g_flagsExpand);
 
-    bSwitch_ = new wxBitmapButton(static_box, wxID_ANY, mmBitmapBundle(png::UPDATE, mmBitmapButtonSize));
+    bSwitch_ = new wxBitmapButton(static_box, wxID_ANY, mmImage::bitmapBundle(mmImage::png::UPDATE, mmImage::bitmapButtonSize));
     bSwitch_->Connect(wxID_ANY, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(TrxDialog::OnSwitch), nullptr, this);
     mmToolTip(bSwitch_, _t("Exchange to and from accounts"));
     flex_sizer->Add(bSwitch_, g_flagsH);
@@ -579,7 +579,7 @@ void TrxDialog::CreateControls()
     cbCategory_ = new mmComboBoxCategory(static_box, mmID_CATEGORY, wxDefaultSize
         , m_journal_d.m_category_id_n, true);
     cbCategory_->SetMinSize(cbCategory_->GetSize());
-    bSplit_ = new wxBitmapButton(static_box, mmID_CATEGORY_SPLIT, mmBitmapBundle(png::NEW_TRX, mmBitmapButtonSize));
+    bSplit_ = new wxBitmapButton(static_box, mmID_CATEGORY_SPLIT, mmImage::bitmapBundle(mmImage::png::NEW_TRX, mmImage::bitmapButtonSize));
     mmToolTip(bSplit_, _t("Use split Categories"));
 
     flex_sizer->Add(categ_label_, g_flagsH);
@@ -608,7 +608,7 @@ void TrxDialog::CreateControls()
     // Number  ---------------------------------------------
     textNumber_ = new wxTextCtrl(static_box, ID_DIALOG_TRANS_TEXTNUMBER, "", wxDefaultPosition, wxDefaultSize);
 
-    bAuto = new wxBitmapButton(static_box, ID_DIALOG_TRANS_BUTTONTRANSNUM, mmBitmapBundle(png::TRXNUM, mmBitmapButtonSize));
+    bAuto = new wxBitmapButton(static_box, ID_DIALOG_TRANS_BUTTONTRANSNUM, mmImage::bitmapBundle(mmImage::png::TRXNUM, mmImage::bitmapButtonSize));
     bAuto->Connect(ID_DIALOG_TRANS_BUTTONTRANSNUM, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(TrxDialog::OnAutoTransNum), nullptr, this);
     mmToolTip(bAuto, _t("Populate Transaction #"));
 
@@ -630,7 +630,7 @@ void TrxDialog::CreateControls()
     bColours_->SetColor(m_journal_d.m_color.GetValue());
 
     // Attachments
-    bAttachments_ = new wxBitmapButton(static_box, wxID_FILE, mmBitmapBundle(png::CLIP, mmBitmapButtonSize));
+    bAttachments_ = new wxBitmapButton(static_box, wxID_FILE, mmImage::bitmapBundle(mmImage::png::CLIP, mmImage::bitmapButtonSize));
     mmToolTip(bAttachments_, _t("Manage transaction attachments"));
 
     // Now display the Frequently Used Notes, Colour, Attachment buttons
@@ -660,7 +660,7 @@ void TrxDialog::CreateControls()
     wxStdDialogButtonSizer*  buttons_sizer = new wxStdDialogButtonSizer;
     buttons_panel->SetSizer(buttons_sizer);
 
-    wxBitmapButton* button_hide = new wxBitmapButton(buttons_panel, ID_DIALOG_TRANS_CUSTOMFIELDS, mmBitmapBundle(png::RIGHTARROW, mmBitmapButtonSize));
+    wxBitmapButton* button_hide = new wxBitmapButton(buttons_panel, ID_DIALOG_TRANS_CUSTOMFIELDS, mmImage::bitmapBundle(mmImage::png::RIGHTARROW, mmImage::bitmapButtonSize));
     mmToolTip(button_hide, _t("Show/Hide custom fields window"));
     if (m_custom_fields->GetCustomFieldsCount() == 0) {
         button_hide->Hide();
@@ -1427,7 +1427,7 @@ void TrxDialog::OnMoreFields(wxCommandEvent& WXUNUSED(event))
     wxBitmapButton* button = static_cast<wxBitmapButton*>(FindWindow(ID_DIALOG_TRANS_CUSTOMFIELDS));
 
     if (button)
-        button->SetBitmap(mmBitmapBundle(m_custom_fields->IsCustomPanelShown() ? png::RIGHTARROW : png::LEFTARROW, mmBitmapButtonSize));
+        button->SetBitmap(mmImage::bitmapBundle(m_custom_fields->IsCustomPanelShown() ? mmImage::png::RIGHTARROW : mmImage::png::LEFTARROW, mmImage::bitmapButtonSize));
 
     m_custom_fields->ShowHideCustomPanel();
     if (m_custom_fields->IsCustomPanelShown()) {

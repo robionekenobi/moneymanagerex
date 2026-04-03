@@ -19,7 +19,7 @@
  ********************************************************/
 
 #include "base/_constants.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "model/_all.h"
 
 #include "SchedPanel.h"
@@ -91,7 +91,7 @@ SchedList::SchedList(
     ListBase(parent, winid),
     w_panel(bdp)
 {
-    mmThemeMetaColour(this, meta::COLOR_LISTPANEL);
+    mmImage::themeMetaColour(this, mmImage::COLOR_LISTPANEL);
 
     const wxAcceleratorEntry entries[] = {
         wxAcceleratorEntry(wxACCEL_CTRL, 'N', MENU_TREEPOPUP_NEW),

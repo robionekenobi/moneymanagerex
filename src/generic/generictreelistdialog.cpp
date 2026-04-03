@@ -17,7 +17,7 @@
  ********************************************************/
 
 #include "base/_constants.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 
 #include "model/PrefModel.h"
 
@@ -79,13 +79,13 @@ void genericTreeListDialog::init(long liststyle)  // Must be called in construct
     itemBoxVright->AddSpacer(20);
 
     m_up_top = new wxButton(this, BTN_UP_TOP, _tu("&Top"));
-    m_up_top->SetBitmap(mmBitmapBundle(png::UPARROW, mmBitmapButtonSize));
+    m_up_top->SetBitmap(mmImage::bitmapBundle(mmImage::png::UPARROW, mmImage::bitmapButtonSize));
     m_up_top->Enable(false);
     m_up_top->Bind(wxEVT_BUTTON, &genericTreeListDialog::OnTop, this);
 
     itemBoxVright->Add(m_up_top, g_flagsV);
 
-    m_up = new wxBitmapButton(this, BTN_UP, mmBitmapBundle(png::UPARROW, mmBitmapButtonSize));
+    m_up = new wxBitmapButton(this, BTN_UP, mmImage::bitmapBundle(mmImage::png::UPARROW, mmImage::bitmapButtonSize));
     m_up->Enable(false);
     m_up->Bind(wxEVT_BUTTON, &genericTreeListDialog::OnUp, this);
 
@@ -93,13 +93,13 @@ void genericTreeListDialog::init(long liststyle)  // Must be called in construct
 
     createMiddleElements(itemBoxVright);  // to be overwritten
 
-    m_down = new wxBitmapButton(this, BTN_DOWN, mmBitmapBundle(png::DOWNARROW, mmBitmapButtonSize));
+    m_down = new wxBitmapButton(this, BTN_DOWN, mmImage::bitmapBundle(mmImage::png::DOWNARROW, mmImage::bitmapButtonSize));
     m_down->Enable(false);
     m_down->Bind(wxEVT_BUTTON, &genericTreeListDialog::OnDown, this);
     itemBoxVright->Add(m_down, g_flagsV);
 
     m_down_bottom = new wxButton(this, BTN_DOWN_BOTTOM, _tu("&Bottom"));
-    m_down_bottom->SetBitmap(mmBitmapBundle(png::DOWNARROW, mmBitmapButtonSize));
+    m_down_bottom->SetBitmap(mmImage::bitmapBundle(mmImage::png::DOWNARROW, mmImage::bitmapButtonSize));
     m_down_bottom->Enable(false);
     m_down_bottom->Bind(wxEVT_BUTTON, &genericTreeListDialog::OnBottom, this);
 

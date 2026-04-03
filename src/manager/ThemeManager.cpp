@@ -24,7 +24,7 @@ Copyright (C) 2021 Mark Whalley (mark@ipx.co.uk)
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 
 #include "model/PrefModel.h"
@@ -259,7 +259,7 @@ void ThemeManager::RefreshView()
     }
     wxMemoryFSHandler::AddFile(
         webImageName,
-        mmBitmapBundle(png::WEB).GetBitmap(wxDefaultSize),
+        mmImage::bitmapBundle(mmImage::png::WEB).GetBitmap(wxDefaultSize),
         wxBITMAP_TYPE_PNG
     );
     imgUrl = "memory:" + webImageName;
@@ -267,7 +267,7 @@ void ThemeManager::RefreshView()
     themeImageUrl = "memory:" + themeImageName;
     vfsThemeImageLoaded = true;
 #else
-    mmBitmapBundle(png::WEB).GetBitmap(wxDefaultSize).SaveFile(
+    mmImage::bitmapBundle(mmImage::png::WEB).GetBitmap(wxDefaultSize).SaveFile(
         mmPath::getTempFolder() + webImageName, wxBITMAP_TYPE_PNG
     );
     imgUrl = "file://" + mmPath::getTempFolder() + webImageName;

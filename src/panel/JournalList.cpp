@@ -25,7 +25,7 @@
 #include <wx/sound.h>
 
 #include "base/_constants.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -128,43 +128,43 @@ JournalList::JournalList(
     w_panel(panel),
     w_attr1(new wxListItemAttr(
         *bestFontColour(w_panel->isAllTrans() ?
-            mmThemeMetaColour(meta::COLOR_LISTALT0A) :
-            mmThemeMetaColour(meta::COLOR_LISTALT0)
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0A) :
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0)
         ),
         w_panel->isAllTrans() ?
-            mmThemeMetaColour(meta::COLOR_LISTALT0A) :
-            mmThemeMetaColour(meta::COLOR_LISTALT0),
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0A) :
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0),
         GetFont()
     )),
     w_attr2(new wxListItemAttr(
-        *bestFontColour(mmThemeMetaColour(meta::COLOR_LIST)),
-        mmThemeMetaColour(meta::COLOR_LIST),
+        *bestFontColour(mmImage::themeMetaColour(mmImage::COLOR_LIST)),
+        mmImage::themeMetaColour(mmImage::COLOR_LIST),
         GetFont()
     )),
     w_attr3(new wxListItemAttr(
-        mmThemeMetaColour(meta::COLOR_LISTFUTURE),
+        mmImage::themeMetaColour(mmImage::COLOR_LISTFUTURE),
         w_panel->isAllTrans() ?
-            mmThemeMetaColour(meta::COLOR_LISTALT0A) :
-            mmThemeMetaColour(meta::COLOR_LISTALT0),
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0A) :
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0),
         GetFont()
     )),
     w_attr4(new wxListItemAttr(
-        mmThemeMetaColour(meta::COLOR_LISTFUTURE),
+        mmImage::themeMetaColour(mmImage::COLOR_LISTFUTURE),
         wxNullColour, GetFont()
     )),
     w_attr5(new wxListItemAttr(
         *bestFontColour(w_panel->isAllTrans() ?
-            mmThemeMetaColour(meta::COLOR_LISTALT0A) :
-            mmThemeMetaColour(meta::COLOR_LISTALT0)
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0A) :
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0)
         ),
         w_panel->isAllTrans() ?
-            mmThemeMetaColour(meta::COLOR_LISTALT0A) :
-            mmThemeMetaColour(meta::COLOR_LISTALT0),
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0A) :
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0),
         GetFont().Bold()
     )),
     w_attr6(new wxListItemAttr(
-        *bestFontColour(mmThemeMetaColour(meta::COLOR_LIST)),
-        mmThemeMetaColour(meta::COLOR_LIST),
+        *bestFontColour(mmImage::themeMetaColour(mmImage::COLOR_LIST)),
+        mmImage::themeMetaColour(mmImage::COLOR_LIST),
         GetFont().Bold()
     )),
     w_attr11(new wxListItemAttr(
@@ -241,7 +241,7 @@ JournalList::JournalList(
     wxASSERT(w_panel);
     m_select_key_a.clear();
     m_copy_key_a.clear();
-    mmThemeMetaColour(this, meta::COLOR_LISTPANEL);
+    mmImage::themeMetaColour(this, mmImage::COLOR_LISTPANEL);
 
     const wxAcceleratorEntry entries[] = {
         wxAcceleratorEntry(wxACCEL_CTRL, 'A', MENU_ON_SELECT_ALL),

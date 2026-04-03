@@ -17,7 +17,7 @@
  ********************************************************/
 
 #include "base/_constants.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "base/mmDate.h"
 #include "base/mmDateRange.h"
 #include "util/mmCalcValidator.h"
@@ -132,7 +132,7 @@ void mmReconcileDialog::CreateControls()
     topSizer->Add(w_amount_text, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 
     w_calc_btn = new wxBitmapButton(topPanel, wxID_ANY,
-        mmBitmapBundle(png::CALCULATOR, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::CALCULATOR, mmImage::bitmapButtonSize)
     );
     w_calc_btn->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &mmReconcileDialog::OnCalculator, this);
     w_calc_btn->SetCanFocus(false);
@@ -160,7 +160,7 @@ void mmReconcileDialog::CreateControls()
     topSizer->Add(btn, 0, wxRIGHT, 20);
 
     wxBitmapButton* bbtn = new wxBitmapButton(topPanel, ID_BUTTON,
-        mmBitmapBundle(png::OPTIONS, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::OPTIONS, mmImage::bitmapButtonSize)
     );
     bbtn->Bind(wxEVT_BUTTON, &mmReconcileDialog::OnSettings, this);
     bbtn->SetCanFocus(false);
@@ -185,8 +185,8 @@ void mmReconcileDialog::CreateControls()
     wxPanel* leftlistPanel = new wxPanel(midPanel);
     wxBoxSizer* leftSizer = new wxBoxSizer(wxVERTICAL);
 
-    w_images.push_back(mmBitmapBundle(png::UNRECONCILED));
-    w_images.push_back(mmBitmapBundle(png::RECONCILED));
+    w_images.push_back(mmImage::bitmapBundle(mmImage::png::UNRECONCILED));
+    w_images.push_back(mmImage::bitmapBundle(mmImage::png::RECONCILED));
 
     wxStaticText* leftLabel = new wxStaticText(leftlistPanel, wxID_ANY,
         _t("Withdrawals")

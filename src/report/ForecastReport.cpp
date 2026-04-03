@@ -18,7 +18,7 @@
  ********************************************************/
 
 #include "mmex.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "htmlbuilder.h"
 
@@ -88,8 +88,8 @@ wxString ForecastReport::getHTMLText()
     gd.series.push_back(gsWithdrawal);
 
     gd.type = GraphData::LINE_DATETIME;
-    gd.colors = { mmThemeMetaColour(meta::COLOR_REPORT_CREDIT)
-                    , mmThemeMetaColour(meta::COLOR_REPORT_DEBIT) };
+    gd.colors = { mmImage::themeMetaColour(mmImage::COLOR_REPORT_CREDIT)
+                    , mmImage::themeMetaColour(mmImage::COLOR_REPORT_DEBIT) };
     hb.addChart(gd);
 
     hb.end();

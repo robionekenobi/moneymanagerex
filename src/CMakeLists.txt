@@ -69,8 +69,6 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     base/_defs.h
     base/_platfdep.h
     base/_types.h
-    base/images_list.cpp
-    base/images_list.h
     base/mmCache.h
     base/mmCache.tpp
     base/mmChoice.cpp
@@ -96,6 +94,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     util/mmCalcValidator.h
     util/mmFileHistory.cpp
     util/mmFileHistory.h
+    util/mmImage.cpp
+    util/mmImage.h
     util/mmMiniEditor.cpp
     util/mmMiniEditor.h
     util/mmPath.cpp

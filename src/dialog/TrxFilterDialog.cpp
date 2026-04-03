@@ -34,7 +34,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmCalcValidator.h"
@@ -795,12 +795,12 @@ void TrxFilterDialog::mmDoCreateControls()
     w_setting_choice->Connect(wxID_APPLY, wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler(TrxFilterDialog::OnSettingsSelected), nullptr, this);
 
     settings_box_sizer->AddSpacer(5);
-    w_save_btn = new wxBitmapButton(this, wxID_SAVEAS, mmBitmapBundle(png::SAVE, mmBitmapButtonSize));
+    w_save_btn = new wxBitmapButton(this, wxID_SAVEAS, mmImage::bitmapBundle(mmImage::png::SAVE, mmImage::bitmapButtonSize));
     settings_box_sizer->Add(w_save_btn, g_flagsH);
     mmToolTip(w_save_btn, _t("Save active values into current Preset selection"));
     w_save_btn->Connect(wxID_SAVEAS, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(TrxFilterDialog::OnSaveSettings), nullptr, this);
 
-    w_delete_btn = new wxBitmapButton(this, wxID_CLEAR, mmBitmapBundle(png::CLEAR, mmBitmapButtonSize));
+    w_delete_btn = new wxBitmapButton(this, wxID_CLEAR, mmImage::bitmapBundle(mmImage::png::CLEAR, mmImage::bitmapButtonSize));
     mmToolTip(w_delete_btn, _t("Delete current Preset selection"));
     settings_box_sizer->Add(w_delete_btn, g_flagsH);
 
@@ -820,7 +820,7 @@ void TrxFilterDialog::mmDoCreateControls()
     wxButton* button_cancel = new wxButton(button_panel, wxID_CANCEL, wxGetTranslation(g_CancelLabel));
     button_cancel->SetFocus();
 
-    wxBitmapButton* button_hide = new wxBitmapButton(button_panel, ID_BTN_CUSTOMFIELDS, mmBitmapBundle(png::RIGHTARROW, mmBitmapButtonSize));
+    wxBitmapButton* button_hide = new wxBitmapButton(button_panel, ID_BTN_CUSTOMFIELDS, mmImage::bitmapBundle(mmImage::png::RIGHTARROW, mmImage::bitmapButtonSize));
     mmToolTip(button_hide, _t("Show/Hide custom fields window"));
     if (m_custom_fields->GetCustomFieldsCount() == 0) {
         button_hide->Hide();
@@ -2325,7 +2325,7 @@ void TrxFilterDialog::OnMoreFields(wxCommandEvent& WXUNUSED(event))
     wxBitmapButton* button = static_cast<wxBitmapButton*>(FindWindow(ID_BTN_CUSTOMFIELDS));
 
     if (button)
-        button->SetBitmap(mmBitmapBundle(m_custom_fields->IsCustomPanelShown() ? png::RIGHTARROW : png::LEFTARROW, mmBitmapButtonSize));
+        button->SetBitmap(mmImage::bitmapBundle(m_custom_fields->IsCustomPanelShown() ? mmImage::png::RIGHTARROW : mmImage::png::LEFTARROW, mmImage::bitmapButtonSize));
 
     m_custom_fields->ShowHideCustomPanel();
 

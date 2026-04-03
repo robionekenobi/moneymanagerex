@@ -20,7 +20,7 @@
  ********************************************************/
 
 #include "base/_constants.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "BudgetList.h"
 #include "BudgetPanel.h"
 
@@ -48,10 +48,10 @@ BudgetList::BudgetList(
     ListBase(parent_win, win_id),
     m_panel(panel),
     w_attr3(new wxListItemAttr(
-        wxNullColour, mmThemeMetaColour(meta::COLOR_LISTTOTAL), wxNullFont
+        wxNullColour, mmImage::themeMetaColour(mmImage::COLOR_LISTTOTAL), wxNullFont
     ))
 {
-    mmThemeMetaColour(this, meta::COLOR_LISTPANEL);
+    mmImage::themeMetaColour(this, mmImage::COLOR_LISTPANEL);
 
     m_setting_name = "BUDGET";
     m_col_info_id = LIST_INFO;

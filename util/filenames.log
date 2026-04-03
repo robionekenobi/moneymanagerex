@@ -203,5 +203,6 @@ under src/ in increasing chronological order.
   util/mmTips.h                      -> base/mmTips.h
 
 . PR ? (?)
+  base/images_list                   -> util/mmImage
   base/paths                         -> util/mmPath
 

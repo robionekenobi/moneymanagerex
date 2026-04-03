@@ -27,7 +27,7 @@
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
@@ -184,7 +184,7 @@ void CurrencyChoiceDialog::CreateControls()
     wxBoxSizer* itemBoxSizer22 = new wxBoxSizer(wxHORIZONTAL);
     itemBoxSizer2->Add(itemBoxSizer22, wxSizerFlags(g_flagsExpand).Proportion(0));
 
-    wxBitmapButton* update_button = new wxBitmapButton(this, wxID_EXECUTE, mmBitmapBundle(png::CURRATES, mmBitmapButtonSize));
+    wxBitmapButton* update_button = new wxBitmapButton(this, wxID_EXECUTE, mmImage::bitmapBundle(mmImage::png::CURRATES, mmImage::bitmapButtonSize));
     itemBoxSizer22->Add(update_button, g_flagsH);
     update_button->Connect(wxID_EXECUTE, wxEVT_COMMAND_BUTTON_CLICKED
         , wxCommandEventHandler(CurrencyChoiceDialog::OnOnlineUpdateCurRate), nullptr, this);
@@ -318,7 +318,7 @@ void CurrencyChoiceDialog::CreateControls()
     wxStdDialogButtonSizer*  buttons_sizer = new wxStdDialogButtonSizer;
     buttons_panel->SetSizer(buttons_sizer);
 
-    w_download_btn = new wxBitmapButton(buttons_panel, HISTORY_UPDATE, mmBitmapBundle(png::CURRATES, mmBitmapButtonSize));
+    w_download_btn = new wxBitmapButton(buttons_panel, HISTORY_UPDATE, mmImage::bitmapBundle(mmImage::png::CURRATES, mmImage::bitmapButtonSize));
     mmToolTip(w_download_btn, _t("Download Currency Values history"));
     w_download_btn->Disable();
 
@@ -330,7 +330,7 @@ void CurrencyChoiceDialog::CreateControls()
     mmToolTip(w_delete_btn, _t("Delete selected Currency Values"));
     w_delete_btn->Disable();
 
-    w_delete_unused_btn = new wxBitmapButton(buttons_panel, HISTORY_DELUNUSED, mmBitmapBundle(png::VOID_STAT, mmBitmapButtonSize));
+    w_delete_unused_btn = new wxBitmapButton(buttons_panel, HISTORY_DELUNUSED, mmImage::bitmapBundle(mmImage::png::VOID_STAT, mmImage::bitmapButtonSize));
     mmToolTip(w_delete_unused_btn, _t("Delete Historical Currency Values for unused currencies and days"));
     w_delete_unused_btn->Disable();
 

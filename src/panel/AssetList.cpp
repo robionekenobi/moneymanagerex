@@ -23,7 +23,7 @@
 #include <wx/srchctrl.h>
 
 #include "base/_constants.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_simple.h"
 
 #include "model/_all.h"
@@ -71,7 +71,7 @@ AssetList::AssetList(
     ListBase(parent_win, win_id),
     w_panel(panel)
 {
-    mmThemeMetaColour(this, meta::COLOR_LISTPANEL);
+    mmImage::themeMetaColour(this, mmImage::COLOR_LISTPANEL);
 
     m_setting_name = "ASSETS";
     o_col_order_prefix = "ASSETS";

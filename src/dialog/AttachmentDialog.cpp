@@ -22,7 +22,7 @@
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -162,7 +162,7 @@ void AttachmentDialog::CreateControls()
     buttons_sizer->Add(btnCancel, g_flagsH);
 
     wxBitmapButton* magicButton = new wxBitmapButton(buttons_panel
-        , wxID_APPLY, mmBitmapBundle(png::MORE_OPTIONS, mmBitmapButtonSize));
+        , wxID_APPLY, mmImage::bitmapBundle(mmImage::png::MORE_OPTIONS, mmImage::bitmapButtonSize));
     mmToolTip(magicButton, _t("Other tools"));
     buttons_sizer->Add(magicButton, g_flagsH);
 

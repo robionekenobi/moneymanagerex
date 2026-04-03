@@ -20,7 +20,7 @@
  ********************************************************/
 
 #include "base/_constants.h"
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "base/mmSingleton.h"
 
@@ -823,7 +823,7 @@ int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool
     // TODO: change type of acctStatus to AccountStatus
     wxString acctStatus = VIEW_ACCOUNTS_OPEN_STR;
     NavigatorTypes::TYPE_ID acctType = NavigatorTypes::TYPE_ID_CHECKING;
-    int selectedImage = img::SAVINGS_ACC_NORMAL_PNG; //Default value
+    int selectedImage = mmImage::img::SAVINGS_ACC_NORMAL_PNG; //Default value
 
     const AccountData* account_n = AccountModel::instance().get_id_data_n(account_id);
     if (account_n) {
@@ -832,9 +832,9 @@ int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool
     }
 
     if (!def && !ignoreClosure && (acctStatus == "Closed"))
-        return img::ACCOUNT_CLOSED_PNG;
+        return mmImage::img::ACCOUNT_CLOSED_PNG;
 
-    int max = acc_img::MAX_ACC_ICON - static_cast<int>(img::LAST_NAVTREE_PNG);
+    int max = mmImage::acc_img::MAX_ACC_ICON - static_cast<int>(mmImage::img::LAST_NAVTREE_PNG);
     int min = 1;
     int custom_img_id = InfoModel::instance().getInt(
         wxString::Format("ACC_IMAGE_ID_%lld", account_id),
@@ -842,7 +842,7 @@ int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool
     );
     if (custom_img_id > max) custom_img_id = custom_img_id - 20; //Bug #963 fix
     if (!def && (custom_img_id >= min && custom_img_id <= max))
-        return custom_img_id + img::LAST_NAVTREE_PNG - 1;
+        return custom_img_id + mmImage::img::LAST_NAVTREE_PNG - 1;
 
     NavigatorTypesInfo* info = NavigatorTypes::instance().FindEntry(acctType);
     if (info) {
