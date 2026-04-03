@@ -2021,7 +2021,7 @@ void mmUnivCSVDialog::update_preview()
         unsigned int firstRow = m_spinIgnoreFirstRows_->GetValue();
         unsigned int lastRow = totalLines - m_spinIgnoreLastRows_->GetValue();
 
-        std::unique_ptr<mmDateFormat> dParser(new mmDateFormat);
+        std::unique_ptr<mmDateParser> dParser(new mmDateParser);
         wxRegEx categDelimiterRegex(" ?: ?");
         // Import- Add rows to preview
         for (unsigned int row = 0; row < totalLines; row++) {

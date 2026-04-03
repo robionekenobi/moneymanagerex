@@ -140,7 +140,7 @@ CURLcode getYahooFinanceQuotes(const wxString& URL, wxString& json_data);
 //----------------------------------------------------------------------------
 
 extern const std::vector<std::pair<wxString, wxString>> g_date_formats_map();
-class mmDateFormat
+class mmDateParser
 {
 private:
     static constexpr int s_max_attempts = 3;
@@ -163,8 +163,8 @@ private:
     int m_error_count = 0;
 
 public:
-    mmDateFormat();
-    ~mmDateFormat();
+    mmDateParser();
+    ~mmDateParser();
 
     auto getDateFormat() const -> const wxString { return m_max_format; }
     auto getDateMask() const -> const wxString { return m_max_mask; }

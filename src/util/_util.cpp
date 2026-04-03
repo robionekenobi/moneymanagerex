@@ -696,70 +696,6 @@ bool comp(const std::pair<wxString, wxString>& a, const std::pair<wxString, wxSt
     return one < two;
 }
 
-const std::vector<std::pair<wxString, wxString>> g_date_formats_map()
-{
-    static std::vector<std::pair<wxString, wxString>> format_mask_a;
-    if (!format_mask_a.empty())
-        return format_mask_a;
-
-    std::vector<wxString> format_a = {
-        "%d %Mon %Y",
-        "%d %Mon %y",
-        "%d-%Mon-%Y",
-        "%d-%Mon-%y",
-        "%d %Mon'%y",
-        "%d %m %y",
-        "%d %m %Y",
-        "%d,%m,%y",
-        "%d.%m.%y",
-        "%d.%m.%Y",
-        "%d.%m'%Y",
-        "%d,%m,%Y",
-        "%d/%m %Y",
-        "%d/%m/%y",
-        "%d/%m/%Y",
-        "%d/%m'%y",
-        "%d/%m'%Y",
-        "%d-%m-%y",
-        "%d-%m-%Y",
-        "%w %d %Mon'%y",
-        "%m.%d.%y",
-        "%m.%d.%Y",
-        "%m/%d/%y",
-        "%m/%d/%Y",
-        "%m/%d'%y",
-        "%m/%d'%Y",
-        "%m-%d-%y",
-        "%m-%d-%Y",
-        "%y/%m/%d",
-        "%y-%m-%d",
-        "%Y %m %d",
-        "%Y.%m.%d",
-        "%Y/%m/%d",
-        "%Y%d%m",
-        "%Y%m%d",
-        "%Y-%m-%d"
-    };
-
-    const auto local_date_fmt = wxLocale::GetInfo(wxLOCALE_SHORT_DATE_FMT);
-    if (std::find(format_a.begin(), format_a.end(), local_date_fmt) == format_a.end())
-        format_a.push_back(local_date_fmt);
-
-    for (const wxString& format : format_a) {
-        wxString mask = format;
-        mask.Replace("%Y",   "YYYY");
-        mask.Replace("%y",   "YY");
-        mask.Replace("%d",   "DD");
-        mask.Replace("%Mon", "Mon");
-        mask.Replace("%m",   "MM");
-        mask.Replace("%w",   "Day");
-        format_mask_a.push_back(std::make_pair(format, mask));
-    }
-
-    std::sort(format_mask_a.begin(), format_mask_a.end(), comp);
-    return format_mask_a;
-}
-
 const std::map<int, std::pair<wxConvAuto, wxString> > g_encoding = {
     { 0, { wxConvAuto(wxFONTENCODING_SYSTEM), _n("Default") } },
     { 1, { wxConvAuto(wxFONTENCODING_UTF8),   "UTF-8" } },
@@ -1735,7 +1671,72 @@ const wxRect GetDefaultMonitorRect()
 }
 
 // ----------------------------------------
-mmDateFormat::mmDateFormat() :
+
+const std::vector<std::pair<wxString, wxString>> g_date_formats_map()
+{
+    static std::vector<std::pair<wxString, wxString>> format_mask_a;
+    if (!format_mask_a.empty())
+        return format_mask_a;
+
+    std::vector<wxString> format_a = {
+        "%d %Mon %Y",
+        "%d %Mon %y",
+        "%d-%Mon-%Y",
+        "%d-%Mon-%y",
+        "%d %Mon'%y",
+        "%d %m %y",
+        "%d %m %Y",
+        "%d,%m,%y",
+        "%d.%m.%y",
+        "%d.%m.%Y",
+        "%d.%m'%Y",
+        "%d,%m,%Y",
+        "%d/%m %Y",
+        "%d/%m/%y",
+        "%d/%m/%Y",
+        "%d/%m'%y",
+        "%d/%m'%Y",
+        "%d-%m-%y",
+        "%d-%m-%Y",
+        "%w %d %Mon'%y",
+        "%m.%d.%y",
+        "%m.%d.%Y",
+        "%m/%d/%y",
+        "%m/%d/%Y",
+        "%m/%d'%y",
+        "%m/%d'%Y",
+        "%m-%d-%y",
+        "%m-%d-%Y",
+        "%y/%m/%d",
+        "%y-%m-%d",
+        "%Y %m %d",
+        "%Y.%m.%d",
+        "%Y/%m/%d",
+        "%Y%d%m",
+        "%Y%m%d",
+        "%Y-%m-%d"
+    };
+
+    const auto local_date_fmt = wxLocale::GetInfo(wxLOCALE_SHORT_DATE_FMT);
+    if (std::find(format_a.begin(), format_a.end(), local_date_fmt) == format_a.end())
+        format_a.push_back(local_date_fmt);
+
+    for (const wxString& format : format_a) {
+        wxString mask = format;
+        mask.Replace("%Y",   "YYYY");
+        mask.Replace("%y",   "YY");
+        mask.Replace("%d",   "DD");
+        mask.Replace("%Mon", "Mon");
+        mask.Replace("%m",   "MM");
+        mask.Replace("%w",   "Day");
+        format_mask_a.push_back(std::make_pair(format, mask));
+    }
+
+    std::sort(format_mask_a.begin(), format_mask_a.end(), comp);
+    return format_mask_a;
+}
+
+mmDateParser::mmDateParser() :
     m_today(wxDateTime::Today()),
     m_month_ago(wxDateTime::Today().Subtract(wxDateSpan::Months(1))),
     m_format_mask_a(g_date_formats_map())
@@ -1743,11 +1744,11 @@ mmDateFormat::mmDateFormat() :
     m_format_stat_m.clear();
 }
 
-mmDateFormat::~mmDateFormat()
+mmDateParser::~mmDateParser()
 {
 }
 
-void mmDateFormat::doFinalizeStatistics()
+void mmDateParser::doFinalizeStatistics()
 {
     auto result = std::max_element(
         m_format_stat_m.begin(),
@@ -1772,7 +1773,7 @@ void mmDateFormat::doFinalizeStatistics()
         wxLogDebug("No date string has been handled");
 }
 
-void mmDateFormat::doHandleStatistics(const wxString& date_s)
+void mmDateParser::doHandleStatistics(const wxString& date_s)
 {
     if (m_error_count > s_max_attempts || m_format_mask_a.size() <= 1)
         return;

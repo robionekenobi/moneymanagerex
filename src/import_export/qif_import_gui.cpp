@@ -479,7 +479,7 @@ bool mmQIFImportDialog::mmReadQIFFile()
 
     std::unordered_map <int, wxString> trx;
     int64 split_id = 0;
-    wxSharedPtr<mmDateFormat> dParser(new mmDateFormat);
+    wxSharedPtr<mmDateParser> dParser(new mmDateParser);
     std::map<wxString, int> comma({ {".", 0}, {",", 0} });
     while (input.IsOk() && !input.Eof()) {
         ++numLines;
