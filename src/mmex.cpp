@@ -29,7 +29,7 @@
 #include "base/_constants.h"
 #include "base/_platfdep.h"
 #include "mmex.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 #include "base/mmDateRange2.h"
 
@@ -238,11 +238,9 @@ bool OnInitImpl(mmGUIApp* app)
     app->SetAppName(mmex::GetAppName());
 
     app->SetSettingDB(new wxSQLite3Database());
-    wxString file_path = mmex::getPathUser(mmex::SETTINGS);
-    if (!app->GetIniParam().empty())
-    {
-        if (wxFileName::FileExists(app->GetIniParam()))
-        {
+    wxString file_path = mmPath::getPathUser(mmPath::SETTINGS);
+    if (!app->GetIniParam().empty()) {
+        if (wxFileName::FileExists(app->GetIniParam())) {
             file_path = app->GetIniParam();
         }
     }
@@ -299,7 +297,7 @@ bool OnInitImpl(mmGUIApp* app)
 #else
 
     const wxString resDir = mmex::GetResourceDir().GetPathWithSep();
-    const wxString tempDir = mmex::getTempFolder();
+    const wxString tempDir = mmPath::getTempFolder();
     wxFileName::Mkdir(tempDir, 511, wxPATH_MKDIR_FULL);
     wxArrayString filesArray;
     wxDir::GetAllFiles(resDir, &filesArray);
@@ -485,7 +483,7 @@ int mmGUIApp::OnExit()
     curl_global_cleanup();
 
     // Delete mmex temp folder for current user
-    wxFileName::Rmdir(mmex::getTempFolder(), wxPATH_RMDIR_RECURSIVE);
+    wxFileName::Rmdir(mmPath::getTempFolder(), wxPATH_RMDIR_RECURSIVE);
 
     wxLogDebug("}}}");
     return 0;

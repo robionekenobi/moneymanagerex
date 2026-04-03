@@ -18,7 +18,7 @@
 
 #include "base/_defs.h"
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -59,7 +59,7 @@ bool StartupDialog::Create(wxWindow* parent, wxWindowID id, const wxString& capt
     bool ok = wxDialog::Create(parent, id, caption, pos, size, style, name);
 
     if (ok) {
-        SetIcon(mmex::getProgramIcon());
+        SetIcon(mmPath::getProgramIcon());
         CreateControls();
         GetSizer()->Fit(this);
         GetSizer()->SetSizeHints(this);
@@ -92,7 +92,9 @@ void StartupDialog::CreateControls()
     wxBoxSizer* itemBoxSizer3 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer2->Add(itemBoxSizer3, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 
-    wxBitmapBundle logo = wxBitmapBundle::FromSVGFile(mmex::getPathResource(mmex::MMEX_LOGO), wxSize(160, 160));
+    wxBitmapBundle logo = wxBitmapBundle::FromSVGFile(
+        mmPath::getPathResource(mmPath::MMEX_LOGO), wxSize(160, 160)
+    );
     wxStaticBitmap* itemStaticBitmap4 = new wxStaticBitmap(this, wxID_STATIC, logo);
 
     itemBoxSizer3->Add(itemStaticBitmap4, g_flagsCenter);
@@ -170,7 +172,7 @@ void StartupDialog::SetCloseButtonToExit()
 
 void StartupDialog::OnButtonAppstartHelpClick( wxCommandEvent& /*event*/ )
 {
-    wxLaunchDefaultBrowser(mmex::getPathDoc(mmex::HTML_INDEX));
+    wxLaunchDefaultBrowser(mmPath::getPathDoc(mmPath::HTML_INDEX));
 }
 
 void StartupDialog::OnButtonAppstartWebsiteClick( wxCommandEvent& /*event*/ )

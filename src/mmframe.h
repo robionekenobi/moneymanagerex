@@ -30,7 +30,7 @@ Copyright (C) 2025, 2026 Klaus Wich
 #include <vector>
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 
 #include "model/AccountModel.h"
@@ -83,7 +83,7 @@ public:
         return PrefModel::instance().getFinancialFirstDay() != 1 ||
             PrefModel::instance().getFinancialFirstMonth() != wxDateTime::Month::Jan;
     }
-    /// return the index (mmex::EDocFile) to return the correct file.
+    /// return the index (mmPath::EDocFile) to return the correct file.
     int getHelpFileIndex() const;
     void setHelpFileIndex();
 
@@ -167,7 +167,7 @@ private:
     void createMenu();
     void createToolBar();
     void createReportsPage(ReportBase* rb, bool cleanup);
-    void createHelpPage(int index = mmex::HTML_INDEX);
+    void createHelpPage(int index = mmPath::HTML_INDEX);
     void refreshPanelData();
     wxTreeItemId findItemByData(wxTreeItemId itemId, mmTreeItemData& searchData);
 
@@ -461,5 +461,5 @@ public:
 
 
 inline int mmGUIFrame::getHelpFileIndex() const { return helpFileIndex_; }
-inline void mmGUIFrame::setHelpFileIndex() { helpFileIndex_ = mmex::EDocFile::HTML_INDEX; }
+inline void mmGUIFrame::setHelpFileIndex() { helpFileIndex_ = mmPath::EDocFile::HTML_INDEX; }
 inline wxTreeItemId mmGUIFrame::GetNavTreeSelection() const{ return m_nav_tree_ctrl->GetSelection(); }

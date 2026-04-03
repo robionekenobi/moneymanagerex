@@ -19,7 +19,7 @@
  *************************************************************************/
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "mmex.h"
 
 #include "model/UsageModel.h"
@@ -93,13 +93,13 @@ void HelpPanel::createControls()
     Allows help files for a specific language.
 
     Main default help file name: ./help/index.html
-    Default filename names can be found in mmex::getPathDoc(fileIndex)
+    Default filename names can be found in mmPath::getPathDoc(fileIndex)
 
     Default help files will be used when the language help file are not found.
     **************************************************************************/
 
     int helpFileIndex = w_frame->getHelpFileIndex();
-    const wxString help_file = mmex::getPathDoc(static_cast<mmex::EDocFile>(helpFileIndex));
+    const wxString help_file = mmPath::getPathDoc(static_cast<mmPath::EDocFile>(helpFileIndex));
     w_frame->setHelpFileIndex();
     //wxLogDebug("%s", help_file);
     w_browser = wxWebView::New(this, wxID_ANY, help_file);

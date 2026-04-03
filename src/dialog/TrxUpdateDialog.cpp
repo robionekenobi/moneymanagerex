@@ -21,7 +21,7 @@
 #include <wx/statline.h>
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
@@ -111,7 +111,7 @@ bool TrxUpdateDialog::Create(
     GetSizer()->SetSizeHints(this);
     this->SetInitialSize();
     SetMinSize(wxSize(300, 400));
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre();
 
     SetEvtHandlerEnabled(true);

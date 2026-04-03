@@ -25,7 +25,7 @@
 #include <wx/valnum.h>
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 #include "util/_simple.h"
@@ -205,7 +205,7 @@ bool SchedDialog::Create(
     );
     if (sz.GetWidth() > GetSize().GetWidth())
         SetSize(sz);
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre(wxCENTER_ON_SCREEN);
 
     return true;

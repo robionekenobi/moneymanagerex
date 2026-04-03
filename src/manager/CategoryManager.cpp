@@ -21,7 +21,7 @@
 
 #include <set>
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 
@@ -141,7 +141,7 @@ bool CategoryManager::Create(wxWindow* parent, wxWindowID id
 
     mmSetSize(this);
     Centre();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     m_treeCtrl->EnsureVisible(m_selectedItemId);
     m_treeCtrl->SelectItem(m_selectedItemId);

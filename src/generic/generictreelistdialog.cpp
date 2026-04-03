@@ -35,7 +35,7 @@ genericTreeListDialog::genericTreeListDialog(wxWindow* parent, wxString title)
 {
     this->SetFont(parent->GetFont());
     Create(parent, -1, title, wxDefaultPosition, wxSize(-1, -1), wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCLOSE_BOX, "");
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 }
 
 // virtual methods reimplemented in derived class:

@@ -511,7 +511,7 @@ void AssetPanel::viewAssetTrans(int selectedIndex)
                  wxDefaultPosition, wxDefaultSize,
                  wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
 
-    dlg.SetIcon(mmex::getProgramIcon());
+    dlg.SetIcon(mmPath::getProgramIcon());
     wxWindow* parent = dlg.GetMainWindowOfCompositeControl();
     wxBoxSizer* topsizer = new wxBoxSizer(wxVERTICAL);
 

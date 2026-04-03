@@ -35,7 +35,7 @@ mmNavigatorEditDialog::mmNavigatorEditDialog(wxWindow* parent, const NavigatorTy
 
     Create(parent, -1, (info) ? _t("Edit navigator entry") : _t("New account type"), wxDefaultPosition, wxSize(-1, -1), wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCLOSE_BOX, "");
     CreateControls();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     if (info) {
         m_nameTextCtrl->SetValue(info->name);

@@ -25,7 +25,7 @@
 #include <wx/valnum.h>
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
@@ -126,7 +126,7 @@ bool CurrencyManager::Create(wxWindow* parent, wxWindowID id
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
     this->SetInitialSize();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     Fit();
     Centre();

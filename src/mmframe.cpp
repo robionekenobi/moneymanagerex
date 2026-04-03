@@ -279,7 +279,7 @@ mmGUIFrame::mmGUIFrame(
 {
     // tell wxAuiManager to manage this frame
     m_mgr.SetManagedWindow(this);
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     SetMinSize(wxSize(480, 275));
 
 #if (wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1)
@@ -1341,13 +1341,13 @@ void mmGUIFrame::navTreeSelection(wxTreeItemId selectedItem)
         return createHelpPage();
     case mmTreeItemData::HELP_PAGE_STOCKS:
         return createStocksAccountPage(-1);
-        //return createHelpPage(mmex::HTML_INVESTMENT);
+        //return createHelpPage(mmPath::HTML_INVESTMENT);
     case mmTreeItemData::HELP_PAGE_GRM:
-        return createHelpPage(mmex::HTML_CUSTOM_SQL);
+        return createHelpPage(mmPath::HTML_CUSTOM_SQL);
     case mmTreeItemData::HELP_BUDGET:
-        return createHelpPage(mmex::HTML_BUDGET);
+        return createHelpPage(mmPath::HTML_BUDGET);
     case mmTreeItemData::HELP_REPORT:
-        //createHelpPage(mmex::HTML_REPORTS);
+        //createHelpPage(mmPath::HTML_REPORTS);
         return;
 
     case  mmTreeItemData::CHECKING: {
@@ -2559,7 +2559,7 @@ void mmGUIFrame::SetDataBaseParameters(const wxString& fileName)
                         mmex::getProgramName(),
                         mmex::getTitleProgramVersion(),
                         wxGetOsDescription());
-    if (mmex::isPortableMode())
+    if (mmPath::isPortableMode())
         title << " [" << _t("portable mode") << "]";
     SetTitle(title);
 
@@ -2812,7 +2812,7 @@ void mmGUIFrame::OnDebugDB(wxCommandEvent& /*event*/)
 
     if (!resultMessage.IsEmpty()) {
         wxTextEntryDialog checkDlg(this, _t("Result of database integrity check:"), _t("Database Check"), resultMessage.Trim(), wxOK | wxTE_MULTILINE);
-        checkDlg.SetIcon(mmex::getProgramIcon());
+        checkDlg.SetIcon(mmPath::getProgramIcon());
         wxTextCtrl* textCtrl = dynamic_cast<wxTextCtrl*>(checkDlg.FindWindow(3000));
         if (textCtrl) {
             textCtrl->SetEditable(false);
@@ -3045,7 +3045,7 @@ void mmGUIFrame::OnImportWebApp(wxCommandEvent& /*event*/)
 {
     mmWebAppDialog dlg(this, false);
     if (dlg.ShowModal() == wxID_HELP) {
-        helpFileIndex_ = mmex::HTML_WEBAPP;
+        helpFileIndex_ = mmPath::HTML_WEBAPP;
         createHelpPage(helpFileIndex_);
         setNavTreeSection(_t("Help"));
     }

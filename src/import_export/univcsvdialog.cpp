@@ -32,7 +32,7 @@
 
 #include "base/_constants.h"
 #include "base/_platfdep.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 #include "util/_simple.h"
@@ -174,7 +174,7 @@ bool mmUnivCSVDialog::Create(
         std::min(sz.GetY(), screenSize.GetY())
     ));
     SetMinSize(GetSize());
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre();
     mmThemeAutoColour(this);
    return true;
@@ -1443,7 +1443,7 @@ void mmUnivCSVDialog::OnImport(wxCommandEvent& WXUNUSED(event))
     if (!pParser->Load(fileName, m_list_ctrl_->GetColumnCount()))
         return;
 
-    wxFileName logFile = mmex::GetLogDir(true);
+    wxFileName logFile = mmPath::getLogDir(true);
     logFile.SetFullName(fileName);
     logFile.SetExt("txt");
 

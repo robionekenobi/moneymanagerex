@@ -26,7 +26,7 @@
 #include <rapidjson/document.h>
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 #include "util/_simple.h"
@@ -106,7 +106,7 @@ bool CurrencyChoiceDialog::Create(wxWindow* parent
     SetAcceleratorTable(accel);
 
     CreateControls();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     fillControls();
     Centre();
 

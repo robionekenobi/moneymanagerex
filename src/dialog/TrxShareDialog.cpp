@@ -23,7 +23,7 @@
 #include <wx/valnum.h>
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 #include "util/_simple.h"
@@ -142,7 +142,7 @@ bool TrxShareDialog::Create(
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
 
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     DataToControls();
 

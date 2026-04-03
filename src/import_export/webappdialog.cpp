@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <wx/timer.h>
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 #include "util/_simple.h"
@@ -81,7 +81,7 @@ void mmWebAppDialog::Create(wxWindow* parent, const wxString& name)
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
 
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre();
 }
 

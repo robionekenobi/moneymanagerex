@@ -23,7 +23,7 @@ Copyright (C) 2025  Mark Whalley (mark@ipx.co.uk)
 #include <wx/spinctrl.h>
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 #include "util/_simple.h"
@@ -69,7 +69,7 @@ bool FieldDialog::Create(
     dataToControls();
     this->SetInitialSize();
     GetSizer()->SetSizeHints(this);
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre();
     mmThemeAutoColour(this);
     return true;

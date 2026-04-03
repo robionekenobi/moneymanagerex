@@ -19,7 +19,7 @@
  ********************************************************/
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 
 #include "model/InfoModel.h"
@@ -96,7 +96,7 @@ bool TagManager::create(
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
     this->SetInitialSize();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     Fit();
     mmSetSize(this);

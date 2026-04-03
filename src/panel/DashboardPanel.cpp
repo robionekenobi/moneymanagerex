@@ -26,7 +26,7 @@ Copyright (C) 2026 Klaus Wich
 #include "base/_constants.h"
 #include "base/images_list.h"
 #include "mmex.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 
 #include "model/_all.h"
@@ -93,7 +93,7 @@ void DashboardPanel::createHtml()
 {
     // Read template from file
     m_templateText.clear();
-    const wxString template_path = mmex::getPathResource(mmex::HOME_PAGE_TEMPLATE);
+    const wxString template_path = mmPath::getPathResource(mmPath::HOME_PAGE_TEMPLATE);
     wxFileInputStream input(template_path);
     wxTextInputStream text(input, "\x09", wxConvUTF8);
     while (input.IsOk() && !input.Eof()) {

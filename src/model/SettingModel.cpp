@@ -20,7 +20,7 @@
  ********************************************************/
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 
 #include "SettingModel.h"
 #include "PrefModel.h"
@@ -288,7 +288,7 @@ const wxString SettingModel::getTheme()
 const wxString SettingModel::getLastDbPath()
 {
     wxString path = getString("LASTFILENAME", "");
-    if (!mmex::isPortableMode())
+    if (!mmPath::isPortableMode())
         return path;
     wxString vol = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetVolume();
     if (!vol.IsEmpty()) {
@@ -306,7 +306,7 @@ const wxString SettingModel::getLastDbPath()
 void SettingModel::shrinkUsageTable()
 {
     const wxULongLong max_size = 524287;
-    const wxULongLong file_size = wxFileName(mmex::getPathUser(mmex::SETTINGS)).GetSize();
+    const wxULongLong file_size = wxFileName(mmPath::getPathUser(mmPath::SETTINGS)).GetSize();
     if (file_size < max_size)
         return;
 

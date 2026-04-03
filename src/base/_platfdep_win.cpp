@@ -24,59 +24,53 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "_platfdep.h"
 #include "model/PrefModel.h"
 
-/*
-    The root directory of the installation of MMEX.
-*/
+// The root directory of the installation of MMEX.
 static const wxFileName GetInstallDir()
 {
-    const wxStandardPathsBase &p = wxStandardPaths::Get();
+    const wxStandardPathsBase& p = wxStandardPaths::Get();
     wxFileName fname(p.GetExecutablePath());
 
-    const wxArrayString &dirs = fname.GetDirs();
+    const wxArrayString& dirs = fname.GetDirs();
 
-    if (dirs.Last().Upper() == "BIN") // bin\mmex.exe
+    // bin\mmex.exe
+    if (dirs.Last().Upper() == "BIN")
         fname.RemoveLastDir();
 
     return fname;
 }
 
-//----------------------------------------------------------------------------
-
 const wxString mmex::GetAppName()
 {
     return "MoneyManagerEx";
 }
-//----------------------------------------------------------------------------
 
 const wxFileName mmex::GetSharedDir()
 {
     static wxFileName fname(GetInstallDir());
     return fname;
 }
-//----------------------------------------------------------------------------
 
 const wxFileName mmex::GetDocDir()
 {
     return GetSharedDir();
 }
-//----------------------------------------------------------------------------
 
 const wxFileName mmex::GetResourceDir()
 {
     static wxFileName fname;
 
-    if (!fname.IsOk())
-    {
+    if (!fname.IsOk()) {
         fname = GetSharedDir();
         fname.AppendDir("res");
     }
 
     return fname;
 }
-//-----------------------------------------------------------------------------
 
 bool mmex::isDarkMode()
 {
-    return (PrefModel::instance().getThemeMode() == PrefModel::THEME_MODE::DARK
-        || (PrefModel::instance().getThemeMode() == PrefModel::THEME_MODE::AUTO && wxSystemSettings::GetAppearance().AreAppsDark()));
+    return (PrefModel::instance().getThemeMode() == PrefModel::THEME_MODE::DARK || (
+        PrefModel::instance().getThemeMode() == PrefModel::THEME_MODE::AUTO &&
+        wxSystemSettings::GetAppearance().AreAppsDark()
+    ));
 }   

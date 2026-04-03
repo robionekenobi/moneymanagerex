@@ -19,7 +19,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -83,7 +83,7 @@ void AttachmentPref::Create()
     const wxString attachmentFolder = InfoModel::instance().getString(
         "ATTACHMENTSFOLDER:" + mmPlatformType(), ""
     );
-    m_old_path = mmex::getPathAttachment(attachmentFolder);
+    m_old_path = mmPath::getPathAttachment(attachmentFolder);
 
     wxArrayString list;
     list.Add(ATTACHMENTS_FOLDER_DOCUMENTS);
@@ -103,7 +103,7 @@ void AttachmentPref::Create()
     attachDefinedSizer->Add(AttachmentsFolderButton, g_flagsH);
 
     m_attachments_preview = new wxStaticText(attachmentStaticBox, wxID_STATIC
-        , _t("Real path:") + "\n" + mmex::getPathAttachment(attachmentFolder));
+        , _t("Real path:") + "\n" + mmPath::getPathAttachment(attachmentFolder));
     m_attachments_preview->SetFont(this->GetFont().Smaller());
     attachmentStaticBoxSizer->Add(m_attachments_preview, g_flagsV);
 
@@ -202,7 +202,7 @@ void AttachmentPref::Create()
 
 void AttachmentPref::OnAttachmentsButton(wxCommandEvent& WXUNUSED(event))
 {
-    wxString AttachmentsFolder = mmex::getPathAttachment(m_attachments_path->GetValue());
+    wxString AttachmentsFolder = mmPath::getPathAttachment(m_attachments_path->GetValue());
 
     wxDirDialog dlg(this
         , _t("Choose folder to set as attachments archive")
@@ -219,7 +219,7 @@ void AttachmentPref::OnAttachmentsButton(wxCommandEvent& WXUNUSED(event))
 
 void AttachmentPref::OnAttachmentsPathChanged(wxCommandEvent& WXUNUSED(event))
 {
-    wxString AttachmentsFolder = mmex::getPathAttachment(m_attachments_path->GetValue().Trim());
+    wxString AttachmentsFolder = mmPath::getPathAttachment(m_attachments_path->GetValue().Trim());
     m_attachments_preview->SetLabelText(_t("Real path:") + "\n" + AttachmentsFolder);
     Fit();
 }
@@ -235,7 +235,7 @@ void AttachmentPref::OnAttachmentsSubfolderChanged(wxCommandEvent& event)
 
 bool AttachmentPref::SaveSettings()
 {
-    const wxString attachmentsFolder = mmex::getPathAttachment(m_attachments_path->GetValue().Trim());
+    const wxString attachmentsFolder = mmPath::getPathAttachment(m_attachments_path->GetValue().Trim());
 
     if (attachmentsFolder != wxEmptyString)
     {
@@ -253,7 +253,7 @@ bool AttachmentPref::SaveSettings()
             return false;
         }
 
-        wxString attachmentsFolderOld = mmex::getPathAttachment(m_old_path);
+        wxString attachmentsFolderOld = mmPath::getPathAttachment(m_old_path);
         if (attachmentsFolder != m_old_path && wxDirExists(attachmentsFolderOld))
         {
             int MoveResponse = wxMessageBox(
@@ -266,7 +266,7 @@ bool AttachmentPref::SaveSettings()
                 if (!wxRenameFile(attachmentsFolderOld, attachmentsFolder))
                     wxMessageBox(
                     wxString::Format("%s\n\n", _t("An error occurred while moving the attachments folder. Please move it manually.")) +
-                    wxString::Format("%s: %s\n", _t("Origin"), mmex::getPathAttachment(m_old_path)) +
+                    wxString::Format("%s: %s\n", _t("Origin"), mmPath::getPathAttachment(m_old_path)) +
                     wxString::Format("%s: %s", _t("Destination"), attachmentsFolder)
                     , _t("Attachments folder migration")
                     , wxICON_ERROR);

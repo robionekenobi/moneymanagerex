@@ -77,7 +77,7 @@ mmReconcileDialog::mmReconcileDialog(
     Bind(wxEVT_MENU, &mmReconcileDialog::OnNew, this, wxID_NEW);
     Bind(wxEVT_MENU, &mmReconcileDialog::OnClose, this, wxID_SAVE);
 
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     applyColumnSettings();
     Fit();
     SetSize(InfoModel::instance().getSize("RECONCILE_DIALOG_SIZE"));

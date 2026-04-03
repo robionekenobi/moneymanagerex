@@ -20,7 +20,7 @@
  ********************************************************/
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 
@@ -61,7 +61,7 @@ PayeeManager::PayeeManager(wxWindow *parent, PayeeData* payee_n, const wxString 
     CreateControls();
     mmSetSize(this);
     Centre();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     mmThemeAutoColour(this);
     fillControls();
 }
@@ -540,7 +540,7 @@ void mmPayeeDialog::Create(wxWindow* parent, const wxString &name)
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
 
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     // Calculate payee usage
     for (const auto& trx_d : TrxModel::instance().find_all()) {

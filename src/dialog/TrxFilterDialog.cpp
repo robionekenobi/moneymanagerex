@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <wx/valnum.h>
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 #include "util/_simple.h"
@@ -188,7 +188,7 @@ bool TrxFilterDialog::Create(
     mmDoCreateControls();
     wxCommandEvent evt(wxEVT_CHECKBOX, wxID_ANY);
     AddPendingEvent(evt);
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     Centre();
     return true;

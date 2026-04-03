@@ -30,7 +30,7 @@
 
 #include "base/_constants.h"
 #include "base/_platfdep.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 #include "util/_simple.h"
@@ -331,7 +331,7 @@ bool GeneralReportManager::Create(wxWindow* parent
     fillControls();
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     return true;
 }
@@ -672,10 +672,13 @@ void GeneralReportManager::OnImportReportEvt(wxCommandEvent& WXUNUSED(event))
 
 void GeneralReportManager::importReport()
 {
-    const wxString reportFileName = wxFileSelector(_t("Load report file:")
-        , mmex::getPathResource(mmex::REPORTS), wxEmptyString, wxEmptyString
-        , _t("General Report Manager files (*.grm)")+"|*.grm|"+_t("ZIP files (*.zip)")+"|*.zip"
-        , wxFD_FILE_MUST_EXIST);
+    const wxString reportFileName = wxFileSelector(
+        _t("Load report file:"),
+        mmPath::getPathResource(mmPath::REPORTS),
+        wxEmptyString, wxEmptyString,
+        _t("General Report Manager files (*.grm)")+"|*.grm|"+_t("ZIP files (*.zip)")+"|*.zip",
+        wxFD_FILE_MUST_EXIST
+    );
 
     if (reportFileName.empty()) return;
 
@@ -1253,7 +1256,7 @@ void GeneralReportManager::OnExportReport(wxCommandEvent& WXUNUSED(event))
 
 void GeneralReportManager::showHelp()
 {
-    const auto url = mmex::getPathDoc(mmex::HTML_CUSTOM_SQL);
+    const auto url = mmPath::getPathDoc(mmPath::HTML_CUSTOM_SQL);
     browser_->LoadURL(url);
 }
 

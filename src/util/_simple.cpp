@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "mmex.h"
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "base/_platfdep.h"
 #include "_util.h"
@@ -1129,7 +1129,7 @@ mmMultiChoiceDialog::mmMultiChoiceDialog(
     wxMultiChoiceDialog::Create(parent, message, caption, items);
     mmThemeAutoColour(this);
     SetMinSize(wxSize(220, 384));
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     wxButton* ok = static_cast<wxButton*>(FindWindow(wxID_OK));
     if (ok) ok->SetLabel(_t("&OK "));
@@ -1150,7 +1150,7 @@ mmSingleChoiceDialog::mmSingleChoiceDialog(wxWindow* parent, const wxString& mes
     wxSingleChoiceDialog::Create(parent, message, caption, choices);
     mmThemeAutoColour(this);
     SetMinSize(wxSize(220, 384));
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     wxButton* ok = static_cast<wxButton*>(FindWindow(wxID_OK));
     if (ok) ok->SetLabel(wxGetTranslation(g_OkLabel));
@@ -1168,7 +1168,7 @@ mmSingleChoiceDialog::mmSingleChoiceDialog(wxWindow* parent, const wxString& mes
     wxSingleChoiceDialog::Create(parent, message, caption, choices);
     mmThemeAutoColour(this);
     SetMinSize(wxSize(220, 384));
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     wxButton* ok = static_cast<wxButton*>(FindWindow(wxID_OK));
     if (ok) ok->SetLabel(wxGetTranslation(g_OkLabel));

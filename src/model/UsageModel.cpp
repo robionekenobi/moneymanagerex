@@ -24,7 +24,7 @@
 #include <wx/intl.h>
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 
 #include "PrefModel.h"

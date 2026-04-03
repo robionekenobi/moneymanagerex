@@ -241,7 +241,7 @@ void StockPanel::viewStockTransactions(int selectedIndex)
         wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER
     );
 
-    dlg.SetIcon(mmex::getProgramIcon());
+    dlg.SetIcon(mmPath::getProgramIcon());
     wxWindow* parent_win = dlg.GetMainWindowOfCompositeControl();
     wxBoxSizer* topsizer = new wxBoxSizer(wxVERTICAL);
 

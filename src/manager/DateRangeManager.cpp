@@ -72,7 +72,7 @@ DateRangeManager::DateRangeManager(
     );
     CreateControls();
     mmThemeAutoColour(this);
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     fillControls();
     GetSizer()->SetSizeHints(this);
     SetSize(500,700);

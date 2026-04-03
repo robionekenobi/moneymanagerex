@@ -28,7 +28,7 @@
 
 #include "base/_constants.h"
 #include "mmex.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 #include "util/_simple.h"
@@ -125,8 +125,8 @@ void JournalPanel::mmPlayTransactionSound()
     if (!play)
         return;
 
-    wxString wav_path = mmex::getPathResource(
-        (play == 2) ? mmex::TRANS_SOUND2 : mmex::TRANS_SOUND1
+    wxString wav_path = mmPath::getPathResource(
+        (play == 2) ? mmPath::TRANS_SOUND2 : mmPath::TRANS_SOUND1
     );
     wxLogDebug("%s", wav_path);
 

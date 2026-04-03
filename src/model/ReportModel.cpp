@@ -20,7 +20,7 @@
 
 #include "base/_constants.h"
 #include "base/_platfdep.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 
 #include "ReportModel.h"
 #include "SettingModel.h"
@@ -368,7 +368,7 @@ int ReportModel::generate_html(const Data& report_d, wxString& out)
         for (const auto& label_value : label_value_m) {
             report_template(label_value.first.Upper().ToStdWstring()) = label_value.second;
         }
-        auto att_path = mmex::getPathAttachment(mmAttachmentManage::InfotablePathSetting());
+        auto att_path = mmPath::getPathAttachment(mmAttachmentManage::InfotablePathSetting());
         //javascript does not handle backslashs
         att_path.Replace("\\", "\\\\");
         report_template(L"ATTACHMENTSFOLDER") = att_path;

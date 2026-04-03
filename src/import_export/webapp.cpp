@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
 #include "base/_defs.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 
 #include "model/AccountModel.h"
@@ -623,7 +623,7 @@ int64 mmWebApp::insertNewTrx(TrxWebData& trx_w)
         return trx_d_id;
 
     if (!trx_w.Attachments.IsEmpty()) {
-        const wxString attachment_folder = mmex::getPathAttachment(
+        const wxString attachment_folder = mmPath::getPathAttachment(
             mmAttachmentManage::InfotablePathSetting()
         );
         if (attachment_folder == wxEmptyString || !wxDirExists(attachment_folder)) {
@@ -692,7 +692,7 @@ wxString mmWebApp::downloadAttachment(
         "_Attach" + wxString::Format("%i", attachment_number) +
         "." + file_ext;
     const wxString file_path =
-        mmex::getPathAttachment(mmAttachmentManage::InfotablePathSetting()) +
+        mmPath::getPathAttachment(mmAttachmentManage::InfotablePathSetting()) +
         TrxModel::s_ref_type.key_n() + wxFileName::GetPathSeparator() +
         file_name;
 

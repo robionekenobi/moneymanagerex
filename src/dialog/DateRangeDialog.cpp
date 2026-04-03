@@ -56,7 +56,7 @@ DateRangeDialog::DateRangeDialog(wxWindow* parent, wxString* name_ptr, wxString*
     m_range_ptr = range_ptr;
     CreateControls();
     mmThemeAutoColour(this);
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre();
 }
 

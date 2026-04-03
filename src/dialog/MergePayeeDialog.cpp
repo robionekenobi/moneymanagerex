@@ -20,7 +20,7 @@
  ********************************************************/
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 
 #include "model/SchedModel.h"
@@ -70,7 +70,7 @@ bool MergePayeeDialog::Create(wxWindow* parent
     mmThemeAutoColour(this);
     IsOkOk();
 
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Fit();
     wxSize sz = GetSize();
     SetSizeHints(sz.GetWidth(), sz.GetHeight(), -1, sz.GetHeight());

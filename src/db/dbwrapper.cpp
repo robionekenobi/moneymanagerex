@@ -20,7 +20,7 @@
 #include <sqlite3mc_amalgamation.h>
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 #include "dbwrapper.h"
 

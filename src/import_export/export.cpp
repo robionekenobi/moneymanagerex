@@ -17,7 +17,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 #include "export.h"
 
@@ -495,7 +495,7 @@ void mmExportTransaction::getAttachmentsJSON(
 
     RefTypeN ref_type = RefTypeN(RefTypeN::e_trx);
     const wxString folder = InfoModel::instance().getString("ATTACHMENTSFOLDER:" + mmPlatformType(), "");
-    const wxString AttachmentsFolder = mmex::getPathAttachment(folder);
+    const wxString AttachmentsFolder = mmPath::getPathAttachment(folder);
 
     json_writer.Key("ATTACHMENTS");
     json_writer.StartObject();

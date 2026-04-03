@@ -17,7 +17,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -66,7 +66,7 @@ bool mmQIFExportDialog::Create(wxWindow* parent, const wxString& caption, wxWind
     mmThemeAutoColour(this);
     fillControls();
 
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     this->SetMinSize(wxSize(350, 450));
     this->Fit();
 

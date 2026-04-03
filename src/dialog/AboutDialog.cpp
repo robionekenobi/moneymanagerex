@@ -24,7 +24,7 @@
 #include <wx/regex.h>
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 
 #include "AboutDialog.h"
 #include "report/htmlbuilder.h"
@@ -50,7 +50,7 @@ AboutDialog::AboutDialog(wxWindow* parent, int tabToOpenNo)
 {
     const wxString caption = (tabToOpenNo == 4)
         ? _t("License agreement")
-        : wxString::Format("%s %s", ::mmex::getProgramName(), ::mmex::getTitleProgramVersion());
+        : wxString::Format("%s %s", mmex::getProgramName(), mmex::getTitleProgramVersion());
     createWindow(parent, caption, tabToOpenNo);
     mmThemeAutoColour(this);
 }
@@ -74,7 +74,7 @@ bool AboutDialog::createWindow(wxWindow* parent
         createControls(tabToOpenNo);
         initControls();
         SetMinSize(wxSize(400, 600));
-        this->SetIcon(::mmex::getProgramIcon());
+        this->SetIcon(mmPath::getProgramIcon());
         Fit();
         Centre();
     }
@@ -144,7 +144,7 @@ void AboutDialog::initControls()
     hb.init(true, "");
     wxString html = getProgramDescription(2);
     html.Replace("\n", "<br>");
-    hb.addHeader(1, ::mmex::getProgramName());
+    hb.addHeader(1, mmex::getProgramName());
     hb.addText(html);
     hb.end(true);
     html = hb.getHTMLText();
@@ -154,8 +154,8 @@ void AboutDialog::initControls()
 
     //Read data from files
     wxString filePath[] = {
-        ::mmex::getPathDoc(mmex::F_CONTRIB, false),
-        ::mmex::getPathDoc(mmex::F_LICENSE, false)
+        mmPath::getPathDoc(mmPath::F_CONTRIB, false),
+        mmPath::getPathDoc(mmPath::F_LICENSE, false)
     };
 
     std::vector<wxString> data;

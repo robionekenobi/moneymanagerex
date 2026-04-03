@@ -41,7 +41,7 @@
 #include "base/_constants.h"
 #include "base/_platfdep.h"
 #include "util/mmCalcValidator.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "_util.h"
 #include "_simple.h"
@@ -1881,7 +1881,7 @@ const wxString getVFname4print(const wxString& name, const wxString& data)
     txt.Replace("memory:", "");
 
     const auto f = wxString::Format("%s%s%shtml",
-        mmex::getTempFolder(),
+        mmPath::getTempFolder(),
         name,
         wxString(wxFILE_SEP_EXT)
     );

@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 #include "util/mmCalcValidator.h"
@@ -64,7 +64,7 @@ mmEditSplitOther::mmEditSplitOther(
     mmThemeAutoColour(this);
     mmSetSize(this);
     Centre();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     fillControls();
 }
@@ -202,7 +202,7 @@ bool SplitDialog::Create(wxWindow* parent
 
     mmSetSize(this);
     Centre();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     return TRUE;
 }

@@ -22,7 +22,7 @@ Copyright (C) 2016, 2020 - 2022 Nikolay Akimov
 #include <wx/mimetype.h>
 
 #include "base/_constants.h"
-#include "base/paths.h"
+#include "util/mmPath.h"
 #include "base/images_list.h"
 #include "util/_util.h"
 #include "util/_simple.h"
@@ -69,7 +69,7 @@ void FieldManager::Create(wxWindow* parent)
         return;
     CreateControls();
     fillControls();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Fit();
     Centre();
 }

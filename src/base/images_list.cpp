@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <wx/tokenzr.h>
 
 #include "_platfdep.h"
-#include "paths.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 
 #include "model/SettingModel.h"
@@ -43,25 +43,25 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 // SVG filename in Zip, the PNG enum to which it relates, whether to recolor background
 static const std::map<std::string, std::pair<int, bool>> iconName2enum = {
-    { "NEW_DB.svg", { NEW_DB, false } },
-    { "OPEN.svg", { OPEN, false } },
-    { "NEW_ACC.svg", { NEW_ACC, false } },
-    { "HOME.svg", { HOME, false } },
-    { "CATEGORY.svg", { CATEGORY, false } },
-    { "PAYEE.svg", { PAYEE, false } },
-    { "CURR.svg", { CURR, false } },
-    { "TAG.svg", { TAG, false } },
-    { "FILTER.svg", { FILTER, false } },
-    { "GRM.svg", { GRM, false } },
-    { "OPTIONS.svg", { OPTIONS, false } },
-    { "NEW_TRX.svg", { NEW_TRX, false } },
-    { "NEW_NEWS.svg", { NEW_NEWS, false } },
-    { "NEWS.svg", { NEWS, false } },
-    { "CURRATES.svg", { CURRATES, false } },
+    { "NEW_DB.svg",     { NEW_DB,     false } },
+    { "OPEN.svg",       { OPEN,       false } },
+    { "NEW_ACC.svg",    { NEW_ACC,    false } },
+    { "HOME.svg",       { HOME,       false } },
+    { "CATEGORY.svg",   { CATEGORY,   false } },
+    { "PAYEE.svg",      { PAYEE,      false } },
+    { "CURR.svg",       { CURR,       false } },
+    { "TAG.svg",        { TAG,        false } },
+    { "FILTER.svg",     { FILTER,     false } },
+    { "GRM.svg",        { GRM,        false } },
+    { "OPTIONS.svg",    { OPTIONS,    false } },
+    { "NEW_TRX.svg",    { NEW_TRX,    false } },
+    { "NEW_NEWS.svg",   { NEW_NEWS,   false } },
+    { "NEWS.svg",       { NEWS,       false } },
+    { "CURRATES.svg",   { CURRATES,   false } },
     { "FULLSCREEN.svg", { FULLSCREEN, false } },
-    { "PRINT.svg", { PRINT, false } },
-    { "ABOUT.svg", { ABOUT, false } },
-    { "HELP.svg", { HELP, false } },
+    { "PRINT.svg",      { PRINT,      false } },
+    { "ABOUT.svg",      { ABOUT,      false } },
+    { "HELP.svg",       { HELP,       false } },
 
     // Navigation
     { "NAV_HOME.svg", { NAV_HOME, true } },
@@ -155,7 +155,7 @@ static const std::map<std::string, std::pair<int, bool>> iconName2enum = {
 // Metadata item id, where it can be found, default and if mandatory
 const std::map<int, std::tuple<wxString, wxString, bool> > metaDataTrans()
 {
-    std::map<int, std::tuple<wxString, wxString, bool> > md;
+    std::map<int, std::tuple<wxString, wxString, bool>> md;
     md[THEME_NAME]             = std::make_tuple("/theme/name",                 "",        true);
     md[THEME_AUTHOR]           = std::make_tuple("/theme/author",               "",        false);
     md[THEME_DESCRIPTION]      = std::make_tuple("/theme/description",          "",        true);
@@ -218,55 +218,57 @@ static wxSharedPtr<wxArrayString> filesInVFS;
 
 static const std::map<int, wxBitmapBundle> navtree_images(const int size)
 {
+    // TODO: GRM rep group ico,
     return{
-        { HOUSE_PNG, mmBitmapBundle(png::NAV_HOME, size) }
-        , { ALLTRANSACTIONS_PNG, mmBitmapBundle(png::ALLTRANSACTIONS, size) }
-        , { SCHEDULE_PNG, mmBitmapBundle(png::RECURRING, size) }
-        , { TRASH_PNG, mmBitmapBundle(png::TRASH, size) }
-        , { CALENDAR_PNG, mmBitmapBundle(png::BUDGET, size) }
-        , { PIECHART_PNG, mmBitmapBundle(png::PIE_CHART, size) }
-        , { HELP_PNG, mmBitmapBundle(png::NAV_HELP, size) }
-        , { FAVOURITE_PNG, mmBitmapBundle(png::FAVOURITE, size) }
-        , { FILTER_PNG, mmBitmapBundle(png::NAV_FILTER, size) }
-        , { ASSET_NORMAL_PNG, mmBitmapBundle(png::ASSET_NORMAL, size) }
-        , { CUSTOMSQL_PNG, mmBitmapBundle(png::NAV_GRM, size) }
-        , { CUSTOMSQL_GRP_PNG, mmBitmapBundle(png::NAV_GRM, size) } //TODO: GRM rep group ico
-        , { SAVINGS_ACC_NORMAL_PNG, mmBitmapBundle(png::SAVINGS_NORMAL, size) }
-        , { CARD_ACC_NORMAL_PNG, mmBitmapBundle(png::CC_NORMAL, size) }
-        , { TERMACCOUNT_NORMAL_PNG, mmBitmapBundle(png::TERM_NORMAL, size) }
-        , { STOCK_ACC_NORMAL_PNG, mmBitmapBundle(png::STOCKS_NORMAL, size) }
-        , { CASH_ACC_NORMAL_PNG, mmBitmapBundle(png::CASH_NORMAL, size) }
-        , { LOAN_ACC_NORMAL_PNG, mmBitmapBundle(png::LOAN_ACC_NORMAL, size) }
-        , { ACCOUNT_CLOSED_PNG, mmBitmapBundle(png::ACCOUNT_CLOSED, size) }
+        { HOUSE_PNG,              mmBitmapBundle(png::NAV_HOME,        size) },
+        { ALLTRANSACTIONS_PNG,    mmBitmapBundle(png::ALLTRANSACTIONS, size) },
+        { SCHEDULE_PNG,           mmBitmapBundle(png::RECURRING,       size) },
+        { TRASH_PNG,              mmBitmapBundle(png::TRASH,           size) },
+        { CALENDAR_PNG,           mmBitmapBundle(png::BUDGET,          size) },
+        { PIECHART_PNG,           mmBitmapBundle(png::PIE_CHART,       size) },
+        { HELP_PNG,               mmBitmapBundle(png::NAV_HELP,        size) },
+        { FAVOURITE_PNG,          mmBitmapBundle(png::FAVOURITE,       size) },
+        { FILTER_PNG,             mmBitmapBundle(png::NAV_FILTER,      size) },
+        { ASSET_NORMAL_PNG,       mmBitmapBundle(png::ASSET_NORMAL,    size) },
+        { CUSTOMSQL_PNG,          mmBitmapBundle(png::NAV_GRM,         size) },
+        { CUSTOMSQL_GRP_PNG,      mmBitmapBundle(png::NAV_GRM,         size) },
+        { SAVINGS_ACC_NORMAL_PNG, mmBitmapBundle(png::SAVINGS_NORMAL,  size) },
+        { CARD_ACC_NORMAL_PNG,    mmBitmapBundle(png::CC_NORMAL,       size) },
+        { TERMACCOUNT_NORMAL_PNG, mmBitmapBundle(png::TERM_NORMAL,     size) },
+        { STOCK_ACC_NORMAL_PNG,   mmBitmapBundle(png::STOCKS_NORMAL,   size) },
+        { CASH_ACC_NORMAL_PNG,    mmBitmapBundle(png::CASH_NORMAL,     size) },
+        { LOAN_ACC_NORMAL_PNG,    mmBitmapBundle(png::LOAN_ACC_NORMAL, size) },
+        { ACCOUNT_CLOSED_PNG,     mmBitmapBundle(png::ACCOUNT_CLOSED,  size) },
     };
 };
 
 // Custom icons for accounts
 static const std::map<int, wxBitmapBundle> acc_images(int size)
 {
-    return
-    {
-        { ACC_ICON_MONEY, mmBitmapBundle(png::ACC_MONEY, size) }
-        , { ACC_ICON_EURO, mmBitmapBundle(png::ACC_EURO, size) }
-        , { ACC_ICON_FLAG, mmBitmapBundle(png::ACC_FLAG, size) }
-        , { ACC_ICON_COINS, mmBitmapBundle(png::ACC_COINS, size) }
-        , { ACC_ICON_ABOUT, mmBitmapBundle(png::ACC_ABOUT, size) }
-        , { ACC_ICON_CLOCK, mmBitmapBundle(png::ACC_CLOCK, size) }
-        , { ACC_ICON_CAT, mmBitmapBundle(png::ACC_CAT, size) }
-        , { ACC_ICON_DOG, mmBitmapBundle(png::ACC_DOG, size) }
-        , { ACC_ICON_TREES, mmBitmapBundle(png::ACC_TREES, size) }
-        , { ACC_ICON_HOURGLASS, mmBitmapBundle(png::ACC_HOURGLASS, size) }
-        , { ACC_ICON_WORK, mmBitmapBundle(png::ACC_WORK, size) }
-        , { ACC_ICON_PAYPAL, mmBitmapBundle(png::ACC_PAYPAL, size)}
-        , { ACC_ICON_WALLET, mmBitmapBundle(png::ACC_WALLET, size) }
-        , { ACC_ICON_RUBIK, mmBitmapBundle(png::ACC_RUBIK, size) }
+    return {
+        { ACC_ICON_MONEY,     mmBitmapBundle(png::ACC_MONEY,     size) },
+        { ACC_ICON_EURO,      mmBitmapBundle(png::ACC_EURO,      size) },
+        { ACC_ICON_FLAG,      mmBitmapBundle(png::ACC_FLAG,      size) },
+        { ACC_ICON_COINS,     mmBitmapBundle(png::ACC_COINS,     size) },
+        { ACC_ICON_ABOUT,     mmBitmapBundle(png::ACC_ABOUT,     size) },
+        { ACC_ICON_CLOCK,     mmBitmapBundle(png::ACC_CLOCK,     size) },
+        { ACC_ICON_CAT,       mmBitmapBundle(png::ACC_CAT,       size) },
+        { ACC_ICON_DOG,       mmBitmapBundle(png::ACC_DOG,       size) },
+        { ACC_ICON_TREES,     mmBitmapBundle(png::ACC_TREES,     size) },
+        { ACC_ICON_HOURGLASS, mmBitmapBundle(png::ACC_HOURGLASS, size) },
+        { ACC_ICON_WORK,      mmBitmapBundle(png::ACC_WORK,      size) },
+        { ACC_ICON_PAYPAL,    mmBitmapBundle(png::ACC_PAYPAL,    size) },
+        { ACC_ICON_WALLET,    mmBitmapBundle(png::ACC_WALLET,    size) },
+        { ACC_ICON_RUBIK,     mmBitmapBundle(png::ACC_RUBIK,     size) },
     };
 }
 
 
 wxVector<wxBitmapBundle> navtree_images_list(const int size)
 {
-    int x = (size > 0) ? size : PrefModel::instance().getIconSize();
+    int x = (size > 0)
+        ? size
+        : PrefModel::instance().getIconSize();
 
     wxVector<wxBitmapBundle> images;
     for (const auto& img : navtree_images(x))
@@ -280,8 +282,14 @@ wxVector<wxBitmapBundle> navtree_images_list(const int size)
 
 static int getIconSizeIdx(const int iconSize)
 {
-    const int x = (iconSize > 0) ? iconSize : PrefModel::instance().getIconSize();
-    auto it = find_if(sizes.begin(), sizes.end(), [x](const std::pair<int, int>& p) { return p.second == x; });
+    const int x = (iconSize > 0)
+        ? iconSize
+        : PrefModel::instance().getIconSize();
+    auto it = find_if(sizes.begin(), sizes.end(),
+        [x](const std::pair<int, int>& p) {
+            return p.second == x;
+        }
+    );
     if(it == sizes.end())
         return -1;
 
@@ -384,7 +392,7 @@ bool processThemes(wxString themeDir, wxString myTheme, bool metaPhase)
                     );
                     wxLogDebug("Theme: '%s' File: '%s' has been copied to VFS", thisTheme, fileName);
 #else
-                    const wxString theme_file = mmex::getTempFolder() + fileName;
+                    const wxString theme_file = mmPath::getTempFolder() + fileName;
                     wxFileOutputStream fileOut(theme_file);
                     if (!fileOut.IsOk())
                         wxLogError("Could not copy %s !", fileFullPath);
@@ -431,23 +439,34 @@ bool checkThemeContents(wxArrayString *filesinTheme)
     // Check for required files
     const wxString neededFiles[] = { "master.css", "" };
 
-    for (int i = 0; !neededFiles[i].IsEmpty(); i++)
-    {
-        const wxString realName = (darkFound && darkMode) ? neededFiles[i].AfterLast('-') : neededFiles[i];
+    for (int i = 0; !neededFiles[i].IsEmpty(); i++) {
+        const wxString realName = (darkFound && darkMode)
+            ? neededFiles[i].AfterLast('-')
+            : neededFiles[i];
         if (wxNOT_FOUND == filesinTheme->Index(realName)) {
-            wxMessageBox(wxString::Format(_t("File '%1$s' missing or invalid in chosen theme '%2$s'")
-                , neededFiles[i], SettingModel::instance().getTheme()), _t("Warning"), wxOK | wxICON_WARNING);
+            wxMessageBox(
+                wxString::Format(_t("File '%1$s' missing or invalid in chosen theme '%2$s'"),
+                    neededFiles[i],
+                    SettingModel::instance().getTheme()
+                ),
+                _t("Warning"),
+                wxOK | wxICON_WARNING
+            );
             success = false;
         }
     }
 
     // Check for required metadata
-    for (const auto& it : metaDataTrans())
-    {
-        if (std::get<2>(it.second) && mmThemeMetaString(it.first).IsEmpty())
-        {
-            wxMessageBox(wxString::Format(_t("Metadata '%1$s' missing in chosen theme '%2$s'")
-                , std::get<0>(it.second), SettingModel::instance().getTheme()), _t("Warning"), wxOK | wxICON_WARNING);
+    for (const auto& it : metaDataTrans()) {
+        if (std::get<2>(it.second) && mmThemeMetaString(it.first).IsEmpty()) {
+            wxMessageBox(
+                wxString::Format(_t("Metadata '%1$s' missing in chosen theme '%2$s'"),
+                    std::get<0>(it.second),
+                    SettingModel::instance().getTheme()
+                ),
+                _t("Warning"),
+                wxOK | wxICON_WARNING
+            );
             success = false;
         }
     }
@@ -456,14 +475,10 @@ bool checkThemeContents(wxArrayString *filesinTheme)
     wxString missingIcons;
     const int maxCutOff = 10;
     int erroredIcons = 0;
-    for (int i = 0; i < MAX_PNG; i++)
-    {
-        if (!programIconBundles[0][i])
-        {
-            for (auto it = iconName2enum.begin(); it != iconName2enum.end(); it++)
-            {
-                if (it->second.first == i)
-                {
+    for (int i = 0; i < MAX_PNG; i++) {
+        if (!programIconBundles[0][i]) {
+            for (auto it = iconName2enum.begin(); it != iconName2enum.end(); it++) {
+                if (it->second.first == i) {
                     if (erroredIcons <= maxCutOff) {
                         missingIcons << it->first << ", ";
                     }
@@ -475,14 +490,20 @@ bool checkThemeContents(wxArrayString *filesinTheme)
         }
     }
 
-    if (!missingIcons.IsEmpty())
-    {
+    if (!missingIcons.IsEmpty()) {
         missingIcons.RemoveLast(2);
         if (erroredIcons > maxCutOff) {
             missingIcons << " " << _tu("and more…");
         }
-        wxMessageBox(wxString::Format(_t("There are %1$d missing or invalid icons in chosen theme '%2$s': %3$s")
-            , erroredIcons, SettingModel::instance().getTheme(), missingIcons), _t("Warning"), wxOK | wxICON_WARNING);
+        wxMessageBox(
+            wxString::Format(_t("There are %1$d missing or invalid icons in chosen theme '%2$s': %3$s"),
+                erroredIcons,
+                SettingModel::instance().getTheme(),
+                missingIcons
+            ),
+            _t("Warning"),
+            wxOK | wxICON_WARNING
+        );
     }
     return success;
 }
@@ -491,39 +512,79 @@ void reverttoDefaultTheme()
 {
     SettingModel::instance().saveTheme("default");
     darkFound = false;
-    processThemes(mmex::getPathResource(mmex::THEMESDIR), SettingModel::instance().getTheme(), true);
-    processThemes(mmex::getPathResource(mmex::THEMESDIR), SettingModel::instance().getTheme(), false);
+    processThemes(
+        mmPath::getPathResource(mmPath::THEMESDIR),
+        SettingModel::instance().getTheme(),
+        true
+    );
+    processThemes(
+        mmPath::getPathResource(mmPath::THEMESDIR),
+        SettingModel::instance().getTheme(),
+        false
+    );
 }
 
 void LoadTheme()
 {
-    darkMode = ( (mmex::isDarkMode() && (PrefModel::THEME_MODE::AUTO == PrefModel::instance().getThemeMode()))
-                    || (PrefModel::THEME_MODE::DARK == PrefModel::instance().getThemeMode()));
+    darkMode = (
+        (mmex::isDarkMode() &&
+            PrefModel::THEME_MODE::AUTO == PrefModel::instance().getThemeMode()
+        ) ||
+        PrefModel::THEME_MODE::DARK == PrefModel::instance().getThemeMode()
+    );
     filesInVFS = new wxArrayString();
 
     // Scan first for metadata then for the icons and other files
     darkFound = false;
-    if (processThemes(mmex::getPathResource(mmex::THEMESDIR), SettingModel::instance().getTheme(), true))
-        processThemes(mmex::getPathResource(mmex::THEMESDIR), SettingModel::instance().getTheme(), false);
+    if (processThemes(
+        mmPath::getPathResource(mmPath::THEMESDIR),
+        SettingModel::instance().getTheme(),
+        true
+    ))
+        processThemes(
+            mmPath::getPathResource(mmPath::THEMESDIR),
+            SettingModel::instance().getTheme(),
+            false
+        );
     else
-        if (processThemes(mmex::getPathUser(mmex::USERTHEMEDIR), SettingModel::instance().getTheme(), true))
-            processThemes(mmex::getPathUser(mmex::USERTHEMEDIR), SettingModel::instance().getTheme(), false);
-        else
-        {
-            wxMessageBox(wxString::Format(_t("Theme %s not found; it may no longer be supported. Reverting to the default theme.")
-                , SettingModel::instance().getTheme()), _t("Warning"), wxOK | wxICON_WARNING);
+        if (
+            processThemes(
+                mmPath::getPathUser(mmPath::USERTHEMEDIR),
+                SettingModel::instance().getTheme(),
+                true
+            ))
+            processThemes(
+                mmPath::getPathUser(mmPath::USERTHEMEDIR),
+                SettingModel::instance().getTheme(),
+                false
+            );
+        else {
+            wxMessageBox(
+                wxString::Format(_t("Theme %s not found; it may no longer be supported. Reverting to the default theme."),
+                    SettingModel::instance().getTheme()
+                ),
+                _t("Warning"),
+                wxOK | wxICON_WARNING
+            );
             reverttoDefaultTheme();
         }
 
-    if (!checkThemeContents(filesInVFS.get()))
-    {
-        wxMessageBox(wxString::Format(_t("Theme %s has missing items and is incompatible. Reverting to default theme"), SettingModel::instance().getTheme()), _t("Warning"), wxOK | wxICON_WARNING);
+    if (!checkThemeContents(filesInVFS.get())) {
+        wxMessageBox(
+            wxString::Format(_t("Theme %s has missing items and is incompatible. Reverting to default theme"),
+                SettingModel::instance().getTheme()
+            ),
+            _t("Warning"),
+            wxOK | wxICON_WARNING
+        );
         reverttoDefaultTheme();
-        if (!checkThemeContents(filesInVFS.get()))
-        {
+        if (!checkThemeContents(filesInVFS.get())) {
             // Time to give up as we couldn't find a workable theme
-            wxMessageBox(_t("No workable theme found, the installation may be corrupt")
-                , _t("Error"), wxOK | wxICON_ERROR);
+            wxMessageBox(
+                _t("No workable theme found, the installation may be corrupt"),
+                _t("Error"),
+                wxOK | wxICON_ERROR
+            );
             exit(EXIT_FAILURE);
         }
     }
@@ -545,7 +606,9 @@ const wxString mmThemeMetaString(int ref)
     if (darkFound && darkMode && !metaLocation.StartsWith("/theme"))
         metaLocation.Prepend("/dark");
     const Pointer ptr(metaLocation.mb_str());
-    wxString metaValue = wxString::FromUTF8(GetValueByPointerWithDefault(metaData_doc, ptr, "").GetString());
+    wxString metaValue = wxString::FromUTF8(
+        GetValueByPointerWithDefault(metaData_doc, ptr, "").GetString()
+    );
     if (metaValue.IsEmpty() && !std::get<2>(i))
         metaValue = std::get<1>(i);
     return (metaValue);
@@ -570,8 +633,7 @@ void mmThemeMetaColour(wxWindow* object, wxColour c, bool foreground)
 {
     if (foreground)
         object->SetForegroundColour(c);
-    else
-    {
+    else {
         object->SetBackgroundColour(c);
         object->SetForegroundColour(*bestFontColour(c));
     }
@@ -600,13 +662,12 @@ const std::vector<wxColour> mmThemeMetaColourArray(int ref)
 {
     int idx = getIconSizeIdx(size);
 
-    if(idx >= 0)
+    if (idx >= 0)
         return *programIcons[idx][ref].get();
 
     // Look for a better size match
     int bestAvailSize = size;
-    while(idx)
-    {
+    while (idx) {
         bestAvailSize /= 2;
         idx = getIconSizeIdx(bestAvailSize);
         if( idx >= 0 )
@@ -614,7 +675,7 @@ const std::vector<wxColour> mmThemeMetaColourArray(int ref)
     }
 
     wxSize bmpSize(size, size);
-    auto &bundle = programIconBundles[idx][ref];
+    auto& bundle = programIconBundles[idx][ref];
     return bundle.get()->GetBitmap(bmpSize);
 }*/
 
