@@ -21,7 +21,7 @@
 
 #include "model/PrefModel.h"
 
-const mmDatePeriod::MapIdLabel mmDatePeriod::mapIdLabel[] =
+const std::vector<mmDatePeriod::IdLabel> mmDatePeriod::s_id_label_a =
 {
     { _A, "A" },
     { _Y, "Y" },
@@ -31,14 +31,14 @@ const mmDatePeriod::MapIdLabel mmDatePeriod::mapIdLabel[] =
     { _T, "T" },
     { _S, "S" },
 };
-const mmDatePeriod::MapLabelId mmDatePeriod::mapLabelId = makeLabelId();
+const mmDatePeriod::LabelIdM mmDatePeriod::s_label_id_m = makeLabelId();
 
-mmDatePeriod::MapLabelId mmDatePeriod::makeLabelId()
+mmDatePeriod::LabelIdM mmDatePeriod::makeLabelId()
 {
-    MapLabelId map;
-    for (int i = 0; i < static_cast<int>(sizeof(mapIdLabel)/sizeof(mapIdLabel[0])); ++i) {
-        char c = mapIdLabel[i].label[0];
-        map[c] = mapIdLabel[i].id;
+    LabelIdM map;
+    for (int i = 0; i < static_cast<int>(s_id_label_a.size()); ++i) {
+        char c = s_id_label_a[i].label[0];
+        map[c] = s_id_label_a[i].id;
     }
     return map;
 }
@@ -50,8 +50,8 @@ mmDatePeriod::mmDatePeriod(Id id) :
 
 mmDatePeriod::mmDatePeriod(char label)
 {
-    auto it = mapLabelId.find(label);
-    m_id = (it == mapLabelId.end()) ? _A : it->second;
+    auto it = s_label_id_m.find(label);
+    m_id = (it == s_label_id_m.end()) ? _A : it->second;
 }
 
 wxDateSpan mmDatePeriod::span(int offset, mmDatePeriod period)
@@ -171,7 +171,7 @@ char mmDateRange2::Range::scanToken(
     if (c1)
         return '_';
 
-    if (auto it = mmDatePeriod::mapLabelId.find(c); it != mmDatePeriod::mapLabelId.end()) {
+    if (auto it = mmDatePeriod::s_label_id_m.find(c); it != mmDatePeriod::s_label_id_m.end()) {
         ++buffer_i;
         token_p = it->second;
         return 'p';
@@ -717,12 +717,12 @@ bool mmDateRange2::debug()
     bool ok = true;
     wxLogDebug("{{{ mmDateRange2::debug()");
 
-    // check order in mmDatePeriod::mapIdLabel
-    int n = static_cast<int>(sizeof(mmDatePeriod::mapIdLabel)/sizeof(mmDatePeriod::mapIdLabel[0]));
+    // check order in mmDatePeriod::s_id_label_a
+    int n = static_cast<int>(mmDatePeriod::s_id_label_a.size());
     for (int i = 0; i < n; i++) {
         wxASSERT_MSG(
-            static_cast<int>(mmDatePeriod::mapIdLabel[i].id) == i,
-            "Wrong order in mmDatePeriod::mapIdLabel"
+            static_cast<int>(mmDatePeriod::s_id_label_a[i].id) == i,
+            "Wrong order in mmDatePeriod::s_id_label_a"
         );
     }
 

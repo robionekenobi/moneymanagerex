@@ -19,6 +19,7 @@
 #pragma once
 
 #include <optional>
+#include <vector>
 #include <unordered_map>
 #include "_defs.h"
 #include "mmDate.h"
@@ -40,13 +41,13 @@ public:
         _max = _S,  // (max value)
     };
 
-    typedef struct { Id id; const wxString label; } MapIdLabel;
-    typedef std::unordered_map<char, Id> MapLabelId;
-    static const MapIdLabel mapIdLabel[];
-    static const MapLabelId mapLabelId;
+    typedef struct { Id id; const wxString label; } IdLabel;
+    typedef std::unordered_map<char, Id> LabelIdM;
+    static const std::vector<IdLabel> s_id_label_a;
+    static const LabelIdM s_label_id_m;
 
 private:
-    static MapLabelId makeLabelId();
+    static LabelIdM makeLabelId();
 
 private:
     Id m_id;
@@ -60,7 +61,7 @@ public:
 
 public:
     int  toInt() const { return static_cast<int>(m_id); }
-    auto label() const -> const wxString { return mapIdLabel[toInt()].label; }
+    auto label() const -> const wxString { return s_id_label_a[toInt()].label; }
 
 public:
     bool operator== (mmDatePeriod other) const { return m_id == other.m_id; }
