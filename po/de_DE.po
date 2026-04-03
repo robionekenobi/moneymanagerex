@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: moneymanagerex\n"
 "Report-Msgid-Bugs-To: developer@moneymanagerex.org\n"
 "POT-Creation-Date: 2026-03-25 10:56+0000\n"
-"PO-Revision-Date: 2026-03-27 01:28\n"
+"PO-Revision-Date: 2026-04-03 01:28\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -9230,7 +9230,7 @@ msgstr "Sierra Leonean leone"
 
 #: table/CurrencyTable.cpp:380
 msgid "South Sudanese pound"
-msgstr "Sudanesisches Pfund"
+msgstr "Südsudanesisches Pfund"
 
 #: table/CurrencyTable.cpp:384
 msgid "Uruguayan nominal wage index unit"
