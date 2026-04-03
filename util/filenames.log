@@ -147,6 +147,47 @@ under src/ in increasing chronological order.
   webapp                             -> import_export/webapp
   webappdialog                       -> import_export/webappdialog
 
++ PR #8182 (2026-02-24)
+  util/_choices                      -> util/mmChoice
+  util/mmDateDay                     -> util/mmDate
+
++ PR #8182 (2026-02-24)
+  table/ScheduledTable               -> table/SchedTable
+  table/ScheduledSplitTable          -> table/SchedSplitTable
+  table/TransactionTable             -> table/TrxTable
+  table/TransactionLinkTable         -> table/TrxLinkTable
+  table/TransactionShareTable        -> table/TrxShareTable
+  table/TransactionSplitTable        -> table/TrxSplitTable
+  data/ScheduledData                 -> data/SchedData
+  data/ScheduledSplitData            -> data/SchedSplitData
+  data/TransactionData               -> data/TrxData
+  data/TransactionLinkData           -> data/TrxLinkData
+  data/TransactionShareData          -> data/TrxShareData
+  data/TransactionSplitData          -> data/TrxSplitData
+  model/PreferencesModel             -> model/PrefModel
+  model/ScheduledModel               -> model/SchedModel
+  model/ScheduledSplitModel          -> model/SchedSplitModel
+  model/TransactionModel             -> model/TrxModel
+  model/TransactionFilter            -> model/TrxFilter
+  model/TransactionLinkModel         -> model/TrxLinkModel
+  model/TransactionShareModel        -> model/TrxShareModel
+  model/TransactionSplitModel        -> model/TrxSplitModel
+
++ PR #8182 (2026-02-24)
+  panel/ScheduledPanel               -> panel/SchedPanel
+  manager/PreferencesManager         -> manager/PrefManager
+  dialog/ScheduledDialog             -> dialog/SchedDialog
+  dialog/TransactionDialog           -> dialog/TrxDialog
+  dialog/TransactionFilterDialog     -> dialog/TrxFilterDialog
+  dialog/TransactionLinkDialog       -> dialog/TrxLinkDialog
+  dialog/TransactionShareDialog      -> dialog/TrxShareDialog
+  dialog/TransactionUpdateDialog     -> dialog/TrxUpdateDialog
+  report/TransactionsReport          -> report/TrxReport
+
++ PR #8182 (2026-02-24)
+  preferences/                       -> pref/
+  pref/*Preferences                  -> pref/*Pref
+
 . PR ? (?)
   base/constants                     -> base/_constants
   base/defs.h                        -> base/_defs.h
@@ -160,4 +201,7 @@ under src/ in increasing chronological order.
   util/mmDateTime                    -> base/mmDateTime
   util/mmSingleton.h                 -> base/mmSingleton.h
   util/mmTips.h                      -> base/mmTips.h
+
+. PR ? (?)
+  base/paths                         -> util/mmPath
 
