@@ -32,8 +32,10 @@
 
 #include "base/_constants.h"
 #include "base/_platfdep.h"
+#include "base/mmListBoxItem.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
+#include "util/mmSeparatorStat.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -2019,7 +2021,7 @@ void mmUnivCSVDialog::update_preview()
         unsigned int firstRow = m_spinIgnoreFirstRows_->GetValue();
         unsigned int lastRow = totalLines - m_spinIgnoreLastRows_->GetValue();
 
-        std::unique_ptr<mmDates> dParser(new mmDates);
+        std::unique_ptr<mmDateFormat> dParser(new mmDateFormat);
         wxRegEx categDelimiterRegex(" ?: ?");
         // Import- Add rows to preview
         for (unsigned int row = 0; row < totalLines; row++) {
@@ -2626,19 +2628,21 @@ void mmUnivCSVDialog::OnFileBrowse(wxCommandEvent& WXUNUSED(event))
                 return;
             }
 
-            wxSharedPtr<mmSeparator> sep(new mmSeparator);
+            wxSharedPtr<mmSeparatorStat> sep(new mmSeparatorStat);
             wxString line;
             size_t count = 0;
             for (line = tFile.GetFirstLine(); !tFile.Eof(); line = tFile.GetNextLine()) {
                 *log_field_ << line << "\n";
-                if (++count >= 10) break;
-                sep->isStringHasSeparator(line);
+                if (++count >= 10)
+                    break;
+                sep->search(line);
             }
 
             *log_field_ << "\n";
 
-            delimit_ = sep->getSeparator();
-            if (!IsXML()) m_textDelimiter->ChangeValue(delimit_);
+            delimit_ = sep->max();
+            if (!IsXML())
+                m_textDelimiter->ChangeValue(delimit_);
 
             // TODO: update_preview() is called twice. Once here and once in OnFileNameChanged().
             // This leads to double work and double error messages to the user.

@@ -18,6 +18,7 @@
 
 #include "base/_defs.h"
 #include "base/_constants.h"
+#include "base/mmListBoxItem.h"
 #include "util/mmPath.h"
 #include "util/_util.h"
 #include "model/BudgetPeriodModel.h"

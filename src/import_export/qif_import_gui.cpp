@@ -479,24 +479,21 @@ bool mmQIFImportDialog::mmReadQIFFile()
 
     std::unordered_map <int, wxString> trx;
     int64 split_id = 0;
-    wxSharedPtr<mmDates> dParser(new mmDates);
+    wxSharedPtr<mmDateFormat> dParser(new mmDateFormat);
     std::map<wxString, int> comma({ {".", 0}, {",", 0} });
-    while (input.IsOk() && !input.Eof())
-    {
+    while (input.IsOk() && !input.Eof()) {
         ++numLines;
         const wxString lineStr = text->ReadLine();
         if (lineStr.IsEmpty())
             continue;
 
-        if (numLines % 100 == 0)
-        {
+        if (numLines % 100 == 0) {
             interval = wxGetUTCTimeMillis() - start;
             if (!progressDlg.Pulse(wxString::Format(_t("Reading line %zu, %lld ms")
                 , numLines, interval)))
                 break;
         }
-        if (numLines <= 50)
-        {
+        if (numLines <= 50) {
             *log_field_ << wxString::Format(_t("Line %zu \t %s\n"), numLines, lineStr);
             if (numLines == 50)
                 *log_field_ << "-------------------------------------- 8< --------------------------------------\n";

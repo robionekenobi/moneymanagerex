@@ -81,6 +81,9 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     base/mmDateRange2.h
     base/mmDateTime.cpp
     base/mmDateTime.h
+    base/mmHtmlWindow.cpp
+    base/mmHtmlWindow.h
+    base/mmListBoxItem.h
     base/mmSingleton.h
     base/mmTips.h
 
@@ -101,6 +104,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     util/mmPath.cpp
     util/mmPath.h
     util/mmSQLite3Hook.h
+    util/mmSeparatorStat.cpp
+    util/mmSeparatorStat.h
     util/mmTextCtrl.cpp
     util/mmTextCtrl.h
     util/mmTreeItemData.cpp

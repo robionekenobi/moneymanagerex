@@ -646,41 +646,39 @@ const wxDateTime getUserDefinedFinancialYear(const bool prevDayRequired)
     return financialYear;
 }
 
-const std::map<wxString, wxString> &date_formats_regex()
+const std::map<wxString, wxString>& date_formats_regex()
 {
-    static std::map<wxString, wxString> date_regex;
-
-    // If the map was already filled, return it.
-    if (!date_regex.empty())
-        return date_regex;
+    static std::map<wxString, wxString> format_re_m;
+    if (!format_re_m.empty())
+        return format_re_m;
 
     // First time this function is called, fill the map.
     const wxString week = "([^0-9]{3})";
-    const wxString mon = "([^0-9]{3})";
-    const wxString dd = "((([0 ][1-9])|([1-2][0-9])|(3[0-1]))|([1-9]))";
-    const wxString mm = "((([0 ][1-9])|(1[0-2]))|([1-9]))";
-    const wxString yy = "(([ ][0-9])|([0-9]{1,2}))";
+    const wxString mon  = "([^0-9]{3})";
+    const wxString dd   = "((([0 ][1-9])|([1-2][0-9])|(3[0-1]))|([1-9]))";
+    const wxString mm   = "((([0 ][1-9])|(1[0-2]))|([1-9]))";
+    const wxString yy   = "(([ ][0-9])|([0-9]{1,2}))";
     const wxString yyyy = "(((19)|([2]([0]{1})))([0-9]{2}))";
     const wxString tail = "($|[^0-9])+";
     const wxString head = "^";
 
-    for (const auto &entry : g_date_formats_map()) {
-        wxString regexp = entry.first;
-        regexp.Replace(".", R"([.])");
-        regexp.Replace("/", R"(\/)");
-        regexp.Replace(" ", R"(\s)");
-        regexp.Replace("%Mon", mon);
-        regexp.Replace("%w", week);
-        regexp.Replace("%d", dd);
-        regexp.Replace("%m", mm);
-        regexp.Replace("%Y", yyyy);
-        regexp.Replace("%y", yy);
-        regexp.Append(tail);
-        regexp.Prepend(head);
-        date_regex[entry.first] = regexp;
+    for (const auto& format_mask : g_date_formats_map()) {
+        wxString re = format_mask.first;
+        re.Replace(".",    R"([.])");
+        re.Replace("/",    R"(\/)");
+        re.Replace(" ",    R"(\s)");
+        re.Replace("%Mon", mon);
+        re.Replace("%w",   week);
+        re.Replace("%d",   dd);
+        re.Replace("%m",   mm);
+        re.Replace("%Y",   yyyy);
+        re.Replace("%y",   yy);
+        re.Append(tail);
+        re.Prepend(head);
+        format_re_m[format_mask.first] = re;
     }
 
-    return date_regex;
+    return format_re_m;
 }
 
 bool comp(const std::pair<wxString, wxString>& a, const std::pair<wxString, wxString>& b)
@@ -698,13 +696,13 @@ bool comp(const std::pair<wxString, wxString>& a, const std::pair<wxString, wxSt
     return one < two;
 }
 
-const std::vector<std::pair<wxString, wxString> > g_date_formats_map()
+const std::vector<std::pair<wxString, wxString>> g_date_formats_map()
 {
-    static std::vector<std::pair<wxString, wxString>> df;
-    if (!df.empty())
-        return df;
+    static std::vector<std::pair<wxString, wxString>> format_mask_a;
+    if (!format_mask_a.empty())
+        return format_mask_a;
 
-    std::vector<wxString> date_formats = {
+    std::vector<wxString> format_a = {
         "%d %Mon %Y",
         "%d %Mon %y",
         "%d-%Mon-%Y",
@@ -744,23 +742,22 @@ const std::vector<std::pair<wxString, wxString> > g_date_formats_map()
     };
 
     const auto local_date_fmt = wxLocale::GetInfo(wxLOCALE_SHORT_DATE_FMT);
-    if (std::find(date_formats.begin(), date_formats.end(), local_date_fmt) == date_formats.end())
-        date_formats.push_back(local_date_fmt);
+    if (std::find(format_a.begin(), format_a.end(), local_date_fmt) == format_a.end())
+        format_a.push_back(local_date_fmt);
 
-    for (const auto& entry : date_formats)
-    {
-        auto local_date_mask = entry;
-        local_date_mask.Replace("%Y", "YYYY");
-        local_date_mask.Replace("%y", "YY");
-        local_date_mask.Replace("%d", "DD");
-        local_date_mask.Replace("%Mon", "Mon");
-        local_date_mask.Replace("%m", "MM");
-        local_date_mask.Replace("%w", "Day");
-        df.push_back(std::make_pair(entry, local_date_mask));
+    for (const wxString& format : format_a) {
+        wxString mask = format;
+        mask.Replace("%Y",   "YYYY");
+        mask.Replace("%y",   "YY");
+        mask.Replace("%d",   "DD");
+        mask.Replace("%Mon", "Mon");
+        mask.Replace("%m",   "MM");
+        mask.Replace("%w",   "Day");
+        format_mask_a.push_back(std::make_pair(format, mask));
     }
 
-    std::sort(df.begin(), df.end(), comp);
-    return df;
+    std::sort(format_mask_a.begin(), format_mask_a.end(), comp);
+    return format_mask_a;
 }
 
 const std::map<int, std::pair<wxConvAuto, wxString> > g_encoding = {
@@ -780,13 +777,13 @@ wxString cleanseNumberString(const wxString& str,const bool decimal)
 {
     // Strip any thousands separators and make sure decimal is "." (if present)
     wxString content = str;
-    if (decimal)
-    {
-        wxRegEx pattern(R"([\., ](?=\d*[\., ]))");  // Leave the decimal seperator
+    if (decimal) {
+        // Leave the decimal seperator
+        wxRegEx pattern(R"([\., ](?=\d*[\., ]))");
         pattern.ReplaceAll(&content, wxEmptyString);
-        content.Replace(",",".");
-    } else
-    {
+        content.Replace(",", ".");
+    }
+    else {
         wxRegEx pattern(R"([\., ])");
         pattern.ReplaceAll(&content, wxEmptyString);
     }
@@ -1738,125 +1735,80 @@ const wxRect GetDefaultMonitorRect()
 }
 
 // ----------------------------------------
-mmDates::mmDates() :
-    m_date_formats_temp(g_date_formats_map()),
-    m_today(wxDateTime::Today())
+mmDateFormat::mmDateFormat() :
+    m_today(wxDateTime::Today()),
+    m_month_ago(wxDateTime::Today().Subtract(wxDateSpan::Months(1))),
+    m_format_mask_a(g_date_formats_map())
 {
-    m_date_parsing_stat.clear();
-    m_month_ago = wxDateTime::Today().Subtract(wxDateSpan::Months(1));
+    m_format_stat_m.clear();
 }
 
-mmDates::~mmDates()
+mmDateFormat::~mmDateFormat()
 {
 }
 
-void mmDates::doFinalizeStatistics()
+void mmDateFormat::doFinalizeStatistics()
 {
     auto result = std::max_element(
-        m_date_parsing_stat.begin(),
-        m_date_parsing_stat.end(),
+        m_format_stat_m.begin(),
+        m_format_stat_m.end(),
         [](const std::pair<wxString, int>& p1, const std::pair<wxString, int>& p2) {
             return p1.second < p2.second;
         }
     );
 
-    if (result != m_date_parsing_stat.end()) {
-        m_date_format = result->first;
-        const auto& date_formats = g_date_formats_map();
-        wxString date_format = m_date_format;
-        const auto it = std::find_if(date_formats.begin(), date_formats.end(),
-            [&date_format](const std::pair<wxString, wxString>& element) {
-                return element.first == date_format;
+    if (result != m_format_stat_m.end()) {
+        m_max_format = result->first;
+        const auto& format_mask_a = g_date_formats_map();
+        wxString format = m_max_format;
+        const auto it = std::find_if(format_mask_a.begin(), format_mask_a.end(),
+            [&format](const std::pair<wxString, wxString>& format_mask) {
+                return format_mask.first == format;
             }
         );
-        m_date_mask = it->second;
+        m_max_mask = it->second;
     }
     else
         wxLogDebug("No date string has been handled");
 }
 
-void mmDates::doHandleStatistics(const wxString &dateStr)
+void mmDateFormat::doHandleStatistics(const wxString& date_s)
 {
-    if (m_error_count > MAX_ATTEMPTS || m_date_formats_temp.size() <= 1)
+    if (m_error_count > s_max_attempts || m_format_mask_a.size() <= 1)
         return;
 
-    wxArrayString invalidMask;
-    std::vector<std::pair<wxString, wxString>> date_formats = m_date_formats_temp;
-    for (const auto& date_mask : date_formats) {
-        const wxString mask = date_mask.first;
-        wxDateTime dtdt = m_today;
-        if (mmParseDisplayStringToDate(dtdt, dateStr, mask)) {
-            m_date_parsing_stat[mask] ++;
-            //Increase the date mask rating if parse date is recent (1 month ago) date
-            if (dtdt <= m_today && dtdt >= m_month_ago)
-                m_date_parsing_stat[mask] ++;
-
-            //Decrease the data mask rating if parsed date is in future
-            if (dtdt > m_today)
-                m_date_parsing_stat[mask] -= 2;
+    wxArrayString invalidFormat_a;
+    std::vector<std::pair<wxString, wxString>> format_mask_a = m_format_mask_a;
+    for (const auto& format_mask : format_mask_a) {
+        const wxString format = format_mask.first;
+        wxDateTime dateTime = m_today;
+        if (mmParseDisplayStringToDate(dateTime, date_s, format)) {
+            // Increase the date format rating if parsed date is recent
+            // Decrease the data format rating if parsed date is in future
+            m_format_stat_m[format] +=
+                (dateTime < m_month_ago) ? 1 :
+                (dateTime <= m_today)    ? 2 :
+                -1;
         }
         else {
-            invalidMask.Add(mask);
-            m_date_parsing_stat.erase(mask);
+            invalidFormat_a.Add(format);
+            m_format_stat_m.erase(format);
         }
     }
 
-    if (invalidMask.size() < m_date_formats_temp.size()) {
-        for (const auto &i : invalidMask) {
-            auto it = std::find_if(m_date_formats_temp.begin(), m_date_formats_temp.end(),
-                [&i](const std::pair<wxString, wxString>& element) {
-                    return element.first == i;
+    if (invalidFormat_a.size() < m_format_mask_a.size()) {
+        for (const wxString& invalidFormat : invalidFormat_a) {
+            auto it = std::find_if(m_format_mask_a.begin(), m_format_mask_a.end(),
+                [&invalidFormat](const std::pair<wxString, wxString>& format_mask) {
+                    return format_mask.first == invalidFormat;
                 }
             );
-            m_date_formats_temp.erase(it);
+            m_format_mask_a.erase(it);
         }
     }
     else {
         m_error_count++;
     }
-}
-
-mmSeparator::mmSeparator()
-{
-    const auto& def_delim = InfoModel::instance().getString("DELIMITER", mmex::DEFDELIMTER);
-    m_separators[";"] = 0;
-    m_separators[","] = 0;
-    m_separators["\t"] = 0;
-    m_separators["|"] = 0;
-    m_separators[def_delim] = 0;
-}
-
-mmSeparator::~mmSeparator()
-{
-}
-
-const wxString mmSeparator::getSeparator() const
-{
-    auto x = std::max_element(m_separators.begin(), m_separators.end(),
-        [](const std::pair<wxString, int>& p1, const std::pair<wxString, int>& p2) {
-            return p1.second < p2.second;
-        }
-    );
-    return x->first;
-}
-
-bool mmSeparator::isStringHasSeparator(const wxString &string)
-{
-    bool result = false;
-
-    for (const auto& entry : m_separators) {
-        bool skip = false;
-        for (const auto& letter : string) {
-            if (letter == '"') {
-                skip = !skip;
-            }
-            if (!skip && letter == entry.first) {
-                m_separators[entry.first]++;
-                result = true;
-            }
-        }
-    }
-    return result;
 }
 
 const wxString getVFname4print(const wxString& name, const wxString& data)
@@ -2059,41 +2011,6 @@ void mmFontSize(wxWindow* widget)
     int x = PrefModel::instance().getFontSize();
     for (int i = 0; i < x; i++) {
         widget->SetFont(widget->GetFont().Larger());
-    }
-}
-
-//
-// mmHtmlWindow just adds a right click menu to save text to the system clipboard
-//
-
-mmHtmlWindow::mmHtmlWindow(
-    wxWindow* parent,
-    wxWindowID id,
-    const wxPoint& pos,
-    const wxSize& size,
-    long style,
-    const wxString& name
-) :
-    wxHtmlWindow(parent, id, pos, size, style, name)
-{
-    this->Bind(wxEVT_RIGHT_DOWN, &mmHtmlWindow::OnMouseRightClick, this);
-    this->Bind(wxEVT_MENU, &mmHtmlWindow::OnMenuSelected, this);
-}
-
-void mmHtmlWindow::OnMouseRightClick(wxMouseEvent& /*event*/)
-{
-    wxMenu menu;
-    menu.Append(wxID_HIGHEST + 1, _t("Copy all text to clipboard"));
-    PopupMenu(&menu);
-}
-
-void mmHtmlWindow::OnMenuSelected(wxCommandEvent& event)
-{
-    int i = event.GetId() - wxID_HIGHEST;
-    // There is only one anyway
-    if (i == 1 && wxTheClipboard->Open()) {
-        wxTheClipboard->SetData(new wxTextDataObject(this->ToText()));
-        wxTheClipboard->Close();
     }
 }
 

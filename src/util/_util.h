@@ -67,26 +67,6 @@ struct WebsiteNews
 
 //----------------------------------------------------------------------------
 
-class mmListBoxItem: public wxClientData
-{
-public:
-    mmListBoxItem(int64 index, const wxString& name)
-        : index_(index), name_(name)
-    {}
-
-    int64 getIndex() const;
-    wxString getName() const;
-
-private:
-    int64 index_;
-    wxString name_;
-};
-
-inline int64 mmListBoxItem::getIndex() const { return index_; }
-inline wxString mmListBoxItem::getName() const { return name_; }
-
-//----------------------------------------------------------------------------
-
 const wxString inQuotes(const wxString& label, const wxString& delimiter);
 wxString removeQuotes(wxString s);
 void csv2tab_separated_values(wxString& line, const wxString& delimit);
@@ -133,13 +113,22 @@ const wxRect GetDefaultMonitorRect();
 //* Date Functions----------------------------------------------------------*//
 
 const wxDateTime getUserDefinedFinancialYear(bool prevDayRequired = false);
-const std::map<wxString, wxString> &date_formats_regex();
-const wxString mmGetDateTimeForDisplay(const wxString &datetime_iso, const wxString& format = PrefModel::instance().getDateFormat());
-const wxString mmGetDateForDisplay(const wxString &datetime_iso, const wxString& format = PrefModel::instance().getDateFormat());
+const std::map<wxString, wxString>& date_formats_regex();
+const wxString mmGetDateTimeForDisplay(
+    const wxString& datetime_iso,
+    const wxString& format = PrefModel::instance().getDateFormat()
+);
+const wxString mmGetDateForDisplay(
+    const wxString& datetime_iso,
+    const wxString& format = PrefModel::instance().getDateFormat()
+);
 const wxString mmGetTimeForDisplay(const wxString& datetime_iso);
-bool mmParseDisplayStringToDate(wxDateTime& date, const wxString& sDate, const wxString& sDateMask);
-extern const std::vector<std::pair<wxString, wxString> > g_date_formats_map();
-extern const std::map<int, std::pair<wxConvAuto, wxString> > g_encoding;
+bool mmParseDisplayStringToDate(
+    wxDateTime& date,
+    const wxString& sDate,
+    const wxString& sDateMask
+);
+extern const std::map<int, std::pair<wxConvAuto, wxString>> g_encoding;
 
 //----------------------------------------------------------------------------
 
@@ -150,44 +139,41 @@ CURLcode getYahooFinanceQuotes(const wxString& URL, wxString& json_data);
 
 //----------------------------------------------------------------------------
 
-class mmDates
+extern const std::vector<std::pair<wxString, wxString>> g_date_formats_map();
+class mmDateFormat
 {
 private:
-    std::vector<std::pair<wxString, wxString>> m_date_formats_temp;
-    // Numbers of successfully applied Format Specifier for every handled date string
-    std::map<wxString, int> m_date_parsing_stat;
+    static constexpr int s_max_attempts = 3;
+
+private:
+    // initialized by constructor
     wxDateTime m_today;
     wxDateTime m_month_ago;
-    wxString m_date_mask;   // Human readable date format like DD/MM/YYYY
-    wxString m_date_format; // Date Format Specifier like %d/%m/%Y
+
+    // initialized by constructor; updated by doHandleStatistics()
+    // format : date format, like %d/%m/%Y
+    // mask   : human readable date format, like DD/MM/YYYY
+    std::vector<std::pair<wxString, wxString>> m_format_mask_a; // (format, mask)
+    std::map<wxString, int> m_format_stat_m;                    // (format, statistics)
+
+    // set by doFinalizeStatistics()
+    wxString m_max_format; // max statistics
+    wxString m_max_mask;   // max statistics
+
     int m_error_count = 0;
-    int MAX_ATTEMPTS = 3;
 
 public:
-    mmDates();
-    ~mmDates();
+    mmDateFormat();
+    ~mmDateFormat();
 
-    auto getDateMask() const -> const wxString { return m_date_mask; }
-    auto getDateFormat() const -> const wxString { return m_date_format; }
+    auto getDateFormat() const -> const wxString { return m_max_format; }
+    auto getDateMask() const -> const wxString { return m_max_mask; }
     int  getErrorCount() const { return m_error_count; }
     bool isDateFormatFound() const {
-        return m_date_formats_temp.size() < g_date_formats_map().size();
+        return m_format_mask_a.size() < g_date_formats_map().size();
     }
     void doHandleStatistics(const wxString& dateStr);
     void doFinalizeStatistics();
-};
-
-class mmSeparator
-{
-private:
-    std::map<wxString, int> m_separators;
-
-public:
-    mmSeparator();
-    ~mmSeparator();
-
-    bool isStringHasSeparator(const wxString& string);
-    const wxString getSeparator() const;
 };
 
 // used where differences occur between platforms
@@ -201,21 +187,4 @@ wxString HTMLEncode(const wxString& input);
 void mmSetSize(wxWindow* w);
 void mmFontSize(wxWindow* widget);
 
-class mmHtmlWindow : public wxHtmlWindow
-{
-public:
-    mmHtmlWindow(
-        wxWindow *parent,
-        wxWindowID id=wxID_ANY,
-        const wxPoint &pos=wxDefaultPosition,
-        const wxSize &size=wxDefaultSize,
-        long style=wxHW_DEFAULT_STYLE,
-        const wxString &name="htmlWindow"
-    );
-private:
-    void OnMouseRightClick(wxMouseEvent&);
-    void OnMenuSelected(wxCommandEvent& event);
-};
-
-// -------------------
 wxChar ExtractHotkeyChar(const wxString& input, wxChar defaultChar = '\0');
