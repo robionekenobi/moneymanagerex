@@ -20,9 +20,8 @@
 
 #include "base/_defs.h"
 #include "base/_constants.h"
+#include "util/mmToolbarList.h"
 #include "generic/generictreelistdialog.h"
-#include "toolbartypes.h"
-
 
 class mmToolbarDialog: public genericTreeListDialog
 {
@@ -52,7 +51,7 @@ private:
 
     void fillControls(wxTreeListItem root) override;
     void createColumns() override;
-    wxTreeListItem appendItem(wxTreeListItem parent, ToolBarEntries::ToolBarEntry* ainfo);
+    wxTreeListItem appendItem(wxTreeListItem parent, mmToolbarItem* ainfo);
     void createBottomElements(wxBoxSizer* itemBox) override;
     void updateControlState(int selIdx, wxClientData* selData) override;
     void copyTreeItemData(wxTreeListItem src, wxTreeListItem dst) override;

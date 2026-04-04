@@ -211,6 +211,7 @@ under src/ in increasing chronological order.
   base/images_list                   -> util/mmImage
   base/paths                         -> util/mmPath
   uicontrols/navigatortypes          -> util/mmNavigatorList
+  uicontrols/toolbartypes            -> util/mmToolbarList
   util/_primitive:mmSplitterWindow   -> util/mmSplitterWindow
   util/_simple:mmCalculatorPopup     -> util/mmCalcPopup
   util/_simple:mmColorButton         -> util/mmColorButton

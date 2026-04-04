@@ -109,8 +109,14 @@ public:
 
     wxString getAccountSectionName(int account_type);
     const wxString type_name(int id);
-    int getTypeIdFromDBName(const wxString& dbname, int default_id = mmNavigatorItem::TYPE_ID_CHECKING);
-    int getTypeIdFromChoice(const wxString& choice, int default_id = mmNavigatorItem::TYPE_ID_CHECKING);
+    int getTypeIdFromDBName(
+        const wxString& dbname,
+        int default_id = mmNavigatorItem::TYPE_ID_CHECKING
+    );
+    int getTypeIdFromChoice(
+        const wxString& choice,
+        int default_id = mmNavigatorItem::TYPE_ID_CHECKING
+    );
     int getNumberOfAccountTypes();
 
     int getAccountTypeIdx(const wxString& atypename);

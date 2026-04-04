@@ -357,6 +357,7 @@ wxString mmNavigatorList::getAccountTypeName(int idx)
 
 wxString mmNavigatorList::GetTranslatedName(mmNavigatorItem* info)
 {
+    // CHECK: navTyp is enum NAV_TYP
     return info->navTyp < mmNavigatorItem::NAV_ENTRY_size
         ? wxGetTranslation(info->name)
         : info->name;
@@ -364,6 +365,7 @@ wxString mmNavigatorList::GetTranslatedName(mmNavigatorItem* info)
 
 wxString mmNavigatorList::GetTranslatedSelection(mmNavigatorItem* info)
 {
+    // CHECK: navTyp is enum NAV_TYP
     return info->navTyp < mmNavigatorItem::NAV_ENTRY_size
         ? wxGetTranslation(info->choice)
         : info->choice;

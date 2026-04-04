@@ -21,8 +21,8 @@
 
 struct TypeDataRef : public wxClientData
 {
-    ToolBarEntries::ToolBarEntry* ref;
-    explicit TypeDataRef(ToolBarEntries::ToolBarEntry* r): ref(r) {}
+    mmToolbarItem* ref;
+    explicit TypeDataRef(mmToolbarItem* r): ref(r) {}
 };
 
 
@@ -47,7 +47,7 @@ mmToolbarDialog::mmToolbarDialog(wxWindow* parent):genericTreeListDialog(parent,
 
 void mmToolbarDialog::createColumns() {
     m_treeList->AppendColumn("");
-    wxImageList* imageList = ToolBarEntries::instance().getImageList();
+    wxImageList* imageList = mmToolbarList::instance().getImageList();
     m_treeList->SetImageList(imageList);
 
 #ifdef __WXMAC__
@@ -59,7 +59,7 @@ void mmToolbarDialog::createColumns() {
 
 void mmToolbarDialog::closeAction() {
     updateTree();
-    ToolBarEntries::instance().Save();
+    mmToolbarList::instance().Save();
     mmGUIFrame* mainFrame = wxDynamicCast(this->GetParent(), mmGUIFrame);
     if (mainFrame) {
         mainFrame->PopulateToolBar();
@@ -115,39 +115,39 @@ void mmToolbarDialog::updateControlState(int WXUNUSED(selIdx), wxClientData* WXU
     if (sel.IsOk()) {
         TypeDataRef* data = static_cast<TypeDataRef*> (m_treeList->GetItemData(sel));
         if (data) {
-            enable = data->ref->type != ToolBarEntries::TOOLBAR_BTN;
+            enable = data->ref->type != mmToolbarItem::TOOLBAR_BTN;
         }
     }
     m_delete->Enable(enable);
 }
 
 void mmToolbarDialog::setDefault() {
-    ToolBarEntries::instance().SetToDefault();
-    m_treeList->SetImageList(ToolBarEntries::instance().getImageList());
+    mmToolbarList::instance().SetToDefault();
+    m_treeList->SetImageList(mmToolbarList::instance().getImageList());
     reloadTree();
 }
 
 void mmToolbarDialog::fillControls(wxTreeListItem root)
 {
-    ToolBarEntries::ToolBarEntry* ainfo = ToolBarEntries::instance().getFirstEntry();
+    mmToolbarItem* ainfo = mmToolbarList::instance().getFirstEntry();
     while (ainfo != nullptr) {
         appendItem(root, ainfo);
-        ainfo = ToolBarEntries::instance().getNextEntry(ainfo);
+        ainfo = mmToolbarList::instance().getNextEntry(ainfo);
     }
 }
 
-wxTreeListItem mmToolbarDialog::appendItem(wxTreeListItem parent, ToolBarEntries::ToolBarEntry* ainfo)
+wxTreeListItem mmToolbarDialog::appendItem(wxTreeListItem parent, mmToolbarItem* ainfo)
 {
-   wxString text = ainfo->type == ToolBarEntries::TOOLBAR_BTN ? wxGetTranslation(ainfo->helpstring) :
-        (ainfo->type == ToolBarEntries::TOOLBAR_SEPARATOR ? std::string(60, '-') :
-        (ainfo->type == ToolBarEntries::TOOLBAR_STRETCH ? "| <<<<<=== " + _t("Spacer") + " ===>>>>> |" : "|         " + _t("Spacer") + "         |"));
+   wxString text = ainfo->type == mmToolbarItem::TOOLBAR_BTN ? wxGetTranslation(ainfo->helpstring) :
+        (ainfo->type == mmToolbarItem::TOOLBAR_SEPARATOR ? std::string(60, '-') :
+        (ainfo->type == mmToolbarItem::TOOLBAR_STRETCH ? "| <<<<<=== " + _t("Spacer") + " ===>>>>> |" : "|         " + _t("Spacer") + "         |"));
 #ifdef __WXMAC__
-    if (ainfo->type == ToolBarEntries::TOOLBAR_BTN) {
+    if (ainfo->type == mmToolbarItem::TOOLBAR_BTN) {
         text.Prepend(wxString(' ', m_spaces));
     }
 #endif
     wxTreeListItem item = m_treeList->AppendItem(parent, text);
-    if (ainfo->type == ToolBarEntries::TOOLBAR_BTN) {
+    if (ainfo->type == mmToolbarItem::TOOLBAR_BTN) {
         m_treeList->SetItemImage(item, ainfo->imageListID);
     }
     m_treeList->CheckItem(item, ainfo->active ? wxCHK_CHECKED : wxCHK_UNCHECKED);
@@ -160,7 +160,7 @@ void mmToolbarDialog::OnDelete(wxCommandEvent&)
     updateTree();
     wxTreeListItem item = m_treeList->GetSelection();
     TypeDataRef* data = static_cast<TypeDataRef*> (m_treeList->GetItemData(item));
-    if (ToolBarEntries::instance().DeleteEntry(data->ref)) {
+    if (mmToolbarList::instance().DeleteEntry(data->ref)) {
         reloadTree();
     }
     updateButtonState();
@@ -169,14 +169,14 @@ void mmToolbarDialog::OnDelete(wxCommandEvent&)
 void mmToolbarDialog::OnNew(wxCommandEvent& event)
 {
     updateTree();
-    ToolBarEntries::ToolBarEntry* ainfo = nullptr;
+    mmToolbarItem* ainfo = nullptr;
     wxTreeListItem sel_item = m_treeList->GetSelection();
     if (sel_item.IsOk()) {
         TypeDataRef* data = static_cast<TypeDataRef*> (m_treeList->GetItemData(sel_item));
         ainfo = data->ref;
     }
-    ToolBarEntries::instance().newEntry(event.GetId() == BTN_NEW_SEPARATOR ? ToolBarEntries::TOOLBAR_SEPARATOR :
-                                        (event.GetId() == BTN_NEW_SPACE ? ToolBarEntries::TOOLBAR_SPACER : ToolBarEntries::TOOLBAR_STRETCH), ainfo);
+    mmToolbarList::instance().newEntry(event.GetId() == BTN_NEW_SEPARATOR ? mmToolbarItem::TOOLBAR_SEPARATOR :
+                                        (event.GetId() == BTN_NEW_SPACE ? mmToolbarItem::TOOLBAR_SPACER : mmToolbarItem::TOOLBAR_STRETCH), ainfo);
     reloadTree();
     updateButtonState();
 }
@@ -188,7 +188,7 @@ void mmToolbarDialog::copyTreeItemData(wxTreeListItem src, wxTreeListItem dst) {
     }
     TypeDataRef* data = static_cast<TypeDataRef*> (m_treeList->GetItemData(src));
     data->ref->active = m_treeList->GetCheckedState(src) == wxCHK_CHECKED;
-    if (data->ref->type == ToolBarEntries::TOOLBAR_BTN) {
+    if (data->ref->type == mmToolbarItem::TOOLBAR_BTN) {
         m_treeList->SetItemImage(dst, data->ref->imageListID);
     }
     m_treeList->SetItemData(dst, new TypeDataRef(data->ref));
@@ -204,5 +204,5 @@ void mmToolbarDialog::updateTree()
         data->ref->seq_no = idx++;
         data->ref->active = m_treeList->GetCheckedState(item) == wxCHK_CHECKED;
     }
-    ToolBarEntries::instance().SortEntriesBySeq();
+    mmToolbarList::instance().SortEntriesBySeq();
 }

@@ -37,6 +37,7 @@
 #include "util/mmFileHistory.h"
 #include "util/mmSingleChoice.h"
 #include "util/mmNavigatorList.h"
+#include "util/mmToolbarList.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -89,7 +90,6 @@
 #include "uicontrols/navigatordialog.h"
 #include "uicontrols/reconciledialog.h"
 #include "uicontrols/toolbardialog.h"
-#include "uicontrols/toolbartypes.h"
 
 #include "import_export/webapp.h"
 #include "import_export/webappdialog.h"
@@ -357,7 +357,7 @@ mmGUIFrame::mmGUIFrame(
     m_mgr.Update();
 
     // store reference for toolbar updates
-    ToolBarEntries::instance().SetToolbarParent(this);
+    mmToolbarList::instance().SetToolbarParent(this);
 
     // Show license agreement at first open
     if (SettingModel::instance().getString(INIDB_SEND_USAGE_STATS, "") == "") {
@@ -2289,11 +2289,11 @@ void  mmGUIFrame::PopulateToolBar(bool update)
 {
     const int toolbar_icon_size = PrefModel::instance().getToolbarIconSize();
     toolBar_->ClearTools();
-    ToolBarEntries::ToolBarEntry* ainfo = ToolBarEntries::instance().getFirstEntry();
+    mmToolbarItem* ainfo = mmToolbarList::instance().getFirstEntry();
     while (ainfo != nullptr) {
         if (ainfo->active) {
             switch (ainfo->type) {
-                case ToolBarEntries::TOOLBAR_BTN:
+                case mmToolbarItem::TOOLBAR_BTN:
                     if (ainfo->toolId == MENU_ANNOUNCEMENTMAILING) {
                         wxString news_array;
                         for (const auto& entry : websiteNewsArray_) {
@@ -2310,20 +2310,20 @@ void  mmGUIFrame::PopulateToolBar(bool update)
                     }
                     break;
 
-                case ToolBarEntries::TOOLBAR_SEPARATOR:
+                case mmToolbarItem::TOOLBAR_SEPARATOR:
                     toolBar_->AddSeparator();
                     break;
 
-                case ToolBarEntries::TOOLBAR_STRETCH:
+                case mmToolbarItem::TOOLBAR_STRETCH:
                     toolBar_->AddStretchSpacer();
                     break;
 
-                case ToolBarEntries::TOOLBAR_SPACER:
+                case mmToolbarItem::TOOLBAR_SPACER:
                     toolBar_->AddSpacer(toolbar_icon_size);
                     break;
             }
         }
-        ainfo = ToolBarEntries::instance().getNextEntry(ainfo);
+        ainfo = mmToolbarList::instance().getNextEntry(ainfo);
     }
 
     // after adding the buttons to the toolbar, must call Realize() to reflect changes

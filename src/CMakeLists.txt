@@ -135,6 +135,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     util/mmSplitterWindow.h
     util/mmTextCtrl.cpp
     util/mmTextCtrl.h
+    util/mmToolbarList.cpp
+    util/mmToolbarList.h
     util/mmTreeItemData.cpp
     util/mmTreeItemData.h
 
@@ -464,8 +466,6 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     uicontrols/navigatoreditdialog.h
     uicontrols/toolbardialog.cpp
     uicontrols/toolbardialog.h
-    uicontrols/toolbartypes.cpp
-    uicontrols/toolbartypes.h
 
     db/dbcheck.cpp
     db/dbcheck.h
