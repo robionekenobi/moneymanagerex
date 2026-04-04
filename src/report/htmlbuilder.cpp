@@ -23,6 +23,7 @@
 #include <float.h>
 
 #include "base/_constants.h"
+#include "base/mmMath.h"
 #include "util/mmImage.h"
 #include "util/_util.h"
 
@@ -611,7 +612,7 @@ void mmHTMLBuilder::endTableCell()
 void mmHTMLBuilder::addChart(const GraphData& gd)
 {
     int precision = CurrencyModel::instance().get_base_data_n()->precision();
-    int k = pow10(precision);
+    int k = mmMath::pow10(precision);
     wxString htmlChart, htmlPieData;
     wxString divid = wxString::Format("apex%i", rand()); // Generate unique identifier for each graph
 

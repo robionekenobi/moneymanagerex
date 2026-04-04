@@ -24,12 +24,7 @@
 #include "base/_defs.h"
 #include "base/_types.h"
 
-//----------------------------------------------------------------------------
-
-//fast alternative for pow(10, y)
-int pow10(const int y);
-
-//----------------------------------------------------------------------------
+// -- String
 
 struct caseInsensitiveComparator {
     bool operator()(const wxString& lhs, const wxString& rhs) const {
@@ -44,13 +39,11 @@ const wxString mmTrimAmount(
     const wxString& value, const wxString& decimal, const wxString& replace_decimal = ""
 );
 
+// -- URI
+
 bool isValidURI(const wxString& validate);
 
-//----------------------------------------------------------------------------
-
-wxDateTime parseDateTime(const wxString& str_date);
-
-//----------------------------------------------------------------------------
+// -- DateTime
 
 extern const wxString MONTHS[12];
 extern const wxString MONTHS_SHORT[12];
@@ -59,19 +52,14 @@ extern const wxString g_short_days_of_week[7];
 
 inline const wxString mmGetMonthName(const wxDateTime::Month& month)
 {
-    return MONTHS[static_cast<int>(month)];
-}
-
-inline wxString dateTimeISO(wxDateTime dateTime)
-{
-    return (dateTime == wxInvalidDateTime) ? "" : dateTime.FormatISOCombined();
+    return MONTHS[static_cast<int>(month - wxDateTime::Month::Jan)];
 }
 
 bool mmParseISODate(const wxString& in_str, wxDateTime& out_date);
 
-//----------------------------------------------------------------------------
+wxDateTime DEPRECATED_parseDateTime(const wxString& str_date);
 
-const wxColor* bestFontColour(const wxColour& background);
+// -- Color
 
 class mmColors
 {
@@ -84,6 +72,8 @@ public:
     static wxColour userDefColor6;
     static wxColour userDefColor7;
 };
+
+const wxColor* bestFontColour(const wxColour& background);
 
 wxColour getUDColour(const int c);
 

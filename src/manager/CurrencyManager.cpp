@@ -25,6 +25,7 @@
 #include <wx/valnum.h>
 
 #include "base/_constants.h"
+#include "base/mmMath.h"
 #include "util/mmPath.h"
 #include "util/_util.h"
 #include "util/_simple.h"
@@ -385,7 +386,7 @@ void CurrencyManager::onDataChanged(wxCommandEvent& WXUNUSED(event))
     } 
     m_currency_n->m_decimal_point = decimal;
     m_currency_n->m_group_separator = grouping;
-    m_currency_n->m_scale = pow10(scale);
+    m_currency_n->m_scale = mmMath::pow10(scale);
     m_currency_n->m_symbol = w_code->GetValue().Trim();
     m_currency_n->m_name = w_name->GetValue();
 

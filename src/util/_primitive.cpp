@@ -24,23 +24,6 @@
 
 //----------------------------------------------------------------------------
 
-int pow10(const int y)
-{
-    switch (y) {
-    case 0: return 1;
-    case 1: return 10;
-    case 2: return 100;
-    case 3: return 1000;
-    case 4: return 10000;
-    case 5: return 100000;
-    case 6: return 1000000;
-    case 7: return 10000000;
-    case 8: return 100000000;
-    case 9: return 1000000000;
-    default: return 10;
-    }
-}
-
 //----------------------------------------------------------------------------
 
 int CaseInsensitiveCmp(const wxString &s1, const wxString &s2)
@@ -76,7 +59,7 @@ bool isValidURI(const wxString& validate)
 
 //----------------------------------------------------------------------------
 
-wxDateTime parseDateTime(const wxString& str_date)
+wxDateTime DEPRECATED_parseDateTime(const wxString& str_date)
 {
     static std::unordered_map<wxString, wxDateTime> cache;
 
