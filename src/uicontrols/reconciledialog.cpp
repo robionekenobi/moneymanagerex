@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "reconciledialog.h"
+
 #include "base/_constants.h"
 #include "base/mmDate.h"
 #include "util/mmImage.h"
@@ -30,7 +32,6 @@
 #include "model/TrxModel.h"
 
 #include "dialog/TrxDialog.h"
-#include "reconciledialog.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(mmReconcileDialog, wxDialog);
 
@@ -139,7 +140,7 @@ void mmReconcileDialog::CreateControls()
     w_calc_btn->SetCanFocus(false);
     mmToolTip(w_calc_btn, _t("Open Calculator"));
     topSizer->Add(w_calc_btn, 0, wxRIGHT, 20);
-    w_calc_popup = new mmCalculatorPopup(w_calc_btn, w_amount_text, true);
+    w_calc_popup = new mmCalcPopup(w_calc_btn, w_amount_text, true);
     w_calc_popup->SetCanFocus(false);
 
     topSizer->AddStretchSpacer();

@@ -20,6 +20,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "TrxDialog.h"
+
 #include "base/_defs.h"
 #include <wx/numformatter.h>
 #include <wx/timectrl.h>
@@ -49,7 +51,6 @@
 #include "AttachmentDialog.h"
 #include "FieldValueDialog.h"
 #include "SplitDialog.h"
-#include "TrxDialog.h"
 
 #include "pref/ViewPref.h"
 
@@ -538,7 +539,7 @@ void TrxDialog::CreateControls()
     mmToolTip(bCalc_, _t("Open Calculator"));
     flex_sizer->Add(bCalc_, g_flagsH);
     calcTarget_ = m_textAmount;
-    calcPopup_ = new mmCalculatorPopup(bCalc_, calcTarget_);
+    calcPopup_ = new mmCalcPopup(bCalc_, calcTarget_);
 
     // Account ---------------------------------------------
     account_label_ = new wxStaticText(static_box, wxID_STATIC, _t("Account"));

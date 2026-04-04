@@ -19,8 +19,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/_constants.h"
 #include "mmComboBox.h"
+
+#include "base/_constants.h"
 #include "_util.h"
 #include "model/CurrencyModel.h"
 #include "model/AccountModel.h"

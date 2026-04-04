@@ -206,6 +206,7 @@ under src/ in increasing chronological order.
 . PR ? (?)
   base/images_list                   -> util/mmImage
   base/paths                         -> util/mmPath
+  util/_simple:mmCalculatorPopup     -> util/mmCalcPopup
   util/_simple:mmComboBox*           -> util/mmComboBox
   util/_util:mmSeparator             -> util/mmSeparatorStat
 

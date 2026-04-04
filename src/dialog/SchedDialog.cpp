@@ -20,6 +20,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "SchedDialog.h"
+
 #include "base/_defs.h"
 #include <wx/calctrl.h>
 #include <wx/valnum.h>
@@ -40,7 +42,6 @@
 #include "manager/CategoryManager.h"
 #include "manager/PayeeManager.h"
 #include "AttachmentDialog.h"
-#include "SchedDialog.h"
 #include "SplitDialog.h"
 #include "import_export/webapp.h"
 
@@ -584,7 +585,7 @@ void SchedDialog::CreateControls()
     mmToolTip(w_calc_btn, _t("Open Calculator"));
     transPanelSizer->Add(w_calc_btn, g_flagsH);
     w_calculator_text = w_amount_text;
-    w_calc = new mmCalculatorPopup(w_calc_btn, w_calculator_text);
+    w_calc = new mmCalcPopup(w_calc_btn, w_calculator_text);
 
     // Account ------------------------------------------------
     wxStaticText* acc_label = new wxStaticText(this,

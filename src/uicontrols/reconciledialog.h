@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "util/mmCalcPopup.h"
 #include "util/_simple.h"
 #include "model/AccountModel.h"
 #include "model/TrxModel.h"
@@ -71,7 +72,7 @@ private:
     wxButton*          w_later_btn;
     wxBitmapButton*    w_calc_btn;
     wxButton*          w_edit_btn;
-    mmCalculatorPopup* w_calc_popup;
+    mmCalcPopup*       w_calc_popup;
 
 public:
     mmReconcileDialog();

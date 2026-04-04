@@ -21,9 +21,9 @@
 
 #pragma once
 
-#include "base/_defs.h"
 #include <wx/dialog.h>
-
+#include "base/_defs.h"
+#include "util/mmCalcPopup.h"
 #include "util/_simple.h"
 #include "model/SchedModel.h"
 #include "model/TrxModel.h"
@@ -109,7 +109,7 @@ private:
     int                 w_focus             = wxID_ANY;
     wxSize              w_min_size;
     wxBitmapButton*     w_calc_btn          = nullptr;
-    mmCalculatorPopup*  w_calc              = nullptr;
+    mmCalcPopup*        w_calc              = nullptr;
     wxTextCtrl*         w_number_text       = nullptr;
     mmTextCtrl*         w_amount_text       = nullptr;
     mmTextCtrl*         w_to_amount_text    = nullptr;
