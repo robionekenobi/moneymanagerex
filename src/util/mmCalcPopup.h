@@ -39,22 +39,22 @@ private:
 // -- state
 
 private:
-    bool dismissedByButton_ = false;
-    bool trigger_;
-    wxSize btnSize;
-    wxFont font;
+    bool m_dismissed = false;
+    bool m_trigger;
+    wxSize m_btn_size;
+    wxFont m_font;
 
-    wxWindow*    panel;
-    mmTextCtrl*  target_;
-    mmTextCtrl*  valueTextCtrl_ = nullptr;
-    wxButton*    button_dec_    = nullptr;
-    wxGridSizer* buttonSizer;
+    wxWindow*    w_panel;
+    mmTextCtrl*  w_target     = nullptr;
+    mmTextCtrl*  w_value_text = nullptr;
+    wxButton*    w_dec_btn    = nullptr;
+    wxGridSizer* w_sizer      = nullptr;
 
 // -- constructor
 
 public:
     mmCalcPopup(
-        wxWindow* parent,
+        wxWindow* parent_win,
         mmTextCtrl* target = nullptr,
         bool trigger = false
     );
@@ -66,27 +66,24 @@ private:
 // -- override
 
 public:
+    // override wxPopupTransientWindow
     virtual void Popup(wxWindow* focus = NULL) override;
-    void SetFocus() override { valueTextCtrl_->SetFocus(); }
+
+    // override wxPopupTransientWindow -> wxWindow
+    virtual void SetFocus() override { w_value_text->SetFocus(); }
 
 protected:
+    // override wxPopupTransientWindow
     virtual void OnDismiss() override;
 
 // -- methods
 
 public:
-    void SetValue(wxString& value);
-    void SetTarget(mmTextCtrl* target);
+    void setValue(wxString& value);
+    void setTarget(mmTextCtrl* target);
 
 // -- event handlers
 
 private:
-    void OnButtonPressed(wxCommandEvent& event);
+    void onButtonPressed(wxCommandEvent& event);
 };
-
-inline void mmCalcPopup::SetTarget(mmTextCtrl* target)
-{
-    target_ = target;
-    button_dec_->SetLabel(target->GetDecimalPoint());
-}
-

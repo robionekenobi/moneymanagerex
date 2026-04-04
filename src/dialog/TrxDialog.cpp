@@ -1088,7 +1088,7 @@ void TrxDialog::SetCategoryForPayee(const PayeeData *payee_n)
 
 void TrxDialog::OnCalculator(wxCommandEvent& WXUNUSED(event))
 {
-    calcPopup_->SetTarget(calcTarget_);
+    calcPopup_->setTarget(calcTarget_);
     calcPopup_->Popup();
 }
 

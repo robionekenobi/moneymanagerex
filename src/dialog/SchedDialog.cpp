@@ -1633,6 +1633,6 @@ void SchedDialog::OnFocusChange(wxChildFocusEvent& event)
 
 void SchedDialog::OnCalculator(wxCommandEvent& WXUNUSED(event))
 {
-    w_calc->SetTarget(w_calculator_text);
+    w_calc->setTarget(w_calculator_text);
     w_calc->Popup();
 }
