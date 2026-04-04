@@ -19,6 +19,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "JournalList.h"
+#include "JournalPanel.h"
+
 #include "base/_defs.h"
 #include <wx/clipbrd.h>
 #include <algorithm>
@@ -27,15 +30,13 @@
 #include "base/_constants.h"
 #include "base/mmUserColor.h"
 #include "util/mmImage.h"
+#include "util/mmSingleChoice.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
 #include "model/PrefModel.h"
 #include "model/SettingModel.h"
 #include "model/Journal.h"
-
-#include "JournalList.h"
-#include "JournalPanel.h"
 
 #include "dialog/AssetDialog.h"
 #include "dialog/AttachmentDialog.h"
@@ -2049,7 +2050,7 @@ void JournalList::onMoveTrx(wxCommandEvent& /*event*/)
             ? _tu("Moving transaction to…")
             : wxString::Format(_tu("Moving %i transactions to…"), sel);
 
-        mmSingleChoiceDialog scd(this,
+        mmSingleChoice scd(this,
             _t("Select the destination Account "),
             headerMsg,
             AccountModel::instance().find_all_name_a()

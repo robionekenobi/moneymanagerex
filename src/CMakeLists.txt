@@ -120,11 +120,15 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     util/mmImage.h
     util/mmMiniEditor.cpp
     util/mmMiniEditor.h
+    util/mmMultiChoice.cpp
+    util/mmMultiChoice.h
     util/mmPath.cpp
     util/mmPath.h
     util/mmSQLite3Hook.h
     util/mmSepParser.cpp
     util/mmSepParser.h
+    util/mmSingleChoice.cpp
+    util/mmSingleChoice.h
     util/mmSplitterWindow.cpp
     util/mmSplitterWindow.h
     util/mmTextCtrl.cpp

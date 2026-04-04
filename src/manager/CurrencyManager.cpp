@@ -27,10 +27,11 @@
 #include "base/_constants.h"
 #include "base/mmMath.h"
 #include "util/mmPath.h"
-#include "util/_util.h"
-#include "util/_simple.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
+#include "util/mmSingleChoice.h"
+#include "util/_util.h"
+#include "util/_simple.h"
 
 #include "model/CurrencyModel.h"
 #include "model/CurrencyHistoryModel.h"
@@ -116,7 +117,7 @@ bool CurrencyManager::create(
     createControls();
 
     if (!m_currency_n) {
-        mmSingleChoiceDialog select_currency_name(this,
+        mmSingleChoice select_currency_name(this,
             _t("Currency name"),
             _t("Select Currency"),
             CurrencyModel::instance().find_all_name_a()

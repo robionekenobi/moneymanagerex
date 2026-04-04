@@ -19,15 +19,16 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "StockList.h"
+#include "StockPanel.h"
+
 #include "base/_constants.h"
 #include "util/mmImage.h"
+#include "util/mmSingleChoice.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
 #include "model/_all.h"
-
-#include "StockPanel.h"
-#include "StockList.h"
 
 #include "dialog/AttachmentDialog.h"
 #include "dialog/StockDialog.h"
@@ -370,7 +371,7 @@ void StockList::onMoveStocks(wxCommandEvent& /*event*/)
     wxString headerMsg = wxString::Format(_t("Moving Transaction from %s to"),
         from_account_n->m_name
     );
-    mmSingleChoiceDialog scd(this, _t("Select the destination Account "),
+    mmSingleChoice scd(this, _t("Select the destination Account "),
         headerMsg, account_a
     );
 

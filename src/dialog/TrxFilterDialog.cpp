@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #pragma hdrstop
 #endif
 
+#include "TrxFilterDialog.h"
+
 #include "base/_defs.h"
 #include <wx/display.h>
 #include <wx/regex.h>
@@ -35,15 +37,15 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "base/_constants.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
+#include "util/mmMultiChoice.h"
+#include "util/mmCalcValidator.h"
 #include "util/_util.h"
 #include "util/_simple.h"
-#include "util/mmCalcValidator.h"
 
 #include "model/_all.h"
 
 #include "manager/CategoryManager.h"
 #include "manager/PayeeManager.h"
-#include "TrxFilterDialog.h"
 
 #include "uicontrols/navigatortypes.h"
 
@@ -1215,7 +1217,7 @@ void TrxFilterDialog::OnShowColumnsButton(wxCommandEvent& /*event*/)
         }
     }
 
-    mmMultiChoiceDialog s_col(this, _t("Hide Report Columns"), "", column_names);
+    mmMultiChoice s_col(this, _t("Hide Report Columns"), "", column_names);
     s_col.SetSelections(hiddenCols);
 
     wxString baloon = "";
@@ -2277,7 +2279,7 @@ void TrxFilterDialog::OnSaveSettings(wxCommandEvent& WXUNUSED(event))
 
 void TrxFilterDialog::OnAccountsButton(wxCommandEvent& WXUNUSED(event))
 {
-    mmMultiChoiceDialog s_acc(this, _t("Choose Accounts"), "", m_account_name_a);
+    mmMultiChoice s_acc(this, _t("Choose Accounts"), "", m_account_name_a);
 
     wxString baloon = "";
     wxArrayInt selected_items;

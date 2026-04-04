@@ -19,6 +19,7 @@
 #include "base/_defs.h"
 #include "base/_constants.h"
 #include "util/mmPath.h"
+#include "util/mmSingleChoice.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -212,7 +213,7 @@ void StartupDialog::OnButtonAppstartChangeLanguage( wxCommandEvent& /*event*/ )
         current_i = 0;
     }
 
-    mmSingleChoiceDialog lang_choice(this,
+    mmSingleChoice lang_choice(this,
         _t("Change user interface language"),
         _t("User Interface Language"),
         lang_label_a

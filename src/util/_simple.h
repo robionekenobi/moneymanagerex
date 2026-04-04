@@ -104,48 +104,7 @@ public:
     static void ToolTip4Object(wxWindow *object, const wxString &message, const wxString &title, int ico = wxICON_WARNING);
 };
 
-// -------------------------------------------------------------------------- //
-
-class mmSingleChoiceDialog : public wxSingleChoiceDialog
-{
-public:
-    using wxSingleChoiceDialog::ShowModal;
-
-    mmSingleChoiceDialog();
-    mmSingleChoiceDialog(
-        wxWindow *parent,
-        const wxString& message,
-        const wxString& caption,
-        const wxArrayString& choices
-    );
-    mmSingleChoiceDialog(
-        wxWindow* parent,
-        const wxString& message,
-        const wxString& caption,
-        const AccountModel::DataA& accounts
-    );
-
-    int ShowModal() { return wxSingleChoiceDialog::ShowModal(); }
-};
-
-class mmMultiChoiceDialog : public wxMultiChoiceDialog
-{
-public:
-    using wxMultiChoiceDialog::ShowModal;
-
-    mmMultiChoiceDialog();
-    mmMultiChoiceDialog(
-        wxWindow* parent,
-        const wxString& message,
-        const wxString& caption,
-        const wxArrayString& items
-    );
-
-public:
-    int ShowModal() { return wxMultiChoiceDialog::ShowModal(); }
-};
-
-/* -------------------------------------------- */
+// --
 
 class mmTagCtrlPopupWindow : public wxPopupTransientWindow {
 public:

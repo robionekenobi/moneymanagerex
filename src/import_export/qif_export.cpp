@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "base/_constants.h"
 #include "util/mmPath.h"
 #include "util/mmDatePicker.h"
+#include "util/mmMultiChoice.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -259,7 +260,7 @@ void mmQIFExportDialog::OnButtonClear(wxCommandEvent& WXUNUSED(event))
 void mmQIFExportDialog::OnAccountsButton(wxCommandEvent& WXUNUSED(event))
 {
     bSelectedAccounts_->UnsetToolTip();
-    mmMultiChoiceDialog s_acc(this, _t("Choose account to export from:")
+    mmMultiChoice s_acc(this, _t("Choose account to export from:")
         , _t("QIF Export"), m_accounts_name);
 
     int i = 0;

@@ -22,27 +22,28 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "mmframe.h"
+
 #include "base/_defs.h"
 #include <stack>
 #include <unordered_set>
 #include <wx/fs_mem.h>
 #include <wx/busyinfo.h>
 
-#include "mmex.h"
 #include "base/_constants.h"
 #include "util/mmImage.h"
-#include "util/_util.h"
-#include "util/_simple.h"
 #include "util/mmSQLite3Hook.h"
 #include "util/mmTreeItemData.h"
 #include "util/mmFileHistory.h"
+#include "util/mmSingleChoice.h"
+#include "util/_util.h"
+#include "util/_simple.h"
 
 #include "db/dbcheck.h"
 #include "db/dbupgrade.h"
 #include "db/dbwrapper.h"
 #include "model/_all.h"
 
-#include "mmframe.h"
 #include "panel/AssetPanel.h"
 #include "panel/BudgetPanel.h"
 #include "panel/DashboardPanel.h"
@@ -95,11 +96,11 @@
 #include "wizard/wizard_newaccount.h"
 #include "wizard/wizard_newdb.h"
 #include "wizard/wizard_update.h"
+#include "mmex.h"
 
 //----------------------------------------------------------------------------
 
 int REPEAT_FREQ_TRANS_DELAY_TIME = 3000; // 3 seconds
-//----------------------------------------------------------------------------
 
 void mmToolbarArt::DrawPlainBackground(wxDC& dc, wxWindow* WXUNUSED(wnd), const wxRect& rect)
 {
@@ -3962,7 +3963,7 @@ void mmGUIFrame::OnEditAccount(wxCommandEvent& /*event*/)
         return;
     }
 
-    mmSingleChoiceDialog scd(this, _t("Choose Account to Edit"), _t("Accounts"), accounts);
+    mmSingleChoice scd(this, _t("Choose Account to Edit"), _t("Accounts"), accounts);
     if (scd.ShowModal() == wxID_OK) {
         const AccountData* account = AccountModel::instance().get_name_data_n(scd.GetStringSelection());
         AccountData* edit_account = account
@@ -3983,7 +3984,7 @@ void mmGUIFrame::OnDeleteAccount(wxCommandEvent& /*event*/)
         return;
     }
 
-    mmSingleChoiceDialog scd(this, _t("Choose Account to Delete"), _t("Accounts"), accounts);
+    mmSingleChoice scd(this, _t("Choose Account to Delete"), _t("Accounts"), accounts);
     if (scd.ShowModal() == wxID_OK) {
         const AccountData* account = AccountModel::instance().get_name_data_n(scd.GetStringSelection());
         wxString deletingAccountName = wxString::Format(
@@ -4004,7 +4005,7 @@ void mmGUIFrame::OnDeleteAccount(wxCommandEvent& /*event*/)
 
 void mmGUIFrame::OnReallocateAccount(wxCommandEvent& WXUNUSED(event))
 {
-    mmSingleChoiceDialog account_choice(
+    mmSingleChoice account_choice(
         this,
         _t("Select account"), _t("Change Account Type"),
         AccountModel::instance().find_all_name_a()
@@ -4022,7 +4023,7 @@ void mmGUIFrame::ReallocateAccount(int64 accountID)
     AccountData* account = AccountModel::instance().unsafe_get_id_data_n(accountID);
     wxArrayString types = NavigatorTypes::instance().getAccountSelectionNames(account->m_type_);
 
-    mmSingleChoiceDialog type_choice(
+    mmSingleChoice type_choice(
         this,
         wxString::Format(_t("Select new account type for %s"), account->m_name),
         _t("Change Account Type"),

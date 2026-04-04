@@ -21,6 +21,7 @@
 
 #include "base/_constants.h"
 #include "util/mmDateRange.h"
+#include "util/mmMultiChoice.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "mmex.h"
@@ -102,7 +103,7 @@ void ReportBase::setAccounts(int selection, const wxString& type_name)
         }
 
         auto parent = wxWindow::FindWindowById(mmID_REPORTS);
-        mmMultiChoiceDialog mcd(parent ? parent : 0,
+        mmMultiChoice mcd(parent ? parent : 0,
             _t("Choose Accounts"), wxGetTranslation(m_title), account_name_a
         );
 

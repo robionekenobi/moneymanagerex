@@ -291,72 +291,8 @@ void mmErrorDialogs::ToolTip4Object(wxWindow *object, const wxString &message, c
     tip.ShowFor(object);
 }
 
-// -------------------------------------------------------------------------- //
+// --
 
-mmMultiChoiceDialog::mmMultiChoiceDialog()
-{
-}
-
-mmMultiChoiceDialog::mmMultiChoiceDialog(
-    wxWindow* parent
-    , const wxString& message
-    , const wxString& caption
-    , const wxArrayString& items)
-{
-    if (parent) this->SetFont(parent->GetFont());
-
-    wxMultiChoiceDialog::Create(parent, message, caption, items);
-    mmThemeAutoColour(this);
-    SetMinSize(wxSize(220, 384));
-    SetIcon(mmPath::getProgramIcon());
-
-    wxButton* ok = static_cast<wxButton*>(FindWindow(wxID_OK));
-    if (ok) ok->SetLabel(_t("&OK "));
-    wxButton* ca = static_cast<wxButton*>(FindWindow(wxID_CANCEL));
-    if (ca) ca->SetLabel(wxGetTranslation(g_CancelLabel));
-    Fit();
-}
-
-/* --------------------------------------------------------- */
-
-mmSingleChoiceDialog::mmSingleChoiceDialog()
-{
-}
-mmSingleChoiceDialog::mmSingleChoiceDialog(wxWindow* parent, const wxString& message,
-    const wxString& caption, const wxArrayString& choices)
-{
-    if (parent) this->SetFont(parent->GetFont());
-    wxSingleChoiceDialog::Create(parent, message, caption, choices);
-    mmThemeAutoColour(this);
-    SetMinSize(wxSize(220, 384));
-    SetIcon(mmPath::getProgramIcon());
-
-    wxButton* ok = static_cast<wxButton*>(FindWindow(wxID_OK));
-    if (ok) ok->SetLabel(wxGetTranslation(g_OkLabel));
-    wxButton* ca = static_cast<wxButton*>(FindWindow(wxID_CANCEL));
-    if (ca) ca->SetLabel(wxGetTranslation(g_CancelLabel));
-    Fit();
-}
-mmSingleChoiceDialog::mmSingleChoiceDialog(wxWindow* parent, const wxString& message,
-    const wxString& caption, const AccountModel::DataA& account_a)
-{
-    if (parent) this->SetFont(parent->GetFont());
-    wxArrayString choices;
-    for (const auto& account_d : account_a)
-        choices.Add(account_d.m_name);
-    wxSingleChoiceDialog::Create(parent, message, caption, choices);
-    mmThemeAutoColour(this);
-    SetMinSize(wxSize(220, 384));
-    SetIcon(mmPath::getProgramIcon());
-
-    wxButton* ok = static_cast<wxButton*>(FindWindow(wxID_OK));
-    if (ok) ok->SetLabel(wxGetTranslation(g_OkLabel));
-    wxButton* ca = static_cast<wxButton*>(FindWindow(wxID_CANCEL));
-    if (ca) ca->SetLabel(wxGetTranslation(g_CancelLabel));
-    Fit();
-}
-
-//------------
 mmTagTextCtrl::mmTagTextCtrl(
     wxWindow* parent,
     wxWindowID id,

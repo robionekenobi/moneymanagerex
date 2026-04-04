@@ -66,20 +66,20 @@ private:
     int64 m_subcategory_id = -1;
     std::vector<Split> m_local_splits;
 
-    mmDatePicker*       m_date_selector   = nullptr;
-    wxButton*           m_account         = nullptr;
-    wxChoice*           m_status_selector = nullptr;
-    wxChoice*           m_type_selector   = nullptr;
-    mmTextCtrl*         m_entered_amount  = nullptr;
-    wxCheckBox*         m_transfer        = nullptr;
-    wxButton*           m_trans_currency  = nullptr;
-    wxStaticText*       m_payee_text      = nullptr;
-    wxButton*           m_payee           = nullptr;
-    mmComboBoxCategory* m_category        = nullptr;
-    wxTextCtrl*         m_entered_number  = nullptr;
-    wxTextCtrl*         m_entered_notes   = nullptr;
-    wxBitmapButton*     m_attachment      = nullptr;
-    wxButton*           m_frequent_notes  = nullptr;
+    mmDatePicker*       w_date_picker    = nullptr;
+    wxButton*           w_account_btn    = nullptr;
+    wxChoice*           w_status_choice  = nullptr;
+    wxChoice*           w_type_choice    = nullptr;
+    mmTextCtrl*         w_amount_text    = nullptr;
+    wxCheckBox*         w_transfer_cb    = nullptr;
+    wxButton*           w_currency_btn   = nullptr;
+    wxStaticText*       w_payee_label    = nullptr;
+    wxButton*           w_payee_btn      = nullptr;
+    mmComboBoxCategory* w_cat_text       = nullptr;
+    wxTextCtrl*         w_number_text    = nullptr;
+    wxTextCtrl*         w_notes_text     = nullptr;
+    wxBitmapButton*     w_att_btn        = nullptr;
+    wxButton*           w_freq_notes_btn = nullptr;
 
 public:
     TrxLinkDialog();

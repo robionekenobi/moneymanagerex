@@ -24,6 +24,7 @@
 #include "mmframe.h"
 #include "util/mmImage.h"
 #include "util/mmTreeItemData.h"
+#include "util/mmMultiChoice.h"
 #include "model/BudgetPeriodModel.h"
 #include "model/ReportModel.h"
 #include "report/_all.h"
@@ -336,7 +337,7 @@ void mmGUIFrame::mmDoHideReportsDialog()
         }
     }
 
-    mmMultiChoiceDialog reports(this, _t("Hide"), _t("Reports"), reports_name_i10n);
+    mmMultiChoice reports(this, _t("Hide"), _t("Reports"), reports_name_i10n);
     reports.SetSelections(hidden_reports);
 
     if (reports.ShowModal() == wxID_OK)

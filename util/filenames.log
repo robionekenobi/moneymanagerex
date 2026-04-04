@@ -215,6 +215,8 @@ under src/ in increasing chronological order.
   util/_simple:mmComboBox*           -> util/mmComboBox
   util/_simple:mmDatePickerCtrl      -> util/mmDatePicker
   util/_simple:mmDateYearMonth       -> util/mmDateShifter
+  util/_simple:mmMultiChoiceDialog   -> util/mmMultiChoice
+  util/_simple:mmSingleChoiceDialog  -> util/mmSingleChoice
   util/_util:mmDates                 -> util/mmDateParser
   util/_util:mmSeparator             -> util/mmSepParser
 
