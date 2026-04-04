@@ -36,6 +36,7 @@
 #include "util/mmPath.h"
 #include "util/mmImage.h"
 #include "util/mmDatePicker.h"
+#include "util/mmDateParser.h"
 #include "util/mmSepParser.h"
 #include "util/_util.h"
 #include "util/_simple.h"

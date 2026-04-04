@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "util/mmPath.h"
 #include "util/mmDateRange.h"
 #include "util/mmDatePicker.h"
+#include "util/mmDateParser.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 

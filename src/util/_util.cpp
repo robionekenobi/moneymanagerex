@@ -67,8 +67,7 @@ COLORREF bg_color_ = RGB(255, 255, 255);
 
 LRESULT CALLBACK EditSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    if (msg == WM_CTLCOLOREDIT || msg == WM_CTLCOLORSTATIC)
-    {
+    if (msg == WM_CTLCOLOREDIT || msg == WM_CTLCOLORSTATIC) {
         HDC hdc = (HDC)wParam;
         SetBkColor(hdc, bg_color_);
         SetTextColor(hdc, fg_color_);
@@ -79,6 +78,13 @@ LRESULT CALLBACK EditSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 #endif
 
 using namespace rapidjson;
+
+// -- Platform
+
+const wxString mmPlatformType()
+{
+    return wxPlatformInfo::Get().GetOperatingSystemFamilyName().substr(0, 3).MakeLower();
+}
 
 bool isDark(wxColour c)
 {
@@ -162,20 +168,38 @@ void enableMSWDarkMode([[maybe_unused]] wxWindow* object, [[maybe_unused]] bool 
     }
 #endif
 }
-    // Return a JSON formatted string in readable form
-wxString JSON_PrettyFormated(rapidjson::Document& j_doc)
-{
-    StringBuffer j_buffer;
-    PrettyWriter<StringBuffer> j_writer(j_buffer);
-    j_doc.Accept(j_writer);
-    return wxString::FromUTF8(j_buffer.GetString());
-}
+
+// -- encoding
+
+const std::map<int, std::pair<wxConvAuto, wxString> > g_encoding = {
+    { 0, { wxConvAuto(wxFONTENCODING_SYSTEM), _n("Default") } },
+    { 1, { wxConvAuto(wxFONTENCODING_UTF8),   "UTF-8" } },
+    { 2, { wxConvAuto(wxFONTENCODING_CP1250), "1250" } },
+    { 3, { wxConvAuto(wxFONTENCODING_CP1251), "1251" } },
+    { 4, { wxConvAuto(wxFONTENCODING_CP1252), "1252" } },
+    { 5, { wxConvAuto(wxFONTENCODING_CP1253), "1253" } },
+    { 6, { wxConvAuto(wxFONTENCODING_CP1254), "1254" } },
+    { 7, { wxConvAuto(wxFONTENCODING_CP1255), "1255" } },
+    { 8, { wxConvAuto(wxFONTENCODING_CP1256), "1256" } },
+    { 9, { wxConvAuto(wxFONTENCODING_CP1257), "1257" } }
+};
+
+// -- JSON
 
 // Returns a JSON formatted string from RapidJson DOM
 wxString JSON_Formated(rapidjson::Document& j_doc)
 {
     StringBuffer j_buffer;
     Writer<StringBuffer> j_writer(j_buffer);
+    j_doc.Accept(j_writer);
+    return wxString::FromUTF8(j_buffer.GetString());
+}
+
+// Return a JSON formatted string in readable form
+wxString JSON_PrettyFormated(rapidjson::Document& j_doc)
+{
+    StringBuffer j_buffer;
+    PrettyWriter<StringBuffer> j_writer(j_buffer);
     j_doc.Accept(j_writer);
     return wxString::FromUTF8(j_buffer.GetString());
 }
@@ -226,6 +250,27 @@ bool JSON_GetStringValue(Document& j_doc, const MemoryStream::Ch* name, wxString
 
 //----------------------------------------------------------------------------
 
+wxString HTMLEncode(const wxString& input)
+{
+    wxString output;
+    for(size_t pos = 0; pos < input.Len(); ++pos) {
+        wxUniChar c = input.GetChar(pos);
+        if (c.IsAscii())
+            switch(static_cast<char>(c))
+            {
+            case '&':  output.Append("&amp;");      break;
+            case '\"': output.Append("&quot;");     break;
+            case '\'': output.Append("&apos;");     break;
+            case '<':  output.Append("&lt;");       break;
+            case '>':  output.Append("&gt;");       break;
+            default:   output.Append(c);            break;
+            }
+        else
+            output.Append(c);
+    }
+    return output;
+}
+
 void correctEmptyFileExt(const wxString& ext, wxString & fileName)
 {
     wxFileName tempFileName(fileName);
@@ -273,33 +318,25 @@ void mmLoadColorsFromDatabase(const bool def)
     mmUserColor::s_color7 = def ? wxColour(212, 138, 215) : InfoModel::instance().getColour("USER_COLOR7", wxColour(212, 138, 215));
 }
 
-wxColour mmUserColor::s_color1;
-wxColour mmUserColor::s_color2;
-wxColour mmUserColor::s_color3;
-wxColour mmUserColor::s_color4;
-wxColour mmUserColor::s_color5;
-wxColour mmUserColor::s_color6;
-wxColour mmUserColor::s_color7;
-
 //*-------------------------------------------------------------------------*//
 
 // Get unread news or all news for last year
-bool getNewsRSS(std::vector<WebsiteNews>& websiteNews_a)
+bool getNewsRSS(std::vector<WebsiteNews>& news_a)
 {
-    wxString RssContent;
-    if (http_get_data(mmex::weblink::NewsRSS, RssContent) != CURLE_OK)
+    wxString rssContent;
+    if (http_get_data(mmex::weblink::NewsRSS, rssContent) != CURLE_OK)
         return false;
 
-    //simple validation to avoid bug #1083
-    if (!RssContent.Contains("</rss>"))
+    // simple validation to avoid bug #1083
+    if (!rssContent.Contains("</rss>"))
         return false;
 
-    wxStringInputStream RssContentStream(RssContent);
-    wxXmlDocument RssDocument;
-    if (!RssDocument.Load(RssContentStream))
+    wxStringInputStream RssContentStream(rssContent);
+    wxXmlDocument rssDocument;
+    if (!rssDocument.Load(RssContentStream))
         return false;
 
-    if (RssDocument.GetRoot()->GetName() != "rss")
+    if (rssDocument.GetRoot()->GetName() != "rss")
         return false;
 
     wxLogDebug("{{{ getNewsRSS()");
@@ -310,23 +347,23 @@ bool getNewsRSS(std::vector<WebsiteNews>& websiteNews_a)
         mmDate::today().minusDateSpan(wxDateSpan::Year())
     );
 
-    wxXmlNode* news_node = RssDocument.GetRoot()->GetChildren()->GetChildren();
-    while (news_node) {
-        if (news_node->GetName() == "item") {
-            WebsiteNews websiteNews;
-            wxXmlNode* field_node = news_node->GetChildren();
+    wxXmlNode* rssNode = rssDocument.GetRoot()->GetChildren()->GetChildren();
+    while (rssNode) {
+        if (rssNode->GetName() == "item") {
+            WebsiteNews news;
+            wxXmlNode* field_node = rssNode->GetChildren();
             while (field_node) {
                 wxString field_name = field_node->GetName();
                 if (field_name == "title")
-                    websiteNews.m_titleN = field_node->GetChildren()->GetContent();
+                    news.m_titleN = field_node->GetChildren()->GetContent();
                 else if (field_name == "link")
-                    websiteNews.m_linkN = field_node->GetChildren()->GetContent();
+                    news.m_linkN = field_node->GetChildren()->GetContent();
                 else if (field_name == "description")
-                    websiteNews.m_descriptionN = field_node->GetChildren()->GetContent();
+                    news.m_descriptionN = field_node->GetChildren()->GetContent();
                 else if (field_name == "pubDate") {
-                    websiteNews.m_dateN = mmDateN(field_node->GetChildren()->GetContent());
-                    if (!websiteNews.m_dateN.has_value())
-                        websiteNews.m_dateN = mmDateN(
+                    news.m_dateN = mmDateN(field_node->GetChildren()->GetContent());
+                    if (!news.m_dateN.has_value())
+                        news.m_dateN = mmDateN(
                             mmDate::today().minusDateSpan(wxDateSpan::Year())
                         );
                 }
@@ -334,18 +371,18 @@ bool getNewsRSS(std::vector<WebsiteNews>& websiteNews_a)
             }
             wxLogDebug("%s - %s",
                 last_date.isoDate(),
-                websiteNews.m_dateN.isoDateN()
+                news.m_dateN.isoDateN()
             );
-            if (websiteNews.m_dateN.has_value() && last_date < websiteNews.m_dateN.value())
-                websiteNews_a.push_back(websiteNews);
+            if (news.m_dateN.has_value() && last_date < news.m_dateN.value())
+                news_a.push_back(news);
         }
-        news_node = news_node->GetNext();
+        rssNode = rssNode->GetNext();
     }
 
-    wxLogDebug("New articles: %i", static_cast<int>(websiteNews_a.size()));
+    wxLogDebug("New articles: %i", static_cast<int>(news_a.size()));
     wxLogDebug("}}}");
 
-    if (websiteNews_a.size() == 0)
+    if (news_a.size() == 0)
         return false;
 
     return true;
@@ -360,7 +397,7 @@ wxString formatHTML(wxString& html)
     return html;
 }
 
-    /*--- CSV specific ---------*/
+// -- CSV
 void csv2tab_separated_values(wxString& line, const wxString& delimit)
 {
     //csv line example:
@@ -408,19 +445,19 @@ void csv2tab_separated_values(wxString& line, const wxString& delimit)
     line = temp_line;
 }
 
-//* Date Functions----------------------------------------------------------*//
+// DateTime
 
-const wxString mmGetDateTimeForDisplay(const wxString &datetime_iso, const wxString& format)
+const wxString mmGetDateTimeForDisplay(const wxString &isoDateTime, const wxString& format)
 {
-    // ISO Date to formatted string lookup table.
+    // map from ISO date string to formatted date string
     static std::unordered_map<wxString, wxString> cache;
     static wxString cache_format;
-    static wxRegEx date_pattern(R"(^[0-9]{4}\-[0-9]{2}\-[0-9]{2})");
+    static wxRegEx iso_pattern(R"(^[0-9]{4}\-[0-9]{2}\-[0-9]{2})");
 
     if (format.empty())
         return "";
 
-    if (!date_pattern.Matches(datetime_iso))
+    if (!iso_pattern.Matches(isoDateTime))
         return "";
 
     // If format has been changed, delete all stored strings.
@@ -434,49 +471,49 @@ const wxString mmGetDateTimeForDisplay(const wxString &datetime_iso, const wxStr
         cache.clear();
     }
 
-    // If datetime_iso is in cache, return the stored formatted string.
-    if (auto it = cache.find(datetime_iso); it != cache.end())
+    // If isoDateTime is in cache, return the stored formatted string.
+    if (auto it = cache.find(isoDateTime); it != cache.end())
         return it->second;
 
     // Format date.
     wxString datetime_str = format;
-    datetime_str.Replace("%Y", datetime_iso.Mid(0, 4));
-    datetime_str.Replace("%y", datetime_iso.Mid(2, 2));
+    datetime_str.Replace("%Y", isoDateTime.Mid(0, 4));
+    datetime_str.Replace("%y", isoDateTime.Mid(2, 2));
     if (datetime_str.Contains("%Mon")) {
-        const auto mon = wxGetTranslation(MONTHS_SHORT[wxAtoi(datetime_iso.Mid(5, 2)) - 1]);
+        const auto mon = wxGetTranslation(MONTHS_SHORT[wxAtoi(isoDateTime.Mid(5, 2)) - 1]);
         datetime_str.Replace("%Mon", mon);
     }
-    datetime_str.Replace("%m", datetime_iso.Mid(5, 2));
-    datetime_str.Replace("%d", datetime_iso.Mid(8, 2));
+    datetime_str.Replace("%m", isoDateTime.Mid(5, 2));
+    datetime_str.Replace("%d", isoDateTime.Mid(8, 2));
     if (datetime_str.Contains("%w")) {
         wxDateTime d;
-        d.ParseISODate(datetime_iso);
+        d.ParseISODate(isoDateTime);
         const auto weekday = wxGetTranslation(g_short_days_of_week[d.GetWeekDay()]);
         datetime_str.Replace("%w", weekday);
     }
 
     // Format time.
-    if (datetime_iso.Length() == 19) {
-        datetime_str.Replace("%H", datetime_iso.Mid(11, 2));
-        datetime_str.Replace("%M", datetime_iso.Mid(14, 2));
-        datetime_str.Replace("%S", datetime_iso.Mid(17, 2));
+    if (isoDateTime.Length() == 19) {
+        datetime_str.Replace("%H", isoDateTime.Mid(11, 2));
+        datetime_str.Replace("%M", isoDateTime.Mid(14, 2));
+        datetime_str.Replace("%S", isoDateTime.Mid(17, 2));
     }
 
     // Store formatted string and return it.
-    return cache[datetime_iso] = datetime_str;
+    return cache[isoDateTime] = datetime_str;
 }
 
-const wxString mmGetDateForDisplay(const wxString &datetime_iso, const wxString& format)
+const wxString mmGetDateForDisplay(const wxString& isoDate, const wxString& format)
 {
-    // ISO Date to formatted string lookup table.
+    // map from ISO date string to formatted date string
     static std::unordered_map<wxString, wxString> cache;
     static wxString cache_format;
-    static wxRegEx date_pattern(R"(^[0-9]{4}\-[0-9]{2}\-[0-9]{2})");
+    static wxRegEx iso_pattern(R"(^[0-9]{4}\-[0-9]{2}\-[0-9]{2})");
 
     if (format.empty())
         return "";
 
-    if (!date_pattern.Matches(datetime_iso))
+    if (!iso_pattern.Matches(isoDate))
         return "";
 
     // If format has been changed, delete all stored strings.
@@ -491,7 +528,7 @@ const wxString mmGetDateForDisplay(const wxString &datetime_iso, const wxString&
     }
 
     // Get the date part.
-    wxString date_iso = datetime_iso.Left(10);
+    wxString date_iso = isoDate.Left(10);
 
     // If date_iso is in cache, return the stored formatted string.
     if (auto it = cache.find(date_iso); it != cache.end())
@@ -518,9 +555,11 @@ const wxString mmGetDateForDisplay(const wxString &datetime_iso, const wxString&
     return cache[date_iso] = date_str;
 }
 
-const wxString mmGetTimeForDisplay(const wxString& datetime_iso)
+const wxString mmGetTimeForDisplay(const wxString& isoDateTime)
 {
-    return (datetime_iso.Length() == 19) ? datetime_iso.Mid(11, 8) : wxString("00:00:00");
+    return (isoDateTime.Length() == 19)
+        ? isoDateTime.Mid(11, 8)
+        : wxString("00:00:00");
 }
 
 bool mmParseDisplayStringToDate(
@@ -690,19 +729,6 @@ bool comp(const std::pair<wxString, wxString>& a, const std::pair<wxString, wxSt
     return one < two;
 }
 
-const std::map<int, std::pair<wxConvAuto, wxString> > g_encoding = {
-    { 0, { wxConvAuto(wxFONTENCODING_SYSTEM), _n("Default") } },
-    { 1, { wxConvAuto(wxFONTENCODING_UTF8),   "UTF-8" } },
-    { 2, { wxConvAuto(wxFONTENCODING_CP1250), "1250" } },
-    { 3, { wxConvAuto(wxFONTENCODING_CP1251), "1251" } },
-    { 4, { wxConvAuto(wxFONTENCODING_CP1252), "1252" } },
-    { 5, { wxConvAuto(wxFONTENCODING_CP1253), "1253" } },
-    { 6, { wxConvAuto(wxFONTENCODING_CP1254), "1254" } },
-    { 7, { wxConvAuto(wxFONTENCODING_CP1255), "1255" } },
-    { 8, { wxConvAuto(wxFONTENCODING_CP1256), "1256" } },
-    { 9, { wxConvAuto(wxFONTENCODING_CP1257), "1257" } }
-};
-
 wxString cleanseNumberString(const wxString& str,const bool decimal)
 {
     // Strip any thousands separators and make sure decimal is "." (if present)
@@ -728,12 +754,6 @@ double cleanseNumberStringToDouble(const wxString& str, const bool decimal)
     return v;
 }
 
-
-//
-const wxString mmPlatformType()
-{
-    return wxPlatformInfo::Get().GetOperatingSystemFamilyName().substr(0, 3).MakeLower();
-}
 
 void DoWindowsFreezeThaw(wxWindow* w)
 {
@@ -1730,82 +1750,6 @@ const std::vector<std::pair<wxString, wxString>> g_date_formats_map()
     return format_mask_a;
 }
 
-mmDateParser::mmDateParser() :
-    m_today(wxDateTime::Today()),
-    m_month_ago(wxDateTime::Today().Subtract(wxDateSpan::Months(1))),
-    m_format_mask_a(g_date_formats_map())
-{
-    m_format_stat_m.clear();
-}
-
-mmDateParser::~mmDateParser()
-{
-}
-
-void mmDateParser::doFinalizeStatistics()
-{
-    auto result = std::max_element(
-        m_format_stat_m.begin(),
-        m_format_stat_m.end(),
-        [](const std::pair<wxString, int>& p1, const std::pair<wxString, int>& p2) {
-            return p1.second < p2.second;
-        }
-    );
-
-    if (result != m_format_stat_m.end()) {
-        m_max_format = result->first;
-        const auto& format_mask_a = g_date_formats_map();
-        wxString format = m_max_format;
-        const auto it = std::find_if(format_mask_a.begin(), format_mask_a.end(),
-            [&format](const std::pair<wxString, wxString>& format_mask) {
-                return format_mask.first == format;
-            }
-        );
-        m_max_mask = it->second;
-    }
-    else
-        wxLogDebug("No date string has been handled");
-}
-
-void mmDateParser::doHandleStatistics(const wxString& date_s)
-{
-    if (m_error_count > s_max_attempts || m_format_mask_a.size() <= 1)
-        return;
-
-    wxArrayString invalidFormat_a;
-    std::vector<std::pair<wxString, wxString>> format_mask_a = m_format_mask_a;
-    for (const auto& format_mask : format_mask_a) {
-        const wxString format = format_mask.first;
-        wxDateTime dateTime = m_today;
-        if (mmParseDisplayStringToDate(dateTime, date_s, format)) {
-            // Increase the date format rating if parsed date is recent
-            // Decrease the data format rating if parsed date is in future
-            m_format_stat_m[format] +=
-                (dateTime < m_month_ago) ? 1 :
-                (dateTime <= m_today)    ? 2 :
-                -1;
-        }
-        else {
-            invalidFormat_a.Add(format);
-            m_format_stat_m.erase(format);
-        }
-    }
-
-    if (invalidFormat_a.size() < m_format_mask_a.size()) {
-        for (const wxString& invalidFormat : invalidFormat_a) {
-            auto it = std::find_if(m_format_mask_a.begin(), m_format_mask_a.end(),
-                [&invalidFormat](const std::pair<wxString, wxString>& format_mask) {
-                    return format_mask.first == invalidFormat;
-                }
-            );
-            m_format_mask_a.erase(it);
-        }
-    }
-    else {
-        m_error_count++;
-    }
-}
-
 const wxString getVFname4print(const wxString& name, const wxString& data)
 {
 #if defined(__WXMSW__) || defined(__WXMAC__)
@@ -1910,27 +1854,6 @@ void mmToolTip(wxWindow* widget, const wxString& tip)
 {
     if (PrefModel::instance().getShowToolTips())
         widget->SetToolTip(tip);
-}
-
-wxString HTMLEncode(const wxString& input)
-{
-    wxString output;
-    for(size_t pos = 0; pos < input.Len(); ++pos) {
-        wxUniChar c = input.GetChar(pos);
-        if (c.IsAscii())
-            switch(static_cast<char>(c))
-            {
-            case '&':  output.Append("&amp;");      break;
-            case '\"': output.Append("&quot;");     break;
-            case '\'': output.Append("&apos;");     break;
-            case '<':  output.Append("&lt;");       break;
-            case '>':  output.Append("&gt;");       break;
-            default:   output.Append(c);            break;
-            }
-        else
-            output.Append(c);
-    }
-    return output;
 }
 
 void mmSetSize(wxWindow* w)

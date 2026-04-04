@@ -21,6 +21,15 @@
 
 #include "mmUserColor.h"
 
+// TODO: replace with array
+wxColour mmUserColor::s_color1;
+wxColour mmUserColor::s_color2;
+wxColour mmUserColor::s_color3;
+wxColour mmUserColor::s_color4;
+wxColour mmUserColor::s_color5;
+wxColour mmUserColor::s_color6;
+wxColour mmUserColor::s_color7;
+
 wxColour mmUserColor::getId(const int c)
 {
     switch (c)
