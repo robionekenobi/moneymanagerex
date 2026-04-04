@@ -55,37 +55,53 @@ public:
     using wxSingleChoiceDialog::ShowModal;
 
     mmSingleChoiceDialog();
-    mmSingleChoiceDialog(wxWindow *parent, const wxString& message,
-        const wxString& caption, const wxArrayString& choices);
-    mmSingleChoiceDialog(wxWindow* parent, const wxString& message,
-        const wxString& caption, const AccountModel::DataA& accounts);
-    int ShowModal()
-    {
-        return wxSingleChoiceDialog::ShowModal();
-    }
+    mmSingleChoiceDialog(
+        wxWindow *parent,
+        const wxString& message,
+        const wxString& caption,
+        const wxArrayString& choices
+    );
+    mmSingleChoiceDialog(
+        wxWindow* parent,
+        const wxString& message,
+        const wxString& caption,
+        const AccountModel::DataA& accounts
+    );
+
+    int ShowModal() { return wxSingleChoiceDialog::ShowModal(); }
 };
 
 class mmDialogComboBoxAutocomplete : public wxDialog
 {
-public:
-    mmDialogComboBoxAutocomplete();
-    mmDialogComboBoxAutocomplete(wxWindow *parent, const wxString& message, const wxString& caption,
-        const wxString& defaultText, const wxArrayString& choices);
-
-    const wxString getText() const;
-
 private:
-    bool Create(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , const wxString& caption = ""
-        , const wxPoint& pos = wxDefaultPosition
-        , const wxSize& size = wxDefaultSize
-        , long style = wxCAPTION | wxRESIZE_BORDER | wxCLOSE_BOX);
     wxString m_default_str;
     wxArrayString m_choices;
     wxString m_message;
 
     mmComboBoxCustom* cbText_ = nullptr;
+
+public:
+    mmDialogComboBoxAutocomplete();
+    mmDialogComboBoxAutocomplete(
+        wxWindow *parent,
+        const wxString& message,
+        const wxString& caption,
+        const wxString& defaultText,
+        const wxArrayString& choices
+    );
+
+private:
+    bool Create(
+        wxWindow* parent,
+        wxWindowID id = wxID_ANY,
+        const wxString& caption = "",
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxCAPTION | wxRESIZE_BORDER | wxCLOSE_BOX
+    );
+
+public:
+    const wxString getText() const;
 };
 
 class mmGUIApp;
@@ -108,20 +124,6 @@ public:
     static void InvalidName(wxTextCtrl *textBox, bool alreadyexist = false);
     static void InvalidSymbol(wxTextCtrl *textBox, bool alreadyexist = false);
     static void ToolTip4Object(wxWindow *object, const wxString &message, const wxString &title, int ico = wxICON_WARNING);
-};
-
-class mmDateYearMonth : public wxPanel
-{
-    wxDECLARE_EVENT_TABLE();
-public:
-    mmDateYearMonth();
-    mmDateYearMonth(wxWindow *parent);
-    void OnButtonPress(wxCommandEvent& event);
-
-private:
-    wxWindow* m_parent = nullptr;
-    bool Create(wxWindow* parent, wxWindowID id);
-    int m_shift = 0;
 };
 
 // -------------------------------------------------------------------------- //

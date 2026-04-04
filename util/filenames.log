@@ -210,5 +210,6 @@ under src/ in increasing chronological order.
   util/_simple:mmColorButton         -> util/mmColorButton
   util/_simple:mmComboBox*           -> util/mmComboBox
   util/_simple:mmDatePickerCtrl      -> util/mmDatePicker
+  util/_simple:mmDateYearMonth       -> util/mmDateShifter
   util/_util:mmSeparator             -> util/mmSeparatorStat
 

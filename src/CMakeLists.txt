@@ -105,6 +105,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     util/mmDateRange.h
     util/mmDateRange2.cpp
     util/mmDateRange2.h
+    util/mmDateShifter.cpp
+    util/mmDateShifter.h
     util/mmFileHistory.cpp
     util/mmFileHistory.h
     util/mmImage.cpp

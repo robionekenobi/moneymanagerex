@@ -26,8 +26,8 @@
 #include "base/mmPlatform.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
+#include "util/mmDateShifter.h"
 #include "util/_util.h"
-//#include "model/_all.h"
 #include "model/PrefModel.h"
 #include "model/TrxFilter.h"
 #include "ReportPanel.h"
@@ -249,10 +249,10 @@ void ReportPanel::createControls()
             itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
             itemBoxSizerHeader->AddSpacer(5);
 
-            mmDateYearMonth* up_down_month = new mmDateYearMonth(itemPanel3);
+            mmDateSfifter* up_down_month = new mmDateSfifter(itemPanel3);
             up_down_month->Connect(
                 wxEVT_BUTTON, wxEVT_COMMAND_BUTTON_CLICKED,
-                wxCommandEventHandler(mmDateYearMonth::OnButtonPress),
+                wxCommandEventHandler(mmDateSfifter::onButtonPress),
                 nullptr, this
             );
             m_rb->setDateSelection(m_shift);
