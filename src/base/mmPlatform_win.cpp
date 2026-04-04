@@ -72,6 +72,7 @@ const wxFileName mmPlatform::resourceDir()
     return fname;
 }
 
+// TODO: move PrefModel conditions to PrefModel::instance()::isDarkMode()
 bool mmPlatform::isDarkMode()
 {
     return (PrefModel::instance().getThemeMode() == PrefModel::THEME_MODE::DARK || (

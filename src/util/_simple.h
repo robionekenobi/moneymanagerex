@@ -30,9 +30,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <wx/stc/stc.h>
 #include <wx/timectrl.h>
 
-#include "mmex.h"
-#include "_util.h"
+#include "mmComboBox.h"
 #include "mmTextCtrl.h"
+#include "_util.h"
+#include "mmex.h"
 
 #include "model/AccountModel.h"
 
@@ -79,124 +80,6 @@ private:
 
 inline void mmCalculatorPopup::SetFocus() { valueTextCtrl_->SetFocus(); }
 inline void mmCalculatorPopup::SetTarget(mmTextCtrl* target) { target_ = target; button_dec_->SetLabel(target->GetDecimalPoint()); }
-
-
-class mmComboBox : public wxComboBox
-{
-public:
-    mmComboBox(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , wxSize size = wxDefaultSize
-    );
-    void mmSetId(int64 id);
-    int64 mmGetId() const;
-    const wxString mmGetPattern() const;
-    bool mmIsValid() const;
-    void mmDoReInitialize();
-protected:
-    void OnTextUpdated(wxCommandEvent& event);
-    void OnSetFocus(wxFocusEvent& event);
-    void OnDropDown(wxCommandEvent&);
-    void OnKeyPressed(wxKeyEvent& event);
-    virtual void init() = 0;
-    std::map<wxString, int64> all_elements_;
-private:
-    bool is_initialized_;
-    wxDECLARE_EVENT_TABLE();
-};
-
-class mmComboBoxAccount : public mmComboBox
-{
-public:
-    mmComboBoxAccount(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , wxSize size = wxDefaultSize
-        , int64 accountID = -1
-        , bool excludeClosed = true
-    );
-protected:
-    void init();
-private:
-    int64 accountID_ = -1;
-    bool excludeClosed_ = true;
-};
-
-/* -------------------------------------------- */
-
-class mmComboBoxPayee : public mmComboBox
-{
-public:
-    mmComboBoxPayee(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , wxSize size = wxDefaultSize
-        , int64 payeeID = -1
-        , bool excludeHidden = false
-    );
-protected:
-    void init();
-private:
-    int64 payeeID_;
-    bool excludeHidden_;
-};
-
-class mmComboBoxUsedPayee : public mmComboBox
-{
-public:
-    mmComboBoxUsedPayee(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , wxSize size = wxDefaultSize
-    );
-protected:
-    void init();
-};
-
-/* -------------------------------------------- */
-
-class mmComboBoxCurrency : public mmComboBox
-{
-public:
-    mmComboBoxCurrency(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , wxSize size = wxDefaultSize
-    );
-protected:
-    void init();
-};
-
-/* -------------------------------------------- */
-
-class mmComboBoxCategory : public mmComboBox
-{
-public:
-    mmComboBoxCategory(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , wxSize size = wxDefaultSize
-        , int64 catID = -1
-        , bool excludeInactive = false
-    );
-    int64 mmGetCategoryId() const;
-protected:
-    void init();
-private:
-    int64 catID_;
-    bool excludeHidden_;
-    std::map<wxString, int64> all_categories_;
-};
-
-/* -------------------------------------------- */
-
-class mmComboBoxCustom : public mmComboBox
-{
-public:
-    mmComboBoxCustom(wxWindow* parent
-        , wxArrayString& a
-        , wxWindowID id = wxID_ANY
-        , wxSize size = wxDefaultSize
-    );
-protected:
-    void init();
-};
-inline void mmComboBoxCustom::init() {}
 
 /* -------------------------------------------- */
 
