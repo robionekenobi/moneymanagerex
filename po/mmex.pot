@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MMEX\n"
 "Report-Msgid-Bugs-To: developer@moneymanagerex.org\n"
-"POT-Creation-Date: 2026-04-03 06:55+0000\n"
+"POT-Creation-Date: 2026-04-03 04:22+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6460,7 +6460,7 @@ msgstr ""
 msgid "The asterisk (*) is used to match any number of characters, for example \"s*d\" finds both \"sad\" and \"started\"."
 msgstr ""
 
-#: panel/AssetPanel.cpp:306 panel/StockList.cpp:749 panel/StockPanel.cpp:479
+#: panel/AssetPanel.cpp:306 panel/StockList.cpp:748 panel/StockPanel.cpp:479
 #, c-format
 msgid "Total: %s"
 msgstr ""
@@ -7273,7 +7273,7 @@ msgstr ""
 msgid "Moving Transaction from %s to"
 msgstr ""
 
-#: panel/StockList.cpp:748
+#: panel/StockList.cpp:747
 #, c-format
 msgid "Symbol: %s"
 msgstr ""

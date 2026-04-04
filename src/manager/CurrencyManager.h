@@ -35,6 +35,8 @@ class CurrencyManager : public wxDialog
     wxDECLARE_DYNAMIC_CLASS(CurrencyManager);
     wxDECLARE_EVENT_TABLE();
 
+// -- state
+
 private:
     CurrencyData* m_currency_n = nullptr;
     CurrencyData m_currency_d;
@@ -53,28 +55,34 @@ private:
     wxStaticText*  w_sampleText   = nullptr;
 
 public:
+    int64 getCurrencyID() { return m_currency_n->m_id; };
+
+// -- constructor
+
+public:
     CurrencyManager();
     CurrencyManager(wxWindow* parent, const CurrencyData* currency);
     ~CurrencyManager();
 
-    int64 getCurrencyID() { return m_currency_n->m_id; };
-
 private:
-    bool Create(
-        wxWindow* parent, wxWindowID id = wxID_ANY,
+    bool create(
+        wxWindow* parent,
+        wxWindowID id = wxID_ANY,
         const wxString& caption = _t("Currency Manager"),
         const wxString& name = "Currency Manager",
         const wxPoint& pos = wxDefaultPosition,
         const wxSize& size = wxDefaultSize,
         long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX | wxRESIZE_BORDER
     );
-
-    void CreateControls();
+    void createControls();
     void fillControls();
 
-    void OnOk(wxCommandEvent& event);
-    void OnCancel(wxCommandEvent& event);
-    void OnDataChanged(wxCommandEvent& event);
-    void OnTextEntered(wxCommandEvent& event);
+// -- event handlers
+
+private:
+    void onOk(wxCommandEvent& event);
+    void onCancel(wxCommandEvent& event);
+    void onDataChanged(wxCommandEvent& event);
+    void onTextEntered(wxCommandEvent& event);
 };
 
