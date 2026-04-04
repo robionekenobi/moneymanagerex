@@ -19,6 +19,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "_simple.h"
+
 #include "base/_defs.h"
 #include <wx/dcbuffer.h>
 #include <wx/popupwin.h>
@@ -27,15 +29,14 @@
 #include <wx/renderer.h>
 #include <wx/richtooltip.h>
 
-#include "mmex.h"
 #include "base/_constants.h"
 #include "base/mmPlatform.h"
-#include "util/mmPath.h"
-#include "util/mmImage.h"
-#include "util/mmDatePicker.h"
-#include "util/mmCalcValidator.h"
+#include "base/mmUserColor.h"
+#include "mmPath.h"
+#include "mmImage.h"
+#include "mmDatePicker.h"
+#include "mmCalcValidator.h"
 #include "_util.h"
-#include "_simple.h"
 
 #include "model/AccountModel.h"
 #include "model/CategoryModel.h"
@@ -44,6 +45,7 @@
 #include "model/TagModel.h"
 
 #include "manager/TagManager.h"
+#include "mmex.h"
 
 //------- Pop-up calendar, currently only used for MacOS only
 // See: https://github.com/moneymanagerex/moneymanagerex/issues/3139
@@ -377,7 +379,7 @@ mmTagTextCtrl::mmTagTextCtrl(
         style |= wxBORDER_THEME;
         bgColorDisabled_ = wxColour(251, 251, 251);
     }
-    fgColor = *bestFontColour(bgColorEnabled_);
+    fgColor = *mmUserColor::bestFontColor(bgColorEnabled_);
 #else
     style |= wxBORDER_NONE;
     bgColorEnabled_ = mmImage::themeMetaColour(COLOR_TEXTCONTROL);

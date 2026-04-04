@@ -25,6 +25,7 @@
 #include <wx/sound.h>
 
 #include "base/_constants.h"
+#include "base/mmUserColor.h"
 #include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
@@ -127,7 +128,7 @@ JournalList::JournalList(
     ListBase(perent_win, win_id),
     w_panel(panel),
     w_attr1(new wxListItemAttr(
-        *bestFontColour(w_panel->isAllTrans() ?
+        *mmUserColor::bestFontColor(w_panel->isAllTrans() ?
             mmImage::themeMetaColour(mmImage::COLOR_LISTALT0A) :
             mmImage::themeMetaColour(mmImage::COLOR_LISTALT0)
         ),
@@ -137,7 +138,7 @@ JournalList::JournalList(
         GetFont()
     )),
     w_attr2(new wxListItemAttr(
-        *bestFontColour(mmImage::themeMetaColour(mmImage::COLOR_LIST)),
+        *mmUserColor::bestFontColor(mmImage::themeMetaColour(mmImage::COLOR_LIST)),
         mmImage::themeMetaColour(mmImage::COLOR_LIST),
         GetFont()
     )),
@@ -153,7 +154,7 @@ JournalList::JournalList(
         wxNullColour, GetFont()
     )),
     w_attr5(new wxListItemAttr(
-        *bestFontColour(w_panel->isAllTrans() ?
+        *mmUserColor::bestFontColor(w_panel->isAllTrans() ?
             mmImage::themeMetaColour(mmImage::COLOR_LISTALT0A) :
             mmImage::themeMetaColour(mmImage::COLOR_LISTALT0)
         ),
@@ -163,78 +164,78 @@ JournalList::JournalList(
         GetFont().Bold()
     )),
     w_attr6(new wxListItemAttr(
-        *bestFontColour(mmImage::themeMetaColour(mmImage::COLOR_LIST)),
+        *mmUserColor::bestFontColor(mmImage::themeMetaColour(mmImage::COLOR_LIST)),
         mmImage::themeMetaColour(mmImage::COLOR_LIST),
         GetFont().Bold()
     )),
     w_attr11(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor1),
-        mmColors::userDefColor1,
+        *mmUserColor::bestFontColor(mmUserColor::s_color1),
+        mmUserColor::s_color1,
         GetFont()
     )),
     w_attr12(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor2),
-        mmColors::userDefColor2,
+        *mmUserColor::bestFontColor(mmUserColor::s_color2),
+        mmUserColor::s_color2,
         GetFont()
     )),
     w_attr13(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor3),
-        mmColors::userDefColor3,
+        *mmUserColor::bestFontColor(mmUserColor::s_color3),
+        mmUserColor::s_color3,
         GetFont()
     )),
     w_attr14(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor4),
-        mmColors::userDefColor4,
+        *mmUserColor::bestFontColor(mmUserColor::s_color4),
+        mmUserColor::s_color4,
         GetFont()
     )),
     w_attr15(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor5),
-        mmColors::userDefColor5,
+        *mmUserColor::bestFontColor(mmUserColor::s_color5),
+        mmUserColor::s_color5,
         GetFont()
     )),
     w_attr16(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor6),
-        mmColors::userDefColor6,
+        *mmUserColor::bestFontColor(mmUserColor::s_color6),
+        mmUserColor::s_color6,
         GetFont()
     )),
     w_attr17(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor7),
-        mmColors::userDefColor7,
+        *mmUserColor::bestFontColor(mmUserColor::s_color7),
+        mmUserColor::s_color7,
         GetFont()
     )),
     w_attr21(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor1),
-        mmColors::userDefColor1,
+        *mmUserColor::bestFontColor(mmUserColor::s_color1),
+        mmUserColor::s_color1,
         GetFont().Bold()
     )),
     w_attr22(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor2),
-        mmColors::userDefColor2,
+        *mmUserColor::bestFontColor(mmUserColor::s_color2),
+        mmUserColor::s_color2,
         GetFont().Bold()
     )),
     w_attr23(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor3),
-        mmColors::userDefColor3,
+        *mmUserColor::bestFontColor(mmUserColor::s_color3),
+        mmUserColor::s_color3,
         GetFont().Bold()
     )),
     w_attr24(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor4),
-        mmColors::userDefColor4,
+        *mmUserColor::bestFontColor(mmUserColor::s_color4),
+        mmUserColor::s_color4,
         GetFont().Bold()
     )),
     w_attr25(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor5),
-        mmColors::userDefColor5,
+        *mmUserColor::bestFontColor(mmUserColor::s_color5),
+        mmUserColor::s_color5,
         GetFont().Bold()
     )),
     w_attr26(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor6),
-        mmColors::userDefColor6,
+        *mmUserColor::bestFontColor(mmUserColor::s_color6),
+        mmUserColor::s_color6,
         GetFont().Bold()
     )),
     w_attr27(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor7),
-        mmColors::userDefColor7,
+        *mmUserColor::bestFontColor(mmUserColor::s_color7),
+        mmUserColor::s_color7,
         GetFont().Bold()
     ))
 {

@@ -17,17 +17,16 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
+#include "TrxPref.h"
+
 #include "base/_defs.h"
 #include <wx/colordlg.h>
 
 #include "base/_constants.h"
+#include "base/mmUserColor.h"
 #include "util/_util.h"
 
 #include "model/PrefModel.h"
-
-#include "TrxPref.h"
-
-/*******************************************************/
 
 TrxPref::TrxPref()
 {
@@ -249,35 +248,35 @@ void TrxPref::Create()
 
     int size_x = 30;
     m_UDFCB1 = new wxButton(colorsBox, wxID_HIGHEST + 11, "1", wxDefaultPosition, wxSize(size_x, -1), 0);
-    m_UDFCB1->SetBackgroundColour(mmColors::userDefColor1);
+    m_UDFCB1->SetBackgroundColour(mmUserColor::s_color1);
     colorsSizer->Add(m_UDFCB1, g_flagsH);
 
     m_UDFCB2 = new wxButton(colorsBox, wxID_HIGHEST + 22, "2", wxDefaultPosition, wxSize(size_x, -1), 0);
-    m_UDFCB2->SetBackgroundColour(mmColors::userDefColor2);
+    m_UDFCB2->SetBackgroundColour(mmUserColor::s_color2);
     colorsSizer->Add(m_UDFCB2, g_flagsH);
 
     m_UDFCB3 = new wxButton(colorsBox, wxID_HIGHEST + 33, "3", wxDefaultPosition, wxSize(size_x, -1), 0);
-    m_UDFCB3->SetBackgroundColour(mmColors::userDefColor3);
+    m_UDFCB3->SetBackgroundColour(mmUserColor::s_color3);
     colorsSizer->Add(m_UDFCB3, g_flagsH);
 
     m_UDFCB4 = new wxButton(colorsBox, wxID_HIGHEST + 44, "4", wxDefaultPosition, wxSize(size_x, -1), 0);
-    m_UDFCB4->SetBackgroundColour(mmColors::userDefColor4);
+    m_UDFCB4->SetBackgroundColour(mmUserColor::s_color4);
     colorsSizer->Add(m_UDFCB4, g_flagsH);
 
     m_UDFCB5 = new wxButton(colorsBox, wxID_HIGHEST + 55, "5", wxDefaultPosition, wxSize(size_x, -1), 0);
-    m_UDFCB5->SetBackgroundColour(mmColors::userDefColor5);
+    m_UDFCB5->SetBackgroundColour(mmUserColor::s_color5);
     colorsSizer->Add(m_UDFCB5, g_flagsH);
 
     m_UDFCB6 = new wxButton(colorsBox, wxID_HIGHEST + 66, "6", wxDefaultPosition, wxSize(size_x, -1), 0);
-    m_UDFCB6->SetBackgroundColour(mmColors::userDefColor6);
+    m_UDFCB6->SetBackgroundColour(mmUserColor::s_color6);
     colorsSizer->Add(m_UDFCB6, g_flagsH);
 
     m_UDFCB7 = new wxButton(colorsBox, wxID_HIGHEST + 77, "7", wxDefaultPosition, wxSize(size_x, -1), 0);
-    m_UDFCB7->SetBackgroundColour(mmColors::userDefColor7);
+    m_UDFCB7->SetBackgroundColour(mmUserColor::s_color7);
     colorsSizer->Add(m_UDFCB7, g_flagsH);
 
     wxButton* reset = new wxButton(colorsBox, wxID_REDO, _t("Default"), wxDefaultPosition, wxDefaultSize, 0);
-    m_UDFCB7->SetBackgroundColour(mmColors::userDefColor7);
+    m_UDFCB7->SetBackgroundColour(mmUserColor::s_color7);
     colorsSizer->Add(reset, g_flagsH);
 
     SetBoldFontToStaticBoxHeader(transSettingsStaticBox);
@@ -318,21 +317,21 @@ bool TrxPref::SaveSettings()
     PrefModel::instance().saveUseTransDateTime(m_use_trans_date_time->GetValue());
     PrefModel::instance().saveTreatDateAsSN(m_treat_date_as_SN->GetValue());
 
-    mmColors::userDefColor1 = m_UDFCB1->GetBackgroundColour();
-    mmColors::userDefColor2 = m_UDFCB2->GetBackgroundColour();
-    mmColors::userDefColor3 = m_UDFCB3->GetBackgroundColour();
-    mmColors::userDefColor4 = m_UDFCB4->GetBackgroundColour();
-    mmColors::userDefColor5 = m_UDFCB5->GetBackgroundColour();
-    mmColors::userDefColor6 = m_UDFCB6->GetBackgroundColour();
-    mmColors::userDefColor7 = m_UDFCB7->GetBackgroundColour();
+    mmUserColor::s_color1 = m_UDFCB1->GetBackgroundColour();
+    mmUserColor::s_color2 = m_UDFCB2->GetBackgroundColour();
+    mmUserColor::s_color3 = m_UDFCB3->GetBackgroundColour();
+    mmUserColor::s_color4 = m_UDFCB4->GetBackgroundColour();
+    mmUserColor::s_color5 = m_UDFCB5->GetBackgroundColour();
+    mmUserColor::s_color6 = m_UDFCB6->GetBackgroundColour();
+    mmUserColor::s_color7 = m_UDFCB7->GetBackgroundColour();
 
-    InfoModel::instance().saveColour("USER_COLOR1", mmColors::userDefColor1);
-    InfoModel::instance().saveColour("USER_COLOR2", mmColors::userDefColor2);
-    InfoModel::instance().saveColour("USER_COLOR3", mmColors::userDefColor3);
-    InfoModel::instance().saveColour("USER_COLOR4", mmColors::userDefColor4);
-    InfoModel::instance().saveColour("USER_COLOR5", mmColors::userDefColor5);
-    InfoModel::instance().saveColour("USER_COLOR6", mmColors::userDefColor6);
-    InfoModel::instance().saveColour("USER_COLOR7", mmColors::userDefColor7);
+    InfoModel::instance().saveColour("USER_COLOR1", mmUserColor::s_color1);
+    InfoModel::instance().saveColour("USER_COLOR2", mmUserColor::s_color2);
+    InfoModel::instance().saveColour("USER_COLOR3", mmUserColor::s_color3);
+    InfoModel::instance().saveColour("USER_COLOR4", mmUserColor::s_color4);
+    InfoModel::instance().saveColour("USER_COLOR5", mmUserColor::s_color5);
+    InfoModel::instance().saveColour("USER_COLOR6", mmUserColor::s_color6);
+    InfoModel::instance().saveColour("USER_COLOR7", mmUserColor::s_color7);
 
     wxChoice* itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_PAYEE));
     PrefModel::instance().saveTransPayeeNone(itemChoice->GetSelection());
@@ -357,13 +356,13 @@ void TrxPref::OnNavTreeColorChanged(wxCommandEvent& event)
     if (event.GetId() == wxID_REDO)
     {
         mmLoadColorsFromDatabase(true);
-        m_UDFCB1->SetBackgroundColour(mmColors::userDefColor1);
-        m_UDFCB2->SetBackgroundColour(mmColors::userDefColor2);
-        m_UDFCB3->SetBackgroundColour(mmColors::userDefColor3);
-        m_UDFCB4->SetBackgroundColour(mmColors::userDefColor4);
-        m_UDFCB5->SetBackgroundColour(mmColors::userDefColor5);
-        m_UDFCB6->SetBackgroundColour(mmColors::userDefColor6);
-        m_UDFCB7->SetBackgroundColour(mmColors::userDefColor7);
+        m_UDFCB1->SetBackgroundColour(mmUserColor::s_color1);
+        m_UDFCB2->SetBackgroundColour(mmUserColor::s_color2);
+        m_UDFCB3->SetBackgroundColour(mmUserColor::s_color3);
+        m_UDFCB4->SetBackgroundColour(mmUserColor::s_color4);
+        m_UDFCB5->SetBackgroundColour(mmUserColor::s_color5);
+        m_UDFCB6->SetBackgroundColour(mmUserColor::s_color6);
+        m_UDFCB7->SetBackgroundColour(mmUserColor::s_color7);
         return;
     }
 

@@ -19,24 +19,26 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "TrxReport.h"
+
 #include <algorithm>
 #include <numeric>
 #include <vector>
 #include <float.h>
 
 #include "base/_constants.h"
+#include "base/mmUserColor.h"
 #include "util/_util.h"
 
 #include "model/_all.h"
 #include "dialog/AttachmentDialog.h"
 
 #include "htmlbuilder.h"
-#include "TrxReport.h"
 
-TrxReport::TrxReport(wxSharedPtr<TrxFilterDialog>& transDialog)
-    : ReportBase("Transaction Report")
-    , trx_xa()
-    , m_transDialog(transDialog)
+TrxReport::TrxReport(wxSharedPtr<TrxFilterDialog>& transDialog) :
+    ReportBase("Transaction Report"),
+    trx_xa(),
+    m_transDialog(transDialog)
 {
 }
 
@@ -49,13 +51,11 @@ TrxReport::~TrxReport()
 void TrxReport::displayTotals(const std::map<int64, double>& total, std::map<int64, double>& total_in_base_curr, int noOfCols)
 {
     double grand_total = 0;
-    for (const auto& [curr_id, curr_total]: total)
-    {
+    for (const auto& [curr_id, curr_total]: total) {
         const CurrencyData* curr = CurrencyModel::instance().get_id_data_n(curr_id);
         const bool isBaseCurr = (curr->m_symbol == CurrencyModel::instance().get_base_data_n()->m_symbol);
         grand_total += total_in_base_curr[curr_id];
-        if (total.size() > 1 || !isBaseCurr)
-        {
+        if (total.size() > 1 || !isBaseCurr) {
             const wxString totalStr_curr = isBaseCurr ? "" : CurrencyModel::instance().toCurrency(curr_total, curr);
             const wxString totalStr = CurrencyModel::instance().toCurrency(total_in_base_curr[curr_id], CurrencyModel::instance().get_base_data_n());
             hb.addTotalRow(curr->m_symbol, noOfCols, { totalStr_curr,  totalStr });
@@ -294,7 +294,7 @@ table {
                     );
                 }
                 if (showColumnById(TrxFilterDialog::COL_COLOR))
-                    hb.addColorMarker(getUDColour(trx_dx.m_color.GetValue()).GetAsString(), true);
+                    hb.addColorMarker(mmUserColor::getId(trx_dx.m_color.GetValue()).GetAsString(), true);
                 if (showColumnById(TrxFilterDialog::COL_DATE)) {
                     hb.addTableCellDate(trx_dx.m_date().isoDate());
                 }

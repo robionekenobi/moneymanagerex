@@ -86,6 +86,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     base/mmStringBuilder.cpp
     base/mmStringBuilder.h
     base/mmTips.h
+    base/mmUserColor.cpp
+    base/mmUserColor.h
 
     util/_primitive.cpp
     util/_primitive.h

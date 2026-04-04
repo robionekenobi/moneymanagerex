@@ -22,39 +22,19 @@
 #pragma once
 
 #include "base/_defs.h"
-#include "base/_types.h"
 
-// -- String
-
-struct caseInsensitiveComparator {
-    bool operator()(const wxString& lhs, const wxString& rhs) const {
-        return lhs.CmpNoCase(rhs) < 0;
-    }
-};
-
-int CaseInsensitiveCmp(const wxString &s1, const wxString &s2);
-int CaseInsensitiveLocaleCmp(const wxString &s1, const wxString &s2);
-
-const wxString mmTrimAmount(
-    const wxString& value, const wxString& decimal, const wxString& replace_decimal = ""
-);
-
-// -- URI
-
-bool isValidURI(const wxString& validate);
-
-// -- DateTime
-
-extern const wxString MONTHS[12];
-extern const wxString MONTHS_SHORT[12];
-extern const wxString g_days_of_week[7];
-extern const wxString g_short_days_of_week[7];
-
-inline const wxString mmGetMonthName(const wxDateTime::Month& month)
+class mmUserColor
 {
-    return MONTHS[static_cast<int>(month - wxDateTime::Month::Jan)];
-}
+public:
+    static wxColour s_color1;
+    static wxColour s_color2;
+    static wxColour s_color3;
+    static wxColour s_color4;
+    static wxColour s_color5;
+    static wxColour s_color6;
+    static wxColour s_color7;
 
-bool mmParseISODate(const wxString& in_str, wxDateTime& out_date);
-
-wxDateTime DEPRECATED_parseDateTime(const wxString& str_date);
+public:
+    static auto getId(const int c) -> wxColour;
+    static auto bestFontColor(const wxColour& background) -> const wxColor*;
+};

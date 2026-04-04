@@ -20,6 +20,8 @@
  ********************************************************/
 
 #include "mmColorButton.h"
+
+#include "base/mmUserColor.h"
 #include "mmImage.h"
 #include "_primitive.h"
 
@@ -43,10 +45,10 @@ mmColorButton::mmColorButton(
 void mmColorButton::SetColor(int color_id)
 {
     m_color_id = color_id;
-    SetBackgroundColour(getUDColour(m_color_id));
+    SetBackgroundColour(mmUserColor::getId(m_color_id));
     SetForegroundColour(m_color_id <= 0
-        ? getUDColour(m_color_id)
-        : *bestFontColour(getUDColour(m_color_id))
+        ? mmUserColor::getId(m_color_id)
+        : *mmUserColor::bestFontColor(mmUserColor::getId(m_color_id))
     );
     if (GetSize().GetX() > 40) {
         if (m_color_id <= 0) {
@@ -86,8 +88,8 @@ void mmColorButton::onColourButton(wxCommandEvent& event)
             wxString::Format(_t("Color #&%i"), i)
         );
 #ifdef __WXMSW__
-        menuItem->SetBackgroundColour(getUDColour(i)); //only available for the wxMSW port.
-        menuItem->SetTextColour(*bestFontColour(getUDColour(i)));
+        menuItem->SetBackgroundColour(mmUserColor::getId(i)); //only available for the wxMSW port.
+        menuItem->SetTextColour(*mmUserColor::bestFontColor(mmUserColor::getId(i)));
 #endif
         wxBitmap bitmap(mmImage::bitmapBundle(
             mmImage::png::EMPTY,
@@ -95,7 +97,7 @@ void mmColorButton::onColourButton(wxCommandEvent& event)
         );
         wxMemoryDC memoryDC(bitmap);
 
-        memoryDC.SetBackground(wxBrush(getUDColour(i)));
+        memoryDC.SetBackground(wxBrush(mmUserColor::getId(i)));
         memoryDC.Clear();
         memoryDC.DrawBitmap(mmImage::bitmapBundle(
             mmImage::png::EMPTY,

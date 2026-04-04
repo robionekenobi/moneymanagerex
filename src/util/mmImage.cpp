@@ -18,6 +18,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *******************************************************/
 
+#include "mmImage.h"
+
 #include <memory>
 #include <map>
 #include <array>
@@ -34,8 +36,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <wx/tokenzr.h>
 
 #include "base/mmPlatform.h"
+#include "base/mmUserColor.h"
 #include "mmPath.h"
-#include "mmImage.h"
 #include "_util.h"
 
 #include "model/SettingModel.h"
@@ -642,7 +644,7 @@ void mmImage::themeMetaColour(wxWindow* object, wxColour c, bool foreground)
         object->SetForegroundColour(c);
     else {
         object->SetBackgroundColour(c);
-        object->SetForegroundColour(*bestFontColour(c));
+        object->SetForegroundColour(*mmUserColor::bestFontColor(c));
     }
 
     enableMSWDarkMode(object, mmImage::darkMode);

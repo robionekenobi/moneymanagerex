@@ -25,6 +25,8 @@
 #pragma comment(lib,"wldap32.lib")
 #endif
 
+#include "_util.h"
+
 #include <map>
 #include <cwchar>
 #include <locale>
@@ -40,11 +42,11 @@
 #include "build.h"
 #include "base/_constants.h"
 #include "base/mmPlatform.h"
+#include "base/mmUserColor.h"
 #include "table/_TableUpgrade.h"
 #include "util/mmCalcValidator.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
-#include "_util.h"
 #include "_simple.h"
 
 #include "model/CurrencyHistoryModel.h"
@@ -136,7 +138,7 @@ void mmThemeAutoColour([[maybe_unused]] wxWindow* object, [[maybe_unused]] bool 
 
     if (!bg.empty()) {
         object->SetBackgroundColour(wxColour(bg));
-        object->SetForegroundColour(fg.empty() ? *bestFontColour(bg) : fg);
+        object->SetForegroundColour(fg.empty() ? *mmUserColor::bestFontColor(bg) : fg);
     }
     else if (!fg.empty())
         object->SetForegroundColour(fg);
@@ -262,22 +264,22 @@ wxString removeQuotes(wxString s)
 
 void mmLoadColorsFromDatabase(const bool def)
     {
-    mmColors::userDefColor1 = def ? wxColour(246, 144, 144) : InfoModel::instance().getColour("USER_COLOR1", wxColour(246, 144, 144));
-    mmColors::userDefColor2 = def ? wxColour(229, 196, 146) : InfoModel::instance().getColour("USER_COLOR2", wxColour(229, 196, 146));
-    mmColors::userDefColor3 = def ? wxColour(245, 237, 149) : InfoModel::instance().getColour("USER_COLOR3", wxColour(245, 237, 149));
-    mmColors::userDefColor4 = def ? wxColour(186, 226, 185) : InfoModel::instance().getColour("USER_COLOR4", wxColour(186, 226, 185));
-    mmColors::userDefColor5 = def ? wxColour(135, 190, 219) : InfoModel::instance().getColour("USER_COLOR5", wxColour(135, 190, 219));
-    mmColors::userDefColor6 = def ? wxColour(172, 167, 239) : InfoModel::instance().getColour("USER_COLOR6", wxColour(172, 167, 239));
-    mmColors::userDefColor7 = def ? wxColour(212, 138, 215) : InfoModel::instance().getColour("USER_COLOR7", wxColour(212, 138, 215));
+    mmUserColor::s_color1 = def ? wxColour(246, 144, 144) : InfoModel::instance().getColour("USER_COLOR1", wxColour(246, 144, 144));
+    mmUserColor::s_color2 = def ? wxColour(229, 196, 146) : InfoModel::instance().getColour("USER_COLOR2", wxColour(229, 196, 146));
+    mmUserColor::s_color3 = def ? wxColour(245, 237, 149) : InfoModel::instance().getColour("USER_COLOR3", wxColour(245, 237, 149));
+    mmUserColor::s_color4 = def ? wxColour(186, 226, 185) : InfoModel::instance().getColour("USER_COLOR4", wxColour(186, 226, 185));
+    mmUserColor::s_color5 = def ? wxColour(135, 190, 219) : InfoModel::instance().getColour("USER_COLOR5", wxColour(135, 190, 219));
+    mmUserColor::s_color6 = def ? wxColour(172, 167, 239) : InfoModel::instance().getColour("USER_COLOR6", wxColour(172, 167, 239));
+    mmUserColor::s_color7 = def ? wxColour(212, 138, 215) : InfoModel::instance().getColour("USER_COLOR7", wxColour(212, 138, 215));
 }
 
-wxColour mmColors::userDefColor1;
-wxColour mmColors::userDefColor2;
-wxColour mmColors::userDefColor3;
-wxColour mmColors::userDefColor4;
-wxColour mmColors::userDefColor5;
-wxColour mmColors::userDefColor6;
-wxColour mmColors::userDefColor7;
+wxColour mmUserColor::s_color1;
+wxColour mmUserColor::s_color2;
+wxColour mmUserColor::s_color3;
+wxColour mmUserColor::s_color4;
+wxColour mmUserColor::s_color5;
+wxColour mmUserColor::s_color6;
+wxColour mmUserColor::s_color7;
 
 //*-------------------------------------------------------------------------*//
 

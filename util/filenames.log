@@ -194,6 +194,7 @@ under src/ in increasing chronological order.
   base/platfdep*                     -> base/mmPlatform*
   base/types.h                       -> base/_types.h
   util/_primitive:StringBuilder      -> base/mmStringBuilder
+  util/_primitive:mmColors           -> base/mmUserColor
   util/_primitive:pow10              -> base/mmMath
   util/_util:mmHtmlWindow            -> base/mmHtmlWindow
   util/_util:mmListBoxItem           -> base/mmListBoxItem.h
