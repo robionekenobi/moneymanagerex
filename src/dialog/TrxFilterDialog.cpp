@@ -39,6 +39,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "util/mmImage.h"
 #include "util/mmMultiChoice.h"
 #include "util/mmCalcValidator.h"
+#include "util/mmNavigatorList.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -46,8 +47,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "manager/CategoryManager.h"
 #include "manager/PayeeManager.h"
-
-#include "uicontrols/navigatortypes.h"
 
 static const wxString COLUMN_NAMES[] = {
     "ID", "Color", "Date", "Number", "Account", "Payee",
@@ -167,7 +166,7 @@ void TrxFilterDialog::mmDoInitVariables()
 
     m_account_name_a.clear();
     for (const auto& account_d : AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_NE, NavigatorTypes::instance().type_name(NavigatorTypes::TYPE_ID_INVESTMENT))
+        AccountCol::ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_INVESTMENT))
     )) {
         m_account_name_a.push_back(account_d.m_name);
     }

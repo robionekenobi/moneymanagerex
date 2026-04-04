@@ -85,7 +85,7 @@ void mmQIFExportDialog::fillControls()
     accounts_id_.clear();
 
     AccountModel::DataA all_accounts = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_NE, NavigatorTypes::instance().getInvestmentAccountStr())
+        AccountCol::ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().getInvestmentAccountStr())
     );
 
     for (const auto& a : all_accounts)
@@ -266,7 +266,7 @@ void mmQIFExportDialog::OnAccountsButton(wxCommandEvent& WXUNUSED(event))
     int i = 0;
     wxArrayInt s;
     AccountModel::DataA all_accounts = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_NE, NavigatorTypes::instance().getInvestmentAccountStr())
+        AccountCol::ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().getInvestmentAccountStr())
     );
 
     for (const auto& a : all_accounts)

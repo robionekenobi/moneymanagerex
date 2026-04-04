@@ -210,6 +210,7 @@ under src/ in increasing chronological order.
   mmcombobox.h                       -> util/_UNUSED_mmComboBoxText
   base/images_list                   -> util/mmImage
   base/paths                         -> util/mmPath
+  uicontrols/navigatortypes          -> util/mmNavigatorList
   util/_primitive:mmSplitterWindow   -> util/mmSplitterWindow
   util/_simple:mmCalculatorPopup     -> util/mmCalcPopup
   util/_simple:mmColorButton         -> util/mmColorButton

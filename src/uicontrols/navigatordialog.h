@@ -19,7 +19,7 @@
 #pragma once
 
 #include "base/_defs.h"
-#include "navigatortypes.h"
+#include "util/mmNavigatorList.h"
 #include "generic/generictreelistdialog.h"
 
 class mmNavigatorDialog: public genericTreeListDialog
@@ -58,7 +58,7 @@ private:
     wxButton* m_edit = nullptr;
     wxButton* m_delete = nullptr;
 
-    wxTreeListItem appendAccountItem(wxTreeListItem parent, NavigatorTypesInfo* ainfo);
+    wxTreeListItem appendAccountItem(wxTreeListItem parent, mmNavigatorItem* ainfo);
     void updateItemsRecursive(wxTreeListItem item);
 
     void OnEdit(wxCommandEvent&);

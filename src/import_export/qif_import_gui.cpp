@@ -18,6 +18,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
+#include "qif_import_gui.h"
+
 #include "base/_defs.h"
 #include <wx/progdlg.h>
 #include <wx/dataview.h>
@@ -27,6 +29,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "util/mmDateRange.h"
 #include "util/mmDatePicker.h"
 #include "util/mmDateParser.h"
+#include "util/mmNavigatorList.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -39,9 +42,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "manager/CategoryManager.h"
 #include "manager/PayeeManager.h"
 #include "webapp.h"
-#include "uicontrols/navigatortypes.h"
 
-#include "qif_import_gui.h"
 #include "qif_import.h"
 #include "export.h"
 
@@ -1674,7 +1675,7 @@ int64 mmQIFImportDialog::getOrCreateAccounts()
 
             const auto type = item.second.find(QIF_ID_AccountType) != item.second.end() ? item.second.at(QIF_ID_AccountType) : "";
             new_account_d.m_type_ = mmExportTransaction::mm_acc_type(type);
-            //NavigatorTypes::TYPE_NAME_CHECKING;
+            //mmNavigatorItem::TYPE_NAME_CHECKING;
             new_account_d.m_name         = item.first;
             new_account_d.m_open_balance = 0;
             new_account_d.m_open_date    = mmDate::today();

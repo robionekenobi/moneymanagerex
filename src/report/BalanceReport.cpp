@@ -74,7 +74,7 @@ std::pair<double, double> BalanceReport::getBalance(
     if (date < account_n->m_open_date)
         return bal;
     bal.first = getCheckingBalance(account_n, date);
-    if (AccountModel::type_id(*account_n) == NavigatorTypes::TYPE_ID_INVESTMENT) {
+    if (AccountModel::type_id(*account_n) == mmNavigatorItem::TYPE_ID_INVESTMENT) {
         bal.second = StockModel::instance().calculate_account_balance(*account_n, date);
     }
     return bal;
@@ -110,7 +110,7 @@ wxString BalanceReport::getHTMLText()
     std::vector<BalanceEntry> date_balanceA_a;
 
     GraphData gd;
-    int acc_size = NavigatorTypes::instance().getNumberOfAccountTypes();
+    int acc_size = mmNavigatorList::instance().getNumberOfAccountTypes();
     // +1 as we add balance to the end;
     std::vector<GraphSeries> gs_data(acc_size + 1);
 
@@ -132,7 +132,7 @@ wxString BalanceReport::getHTMLText()
         if (account_d.m_open_date < start_date)
             start_date = account_d.m_open_date;
         m_account_balance_mDate_mId[account_d.m_id] = loadAccountBalance_mDate(account_d);
-        if (AccountModel::type_id(account_d) != NavigatorTypes::TYPE_ID_INVESTMENT)
+        if (AccountModel::type_id(account_d) != mmNavigatorItem::TYPE_ID_INVESTMENT)
             continue;
         for (const auto& stock_d : StockModel::instance().find(
             StockCol::HELDAT(account_d.m_id)
@@ -182,21 +182,21 @@ wxString BalanceReport::getHTMLText()
         std::fill(balance_a.begin(), balance_a.end(), 0.0);
         int idx;
         for (const auto& account_d : AccountModel::instance().find_all()) {
-            idx = NavigatorTypes::instance().getAccountTypeIdx(account_d.m_type_);
+            idx = mmNavigatorList::instance().getAccountTypeIdx(account_d.m_type_);
             if (idx == -1) {
-                idx = NavigatorTypes::instance().getAccountTypeIdx(NavigatorTypes::TYPE_ID_CHECKING);
+                idx = mmNavigatorList::instance().getAccountTypeIdx(mmNavigatorItem::TYPE_ID_CHECKING);
             }
             if (idx > -1) {
                 double rate = getCurrencyDateRate(account_d.m_currency_id, end_date);
                 std::pair<double, double> dailybal = getBalance(&account_d, end_date);
                 balance_a[idx] += dailybal.first * rate;
-                if (AccountModel::type_id(account_d) == NavigatorTypes::TYPE_ID_INVESTMENT) {
+                if (AccountModel::type_id(account_d) == mmNavigatorItem::TYPE_ID_INVESTMENT) {
                     balance_a[idx] += dailybal.second * rate;
                 }
             }
         }
 
-        idx = NavigatorTypes::instance().getAccountTypeIdx(NavigatorTypes::TYPE_ID_ASSET);
+        idx = mmNavigatorList::instance().getAccountTypeIdx(mmNavigatorItem::TYPE_ID_ASSET);
         if (idx > -1) {
             for (const auto& asset_d : AssetModel::instance().find_all()) {
                 double rate = getCurrencyDateRate(asset_d.m_currency_id_n, end_date);
@@ -211,7 +211,7 @@ wxString BalanceReport::getHTMLText()
             date_balanceA.balance_a.push_back(balance_a[i]);
             gs_data[++k].values.push_back(balance_a[i]);
             total += balance_a[i];
-            gs_data[k].name = NavigatorTypes::instance().getAccountTypeName(i);
+            gs_data[k].name = mmNavigatorList::instance().getAccountTypeName(i);
             gs_data[k].type = "column";
         }
         date_balanceA.balance_a.push_back(total);

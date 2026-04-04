@@ -360,7 +360,7 @@ void StockList::onMoveStocks(wxCommandEvent& /*event*/)
         return;
 
     const auto& account_a = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().getInvestmentAccountStr())
+        AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().getInvestmentAccountStr())
     );
     if (account_a.empty())
         return;

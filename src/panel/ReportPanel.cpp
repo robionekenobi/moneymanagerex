@@ -18,6 +18,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "ReportPanel.h"
+
 #include <vector>
 #include <string>
 #include <iomanip>
@@ -27,10 +29,10 @@
 #include "util/mmPath.h"
 #include "util/mmImage.h"
 #include "util/mmDateShifter.h"
+#include "util/mmNavigatorList.h"
 #include "util/_util.h"
 #include "model/PrefModel.h"
 #include "model/TrxFilter.h"
-#include "ReportPanel.h"
 
 #include "manager/DateRangeManager.h"
 #include "dialog/AssetDialog.h"
@@ -39,7 +41,6 @@
 #include "dialog/TrxShareDialog.h"
 #include "dialog/BudgetEntryDialog.h"
 #include "report/htmlbuilder.h"
-#include "uicontrols/navigatortypes.h"
 #include "mmframe.h"
 #include "mmex.h"
 
@@ -352,7 +353,7 @@ void ReportPanel::createControls()
             w_account_choice = new wxChoice(itemPanel3, ID_ACCOUNT_CHOICE);
             w_account_choice->Append(_t("All Accounts"));
             w_account_choice->Append(_tu("Specific Accounts…"));
-            w_account_choice->Append(NavigatorTypes::instance().getUsedAccountTypeNames());
+            w_account_choice->Append(mmNavigatorList::instance().getUsedAccountTypeNames());
             w_account_choice->SetSelection(m_rb->getAccountSelection());
 
             itemBoxSizerHeader->Add(w_account_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
@@ -963,7 +964,7 @@ void ReportPanel::onAccountChanged(wxCommandEvent& WXUNUSED(event))
     if (m_rb) {
         int sel = w_account_choice->GetSelection();
         if ((sel == 1) || (sel != m_rb->getAccountSelection())) {
-            m_rb->setAccounts(sel, NavigatorTypes::instance().getAccountDbTypeFromName(w_account_choice->GetString(sel)));
+            m_rb->setAccounts(sel, mmNavigatorList::instance().getAccountDbTypeFromName(w_account_choice->GetString(sel)));
             saveReportText();
             m_rb->saveReportSettings();
         }

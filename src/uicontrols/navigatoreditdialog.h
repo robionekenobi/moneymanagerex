@@ -19,7 +19,7 @@
 #pragma once
 
 #include "base/_defs.h"
-#include "navigatortypes.h"
+#include "util/mmNavigatorList.h"
 
 class mmNavigatorEditDialog: public wxDialog
 {
@@ -27,8 +27,8 @@ class mmNavigatorEditDialog: public wxDialog
 
 public:
     mmNavigatorEditDialog();
-    mmNavigatorEditDialog(wxWindow* parent, const NavigatorTypesInfo* info);
-    void updateInfo(NavigatorTypesInfo* info);
+    mmNavigatorEditDialog(wxWindow* parent, const mmNavigatorItem* info);
+    void updateInfo(mmNavigatorItem* info);
     void OnNewText(wxCommandEvent& event);
 
 private:

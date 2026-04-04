@@ -17,10 +17,13 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "StocksReport.h"
+
 #include "base/_defs.h"
 #include <algorithm>
 #include "base/_constants.h"
 #include "util/mmDateRange.h"
+#include "util/mmNavigatorList.h"
 #include "util/_util.h"
 #include "htmlbuilder.h"
 
@@ -30,9 +33,7 @@
 #include "model/StockHistoryModel.h"
 
 #include "panel/StockPanel.h"
-#include "StocksReport.h"
 #include "budget.h"
-#include "uicontrols/navigatortypes.h"
 
 StocksReport::StocksReport()
     : ReportBase(_n("Summary of Stocks"))
@@ -55,7 +56,7 @@ void  StocksReport::refreshData()
     for (const auto& account_d : AccountModel::instance().find_all(
         AccountCol::COL_ID_ACCOUNTNAME
     )) {
-        if (AccountModel::type_id(account_d) != NavigatorTypes::TYPE_ID_INVESTMENT)
+        if (AccountModel::type_id(account_d) != mmNavigatorItem::TYPE_ID_INVESTMENT)
             continue;
         if (!account_d.is_open())
             continue;

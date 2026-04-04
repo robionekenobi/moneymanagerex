@@ -91,7 +91,7 @@ void FlowReport::getTransactions()
 
     // Get initial Balance as of today
     for (const auto& account : AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_NE, NavigatorTypes::instance().getInvestmentAccountStr()),
+        AccountCol::ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().getInvestmentAccountStr()),
         AccountModel::STATUS(OP_NE, AccountStatus(AccountStatus::e_closed))
     )) {
         if (m_account_a &&

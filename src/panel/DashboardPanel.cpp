@@ -159,9 +159,9 @@ void DashboardPanel::insertDataIntoTemplate()
     wxString AccountsInfo;
     bool isAccount = false;
 
-    NavigatorTypesInfo* navinfo = NavigatorTypes::instance().getFirstActiveEntry();
+    mmNavigatorItem* navinfo = mmNavigatorList::instance().getFirstActiveEntry();
     while (navinfo) {
-        if (navinfo->navTyp == NavigatorTypes::NAV_TYP_ACCOUNT) {
+        if (navinfo->navTyp == mmNavigatorItem::NAV_TYP_ACCOUNT) {
             if (!isAccount) {
                 isAccount = true;
                 accountCount++;
@@ -171,7 +171,7 @@ void DashboardPanel::insertDataIntoTemplate()
             m_htmlText_mLabel[AccountsInfo] +=
                 account_stats.displayAccounts(tAccountBalance, tReconciled, navinfo->type);
         }
-        else if (navinfo->type == NavigatorTypes::TYPE_ID_INVESTMENT) {
+        else if (navinfo->type == mmNavigatorItem::TYPE_ID_INVESTMENT) {
             if (isAccount) {
                m_htmlText_mLabel[AccountsInfo] += "</div>";
             }
@@ -182,10 +182,10 @@ void DashboardPanel::insertDataIntoTemplate()
             m_htmlText_mLabel[AccountsInfo]= stocks_widget.getHTMLText();
             tBalance += stocks_widget.get_total();
 
-            account_stats.displayAccounts(tBalance, tReconciled, NavigatorTypes::TYPE_ID_SHARES);
+            account_stats.displayAccounts(tBalance, tReconciled, mmNavigatorItem::TYPE_ID_SHARES);
 
         }
-        else if (navinfo->type == NavigatorTypes::TYPE_ID_ASSET) {
+        else if (navinfo->type == mmNavigatorItem::TYPE_ID_ASSET) {
             if (isAccount) {
                m_htmlText_mLabel[AccountsInfo] += "</div>";
             }
@@ -196,9 +196,9 @@ void DashboardPanel::insertDataIntoTemplate()
             htmlWidgetAssets assets;
             m_htmlText_mLabel[AccountsInfo] = assets.getHTMLText();
             tBalance += AssetModel::instance().find_all_balance();
-            account_stats.displayAccounts(tBalance, tReconciled, NavigatorTypes::TYPE_ID_ASSET);
+            account_stats.displayAccounts(tBalance, tReconciled, mmNavigatorItem::TYPE_ID_ASSET);
         }
-        navinfo = NavigatorTypes::instance().getNextActiveEntry(navinfo);
+        navinfo = mmNavigatorList::instance().getNextActiveEntry(navinfo);
     }
     if (isAccount) {
         m_htmlText_mLabel[AccountsInfo] +="</div>";
@@ -284,16 +284,16 @@ void DashboardPanel::onNewWindow(wxWebViewEvent& evt)
         evt.Veto();
     }
     else if (uri.StartsWith("assets:", &sData)) {
-        cmdInt = NavigatorTypes::TYPE_ID_ASSET;
+        cmdInt = mmNavigatorItem::TYPE_ID_ASSET;
     }
     else if (uri.StartsWith("billsdeposits:", &sData)) {
-        cmdInt = NavigatorTypes::NAV_ENTRY_SCHEDULED_TRANSACTIONS;
+        cmdInt = mmNavigatorItem::NAV_ENTRY_SCHEDULED_TRANSACTIONS;
     }
     else if (uri.StartsWith("acct:", &sData)) {
-        cmdInt = NavigatorTypes::TYPE_ID_CHECKING;
+        cmdInt = mmNavigatorItem::TYPE_ID_CHECKING;
     }
     else if (uri.StartsWith("stock:", &sData)) {
-        cmdInt = NavigatorTypes::TYPE_ID_INVESTMENT;
+        cmdInt = mmNavigatorItem::TYPE_ID_INVESTMENT;
     }
 
     if (cmdInt > -1) {

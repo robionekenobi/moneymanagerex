@@ -30,7 +30,7 @@ mmNavigatorEditDialog::mmNavigatorEditDialog()
 {
 }
 
-mmNavigatorEditDialog::mmNavigatorEditDialog(wxWindow* parent, const NavigatorTypesInfo* info)
+mmNavigatorEditDialog::mmNavigatorEditDialog(wxWindow* parent, const mmNavigatorItem* info)
 {
     this->SetFont(parent->GetFont());
 
@@ -41,13 +41,13 @@ mmNavigatorEditDialog::mmNavigatorEditDialog(wxWindow* parent, const NavigatorTy
     if (info) {
         m_nameTextCtrl->SetValue(info->name);
         switch(info->navTyp) {
-            case NavigatorTypes::NAV_TYP_PANEL:
+            case mmNavigatorItem::NAV_TYP_PANEL:
                 m_activeCheckBox->SetValue(info->active);
                 m_choiceLabel->Show(false);
                 m_choiceTextCtrl->Show(false);
                 break;
 
-            case NavigatorTypes::NAV_TYP_PANEL_STATIC:
+            case mmNavigatorItem::NAV_TYP_PANEL_STATIC:
                 m_aktivLabel->Show(false);
                 m_activeCheckBox->Show(false);
                 m_choiceLabel->Show(false);
@@ -140,18 +140,18 @@ void mmNavigatorEditDialog::CreateControls()
     this->Centre();
 }
 
-void mmNavigatorEditDialog::updateInfo(NavigatorTypesInfo* info)
+void mmNavigatorEditDialog::updateInfo(mmNavigatorItem* info)
 {
     info->name = m_nameTextCtrl->GetValue();
     info->choice = m_choiceTextCtrl->GetValue();
     if (info->choice.IsEmpty()) {
-        info->choice = info->navTyp > NavigatorTypes::NAV_TYP_PANEL ? info->name : "";
+        info->choice = info->navTyp > mmNavigatorItem::NAV_TYP_PANEL ? info->name : "";
     }
     if (info->dbaccid.IsEmpty()) {
         info->dbaccid = info->choice;
     }
     info->imageId = m_cbIcon->GetSelection();
-    if (info->navTyp == NavigatorTypes::NAV_TYP_PANEL) {
+    if (info->navTyp == mmNavigatorItem::NAV_TYP_PANEL) {
         info->active = m_activeCheckBox->GetValue();
     }
 }

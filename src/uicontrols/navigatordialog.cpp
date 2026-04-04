@@ -29,8 +29,8 @@
 
 struct NavData : public wxClientData
 {
-    NavigatorTypesInfo* ref;
-    explicit NavData(NavigatorTypesInfo* r): ref(r) {}
+    mmNavigatorItem* ref;
+    explicit NavData(mmNavigatorItem* r): ref(r) {}
 };
 
 wxIMPLEMENT_DYNAMIC_CLASS(mmNavigatorDialog, wxDialog);
@@ -100,31 +100,31 @@ void mmNavigatorDialog::createBottomElements(wxBoxSizer* itemBox) {
 
 void mmNavigatorDialog::fillControls(wxTreeListItem root)
 {
-    NavigatorTypesInfo* ainfo = NavigatorTypes::instance().getFirstAccount();
+    mmNavigatorItem* ainfo = mmNavigatorList::instance().getFirstAccount();
     while (ainfo != nullptr) {
         appendAccountItem(root, ainfo);
-        ainfo = NavigatorTypes::instance().getNextAccount(ainfo);
+        ainfo = mmNavigatorList::instance().getNextAccount(ainfo);
     }
 }
 
-wxTreeListItem mmNavigatorDialog::appendAccountItem(wxTreeListItem parent, NavigatorTypesInfo* ainfo)
+wxTreeListItem mmNavigatorDialog::appendAccountItem(wxTreeListItem parent, mmNavigatorItem* ainfo)
 {
     #ifdef __WXMAC__
-        wxString text = NavigatorTypes::GetTranslatedName(ainfo);
+        wxString text = mmNavigatorList::GetTranslatedName(ainfo);
         text.Prepend(wxString(' ', m_spaces));
         wxTreeListItem item = m_treeList->AppendItem(parent, text);
     #else
-        wxTreeListItem item = m_treeList->AppendItem(parent, NavigatorTypes::GetTranslatedName(ainfo));
+        wxTreeListItem item = m_treeList->AppendItem(parent, mmNavigatorList::GetTranslatedName(ainfo));
     #endif
 
-    m_treeList->SetItemText(item, 1, ainfo->navTyp > NavigatorTypes::NAV_TYP_PANEL ? NavigatorTypes::GetTranslatedSelection(ainfo) : "");
+    m_treeList->SetItemText(item, 1, ainfo->navTyp > mmNavigatorItem::NAV_TYP_PANEL ? mmNavigatorList::GetTranslatedSelection(ainfo) : "");
     m_treeList->SetItemImage(item, ainfo->imageId);
     m_treeList->SetItemData(item, new NavData(ainfo));
-    if (ainfo->type == NavigatorTypes::TYPE_ID_SHARES) {
+    if (ainfo->type == mmNavigatorItem::TYPE_ID_SHARES) {
         m_treeList->CheckItem(item, PrefModel::instance().getHideShareAccounts() ? wxCHK_UNCHECKED : wxCHK_CHECKED);
     }
     else {
-        m_treeList->CheckItem(item, ainfo->navTyp != NavigatorTypes::NAV_TYP_PANEL ? wxCHK_UNDETERMINED : (ainfo->active ? wxCHK_CHECKED : wxCHK_UNCHECKED));
+        m_treeList->CheckItem(item, ainfo->navTyp != mmNavigatorItem::NAV_TYP_PANEL ? wxCHK_UNDETERMINED : (ainfo->active ? wxCHK_CHECKED : wxCHK_UNCHECKED));
     }
     return item;
 }
@@ -136,10 +136,10 @@ void mmNavigatorDialog::OnEdit(wxCommandEvent&)
     mmNavigatorEditDialog dlg(this, data->ref);
     if (dlg.ShowModal() == wxID_OK) {
         dlg.updateInfo(data->ref);
-        if (data->ref->navTyp > NavigatorTypes::NAV_TYP_PANEL) {
+        if (data->ref->navTyp > mmNavigatorItem::NAV_TYP_PANEL) {
             m_treeList->SetItemText(item, 1, data->ref->choice);
         }
-        else if (data->ref->navTyp == NavigatorTypes::NAV_TYP_PANEL || data->ref->type == NavigatorTypes::TYPE_ID_SHARES) {
+        else if (data->ref->navTyp == mmNavigatorItem::NAV_TYP_PANEL || data->ref->type == mmNavigatorItem::TYPE_ID_SHARES) {
             m_treeList->CheckItem(item, data->ref->active ? wxCHK_CHECKED : wxCHK_UNCHECKED);
         }
         m_treeList->SetItemImage(item, data->ref->imageId);
@@ -151,8 +151,8 @@ void mmNavigatorDialog::OnNew(wxCommandEvent&)
 {
     mmNavigatorEditDialog dlg(this, nullptr);
     if (dlg.ShowModal() == wxID_OK) {
-        NavigatorTypesInfo* info = NavigatorTypes::instance().FindOrCreateEntry(-1);
-        info->navTyp = NavigatorTypes::NAV_TYP_ACCOUNT;
+        mmNavigatorItem* info = mmNavigatorList::instance().FindOrCreateEntry(-1);
+        info->navTyp = mmNavigatorItem::NAV_TYP_ACCOUNT;
         dlg.updateInfo(info);
         m_treeList->Select(appendAccountItem(m_treeList->GetRootItem(), info));
         updateButtonState();
@@ -163,7 +163,7 @@ void mmNavigatorDialog::OnDelete(wxCommandEvent&)
 {
     wxTreeListItem item = m_treeList->GetSelection();
     NavData* data = static_cast<NavData*> (m_treeList->GetItemData(item));
-    if (NavigatorTypes::instance().DeleteEntry(data->ref)) {
+    if (mmNavigatorList::instance().DeleteEntry(data->ref)) {
         m_treeList->DeleteItem(item);
     }
 }
@@ -172,7 +172,7 @@ void mmNavigatorDialog::OnTreeItemChecked(wxTreeListEvent& event)
 {
     wxTreeListItem item = event.GetItem();
     NavData* data = static_cast<NavData*> (m_treeList->GetItemData(item));
-    if (data->ref->navTyp != NavigatorTypes::NAV_TYP_PANEL && data->ref->type != NavigatorTypes::TYPE_ID_SHARES) {
+    if (data->ref->navTyp != mmNavigatorItem::NAV_TYP_PANEL && data->ref->type != mmNavigatorItem::TYPE_ID_SHARES) {
         m_treeList->CheckItem(item, wxCHK_UNDETERMINED);
     }
 }
@@ -180,15 +180,15 @@ void mmNavigatorDialog::OnTreeItemChecked(wxTreeListEvent& event)
 void mmNavigatorDialog::closeAction()
 {
     updateItemsRecursive(m_treeList->GetRootItem());
-    NavigatorTypes::instance().SaveSequenceAndState();
+    mmNavigatorList::instance().SaveSequenceAndState();
 }
 
 void mmNavigatorDialog::setDefault()
 {
-    NavigatorTypes::instance().SetToDefault();
+    mmNavigatorList::instance().SetToDefault();
     // FIXME: The application is not ready for dynamic account types.
     // Much of the code assumes well known and fixed account types.
-    // See also the commeent in NavigatorTypes::DeleteEntry
+    // See also the commeent in mmNavigatorList::DeleteEntry
     AccountModel::instance().dangerous_reset_unknown_types();
 }
 
@@ -198,8 +198,8 @@ void mmNavigatorDialog::OnNameReset(wxCommandEvent&)
         , _t("Restore default names")
         , wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION) == wxYES)
     {
-        NavigatorTypes::instance().SetToDefault();
-        NavigatorTypes::instance().LoadFromDB(true);
+        mmNavigatorList::instance().SetToDefault();
+        mmNavigatorList::instance().LoadFromDB(true);
         reloadTree();
     }
 }
@@ -209,7 +209,7 @@ void mmNavigatorDialog::updateControlState(int selIdx, wxClientData* selData)
     bool nonfixed = false;
     if (selIdx > -1) {
         NavData* data = static_cast<NavData*> (selData);
-        nonfixed = data->ref->type >= NavigatorTypes::NAV_ENTRY_size;
+        nonfixed = data->ref->type >= mmNavigatorItem::NAV_ENTRY_size;
     }
     m_edit->Enable(selIdx > -1);
     m_delete->Enable(nonfixed);
@@ -221,10 +221,10 @@ void mmNavigatorDialog::copyTreeItemData(wxTreeListItem src, wxTreeListItem dst)
         m_treeList->SetItemText(dst, c, m_treeList->GetItemText(src, c));
     }
     NavData* data = static_cast<NavData*> (m_treeList->GetItemData(src));
-    data->ref->active = m_treeList->GetCheckedState(src) == wxCHK_CHECKED || data->ref->navTyp != NavigatorTypes::NAV_TYP_PANEL;
+    data->ref->active = m_treeList->GetCheckedState(src) == wxCHK_CHECKED || data->ref->navTyp != mmNavigatorItem::NAV_TYP_PANEL;
     m_treeList->SetItemImage(dst, data->ref->imageId);
     m_treeList->SetItemData(dst, new NavData(data->ref));
-    if (data->ref->navTyp == NavigatorTypes::NAV_TYP_PANEL || data->ref->type == NavigatorTypes::TYPE_ID_SHARES) {
+    if (data->ref->navTyp == mmNavigatorItem::NAV_TYP_PANEL || data->ref->type == mmNavigatorItem::TYPE_ID_SHARES) {
         m_treeList->CheckItem(dst, data->ref->active ? wxCHK_CHECKED : wxCHK_UNCHECKED);
     }
     else {
@@ -238,14 +238,14 @@ void mmNavigatorDialog::updateItemsRecursive(wxTreeListItem item)
     wxTreeListItem child = m_treeList->GetFirstChild(item);
     while (child.IsOk()) {
         NavData* data = static_cast<NavData*> (m_treeList->GetItemData(child));
-        NavigatorTypesInfo* ainfo = data->ref;
+        mmNavigatorItem* ainfo = data->ref;
         if (ainfo) {
             data->ref->seq_no = idx++;
-            data->ref->active = m_treeList->GetCheckedState(child) == wxCHK_CHECKED || (data->ref->navTyp != NavigatorTypes::NAV_TYP_PANEL && data->ref->type != NavigatorTypes::TYPE_ID_SHARES);
+            data->ref->active = m_treeList->GetCheckedState(child) == wxCHK_CHECKED || (data->ref->navTyp != mmNavigatorItem::NAV_TYP_PANEL && data->ref->type != mmNavigatorItem::TYPE_ID_SHARES);
             updateItemsRecursive(child);
             child = m_treeList->GetNextSibling(child);
             // Special for Trash:
-            if (data->ref->type == NavigatorTypes::NAV_ENTRY_DELETED_TRANSACTIONS) {
+            if (data->ref->type == mmNavigatorItem::NAV_ENTRY_DELETED_TRANSACTIONS) {
                 PrefModel::instance().saveHideDeletedTransactions(!data->ref->active);
                 mmGUIFrame* mainFrame = wxDynamicCast(this->GetParent(), mmGUIFrame);
                 if (mainFrame) {
@@ -253,7 +253,7 @@ void mmNavigatorDialog::updateItemsRecursive(wxTreeListItem item)
                 }
             }
             // Special for Share Accounts:
-            if (data->ref->type == NavigatorTypes::TYPE_ID_SHARES) {
+            if (data->ref->type == mmNavigatorItem::TYPE_ID_SHARES) {
                 PrefModel::instance().saveHideShareAccounts(!data->ref->active);
                 mmGUIFrame* mainFrame = wxDynamicCast(this->GetParent(), mmGUIFrame);
                 if (mainFrame) {

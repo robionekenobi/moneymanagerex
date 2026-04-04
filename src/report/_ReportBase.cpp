@@ -265,7 +265,7 @@ void ReportBase::restoreReportSettings()
 
     m_account_selection = -1;
     int selection = 0;
-    int acc_size = NavigatorTypes::instance().getNumberOfAccountTypes();
+    int acc_size = mmNavigatorList::instance().getNumberOfAccountTypes();
     if (j_doc.HasMember("ACCOUNTSELECTION") && j_doc["ACCOUNTSELECTION"].IsInt()) {
         selection = j_doc["ACCOUNTSELECTION"].GetInt();
         if (selection > (acc_size + 2)) selection = 0;
@@ -286,7 +286,7 @@ void ReportBase::restoreReportSettings()
         m_account_a = m_account_selected_a = accountSelections;
     }
     else if (selection > 1) {
-        setAccounts(selection, NavigatorTypes::instance().type_name(selection - 2));
+        setAccounts(selection, mmNavigatorList::instance().type_name(selection - 2));
     }
 
     m_account_selection = selection;

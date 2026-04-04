@@ -19,19 +19,19 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "CurrencyModel.h"
+
 #include <fmt/core.h>
 #include <fmt/format.h>
 
+#include "util/mmNavigatorList.h"
 #include "util/_util.h"
 
 #include "AccountModel.h"
 #include "CurrencyHistoryModel.h"
-#include "CurrencyModel.h"
 #include "PrefModel.h"
 #include "StockModel.h"
 #include "TrxModel.h"
-
-#include "uicontrols/navigatortypes.h"
 
 constexpr auto LIMIT = 1e-10;
 static wxString s_locale;
@@ -138,7 +138,7 @@ std::set<mmDate> CurrencyModel::find_id_date_m(int64 currency_id)
     for (const auto& account_d : AccountModel::instance().find(
         CurrencyCol::CURRENCYID(currency_id)
     )) {
-        if (AccountModel::type_id(account_d) == NavigatorTypes::TYPE_ID_INVESTMENT) {
+        if (AccountModel::type_id(account_d) == mmNavigatorItem::TYPE_ID_INVESTMENT) {
             for (const auto& stock_d : StockModel::instance().find(
                 StockCol::HELDAT(account_d.m_id)
             )) {

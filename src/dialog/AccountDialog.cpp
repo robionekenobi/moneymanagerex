@@ -136,7 +136,7 @@ void AccountDialog::CreateControls()
 
     grid_sizer->Add(new wxStaticText(this, wxID_STATIC, _t("Account Type:")), g_flagsH);
 
-    wxChoice* itemChoice61 = new wxChoice(this, ID_DIALOG_NEWACCT_COMBO_ACCTTYPE, wxDefaultPosition, wxDefaultSize, NavigatorTypes::instance().getAccountSelectionNames());
+    wxChoice* itemChoice61 = new wxChoice(this, ID_DIALOG_NEWACCT_COMBO_ACCTTYPE, wxDefaultPosition, wxDefaultSize, mmNavigatorList::instance().getAccountSelectionNames());
     mmToolTip(itemChoice61, _t("Specify the account type to be created."));
     grid_sizer->Add(itemChoice61, g_flagsExpand);
     itemChoice61->SetSelection(0);
@@ -201,7 +201,7 @@ void AccountDialog::CreateControls()
     grid_sizer2->AddGrowableCol(1, 1);
     others_sizer->Add(grid_sizer2, g_flagsExpand);
 
-    grid_sizer2->Add(new wxStaticText(others_tab, wxID_STATIC, (AccountModel::type_id(*m_account_n) == NavigatorTypes::TYPE_ID_CREDIT_CARD ? _t("Card Number:") : _t("Account Number:"))), g_flagsH);
+    grid_sizer2->Add(new wxStaticText(others_tab, wxID_STATIC, (AccountModel::type_id(*m_account_n) == mmNavigatorItem::TYPE_ID_CREDIT_CARD ? _t("Card Number:") : _t("Account Number:"))), g_flagsH);
     wxTextCtrl* itemTextCtrl6 = new wxTextCtrl(others_tab, ID_ACCTNUMBER, "", wxDefaultPosition, wxDefaultSize);
     mmToolTip(itemTextCtrl6, _t("Enter the Account Number associated with this account."));
     grid_sizer2->Add(itemTextCtrl6, g_flagsExpand);

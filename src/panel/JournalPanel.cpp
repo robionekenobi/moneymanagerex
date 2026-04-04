@@ -34,6 +34,7 @@
 #include "util/mmPath.h"
 #include "util/mmImage.h"
 #include "util/mmSplitterWindow.h"
+#include "util/mmNavigatorList.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmCalcValidator.h"
@@ -52,7 +53,6 @@
 #include "dialog/TrxShareDialog.h"
 #include "dialog/TrxUpdateDialog.h"
 #include "uicontrols/reconciledialog.h"
-#include "uicontrols/navigatortypes.h"
 
 #include "mmex.h"
 #include "mmframe.h"
@@ -150,10 +150,10 @@ wxString JournalPanel::getPanelTitle() const
             return _t("Favorites");
         else {
             int account_Type = -(static_cast<int>(m_account_group_id.GetValue()) + 4);
-            if (account_Type >= NavigatorTypes::TYPE_ID_size) {
-                account_Type += NavigatorTypes::NAV_IDXDIFF;
+            if (account_Type >= mmNavigatorItem::TYPE_ID_size) {
+                account_Type += mmNavigatorItem::NAV_IDXDIFF;
             }
-            return NavigatorTypes::instance().getAccountSectionName(account_Type);
+            return mmNavigatorList::instance().getAccountSectionName(account_Type);
         }
     }
     else if (m_account_n)
@@ -1013,8 +1013,8 @@ void JournalPanel::updateHeader()
             w_header_credit->SetValue(limit);
             w_header_credit->Show();
         }
-        if (AccountModel::type_id(*m_account_n) == NavigatorTypes::TYPE_ID_INVESTMENT ||
-            AccountModel::type_id(*m_account_n) == NavigatorTypes::TYPE_ID_ASSET
+        if (AccountModel::type_id(*m_account_n) == mmNavigatorItem::TYPE_ID_INVESTMENT ||
+            AccountModel::type_id(*m_account_n) == mmNavigatorItem::TYPE_ID_ASSET
         ) {
             std::pair<double, double> investment_bal =
                 AccountModel::instance().get_data_investment_balance(*m_account_n);

@@ -19,8 +19,11 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "PrefModel.h"
+
 #include "base/_constants.h"
 #include "util/mmImage.h"
+#include "util/mmNavigatorList.h"
 #include "util/_util.h"
 #include "base/mmSingleton.h"
 
@@ -28,11 +31,9 @@
 #include "CurrencyHistoryModel.h"
 #include "CurrencyModel.h"
 #include "InfoModel.h"
-#include "PrefModel.h"
 #include "SettingModel.h"
 
 #include "dialog/CurrencyChoiceDialog.h"
-#include "uicontrols/navigatortypes.h"
 
 // -- static
 
@@ -822,7 +823,7 @@ int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool
 {
     // TODO: change type of acctStatus to AccountStatus
     wxString acctStatus = VIEW_ACCOUNTS_OPEN_STR;
-    NavigatorTypes::TYPE_ID acctType = NavigatorTypes::TYPE_ID_CHECKING;
+    mmNavigatorItem::TYPE_ID acctType = mmNavigatorItem::TYPE_ID_CHECKING;
     int selectedImage = mmImage::img::SAVINGS_ACC_NORMAL_PNG; //Default value
 
     const AccountData* account_n = AccountModel::instance().get_id_data_n(account_id);
@@ -844,7 +845,7 @@ int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool
     if (!def && (custom_img_id >= min && custom_img_id <= max))
         return custom_img_id + mmImage::img::LAST_NAVTREE_PNG - 1;
 
-    NavigatorTypesInfo* info = NavigatorTypes::instance().FindEntry(acctType);
+    mmNavigatorItem* info = mmNavigatorList::instance().FindEntry(acctType);
     if (info) {
         selectedImage = info->imageId;
     }

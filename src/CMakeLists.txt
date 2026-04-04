@@ -122,6 +122,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     util/mmMiniEditor.h
     util/mmMultiChoice.cpp
     util/mmMultiChoice.h
+    util/mmNavigatorList.cpp
+    util/mmNavigatorList.h
     util/mmPath.cpp
     util/mmPath.h
     util/mmSQLite3Hook.h
@@ -460,8 +462,6 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     uicontrols/navigatordialog.h
     uicontrols/navigatoreditdialog.cpp
     uicontrols/navigatoreditdialog.h
-    uicontrols/navigatortypes.cpp
-    uicontrols/navigatortypes.h
     uicontrols/toolbardialog.cpp
     uicontrols/toolbardialog.h
     uicontrols/toolbartypes.cpp

@@ -105,7 +105,7 @@ public:
     void PopulateToolBar(bool update = true);
 
 private:
-    static const std::vector<std::pair<NavigatorTypes::TYPE_ID, wxString> > ACCOUNT_SECTION_TABLE;
+    static const std::vector<std::pair<mmNavigatorItem::TYPE_ID, wxString> > ACCOUNT_SECTION_TABLE;
     //static wxArrayString account_section_all();
 
 private:

@@ -17,22 +17,23 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "AssetDialog.h"
+
 #include "base/_defs.h"
 #include <wx/valnum.h>
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
+#include "util/mmNavigatorList.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
 
-#include "AssetDialog.h"
 #include "AccountDialog.h"
 #include "AttachmentDialog.h"
 #include "TrxLinkDialog.h"
-#include "uicontrols/navigatortypes.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(AssetDialog, wxDialog);
 
@@ -506,7 +507,7 @@ void AssetDialog::CreateAssetAccount()
 
     AccountData new_account_d = AccountData();
     new_account_d.m_name         = name;
-    new_account_d.m_type_        = NavigatorTypes::instance().getAssetAccountStr();
+    new_account_d.m_type_        = mmNavigatorList::instance().getAssetAccountStr();
     new_account_d.m_open_balance = 0;
     new_account_d.m_open_date    = m_asset_n->m_start_date;
     new_account_d.m_currency_id  = CurrencyModel::instance().get_base_data_n()->m_id;

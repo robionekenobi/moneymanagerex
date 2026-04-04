@@ -233,7 +233,7 @@ void mmGUIFrame::DoUpdateReportNavigation(wxTreeItemId& parent_item)
     }
 
     AccountModel::DataA investments_account = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_EQ, NavigatorTypes::instance().getInvestmentAccountStr())
+        AccountCol::ACCOUNTTYPE(OP_EQ, mmNavigatorList::instance().getInvestmentAccountStr())
     );
     if (!investments_account.empty())
     {

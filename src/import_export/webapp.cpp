@@ -18,8 +18,11 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
+#include "webapp.h"
+
 #include "base/_defs.h"
 #include "util/mmPath.h"
+#include "util/mmNavigatorList.h"
 #include "util/_util.h"
 
 #include "model/AccountModel.h"
@@ -29,8 +32,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "dialog/AttachmentDialog.h"
 #include "dialog/TrxDialog.h"
-#include "uicontrols/navigatortypes.h"
-#include "webapp.h"
 
 //Expected WebAppVersion
 const wxString WebAppParam::ApiExpectedVersion = "1.0.1";
@@ -228,7 +229,7 @@ bool mmWebApp::uploadAccount()
     for (const auto& account_d : AccountModel::instance().find_all(
         AccountCol::COL_ID_ACCOUNTNAME
     )) {
-        if (AccountModel::type_id(account_d) == NavigatorTypes::TYPE_ID_INVESTMENT ||
+        if (AccountModel::type_id(account_d) == mmNavigatorItem::TYPE_ID_INVESTMENT ||
             account_d.is_closed()
         )
             continue;
@@ -518,8 +519,8 @@ int64 mmWebApp::insertNewTrx(TrxWebData& trx_w)
         for (const auto& first_account_d : AccountModel::instance().find_all(
             AccountCol::COL_ID_ACCOUNTNAME
         )) {
-            if (AccountModel::type_id(first_account_d) != NavigatorTypes::TYPE_ID_INVESTMENT &&
-                AccountModel::type_id(first_account_d) != NavigatorTypes::TYPE_ID_TERM
+            if (AccountModel::type_id(first_account_d) != mmNavigatorItem::TYPE_ID_INVESTMENT &&
+                AccountModel::type_id(first_account_d) != mmNavigatorItem::TYPE_ID_TERM
             ) {
                 account_name = first_account_d.m_name;
                 account_id = first_account_d.m_id;
