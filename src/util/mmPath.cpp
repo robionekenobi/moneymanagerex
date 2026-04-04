@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <wx/icon.h>
 
 #include "base/_constants.h"
-#include "base/_platfdep.h"
+#include "base/mmPlatform.h"
 #include "mmPath.h"
 #include "_util.h"
 #include "../resources/mmexico.xpm"
@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 wxFileName mmPath::getSettingsPathPortable()
 {
-    wxFileName f = mmex::GetSharedDir();
+    wxFileName f = mmPlatform::shareDir();
     f.SetFullName(mmPath::getSettingsFileName());
     return f;
 }
@@ -115,7 +115,7 @@ wxString mmPath::getPathDoc(EDocFile f, bool url)
         wxFileName::GetPathSeparator() + lang_code + wxFileName::GetPathSeparator()
     );
 
-    wxFileName helpIndexFile(mmex::GetDocDir());
+    wxFileName helpIndexFile(mmPlatform::docDir());
     path.Prepend(helpIndexFile.GetPathWithSep());
     wxFileName helpFullPath(path);
 
@@ -124,7 +124,7 @@ wxString mmPath::getPathDoc(EDocFile f, bool url)
         section.clear();
         path = files[f];
         path.Replace("%s", wxFileName::GetPathSeparator());
-        wxFileName help(mmex::GetDocDir());
+        wxFileName help(mmPlatform::docDir());
         path.Prepend(help.GetPathWithSep());
     }
 
@@ -147,7 +147,7 @@ const wxString mmPath::getPathResource(EResFile f)
         return it->second;
     }
 
-    wxFileName fname = mmex::GetResourceDir();
+    wxFileName fname = mmPlatform::resourceDir();
     std::vector<std::pair<int, wxString>> files = {
         { TRANS_SOUND1,       "drop.wav" },
         { TRANS_SOUND2,       "cash.wav" },
@@ -182,7 +182,7 @@ const wxString mmPath::getPathShared(ESharedFile f)
 
     wxString path = files[f];
     path.Replace("/", wxFILE_SEP_PATH);
-    return path.Prepend(mmex::GetSharedDir().GetPathWithSep());
+    return path.Prepend(mmPlatform::shareDir().GetPathWithSep());
 }
 
 const wxString mmPath::getPathUser(EUserFile f)
@@ -250,7 +250,7 @@ const wxString mmPath::getTempFolder()
         : wxStandardPaths::Get().GetTempDir();
     const wxString folder = mmPath::isPortableMode()
         ? "tmp"
-        : wxString::Format("%s_%s_tmp", mmex::GetAppName(), wxGetUserId());
+        : wxString::Format("%s_%s_tmp", mmPlatform::appName(), wxGetUserId());
 
     return wxString::Format("%s%s%s%s",
         path,

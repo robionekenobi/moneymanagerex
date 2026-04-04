@@ -27,7 +27,7 @@
 #include <wx/mstream.h>
 
 #include "base/_constants.h"
-#include "base/_platfdep.h"
+#include "base/mmPlatform.h"
 #include "util/mmPath.h"
 #include "util/mmDateRange2.h"
 #include "util/_util.h"
@@ -173,35 +173,32 @@ void mmGUIApp::ReportFatalException(wxDebugReport::Context ctx)
     // TODO email it or upload it
     wxDebugReportCompress report;
 
-    if (!report.IsOk())
-    {
-        wxSafeShowMessage(mmex::getProgramName(), _t("Fatal error occured.\nApplication will be terminated."));
+    if (!report.IsOk()) {
+        wxSafeShowMessage(
+            mmex::getProgramName(),
+            _t("Fatal error occured.\nApplication will be terminated.")
+        );
     }
 
     report.AddAll(ctx);
 
     wxDebugReportPreviewStd preview;
 
-    if (preview.Show(report) && report.Process())
-    {
+    if (preview.Show(report) && report.Process()) {
         report.Reset();
     }
 }
-/*
-    This method allows catching the exceptions thrown by any event handler.
-*/
+
+// This method allows catching the exceptions thrown by any event handler.
 void mmGUIApp::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event) const
 {
-    try
-    {
+    try {
         wxApp::HandleEvent(handler, func, event);
     }
-    catch (const wxSQLite3Exception& e)
-    {
+    catch (const wxSQLite3Exception& e) {
         wxLogError(e.GetMessage());
     }
-    catch (const std::exception& e)
-    {
+    catch (const std::exception& e) {
         wxLogError("%s", e.what());
     }
 }
@@ -210,12 +207,11 @@ int mmGUIApp::FilterEvent(wxEvent& event)
 {
     int ret = wxApp::FilterEvent(event);
 
-    if (event.GetEventType() == wxEVT_SHOW)
-    {
+    if (event.GetEventType() == wxEVT_SHOW) {
         wxWindow* win = static_cast<wxWindow*>(event.GetEventObject());
 
-        if (win && win->IsTopLevel() && win != this->m_frame) // wxDialog & wxFrame http://docs.wxwidgets.org/trunk/classwx_top_level_window.html
-        {
+        // wxDialog & wxFrame http://docs.wxwidgets.org/trunk/classwx_top_level_window.html
+        if (win && win->IsTopLevel() && win != this->m_frame) {
             UsageModel::instance().pageview(win);
         }
     }
@@ -229,13 +225,12 @@ void mmGUIApp::OnFatalException()
 {
     ReportFatalException(wxDebugReport::Context_Exception);
 }
-//----------------------------------------------------------------------------
 
 bool OnInitImpl(mmGUIApp* app)
 {
     bool ok = true;
 
-    app->SetAppName(mmex::GetAppName());
+    app->SetAppName(mmPlatform::appName());
 
     app->SetSettingDB(new wxSQLite3Database());
     wxString file_path = mmPath::getPathUser(mmPath::SETTINGS);
@@ -272,13 +267,11 @@ bool OnInitImpl(mmGUIApp* app)
     wxFileSystem::AddHandler(new wxMemoryFSHandler);
 
     wxLogDebug("{{{ OnInitImpl(): Copy files from resources to VFS");
-    const wxString res_dir = mmex::GetResourceDir().GetPathWithSep();
+    const wxString res_dir = mmPlatform::resourceDir().GetPathWithSep();
     wxArrayString files_array;
     wxDir::GetAllFiles(res_dir, &files_array);
-    for (const auto& source_file : files_array)
-    {
-        if (wxFileName::FileExists(source_file))
-        {
+    for (const auto& source_file : files_array) {
+        if (wxFileName::FileExists(source_file)) {
             const auto file_name = wxFileName(source_file).GetFullName();
             const auto file_etx = wxFileName(file_name).GetExt();
             if (wxString("mo|css|mmextheme|grm").Contains(file_etx))
@@ -296,22 +289,21 @@ bool OnInitImpl(mmGUIApp* app)
 
 #else
 
-    const wxString resDir = mmex::GetResourceDir().GetPathWithSep();
+    const wxString resDir = mmPlatform::resourceDir().GetPathWithSep();
     const wxString tempDir = mmPath::getTempFolder();
     wxFileName::Mkdir(tempDir, 511, wxPATH_MKDIR_FULL);
     wxArrayString filesArray;
     wxDir::GetAllFiles(resDir, &filesArray);
-    for (const auto& sourceFile : filesArray)
-    {
+    for (const auto& sourceFile : filesArray) {
         const wxString repFile = tempDir + wxFileName(sourceFile).GetFullName();
         const auto file_etx = wxFileName(repFile).GetExt();
         if (wxString("mo|css|mmextheme|grm").Contains(file_etx))
             continue;
 
-        if (::wxFileExists(sourceFile))
-        {
-            if (!::wxFileExists(repFile) || wxFileName(sourceFile).GetModificationTime() > wxFileName(repFile).GetModificationTime())
-            {
+        if (::wxFileExists(sourceFile)) {
+            if (!::wxFileExists(repFile) ||
+                wxFileName(sourceFile).GetModificationTime() > wxFileName(repFile).GetModificationTime()
+            ) {
                 if (!::wxCopyFile(sourceFile, repFile))
                     wxLogError("Could not copy %s !", sourceFile);
                 else
@@ -363,16 +355,14 @@ bool OnInitImpl(mmGUIApp* app)
     // Check if it 'fits' into any of the windows
     // -- 'fit' means either an exact fit or at least 20% of application is on a visible window)
     bool itFits = false;
-    for (unsigned int i = 0; i < wxDisplay::GetCount(); i++)
-    {
+    for (unsigned int i = 0; i < wxDisplay::GetCount(); i++) {
         wxSharedPtr<wxDisplay> display(new wxDisplay(i));
 
         wxRect displayRect = display->GetGeometry();
         wxRect savedPosition(valX, valY, valW, valH);
 
         // Check for exact fit.
-        if (displayRect.Contains(savedPosition))
-        {
+        if (displayRect.Contains(savedPosition)) {
             itFits = true;
             break;
         }
@@ -391,16 +381,14 @@ bool OnInitImpl(mmGUIApp* app)
             percent = static_cast<double>(intersectRect.GetWidth() * intersectRect.GetHeight()) * 2.0 /
                       static_cast<double>(dispWidth * dispHeight + savedPosition.GetWidth() * savedPosition.GetHeight());
 
-        if (percent > 0.2)
-        {
+        if (percent > 0.2) {
             itFits = true;
             break;
         }
     }
 
     // If it doesn't fit then give it the 'sensible' default
-    if (!itFits)
-    {
+    if (!itFits) {
         valX = defValX;
         valY = defValY;
         valW = defValW;
@@ -409,7 +397,7 @@ bool OnInitImpl(mmGUIApp* app)
 
     app->m_frame = new mmGUIFrame(app, mmex::getProgramName(), wxPoint(valX, valY), wxSize(valW, valH));
     #ifdef __WXMSW__
-        enableMSWDarkMode(app->m_frame, mmex::isDarkMode());
+        enableMSWDarkMode(app->m_frame, mmPlatform::isDarkMode());
     #endif
 
     ok = ok && app->m_frame->Show();
@@ -431,25 +419,20 @@ bool mmGUIApp::OnInit()
 {
     bool ok = false;
 
-    try
-    {
+    try {
         ok = wxApp::OnInit() && OnInitImpl(this);
     }
-    catch (const wxSQLite3Exception& e)
-    {
+    catch (const wxSQLite3Exception& e) {
         wxLogError(e.GetMessage());
     }
-    catch (const std::exception& e)
-    {
+    catch (const std::exception& e) {
         wxLogError("%s", e.what());
     }
 
-    if (!ok)
-    {
+    if (!ok) {
         wxSharedPtr<wxSQLite3Database> db;
         db = GetSettingDB();
-        if (db)
-        {
+        if (db) {
             db->Close();
         }
     }
@@ -495,8 +478,7 @@ int mmGUIApp::OnExit()
 bool findModal(wxWindow* w)
 {
     wxWindowList& children = w->GetChildren();
-    for ( wxWindowList::compatibility_iterator it = children.GetFirst(); it; it = it->GetNext() )
-    {
+    for (wxWindowList::compatibility_iterator it = children.GetFirst(); it; it = it->GetNext()) {
         wxWindow* current = static_cast<wxWindow*>(it->GetData());
         wxLogDebug("  Name [%s]", current->GetName());
         if (current->IsKindOf(CLASSINFO(wxDialog)))

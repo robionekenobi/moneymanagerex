@@ -449,4 +449,3 @@ const std::vector<wxString> dbUpgradeQuery =
     )",
 
 };
-

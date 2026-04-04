@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "_constants.h"
 #include "build.h"
-#include "table/_TableUpgrade.h"
 
 #include <algorithm>
 
@@ -132,11 +131,6 @@ const wxString mmex::getTitleProgramVersion()
 #endif
 
     return wxString::Format("%s %s", mmex::version::string, architecture).Trim();
-}
-
-int mmex::version::getDbLatestVersion()
-{
-    return dbLatestVersion;
 }
 
 const wxString mmex::getCaption(const wxString& caption)

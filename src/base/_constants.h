@@ -19,12 +19,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 #pragma once
 
+#include <tuple>
 #include "versions.h"
 #include "_defs.h"
-#include "util/mmPath.h"
-#include <tuple>
-
-class wxString;
 
 extern const wxSizerFlags g_flagsH;
 extern const wxSizerFlags g_flagsV;
@@ -60,7 +57,6 @@ namespace version
     extern const wxString string;
     extern bool isStable();
     extern const wxString getProgramVersion();
-    int getDbLatestVersion();
 }
 
 namespace weblink

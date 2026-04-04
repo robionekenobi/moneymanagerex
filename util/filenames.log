@@ -191,7 +191,7 @@ under src/ in increasing chronological order.
 . PR ? (?)
   base/constants                     -> base/_constants
   base/defs.h                        -> base/_defs.h
-  base/platfdep*                     -> base/_platfdep*
+  base/platfdep*                     -> base/mmPlatform*
   base/types.h                       -> base/_types.h
   util/_primitive:StringBuilder      -> base/mmStringBuilder
   util/_util:mmHtmlWindow            -> base/mmHtmlWindow

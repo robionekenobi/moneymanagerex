@@ -31,7 +31,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "base/_constants.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
-#include "base/_platfdep.h"
+#include "base/mmPlatform.h"
 #include "_util.h"
 #include "_simple.h"
 #include "util/mmCalcValidator.h"
@@ -1178,20 +1178,25 @@ mmSingleChoiceDialog::mmSingleChoiceDialog(wxWindow* parent, const wxString& mes
 }
 
 //------------
-mmTagTextCtrl::mmTagTextCtrl(wxWindow* parent, wxWindowID id,
-    bool operatorAllowed, const wxPoint& pos, const wxSize& size, long style)
-    : wxPanel(), operatorAllowed_(operatorAllowed)
+mmTagTextCtrl::mmTagTextCtrl(
+    wxWindow* parent,
+    wxWindowID id,
+    bool operatorAllowed,
+    const wxPoint& pos,
+    const wxSize& size,
+    long style
+) :
+    wxPanel(),
+    operatorAllowed_(operatorAllowed)
 {
     wxColour fgColor;
 #ifdef __WXMAC__
-    if (mmex::isDarkMode())
-    {
+    if (mmPlatform::isDarkMode()) {
         style |= wxBORDER_SIMPLE;
         bgColorEnabled_ = wxColour(58, 58, 58);
         bgColorDisabled_ = wxColour(45, 45, 45);
     }
-    else
-    {
+    else {
         style |= wxBORDER_THEME;
         bgColorDisabled_ = wxColour(251, 251, 251);
     }

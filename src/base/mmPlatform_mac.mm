@@ -1,5 +1,6 @@
 /*******************************************************
 Copyright (C) 2009 VaDiM
+Copyright (C) 2021 Mark Whalley (mark@ipx.co.uk)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,41 +17,53 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "_defs.h"
-#include "_platfdep.h"
+#include "mmPlatform.h"
 #include <wx/stdpaths.h>
 #include <wx/filename.h>
 
-const wxFileName mmex::GetSharedDir()
+const wxString mmPlatform::platformName()
+{
+    return "mac";
+}
+
+const wxString mmPlatform::appName()
+{
+    return "MoneyManagerEx";
+}
+
+const wxFileName mmPlatform::shareDir()
 {
     static wxFileName fname(wxFileName::DirName(wxStandardPaths::Get().GetDataDir()));
     return fname;
 }
-//----------------------------------------------------------------------------
 
-const wxFileName mmex::GetDocDir()
+const wxFileName mmPlatform::docDir()
 {
     static wxFileName fname;
+    if (fname.IsOk())
+        return fname;
 
-    if (!fname.IsOk()) 
-    {
-        fname = GetSharedDir();
-        fname.AppendDir("doc");
-    }
+    fname = mmPlatform::shareDir();
+    fname.AppendDir("doc");
 
     return fname;
 }
-//----------------------------------------------------------------------------
 
-const wxFileName mmex::GetResourceDir()
+const wxFileName mmPlatform::resourceDir()
 {
     static wxFileName fname(wxFileName::DirName(wxStandardPaths::Get().GetResourcesDir()));
     return fname;
 }
-//----------------------------------------------------------------------------
 
-const wxString mmex::GetAppName()
+// -- Objective-C functions to access Mac environment settings
+
+#import <Cocoa/Cocoa.h>
+
+bool mmPlatform::isDarkMode()
 {
-    return "MoneyManagerEx";
+    NSAppearance *appearance = NSAppearance.currentAppearance;
+    if (@available(*, macOS 10.14)) {
+        return appearance.name == NSAppearanceNameDarkAqua;
+    }
+    return NO;
 }
-//----------------------------------------------------------------------------

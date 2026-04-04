@@ -19,6 +19,7 @@
 #include "base/_constants.h"
 #include "base/mmDate.h"
 #include "util/mmImage.h"
+#include "util/mmPath.h"
 #include "util/mmDateRange.h"
 #include "util/mmCalcValidator.h"
 

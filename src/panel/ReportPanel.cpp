@@ -23,7 +23,7 @@
 #include <iomanip>
 #include <wx/wrapsizer.h>
 #include "base/_defs.h"
-#include "base/_platfdep.h"
+#include "base/mmPlatform.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
 #include "util/_util.h"

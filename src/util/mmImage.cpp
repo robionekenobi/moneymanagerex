@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <wx/mstream.h>
 #include <wx/tokenzr.h>
 
-#include "base/_platfdep.h"
+#include "base/mmPlatform.h"
 #include "mmPath.h"
 #include "mmImage.h"
 #include "_util.h"
@@ -534,7 +534,7 @@ wxVector<wxBitmapBundle> mmImage::navtree_bitmapBundle_a(const int size)
 void mmImage::loadTheme()
 {
     mmImage::darkMode = (
-        (mmex::isDarkMode() &&
+        (mmPlatform::isDarkMode() &&
             PrefModel::THEME_MODE::AUTO == PrefModel::instance().getThemeMode()
         ) ||
         PrefModel::THEME_MODE::DARK == PrefModel::instance().getThemeMode()

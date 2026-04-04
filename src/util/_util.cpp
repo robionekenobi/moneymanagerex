@@ -39,7 +39,8 @@
 
 #include "build.h"
 #include "base/_constants.h"
-#include "base/_platfdep.h"
+#include "base/mmPlatform.h"
+#include "table/_TableUpgrade.h"
 #include "util/mmCalcValidator.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
@@ -89,30 +90,24 @@ void mmThemeAutoColour([[maybe_unused]] wxWindow* object, [[maybe_unused]] bool 
     size_t type = typeid(*object).hash_code();
     wxString bg, fg;
     
-    if (type == typeid(wxButton).hash_code() || type == typeid(wxBitmapButton).hash_code())
-    {
+    if (type == typeid(wxButton).hash_code() || type == typeid(wxBitmapButton).hash_code()) {
         bg = mmImage::themeMetaString(COLOR_BUTTON);
-        if (bg.empty())
-        {
+        if (bg.empty()) {
             fg = bg.empty() && darkMode ? "#FFFFFF" : "#000000";
         }
     }
-    else if (type == typeid(wxTreeCtrl).hash_code())
-    {
+    else if (type == typeid(wxTreeCtrl).hash_code()) {
         bg = mmImage::themeMetaString(COLOR_NAVPANEL);
         fg = mmImage::themeMetaString(COLOR_NAVPANEL_FONT);
     }
-    else if (type == typeid(wxDataViewListCtrl).hash_code())
-    {
+    else if (type == typeid(wxDataViewListCtrl).hash_code()) {
         bg = mmImage::themeMetaString(COLOR_LIST);
         recursive = false;
     }
-    else if (type == typeid(wxListCtrl).hash_code())
-    {
+    else if (type == typeid(wxListCtrl).hash_code()) {
         bg = mmImage::themeMetaString(COLOR_LIST);
     }
-    else if (type == typeid(mmComboBox).hash_code())
-    {
+    else if (type == typeid(mmComboBox).hash_code()) {
         bg = mmImage::themeMetaString(COLOR_TEXTCONTROL);
         fg = mmImage::themeMetaString(COLOR_TEXTCONTROL_FONT);
 #ifdef __WXMSW__
@@ -128,21 +123,18 @@ void mmThemeAutoColour([[maybe_unused]] wxWindow* object, [[maybe_unused]] bool 
 #endif
         
     }
-    else if (type == typeid(wxTextCtrl).hash_code() || type == typeid(mmTextCtrl).hash_code())
-    {
+    else if (type == typeid(wxTextCtrl).hash_code() || type == typeid(mmTextCtrl).hash_code()) {
         bg = mmImage::themeMetaString(COLOR_TEXTCONTROL);
         fg = mmImage::themeMetaString(COLOR_TEXTCONTROL_FONT);
     }
-    else
-    {
+    else {
         wxDialog* dlg = dynamic_cast<wxDialog*>(object);
         wxPanel* panel = dynamic_cast<wxPanel*>(object);
         if (darkMode || dlg || panel)
             bg = mmImage::themeMetaString(COLOR_LISTPANEL);
     }
 
-    if (!bg.empty())
-    {
+    if (!bg.empty()) {
         object->SetBackgroundColour(wxColour(bg));
         object->SetForegroundColour(fg.empty() ? *bestFontColour(bg) : fg);
     }
@@ -1563,7 +1555,7 @@ const wxString getProgramDescription(const int type)
     wxString description;
     description << bull << wxString::Format(simple ? "Version: %s" : _t("Version: %s"), mmex::getTitleProgramVersion()) << eol
         << bull << wxString::Format(simple ? "Built: %1$s %2$s" : _t("Built on: %1$s %2$s"), build_date, BUILD_TIME) << eol
-        << bull << wxString::Format(simple ? "db %d" : _t("Database version: %d"), mmex::version::getDbLatestVersion())
+        << bull << wxString::Format(simple ? "db %d" : _t("Database version: %d"), dbLatestVersion)
 #if WXSQLITE3_HAVE_CODEC
         << " (aes256cbc-hmac-sha512)"
 #endif

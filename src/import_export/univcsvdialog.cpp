@@ -31,7 +31,7 @@
 #include <wx/display.h>
 
 #include "base/_constants.h"
-#include "base/_platfdep.h"
+#include "base/mmPlatform.h"
 #include "base/mmListBoxItem.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"

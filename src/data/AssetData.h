@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "util/_primitive.h"
 #include "base/mmDate.h"
 #include "_DataEnum.h"
 #include "table/AssetTable.h"

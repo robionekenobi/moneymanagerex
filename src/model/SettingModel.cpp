@@ -21,11 +21,10 @@
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
+#include "util/_util.h"
 
 #include "SettingModel.h"
 #include "PrefModel.h"
-
-#include "panel/JournalPanel.h"
 
 // -- contructor
 

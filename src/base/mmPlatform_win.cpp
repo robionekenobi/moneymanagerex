@@ -17,56 +17,65 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
 #include "_defs.h"
-#include "_platfdep.h"
 #include <wx/stdpaths.h>
 #include <wx/filename.h>
+#include <wx/settings.h>
 
-/*
-    The root directory of the installation of MMEX.
-*/
-const wxFileName mmex::GetInstallDir()
+#include "mmPlatform.h"
+#include "model/PrefModel.h"
+
+// The root directory of the installation of MMEX.
+static const wxFileName GetInstallDir()
 {
-    const wxStandardPathsBase &p = wxStandardPaths::Get();
+    const wxStandardPathsBase& p = wxStandardPaths::Get();
     wxFileName fname(p.GetExecutablePath());
-    
-    const wxArrayString &dirs = fname.GetDirs();
 
-    if (dirs.Last().Lower() == "bin") // something like a /usr/bin or /usr/local/bin
+    const wxArrayString& dirs = fname.GetDirs();
+
+    // bin\mmex.exe
+    if (dirs.Last().Upper() == "BIN")
         fname.RemoveLastDir();
-    
+
     return fname;
 }
 
-//----------------------------------------------------------------------------
+const wxString mmPlatform::platformName()
+{
+    return "win";
+}
 
-const wxString mmex::GetAppName()
+const wxString mmPlatform::appName()
 {
     return "MoneyManagerEx";
 }
-//----------------------------------------------------------------------------
 
-const wxFileName mmex::GetSharedDir()
+const wxFileName mmPlatform::shareDir()
 {
     static wxFileName fname(GetInstallDir());
     return fname;
 }
-//----------------------------------------------------------------------------
 
-const wxFileName mmex::GetDocDir()
+const wxFileName mmPlatform::docDir()
 {
-    return GetSharedDir();
+    return mmPlatform::shareDir();
 }
-//----------------------------------------------------------------------------
 
-const wxFileName mmex::GetResourceDir()
+const wxFileName mmPlatform::resourceDir()
 {
     static wxFileName fname;
+    if (fname.IsOk())
+        return fname;
 
-    if (!fname.IsOk()) 
-    {
-        fname = GetSharedDir();
-        fname.AppendDir("res");
-    }
+    fname = mmPlatform::shareDir();
+    fname.AppendDir("res");
 
     return fname;
+}
+
+bool mmPlatform::isDarkMode()
+{
+    return (PrefModel::instance().getThemeMode() == PrefModel::THEME_MODE::DARK || (
+        PrefModel::instance().getThemeMode() == PrefModel::THEME_MODE::AUTO &&
+        wxSystemSettings::GetAppearance().AreAppsDark()
+    ));
 }

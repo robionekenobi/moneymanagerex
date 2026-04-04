@@ -23,20 +23,18 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 class wxFileName;
 class wxString;
 
-namespace mmex
+struct mmPlatform
 {
+    static auto platformName() -> const wxString;
+
     // wxStandardPaths uses wxApp::GetAppName(), so you should
-    // call wxApp::SetAppName(mmex::GetAppName()) in wxApp::OnInit().
-    // Use mmex::getProgramName() for other purposes.
-    const wxString GetAppName();
+    // call wxApp::SetAppName(mmPlatform::appName()) in wxApp::OnInit().
+    // Use mmPlatform::getProgramName() for other purposes.
+    static auto appName() -> const wxString;
 
-    const wxFileName GetSharedDir();
-    const wxFileName GetDocDir();
-    const wxFileName GetResourceDir();
+    static auto shareDir() -> const wxFileName;
+    static auto docDir() -> const wxFileName;
+    static auto resourceDir() -> const wxFileName;
 
-    // Implemented in util/mmPath.
-    //const wxFileName GetUserDir(bool create);
-    //const wxFileName GetLogDir(bool create);
-
-    bool isDarkMode();
-}
+    static bool isDarkMode();
+};

@@ -27,7 +27,7 @@
 #include "SchedModel.h"
 #include "TagModel.h"
 
- // TODO: Move attachment management outside of AttachmentDialog
+// TODO: Move attachment management outside of AttachmentDialog
 #include "dialog/AttachmentDialog.h"
 
 // -- static

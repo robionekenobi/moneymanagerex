@@ -67,7 +67,6 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     base/_constants.cpp
     base/_constants.h
     base/_defs.h
-    base/_platfdep.h
     base/_types.h
     base/mmCache.h
     base/mmCache.tpp
@@ -80,6 +79,7 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     base/mmHtmlWindow.cpp
     base/mmHtmlWindow.h
     base/mmListBoxItem.h
+    base/mmPlatform.h
     base/mmSingleton.h
     base/mmStringBuilder.cpp
     base/mmStringBuilder.h
@@ -490,7 +490,7 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     mmframereport.cpp
 
     "${CMAKE_CURRENT_BINARY_DIR}/versions.h"
-    "base/_platfdep_${MMEX_PLATFDEP}"
+    "base/mmPlatform_${MMEX_PLATFDEP}"
 
     "${MACOSX_APP_ICON_FILE}"
     "${MMEX_RC}")

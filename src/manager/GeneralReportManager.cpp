@@ -29,7 +29,7 @@
 #include <rapidjson/error/en.h>
 
 #include "base/_constants.h"
-#include "base/_platfdep.h"
+#include "base/mmPlatform.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
 #include "util/_util.h"

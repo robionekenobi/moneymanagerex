@@ -17,7 +17,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
 #include "_defs.h"
-#include "_platfdep.h"
+#include "mmPlatform.h"
 #include <wx/stdpaths.h>
 #include <wx/filename.h>
 #include <wx/settings.h>
@@ -46,58 +46,63 @@ void SetInstallPrefix()
 
 //----------------------------------------------------------------------------
 
-const wxString mmex::GetAppName()
+const wxString mmPlatform::platformName()
+{
+    return "unix";
+}
+
+const wxString mmPlatform::appName()
 {
     return "mmex";
 }
 
 // $(prefix)/share/mmex.
 // Default install prefix is /usr (often /usr/local).
-const wxFileName mmex::GetSharedDir()
+const wxFileName mmPlatform::shareDir()
 {
     static wxFileName fname;
+    if (fname.IsOk())
+        return fname;
 
-    if (!fname.IsOk()) {
-        SetInstallPrefix();
-        fname = wxFileName::DirName(wxStandardPaths::Get().GetDataDir());
-    }
+    SetInstallPrefix();
+    fname = wxFileName::DirName(wxStandardPaths::Get().GetDataDir());
 
     return fname;
 }
 
 // $(prefix)/share/doc/mmex
-const wxFileName mmex::GetDocDir()
+const wxFileName mmPlatform::docDir()
 {
     static wxFileName fname;
+    if (fname.IsOk())
+        return fname;
 
-    if (!fname.IsOk()) {
-        fname = GetSharedDir();
+    fname = mmPlatform::shareDir();
 
-        const wxArrayString& dirs = fname.GetDirs();
-        if (dirs.Last().Lower() == GetAppName())
-            fname.RemoveLastDir(); // mmex folder
+    const wxArrayString& dirs = fname.GetDirs();
+    if (dirs.Last().Lower() == mmPlatform::appName())
+        fname.RemoveLastDir(); // mmex folder
 
-        fname.AppendDir("doc");
-        fname.AppendDir(GetAppName());
-    }
+    fname.AppendDir("doc");
+    fname.AppendDir(mmPlatform::appName());
 
     return fname;
 }
 
 // $(prefix)/share/mmex/res
-const wxFileName mmex::GetResourceDir()
+const wxFileName mmPlatform::resourceDir()
 {
     static wxFileName fname;
+    if (fname.IsOk())
+        return fname;
 
-    if (!fname.IsOk()) {
-        fname = GetSharedDir();
-        fname.AppendDir("res");
-    }
+    fname = mmPlatform::shareDir();
+    fname.AppendDir("res");
 
     return fname;
 }
 
-bool mmex::isDarkMode()
+bool mmPlatform::isDarkMode()
 {
     return wxSystemSettings::GetAppearance().IsDark();
 }
