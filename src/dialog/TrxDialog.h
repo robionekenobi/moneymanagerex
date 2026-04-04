@@ -25,6 +25,7 @@
 #include "base/_defs.h"
 #include "util/mmDatePicker.h"
 #include "util/mmCalcPopup.h"
+#include "util/mmColorButton.h"
 #include "util/_simple.h"
 
 #include "model/TrxModel.h"

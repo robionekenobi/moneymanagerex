@@ -25,6 +25,7 @@
 #include <wx/dialog.h>
 #include <wx/dataview.h>
 
+#include "util/mmColorButton.h"
 #include "util/_simple.h"
 #include "model/TrxModel.h"
 

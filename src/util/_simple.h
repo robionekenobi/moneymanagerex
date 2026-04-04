@@ -42,24 +42,6 @@ class wxTextCtrl;
 class wxChoice;
 class wxButton;
 
-class mmColorButton : public wxButton
-{
-public:
-    mmColorButton(wxWindow* parent
-        , wxWindowID id
-        , wxSize size = wxDefaultSize
-        , bool noColorAllowed = false
-    );
-    void SetColor(int color_id);
-    int GetColorId() const;
-private:
-    void OnMenuSelected(wxCommandEvent& event);
-    void OnColourButton(wxCommandEvent& event);
-    int m_color_value;
-    bool m_noColorAllowed;
-    wxDECLARE_EVENT_TABLE();
-};
-
 class mmChoiceAmountMask : public wxChoice
 {
 public:

@@ -23,9 +23,10 @@
 #include "base/_constants.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
-#include "util/_simple.h"
+#include "util/mmColorButton.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
+#include "util/_simple.h"
 
 #include "model/AccountModel.h"
 #include "model/CurrencyHistoryModel.h"

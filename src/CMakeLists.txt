@@ -95,6 +95,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     util/mmCalcPopup.h
     util/mmCalcValidator.cpp
     util/mmCalcValidator.h
+    util/mmColorButton.cpp
+    util/mmColorButton.h
     util/mmComboBox.cpp
     util/mmComboBox.h
     util/mmDatePicker.cpp
