@@ -22,8 +22,8 @@
 #include "base/_defs.h"
 #include "util/mmDatePicker.h"
 #include "util/mmTextCtrl.h"
+#include "util/mmColorButton.h"
 #include "util/_simple.h"
-#include "mmcombobox.h"
 #include "FieldValueDialog.h"
 
 class TrxUpdateDialog : public wxDialog

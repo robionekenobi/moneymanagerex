@@ -207,6 +207,7 @@ under src/ in increasing chronological order.
   util/mmTips.h                      -> base/mmTips.h
 
 . PR ? (?)
+  mmcombobox.h                       -> util/_UNUSED_mmComboBoxText
   base/images_list                   -> util/mmImage
   base/paths                         -> util/mmPath
   util/_primitive:mmSplitterWindow   -> util/mmSplitterWindow

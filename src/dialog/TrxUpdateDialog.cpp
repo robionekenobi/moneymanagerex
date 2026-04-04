@@ -17,6 +17,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "TrxUpdateDialog.h"
+
 #include "base/_defs.h"
 #include <wx/statline.h>
 
@@ -36,7 +38,8 @@
 
 #include "manager/CategoryManager.h"
 #include "manager/PayeeManager.h"
-#include "TrxUpdateDialog.h"
+
+#include "import_export/webapp.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(TrxUpdateDialog, wxDialog);
 

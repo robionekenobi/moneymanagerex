@@ -505,7 +505,6 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     wizard/wizard_update.cpp
     wizard/wizard_update.h
 
-    mmcombobox.h
     mmex.cpp
     mmex.h
     mmframe.cpp
