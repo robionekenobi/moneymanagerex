@@ -13,7 +13,7 @@ Copyright: (c) 2026      George Ef (george.a.ef@gmail.com)
 #include "base/mmCache.h"
 
 template<typename TableType, typename DataType>
-struct TableFactory : public TableType
+class TableFactory : public TableType
 {
     static_assert(std::is_base_of<TableBase, TableType>::value,
         "TableType must derive from TableBase"

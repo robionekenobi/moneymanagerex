@@ -413,8 +413,6 @@ mmGUIFrame::mmGUIFrame(
 
 mmGUIFrame::~mmGUIFrame()
 {
-    navTreeStateToJson();
-
     try {
         cleanup();
     }
@@ -437,6 +435,10 @@ void mmGUIFrame::cleanup()
     if (!m_filename.IsEmpty()) // Exiting before file is opened
         saveSettings();
 
+
+    if (m_db) {
+        navTreeStateToJson();
+    }
     wxTreeItemId rootitem = m_nav_tree_ctrl->GetRootItem();
     cleanupNavTreeControl(rootitem);
     m_mgr.UnInit();
