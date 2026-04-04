@@ -20,7 +20,7 @@
 
 #include <algorithm>
 #include "util/mmImage.h"
-#include "base/mmDateRange.h"
+#include "util/mmDateRange.h"
 
 #include "model/CategoryModel.h"
 #include "model/PrefModel.h"

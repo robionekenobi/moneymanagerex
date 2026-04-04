@@ -21,7 +21,7 @@
 #include "base/_defs.h"
 #include <wx/dataview.h>
 
-#include "base/mmDateRange2.h"
+#include "util/mmDateRange2.h"
 
 class DateRangeDialog: public wxDialog
 {

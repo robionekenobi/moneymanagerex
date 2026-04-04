@@ -23,6 +23,7 @@
 
 typedef wxLongLong int64;
 typedef std::vector<int64> wxArrayInt64;
+typedef wxString::const_iterator StringIt;
 
 // make int64 hashable
 template<>

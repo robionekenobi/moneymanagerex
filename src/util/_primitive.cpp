@@ -53,20 +53,6 @@ int CaseInsensitiveLocaleCmp(const wxString &s1, const wxString &s2)
     return std::wcscoll(s1.Lower().wc_str(),s2.Lower().wc_str());
 }
 
-void StringBuilder::append(const wxString x) {
-    if (x.empty())
-        return;
-    buffer.Append(x);
-    flag = true;
-}
-
-void StringBuilder::sep(const wxString s) {
-    if (!flag)
-        return;
-    buffer.Append(s);
-    flag = false;
-}
-
 const wxString mmTrimAmount(
     const wxString& value, const wxString& decimal, const wxString& decimal_new
 ) {

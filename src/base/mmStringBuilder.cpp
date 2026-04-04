@@ -1,5 +1,8 @@
 /*******************************************************
- Copyright (C) 2016 Guan Lisheng (guanlisheng@gmail.com)
+ Copyright (C) 2006 Madhan Kanagavel
+ Copyright (C) 2013-2022 Nikolay Akimov
+ Copyright (C) 2021-2024 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2025 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,22 +19,28 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#pragma once
+#include "mmStringBuilder.h"
 
-#include "util/mmDateRange.h"
+void mmStringBuilder::append(const wxString x) {
+    if (x.empty())
+        return;
+    buffer.Append(x);
+    flag = true;
+}
 
-#include "BalanceReport.h"
-#include "CategoryReport.h"
-#include "FlowReport.h"
-#include "ForecastReport.h"
-#include "InExReport.h"
-#include "PayeeReport.h"
-#include "StocksReport.h"
-#include "TrxReport.h"
-#include "UsageReport.h"
-#include "_ReportBase.h"
-#include "budget.h"
-#include "budgetcategorysummary.h"
-#include "budgetingperf.h"
-#include "htmlbuilder.h"
+void mmStringBuilder::sep(const wxString s) {
+    if (!flag)
+        return;
+    buffer.Append(s);
+    flag = false;
+}
 
+void mmStringBuilder::flush() {
+    flag = false;
+}
+
+void mmStringBuilder::reset() {
+    // make buffer empty, but don't free memory
+    buffer.Empty();
+    flag = false;
+}

@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "base/_defs.h"
 #include <algorithm>
-#include "base/mmDateRange.h"
+#include "util/mmDateRange.h"
 
 #include "model/AccountModel.h"
 #include "model/CurrencyHistoryModel.h"

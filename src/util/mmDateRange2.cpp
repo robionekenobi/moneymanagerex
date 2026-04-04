@@ -16,7 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "_constants.h"
+#include "base/_constants.h"
+#include "base/_types.h"
+#include "base/mmStringBuilder.h"
 #include "mmDateRange2.h"
 
 #include "model/PrefModel.h"
@@ -287,7 +289,7 @@ const wxString mmDateRange2::Range::offsetRangeStr(int so, int eo, bool show_zer
         return offsetStr(so, show_zero);
     }
     else {
-        StringBuilder s;
+        mmStringBuilder s;
         s.append(offsetStr(so, true));
         s.append("..");
         s.append(offsetStr(eo, true));
@@ -297,7 +299,7 @@ const wxString mmDateRange2::Range::offsetRangeStr(int so, int eo, bool show_zer
 
 const wxString mmDateRange2::Range::getLabel() const
 {
-    StringBuilder sb;
+    mmStringBuilder sb;
 
     // first range
     if (m_sp1 == m_ep1) {
@@ -349,7 +351,7 @@ const wxString mmDateRange2::Range::checkingName() const
 
 const wxString mmDateRange2::Range::checkingDescription() const
 {
-    static StringBuilder sb;
+    static mmStringBuilder sb;
     sb.reset();
     sb.append(getLabel());
     // TODO
@@ -415,7 +417,7 @@ bool mmDateRange2::Reporting::parseLabel(StringIt& buffer_i, StringIt buffer_end
 
 const wxString mmDateRange2::Reporting::getLabel() const
 {
-    StringBuilder sb;
+    mmStringBuilder sb;
     sb.append(multiplierStr(m_m)); sb.sep(); sb.append(m_p.label());
     return sb.buffer;
 }
@@ -639,7 +641,7 @@ mmDateN mmDateRange2::reportingNextN() const
 
 const wxString mmDateRange2::checkingTooltip() const
 {
-    static StringBuilder sb;
+    static mmStringBuilder sb;
     sb.reset();
 
     mmDateN s = rangeStartN();
@@ -770,7 +772,7 @@ bool mmDateRange2::debug()
         { "W, -1..+1 Q",  "-2 M", "2024-10-28", "2025-05-04",  4 }, // Mon, Sun
     };
     for (int i = 0; i < static_cast<int>(sizeof(test)/sizeof(test[0])); ++i) {
-        StringBuilder sb;
+        mmStringBuilder sb;
         if (!test[i].range_label.empty()) {
             sb.append(test[i].range_label);
         }

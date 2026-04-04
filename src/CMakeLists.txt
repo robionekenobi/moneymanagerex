@@ -75,16 +75,14 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     base/mmChoice.h
     base/mmDate.cpp
     base/mmDate.h
-    base/mmDateRange.cpp
-    base/mmDateRange.h
-    base/mmDateRange2.cpp
-    base/mmDateRange2.h
     base/mmDateTime.cpp
     base/mmDateTime.h
     base/mmHtmlWindow.cpp
     base/mmHtmlWindow.h
     base/mmListBoxItem.h
     base/mmSingleton.h
+    base/mmStringBuilder.cpp
+    base/mmStringBuilder.h
     base/mmTips.h
 
     util/_primitive.cpp
@@ -95,6 +93,10 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     util/_util.h
     util/mmCalcValidator.cpp
     util/mmCalcValidator.h
+    util/mmDateRange.cpp
+    util/mmDateRange.h
+    util/mmDateRange2.cpp
+    util/mmDateRange2.h
     util/mmFileHistory.cpp
     util/mmFileHistory.h
     util/mmImage.cpp

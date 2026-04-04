@@ -40,29 +40,6 @@ struct caseInsensitiveComparator {
 int CaseInsensitiveCmp(const wxString &s1, const wxString &s2);
 int CaseInsensitiveLocaleCmp(const wxString &s1, const wxString &s2);
 
-typedef wxString::const_iterator StringIt;
-
-struct StringBuilder
-{
-    wxString buffer = "";
-    bool flag = false;
-
-    void append(const wxString x);
-    void sep(const wxString s = " ");
-    void flush();
-    void reset();
-};
-
-inline void StringBuilder::flush() {
-    flag = false;
-}
-
-inline void StringBuilder::reset() {
-    // make buffer empty, but don't free memory
-    buffer.Empty();
-    flag = false;
-}
-
 const wxString mmTrimAmount(
     const wxString& value, const wxString& decimal, const wxString& replace_decimal = ""
 );

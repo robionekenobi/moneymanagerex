@@ -20,13 +20,12 @@
 
 #pragma once
 
-#include "base/_defs.h"
 #include <vector>
 #include <html_template.h>
-
+#include "base/_defs.h"
+#include "util/mmDateRange.h"
+#include "util/mmDateRange2.h"
 #include "util/_util.h"
-#include "base/mmDateRange.h"
-#include "base/mmDateRange2.h"
 
 #include "model/CurrencyModel.h"
 

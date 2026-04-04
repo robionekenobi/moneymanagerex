@@ -1,5 +1,8 @@
 /*******************************************************
- Copyright (C) 2016 Guan Lisheng (guanlisheng@gmail.com)
+ Copyright (C) 2006 Madhan Kanagavel
+ Copyright (C) 2013-2022 Nikolay Akimov
+ Copyright (C) 2021,2024 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2025 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -18,20 +21,16 @@
 
 #pragma once
 
-#include "util/mmDateRange.h"
+#include "_defs.h"
+#include "_types.h"
 
-#include "BalanceReport.h"
-#include "CategoryReport.h"
-#include "FlowReport.h"
-#include "ForecastReport.h"
-#include "InExReport.h"
-#include "PayeeReport.h"
-#include "StocksReport.h"
-#include "TrxReport.h"
-#include "UsageReport.h"
-#include "_ReportBase.h"
-#include "budget.h"
-#include "budgetcategorysummary.h"
-#include "budgetingperf.h"
-#include "htmlbuilder.h"
+struct mmStringBuilder
+{
+    wxString buffer = "";
+    bool flag = false;
 
+    void append(const wxString x);
+    void sep(const wxString s = " ");
+    void flush();
+    void reset();
+};

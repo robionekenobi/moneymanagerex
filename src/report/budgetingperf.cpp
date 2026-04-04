@@ -21,9 +21,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <string>
 
 #include "base/_defs.h"
-#include "mmex.h"
-#include "base/mmDateRange.h"
+#include "util/mmDateRange.h"
 #include "htmlbuilder.h"
+#include "mmex.h"
 
 #include "model/BudgetPeriodModel.h"
 #include "model/BudgetModel.h"

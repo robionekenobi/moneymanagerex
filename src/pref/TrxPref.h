@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "base/_defs.h"
 #include <wx/spinctrl.h>
-#include "base/mmDateRange.h"
+#include "util/mmDateRange.h"
 
 #include "_PrefBase.h"
 
