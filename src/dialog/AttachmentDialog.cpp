@@ -21,6 +21,7 @@
 #include <wx/mimetype.h>
 
 #include "base/_constants.h"
+#include "base/mmPlatform.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
 #include "util/_util.h"
@@ -419,7 +420,10 @@ wxString mmAttachmentManage::m_PathSep = wxFileName::GetPathSeparator();
 
 const wxString mmAttachmentManage::InfotablePathSetting()
 {
-    return InfoModel::instance().getString("ATTACHMENTSFOLDER:" + mmPlatformType(), "");
+    return InfoModel::instance().getString(
+        "ATTACHMENTSFOLDER:" + mmPlatform::platformType(),
+        ""
+    );
 }
 
 const wxString mmAttachmentManage::GetAttachmentNoteSign()

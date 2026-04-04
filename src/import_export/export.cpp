@@ -16,10 +16,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
+#include "export.h"
+
 #include "base/_constants.h"
+#include "base/mmPlatform.h"
 #include "util/mmPath.h"
 #include "util/_util.h"
-#include "export.h"
 
 #include "model/AccountModel.h"
 #include "model/AttachmentModel.h"
@@ -452,7 +454,9 @@ void mmExportTransaction::getTransactionJSON(
     );
 
     if (!att_a.empty()) {
-        //const wxString folder = InfoModel::instance().getString("ATTACHMENTSFOLDER:" + mmPlatformType(), "");
+        //const wxString folder = InfoModel::instance().getString(
+        //    "ATTACHMENTSFOLDER:" + mmPlatform::platformType(), ""
+        //);
         json_writer.Key("ATTACHMENTS");
         json_writer.StartArray();
         for (const auto& att_d : att_a) {
@@ -494,7 +498,10 @@ void mmExportTransaction::getAttachmentsJSON(
         return;
 
     RefTypeN ref_type = RefTypeN(RefTypeN::e_trx);
-    const wxString folder = InfoModel::instance().getString("ATTACHMENTSFOLDER:" + mmPlatformType(), "");
+    const wxString folder = InfoModel::instance().getString(
+        "ATTACHMENTSFOLDER:" + mmPlatform::platformType(),
+        ""
+    );
     const wxString AttachmentsFolder = mmPath::getPathAttachment(folder);
 
     json_writer.Key("ATTACHMENTS");

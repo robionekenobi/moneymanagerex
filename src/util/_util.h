@@ -36,8 +36,6 @@ class mmGUIApp;
 
 // -- Platform
 
-const wxString mmPlatformType();
-
 bool isDark(wxColour c);
 void mmThemeAutoColour(wxWindow* object, bool recursive = true);
 void enableMSWDarkMode(wxWindow* object, bool darkMode);

@@ -81,11 +81,6 @@ using namespace rapidjson;
 
 // -- Platform
 
-const wxString mmPlatformType()
-{
-    return wxPlatformInfo::Get().GetOperatingSystemFamilyName().substr(0, 3).MakeLower();
-}
-
 bool isDark(wxColour c)
 {
     return (((5 * c.Green()) + (2 * c.Red()) + c.Blue()) <= (8 * 128));

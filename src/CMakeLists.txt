@@ -81,6 +81,7 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     base/mmListBoxItem.h
     base/mmMath.cpp
     base/mmMath.h
+    base/mmPlatform.cpp
     base/mmPlatform.h
     base/mmSingleton.h
     base/mmStringBuilder.cpp

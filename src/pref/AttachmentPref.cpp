@@ -19,13 +19,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
+#include "AttachmentPref.h"
+
+#include "base/mmPlatform.h"
 #include "util/mmPath.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
 #include "dialog/AttachmentDialog.h"
-
-#include "AttachmentPref.h"
 
 /*******************************************************/
 wxBEGIN_EVENT_TABLE(AttachmentPref, wxPanel)
@@ -81,7 +82,8 @@ void AttachmentPref::Create()
     attachmentStaticBoxSizer->Add(attachDefinedSizer, wxSizerFlags(g_flagsExpand).Proportion(0));
 
     const wxString attachmentFolder = InfoModel::instance().getString(
-        "ATTACHMENTSFOLDER:" + mmPlatformType(), ""
+        "ATTACHMENTSFOLDER:" + mmPlatform::platformType(),
+        ""
     );
     m_old_path = mmPath::getPathAttachment(attachmentFolder);
 
@@ -138,25 +140,22 @@ void AttachmentPref::Create()
         "ATTACHMENTSFOLDER:Uni", FolderNotSet
     );
 
-    const auto os = mmPlatformType();
-    if (os != "win")
-    {
+    const auto os = mmPlatform::platformType();
+    if (os != "win") {
         wxStaticText* attachmentFolderWinText = new wxStaticText(attachmentStaticBoxInfo, wxID_STATIC
             , wxString::Format(_t("Windows folder: %s"), attachmentFolderWin.Left(50)));
         mmToolTip(attachmentFolderWinText, attachmentFolderWin);
         attachmentStaticBoxSizerInfo->Add(attachmentFolderWinText);
     }
 
-    if (os != "mac")
-    {
+    if (os != "mac") {
         wxStaticText* attachmentFolderMacText = new wxStaticText(attachmentStaticBoxInfo, wxID_STATIC
             , wxString::Format(_t("Mac folder: %s"), attachmentFolderMac.Left(50)));
         mmToolTip(attachmentFolderMacText, attachmentFolderMac);
         attachmentStaticBoxSizerInfo->Add(attachmentFolderMacText);
     }
 
-    if (os != "uni")
-    {
+    if (os != "uni") {
         wxStaticText* attachmentFolderUnixText = new wxStaticText(attachmentStaticBoxInfo, wxID_STATIC
             , wxString::Format(_t("Unix folder: %s"), attachmentFolderUnix.Left(50)));
         mmToolTip(attachmentFolderUnixText, attachmentFolderUnix);
@@ -276,7 +275,7 @@ bool AttachmentPref::SaveSettings()
     }
 
     InfoModel::instance().saveString(
-        "ATTACHMENTSFOLDER:" + mmPlatformType(),
+        "ATTACHMENTSFOLDER:" + mmPlatform::platformType(),
         m_attachments_path->GetValue().Trim()
     );
     InfoModel::instance().saveBool("ATTACHMENTSDELETE", m_delete_attachments->GetValue());

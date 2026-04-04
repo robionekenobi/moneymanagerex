@@ -26,6 +26,7 @@ class wxString;
 struct mmPlatform
 {
     static auto platformName() -> const wxString;
+    static auto platformType() -> const wxString;
 
     // wxStandardPaths uses wxApp::GetAppName(), so you should
     // call wxApp::SetAppName(mmPlatform::appName()) in wxApp::OnInit().
