@@ -122,6 +122,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     util/mmSQLite3Hook.h
     util/mmSepParser.cpp
     util/mmSepParser.h
+    util/mmSplitterWindow.cpp
+    util/mmSplitterWindow.h
     util/mmTextCtrl.cpp
     util/mmTextCtrl.h
     util/mmTreeItemData.cpp

@@ -18,12 +18,14 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "SchedPanel.h"
+
 #include "base/_constants.h"
 #include "util/mmImage.h"
+#include "util/mmSplitterWindow.h"
 #include "model/CategoryModel.h"
 #include "model/AttachmentModel.h"
 #include "model/UsageModel.h"
-#include "SchedPanel.h"
 #include "dialog/AttachmentDialog.h"
 #include "dialog/SchedDialog.h"
 

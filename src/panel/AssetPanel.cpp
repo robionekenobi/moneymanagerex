@@ -24,6 +24,7 @@
 
 #include "base/_constants.h"
 #include "util/mmImage.h"
+#include "util/mmSplitterWindow.h"
 #include "util/_simple.h"
 
 #include "model/_all.h"

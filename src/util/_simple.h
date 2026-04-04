@@ -49,28 +49,6 @@ public:
     virtual void SetDecimalChar(const wxString& str);
 };
 
-class mmSingleChoiceDialog : public wxSingleChoiceDialog
-{
-public:
-    using wxSingleChoiceDialog::ShowModal;
-
-    mmSingleChoiceDialog();
-    mmSingleChoiceDialog(
-        wxWindow *parent,
-        const wxString& message,
-        const wxString& caption,
-        const wxArrayString& choices
-    );
-    mmSingleChoiceDialog(
-        wxWindow* parent,
-        const wxString& message,
-        const wxString& caption,
-        const AccountModel::DataA& accounts
-    );
-
-    int ShowModal() { return wxSingleChoiceDialog::ShowModal(); }
-};
-
 class mmDialogComboBoxAutocomplete : public wxDialog
 {
 private:
@@ -128,19 +106,47 @@ public:
 
 // -------------------------------------------------------------------------- //
 
+class mmSingleChoiceDialog : public wxSingleChoiceDialog
+{
+public:
+    using wxSingleChoiceDialog::ShowModal;
+
+    mmSingleChoiceDialog();
+    mmSingleChoiceDialog(
+        wxWindow *parent,
+        const wxString& message,
+        const wxString& caption,
+        const wxArrayString& choices
+    );
+    mmSingleChoiceDialog(
+        wxWindow* parent,
+        const wxString& message,
+        const wxString& caption,
+        const AccountModel::DataA& accounts
+    );
+
+    int ShowModal() { return wxSingleChoiceDialog::ShowModal(); }
+};
+
 class mmMultiChoiceDialog : public wxMultiChoiceDialog
 {
 public:
     using wxMultiChoiceDialog::ShowModal;
 
     mmMultiChoiceDialog();
-    mmMultiChoiceDialog(wxWindow* parent, const wxString& message,
-        const wxString& caption, const wxArrayString& items);
-    int ShowModal();
+    mmMultiChoiceDialog(
+        wxWindow* parent,
+        const wxString& message,
+        const wxString& caption,
+        const wxArrayString& items
+    );
+
+public:
+    int ShowModal() { return wxMultiChoiceDialog::ShowModal(); }
 };
-inline  int mmMultiChoiceDialog::ShowModal() {   return wxMultiChoiceDialog::ShowModal(); }
 
 /* -------------------------------------------- */
+
 class mmTagCtrlPopupWindow : public wxPopupTransientWindow {
 public:
     mmTagCtrlPopupWindow(wxWindow* parent, wxWindow* button) : wxPopupTransientWindow(parent, wxPU_CONTAINS_CONTROLS) {
@@ -223,16 +229,3 @@ inline void mmTagTextCtrl::Reinitialize() { init(); }
 inline void mmTagTextCtrl::SetText(const wxString& text) { textCtrl_->SetText(text); }
 inline bool mmTagTextCtrl::IsEmpty() const { return textCtrl_->IsEmpty(); }
 inline void mmTagTextCtrl::Clear() { textCtrl_->ClearAll(); }
-
-class mmSplitterWindow : public wxSplitterWindow
-{
-
-public:
-    mmSplitterWindow(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                     long style = wxSP_3D, const wxColour& colour = wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE));
-
-    void DrawSash(wxDC& dc) override;
-
-private:
-    wxColour m_colour;
-};

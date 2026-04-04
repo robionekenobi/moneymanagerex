@@ -32,6 +32,7 @@
 #include "base/mmPlatform.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
+#include "util/mmSplitterWindow.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmMiniEditor.h"

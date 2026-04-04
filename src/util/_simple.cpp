@@ -1099,24 +1099,3 @@ void mmTagTextCtrl::SetTags(const wxArrayInt64& tagIds)
 
     textCtrl_->SetText(tagString);
 }
-
-mmSplitterWindow::mmSplitterWindow(wxWindow* parent
-    , wxWindowID id
-    , const wxPoint& pos
-    , const wxSize& size
-    , long style
-    , const wxColour& colour)
-    : wxSplitterWindow(parent, id, pos, size, style), m_colour(colour)
-{
-}
-
-void mmSplitterWindow::DrawSash(wxDC& dc)
-{
-    dc.SetBrush(m_colour);
-    dc.SetPen(*wxTRANSPARENT_PEN);
-
-    if (GetSplitMode() == wxSPLIT_HORIZONTAL)
-        dc.DrawRectangle(0, GetSashPosition(), GetSize().GetWidth(), GetSashSize());
-    else
-        dc.DrawRectangle(GetSashPosition(), 0, GetSashSize(), GetSize().GetHeight());
-}

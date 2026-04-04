@@ -19,19 +19,19 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "StockPanel.h"
+
 #include "base/_defs.h"
 #include <wx/clipbrd.h>
 
-#include "util/mmImage.h"
-#include "util/_simple.h"
 #include "base/mmTips.h"
+#include "util/mmImage.h"
+#include "util/mmSplitterWindow.h"
+#include "util/_simple.h"
 #include "model/_all.h"
 
-#include "StockPanel.h"
 #include "dialog/StockDialog.h"
 #include "dialog/TrxShareDialog.h"
-
-class StockPanel;
 
 BEGIN_EVENT_TABLE(StockPanel, wxPanel)
     EVT_BUTTON(wxID_NEW,          StockPanel::onNewStocks)

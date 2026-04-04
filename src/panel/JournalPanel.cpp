@@ -19,6 +19,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "JournalPanel.h"
+#include "JournalList.h"
+
 #include "base/_defs.h"
 #include <float.h>
 #include <algorithm>
@@ -27,21 +30,17 @@
 #include <wx/sound.h>
 
 #include "base/_constants.h"
-#include "mmex.h"
+#include "base/mmTips.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
+#include "util/mmSplitterWindow.h"
 #include "util/_util.h"
 #include "util/_simple.h"
-#include "base/mmTips.h"
 #include "util/mmCalcValidator.h"
 
 #include "model/_all.h"
 #include "model/PrefModel.h"
 #include "model/Journal.h"
-
-#include "mmframe.h"
-#include "JournalPanel.h"
-#include "JournalList.h"
 
 #include "manager/DateRangeManager.h"
 #include "dialog/SplitDialog.h"
@@ -54,6 +53,9 @@
 #include "dialog/TrxUpdateDialog.h"
 #include "uicontrols/reconciledialog.h"
 #include "uicontrols/navigatortypes.h"
+
+#include "mmex.h"
+#include "mmframe.h"
 
 // -- static
 
