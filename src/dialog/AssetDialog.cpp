@@ -114,7 +114,7 @@ void AssetDialog::dataToControls()
     w_assetName->SetValue(m_asset_n->m_name);
     if (AccountModel::instance().get_name_data_n(m_asset_n->m_name))
         w_assetName->Enable(false);
-    w_dpc->SetValue(m_asset_n->m_start_date.dateTime());
+    w_date_picker->setValue(m_asset_n->m_start_date.dateTime());
     w_assetType->SetSelection(m_asset_n->m_type.id());
     // TODO: translate asset type
     if (AccountModel::instance().get_name_data_n(m_asset_n->m_type.name()))
@@ -151,7 +151,7 @@ void AssetDialog::dataToControls()
 
     if (!m_hidden_trans_entry) {
         w_assetName->Enable(false);
-        w_dpc->Enable(false);
+        w_date_picker->Enable(false);
         w_assetType->Enable(false);
         w_value->Enable(false);
         w_valueChange->Enable(false);
@@ -202,9 +202,9 @@ void AssetDialog::CreateControls()
     itemFlexGridSizer6->Add(w_assetName, g_flagsExpand);
 
     itemFlexGridSizer6->Add(new wxStaticText(asset_details_panel, wxID_STATIC, _t("Date")), g_flagsH);
-    w_dpc = new mmDatePickerCtrl(asset_details_panel, wxID_ANY);
-    itemFlexGridSizer6->Add(w_dpc->mmGetLayout(false));
-    mmToolTip(w_dpc, _t("Specify the date of purchase of asset"));
+    w_date_picker = new mmDatePicker(asset_details_panel, wxID_ANY);
+    itemFlexGridSizer6->Add(w_date_picker->mmGetLayout(false));
+    mmToolTip(w_date_picker, _t("Specify the date of purchase of asset"));
 
     itemFlexGridSizer6->Add(new wxStaticText(asset_details_panel, wxID_STATIC, _t("Asset Type")), g_flagsH);
 
@@ -440,7 +440,7 @@ void AssetDialog::OnOk(wxCommandEvent& /*event*/)
     m_asset_n->m_type          = asset_type;
     m_asset_n->m_status        = AssetStatus();
     m_asset_n->m_name          = asset_name;
-    m_asset_n->m_start_date    = mmDate(w_dpc->GetValue());
+    m_asset_n->m_start_date    = mmDate(w_date_picker->GetValue());
     m_asset_n->m_currency_id_n = -1;
     m_asset_n->m_value         = asset_value;
     m_asset_n->m_change        = AssetChange(asset_change_id);
@@ -496,7 +496,7 @@ void AssetDialog::SetTransactionAccountName(const wxString& account_name)
 
 void AssetDialog::SetTransactionDate()
 {
-    w_transaction_panel->TransactionDate(w_dpc->GetValue());
+    w_transaction_panel->TransactionDate(w_date_picker->GetValue());
 }
 
 void AssetDialog::CreateAssetAccount()

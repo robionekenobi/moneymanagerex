@@ -44,11 +44,11 @@ const std::vector<ReportParam> ReportParam::get_param_a()
     const wxString def_time = wxDateTime::Now().FormatISOTime();
 
     const std::vector<ReportParam> param_a = {
-        { "&begin_date", "mmDatePickerCtrl", def_date,
+        { "&begin_date", "mmDatePicker", def_date,
             ReportPanel::ID_START_DATE_PICKER, _t("Begin date:") },
-        { "&end_date", "mmDatePickerCtrl", def_date,
+        { "&end_date", "mmDatePicker", def_date,
             ReportPanel::ID_END_DATE_PICKER, _t("End date:") },
-        { "&single_date", "mmDatePickerCtrl", def_date,
+        { "&single_date", "mmDatePicker", def_date,
             ReportPanel::ID_SINGLE_DATE_PICKER, _t("Date:") },
         { "&single_time", "wxTimePickerCtrl", def_time,
             ReportPanel::ID_TIME_PICKER, _t("Time:") },
@@ -95,8 +95,8 @@ bool ReportParam::prepare_sql(wxString& query, std::map<wxString, wxString>& lab
         wxString value = param.def_value;
         const auto w = wxWindow::FindWindowById(param.ID);
         //const auto name = w->GetClassInfo()->GetClassName();
-        if (w && param.type == "mmDatePickerCtrl") {
-            mmDatePickerCtrl* date = static_cast<mmDatePickerCtrl*>(w);
+        if (w && param.type == "mmDatePicker") {
+            mmDatePicker* date = static_cast<mmDatePicker*>(w);
             value = date->GetValue().FormatISODate();
         }
         else if (w && param.type == "wxTimePickerCtrl") {

@@ -18,6 +18,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
+#include "util/mmDatePicker.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -165,7 +166,7 @@ void mmQIFExportDialog::CreateControls()
     // From Date --------------------------------------------
     dateFromCheckBox_ = new wxCheckBox(main_tab, wxID_ANY, _t("From Date")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE );
-    fromDateCtrl_ = new mmDatePickerCtrl(main_tab, wxID_STATIC, wxDefaultDateTime
+    fromDateCtrl_ = new mmDatePicker(main_tab, wxID_STATIC, wxDefaultDateTime
         , wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
     fromDateCtrl_->SetMinSize(min_size);
     fromDateCtrl_->Enable(false);
@@ -175,7 +176,7 @@ void mmQIFExportDialog::CreateControls()
     // To Date --------------------------------------------
     dateToCheckBox_ = new wxCheckBox(main_tab, wxID_ANY, _t("To Date")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE );
-    toDateCtrl_ = new mmDatePickerCtrl(main_tab, wxID_STATIC, wxDefaultDateTime
+    toDateCtrl_ = new mmDatePicker(main_tab, wxID_STATIC, wxDefaultDateTime
         , wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
     toDateCtrl_->SetMinSize(min_size);
     toDateCtrl_->Enable(false);

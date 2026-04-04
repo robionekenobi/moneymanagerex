@@ -23,7 +23,7 @@
 #include "util/_simple.h"
 #include "model/StockModel.h"
 
-class mmDatePickerCtrl;
+class mmDatePicker;
 class mmTextCtrl;
 class mmGUIFrame;
 
@@ -59,21 +59,21 @@ private:
     bool m_edit = false;
     int64 m_account_id = -1;
 
-    wxTextCtrl*       m_stock_name_ctrl     = nullptr;
-    wxTextCtrl*       m_stock_symbol_ctrl   = nullptr;
-    mmDatePickerCtrl* m_purchase_date_ctrl  = nullptr;
-    mmTextCtrl*       m_num_shares_ctrl     = nullptr;
-    mmTextCtrl*       m_purchase_price_ctrl = nullptr;
-    wxTextCtrl*       m_notes_ctrl          = nullptr;
-    mmTextCtrl*       m_history_price_ctrl  = nullptr;
-    mmDatePickerCtrl* m_history_date_ctrl   = nullptr;
-    wxStaticText*     m_value_investment    = nullptr;
-    mmTextCtrl*       m_commission_ctrl     = nullptr;
-    mmTextCtrl*       m_current_price_ctrl  = nullptr;
-    wxBitmapButton*   m_bAttachments        = nullptr;
-    wxListCtrl*       m_price_listbox       = nullptr;
-    wxButton*         m_itemButtonOK        = nullptr;
-    wxStaticText*     m_date_label          = nullptr;
+    wxTextCtrl*     w_name_text            = nullptr;
+    wxTextCtrl*     w_symbol_text          = nullptr;
+    mmTextCtrl*     w_num_text             = nullptr;
+    mmTextCtrl*     w_purchase_price_text  = nullptr;
+    wxTextCtrl*     w_notes_text           = nullptr;
+    mmTextCtrl*     w_history_price_text   = nullptr;
+    mmDatePicker*   w_purchase_date_picker = nullptr;
+    mmDatePicker*   w_history_date_picker  = nullptr;
+    mmTextCtrl*     w_commission_text      = nullptr;
+    mmTextCtrl*     w_current_price_text   = nullptr;
+    wxBitmapButton* w_att_btn              = nullptr;
+    wxListCtrl*     w_price_list           = nullptr;
+    wxButton*       w_ok_btn               = nullptr;
+    wxStaticText*   w_date_label           = nullptr;
+    wxStaticText*   w_value_label          = nullptr;
 
 public:
     StockDialog();

@@ -21,9 +21,7 @@
 #pragma once
 
 #include "base/_defs.h"
-#include <wx/spinctrl.h>
-#include <wx/timectrl.h>
-
+#include "util/mmDatePicker.h"
 #include "util/_simple.h"
 #include "_PanelBase.h"
 #include "JournalPanel.h"
@@ -84,9 +82,9 @@ private:
     mmGUIFrame*       w_frame            = nullptr;
     wxWebView*        w_browser          = nullptr;
     wxButton*         w_range_btn        = nullptr;
-    mmDatePickerCtrl* w_single_date      = nullptr;
-    mmDatePickerCtrl* w_start_date       = nullptr;
-    mmDatePickerCtrl* w_end_date         = nullptr;
+    mmDatePicker*     w_single_date      = nullptr;
+    mmDatePicker*     w_start_date       = nullptr;
+    mmDatePicker*     w_end_date         = nullptr;
     wxTimePickerCtrl* w_time             = nullptr;
     wxChoice*         w_year_choice      = nullptr;
     wxSpinCtrl*       w_forward_months   = nullptr;

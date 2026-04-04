@@ -179,8 +179,8 @@ private:
     wxTextCtrl* log_field_ = nullptr;
     wxTextCtrl* m_textDelimiter = nullptr;
     wxCheckBox* m_haveDatesCheckBox = nullptr;
-    mmDatePickerCtrl* m_date_picker_start = nullptr;
-    mmDatePickerCtrl* m_date_picker_end = nullptr;
+    mmDatePicker* m_date_picker_start = nullptr;
+    mmDatePicker* m_date_picker_end = nullptr;
     wxCheckBox* m_exportStocksCheckBox = nullptr;
     wxSpinCtrl* m_spinIgnoreFirstRows_ = nullptr;
     wxSpinCtrl* m_spinIgnoreLastRows_ = nullptr;

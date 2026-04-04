@@ -295,7 +295,7 @@ void CurrencyChoiceDialog::CreateControls()
     wxStaticText* datePickerLabel = new wxStaticText(this, wxID_STATIC, _t("Date"));
     itemBoxSizerD->Add(datePickerLabel, g_flagsH);
 
-    w_date_picker = new mmDatePickerCtrl(this, wxID_ANY, wxDefaultDateTime
+    w_date_picker = new mmDatePicker(this, wxID_ANY, wxDefaultDateTime
         , wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
     w_date_picker->SetMinSize(wxSize(120, -1));
     itemBoxSizerD->Add(w_date_picker, g_flagsExpand);
@@ -482,7 +482,7 @@ void CurrencyChoiceDialog::OnListItemSelected(wxDataViewEvent& event)
         }
     }
 
-    w_date_picker->SetValue(wxDateTime::Today());
+    w_date_picker->setValue(wxDateTime::Today());
     w_value_text->SetValue(wxEmptyString);
     ShowCurrencyHistory();
 }
@@ -828,14 +828,14 @@ void CurrencyChoiceDialog::OnHistorySelected(wxListEvent& event)
     );
 
     if (ch_n->m_id > 0) {
-        w_date_picker->SetValue(ch_n->m_date.dateTime());
+        w_date_picker->setValue(ch_n->m_date.dateTime());
         w_value_text->SetValue(wxString::Format("%f", ch_n->m_base_conv_rate));
     }
 }
 
 void CurrencyChoiceDialog::OnHistoryDeselected(wxListEvent& WXUNUSED(event))
 {
-    w_date_picker->SetValue(wxDateTime::Today());
+    w_date_picker->setValue(wxDateTime::Today());
     w_value_text->SetValue(wxEmptyString);
 }
 

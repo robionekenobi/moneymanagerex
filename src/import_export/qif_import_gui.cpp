@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "base/_constants.h"
 #include "util/mmPath.h"
 #include "util/mmDateRange.h"
+#include "util/mmDatePicker.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -210,7 +211,7 @@ void mmQIFImportDialog::CreateControls()
     // From Date
     dateFromCheckBox_ = new wxCheckBox(static_box, wxID_FILE8, _t("From Date")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    fromDateCtrl_ = new mmDatePickerCtrl(static_box, wxID_STATIC, wxDefaultDateTime
+    fromDateCtrl_ = new mmDatePicker(static_box, wxID_STATIC, wxDefaultDateTime
         , wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
     fromDateCtrl_->Enable(false);
     dates_sizer->Add(dateFromCheckBox_, g_flagsH);
@@ -219,7 +220,7 @@ void mmQIFImportDialog::CreateControls()
     // To Date
     dateToCheckBox_ = new wxCheckBox(static_box, wxID_FILE9, _t("To Date")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    toDateCtrl_ = new mmDatePickerCtrl(static_box, wxID_STATIC, wxDefaultDateTime
+    toDateCtrl_ = new mmDatePicker(static_box, wxID_STATIC, wxDefaultDateTime
         , wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
     toDateCtrl_->Enable(false);
     dates_sizer->Add(dateToCheckBox_, g_flagsH);

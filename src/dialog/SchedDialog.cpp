@@ -247,8 +247,8 @@ void SchedDialog::dataToControls()
     }
 
     w_status_choice->SetSelection(m_sched_d.m_status.id());
-    w_pay_date->SetValue(m_sched_d.m_datetime.dateTime());
-    w_due_date->SetValue(m_sched_d.m_due_date.dateTime());
+    w_pay_date->setValue(m_sched_d.m_datetime.dateTime());
+    w_due_date->setValue(m_sched_d.m_due_date.dateTime());
     w_freq_choice->SetSelection(m_sched_d.m_repeat.m_freq.id());
 
     if (m_sched_d.m_repeat.m_freq.has_num() && m_sched_d.m_repeat.m_num > 0) {
@@ -410,7 +410,7 @@ void SchedDialog::CreateControls()
 
     // Date Due --------------------------------------------
 
-    w_due_date = new mmDatePickerCtrl(this, ID_DIALOG_BD_DUE_DATE);
+    w_due_date = new mmDatePicker(this, ID_DIALOG_BD_DUE_DATE);
     mmToolTip(w_due_date, _t("Specify the date when this bill or deposit is due"));
     itemFlexGridSizer5->Add(new wxStaticText(this, wxID_STATIC, _t("Date Due")), g_flagsH);
     itemFlexGridSizer5->Add(w_due_date->mmGetLayout(false));
@@ -503,7 +503,7 @@ void SchedDialog::CreateControls()
     mainBoxSizerInner->Add(transDetailsStaticBoxSizer, g_flagsExpand);
 
     // Trans Date --------------------------------------------
-    w_pay_date = new mmDatePickerCtrl(this, ID_DIALOG_TRANS_BUTTON_PAYDATE);
+    w_pay_date = new mmDatePicker(this, ID_DIALOG_TRANS_BUTTON_PAYDATE);
     mmToolTip(w_pay_date,
         _t("Specify the date the user is requested to enter this transaction")
     );
@@ -1445,8 +1445,8 @@ void SchedDialog::OnsetPrevOrNextRepeatDate(wxCommandEvent& event)
 
     mmDate date_paid = mmDate(w_pay_date->GetValue());
     mmDate date_due  = mmDate(w_due_date->GetValue());
-    w_pay_date->SetValue(repeat.next_date(date_paid, goPrev).dateTime());
-    w_due_date->SetValue( repeat.next_date(date_due,  goPrev).dateTime());
+    w_pay_date->setValue(repeat.next_date(date_paid, goPrev).dateTime());
+    w_due_date->setValue( repeat.next_date(date_due,  goPrev).dateTime());
 }
 
 void SchedDialog::activateSplitTransactionsDlg()

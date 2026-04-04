@@ -261,8 +261,8 @@ void TrxFilterDialog::mmDoDataToControls(const wxString& json)
         w_range_cb->SetValue(is_begin_date_valid && is_end_date_valid);
         w_start_date->Enable(w_range_cb->IsChecked());
         w_end_date->Enable(w_range_cb->IsChecked());
-        w_start_date->SetValue(begin_date);
-        w_end_date->SetValue(end_date);
+        w_start_date->setValue(begin_date);
+        w_end_date->setValue(end_date);
 
         wxDateEvent date_event;
         date_event.SetId(wxID_FIRST);
@@ -601,8 +601,8 @@ void TrxFilterDialog::mmDoCreateControls()
         w_range_cb = new wxCheckBox(itemPanel, ID_DATE_RANGE_CB, _t("Date Range"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
         itemPanelSizer->Add(w_range_cb, g_flagsH);
 
-        w_start_date = new mmDatePickerCtrl(itemPanel, wxID_FIRST, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
-        w_end_date = new mmDatePickerCtrl(itemPanel, wxID_LAST, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
+        w_start_date = new mmDatePicker(itemPanel, wxID_FIRST, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
+        w_end_date = new mmDatePicker(itemPanel, wxID_LAST, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
 
         wxBoxSizer* dateSizer = new wxBoxSizer(wxHORIZONTAL);
         dateSizer->Add(w_start_date->mmGetLayoutWithTime(), g_flagsExpand);
@@ -2351,8 +2351,8 @@ void TrxFilterDialog::OnChoice(wxCommandEvent& event)
             wxLogDebug("%s %s", m_start_date, m_end_date);
             m_startDay = dates->startDay();
             m_futureIgnored = dates->isFutureIgnored();
-            w_start_date->SetValue(dates->start_date());
-            w_end_date->SetValue(dates->end_date());
+            w_start_date->setValue(dates->start_date());
+            w_end_date->setValue(dates->end_date());
         }
         break;
     }

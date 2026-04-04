@@ -138,7 +138,7 @@ void TrxUpdateDialog::CreateControls()
     // Date --------------------------------------------
     w_date_cb = new wxCheckBox(this, wxID_ANY, _t("Date")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    w_date_picker = new mmDatePickerCtrl(this, wxID_ANY);
+    w_date_picker = new mmDatePicker(this, wxID_ANY);
     grid_sizer->Add(w_date_cb, g_flagsH);
     grid_sizer->Add(w_date_picker->mmGetLayout(false), wxSizerFlags(g_flagsH).Border(wxLEFT, 0));
     w_date_picker->Enable(false);

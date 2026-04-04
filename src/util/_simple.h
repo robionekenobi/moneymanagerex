@@ -42,61 +42,6 @@ class wxTextCtrl;
 class wxChoice;
 class wxButton;
 
-class mmDatePickerCtrl : public wxPanel
-{
-// -- state
-
-private:
-    wxDateTime m_dateTime;
-
-    wxWindow*         w_parent       = nullptr;
-    wxStaticText*     w_weekday_text = nullptr;
-    wxSpinButton*     w_spin_btn     = nullptr;
-    wxDatePickerCtrl* w_date_picker  = nullptr;
-    wxTimePickerCtrl* w_time_picker  = nullptr;
-
-public:
-    wxDateTime GetValue() { return m_dateTime; }
-
-// -- constructor
-
-public:
-    mmDatePickerCtrl(
-        wxWindow* parent,
-        wxWindowID id,
-        wxDateTime dt = wxDateTime::Today(),
-        wxPoint pos = wxDefaultPosition,
-        wxSize size = wxDefaultSize,
-        long style = wxDP_DROPDOWN | wxDP_SHOWCENTURY
-    );
-    ~mmDatePickerCtrl();
-
-// -- override
-
-public:
-    void SetValue(const wxDateTime &dt);    // override
-    bool Enable(bool state = true);         // override
-    bool Show(bool state = true);           // override
-
-// -- methods
-
-public:
-    bool isItMyDateControl(wxObject* obj);
-    wxBoxSizer* mmGetLayout(bool showTimeCtrl = true);
-    wxBoxSizer* mmGetLayoutWithTime();
-private:
-    wxStaticText* getTextWeek();
-    wxSpinButton* getSpinButton();
-
-// -- event handlers
-
-private:
-    void OnDateChanged(wxDateEvent& event);
-    void OnDateSpin(wxSpinEvent&);
-};
-
-/* -------------------------------------------- */
-
 class mmColorButton : public wxButton
 {
 public:

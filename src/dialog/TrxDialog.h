@@ -23,6 +23,7 @@
 #pragma once
 
 #include "base/_defs.h"
+#include "util/mmDatePicker.h"
 #include "util/mmCalcPopup.h"
 #include "util/_simple.h"
 
@@ -121,7 +122,7 @@ private:
     wxButton*           m_button_ok_new   = nullptr;
     wxChoice*           choiceStatus_     = nullptr;
     wxChoice*           transaction_type_ = nullptr;
-    mmDatePickerCtrl*   dpc_              = nullptr;
+    mmDatePicker*       w_date_picker     = nullptr;
     mmTagTextCtrl*      tagTextCtrl_      = nullptr;
     wxBitmapButton*     bCalc_            = nullptr;
     wxBitmapButton*     bSwitch_          = nullptr;

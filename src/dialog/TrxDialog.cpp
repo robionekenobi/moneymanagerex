@@ -100,7 +100,7 @@ void TrxDialog::SetEventHandlers()
     );
 
 #ifdef __WXGTK__ // Workaround for bug http://trac.wxwidgets.org/ticket/11630
-    dpc_->Connect(
+    w_date_picker->Connect(
         ID_DIALOG_TRANS_BUTTONDATE, wxEVT_KILL_FOCUS,
         wxFocusEventHandler(TrxDialog::OnDpcKillFocus),
         nullptr, this
@@ -252,8 +252,8 @@ void TrxDialog::dataToControls()
                 PrefModel::instance().getUseTransDateTime()
             );
         }
-        dpc_->SetValue(trx_date);
-        dpc_->SetFocus();
+        w_date_picker->setValue(trx_date);
+        w_date_picker->SetFocus();
         skip_date_init_ = true;
     }
 
@@ -437,7 +437,7 @@ void TrxDialog::dataToControls()
         SetTooltips();
 
     if (m_journal_d.is_deleted()) {
-        dpc_->Enable(false);
+        w_date_picker->Enable(false);
         transaction_type_->Enable(false);
         cbAccount_->Enable(false);
         choiceStatus_->Enable(false);
@@ -482,8 +482,8 @@ void TrxDialog::CreateControls()
     flex_sizer->Add(name_label, g_flagsH);
     name_label->SetFont(bold);
 
-    dpc_ = new mmDatePickerCtrl(static_box, ID_DIALOG_TRANS_BUTTONDATE);
-    flex_sizer->Add(dpc_->mmGetLayout());
+    w_date_picker = new mmDatePicker(static_box, ID_DIALOG_TRANS_BUTTONDATE);
+    flex_sizer->Add(w_date_picker->mmGetLayout());
 
     wxBitmapBundle bundle = mmImage::bitmapBundle(mmImage::png::ACC_CLOCK, mmImage::bitmapButtonSize);
     wxBitmapButton* today = new wxBitmapButton(static_box, ID_DIALOG_TRANS_TODAY, bundle);
@@ -648,7 +648,7 @@ void TrxDialog::CreateControls()
 
     // Notes
     textNotes_ = new wxTextCtrl(static_box, ID_DIALOG_TRANS_TEXTNOTES, ""
-        , wxDefaultPosition, wxSize(-1, dpc_->GetSize().GetHeight() * 5), wxTE_MULTILINE);
+        , wxDefaultPosition, wxSize(-1, w_date_picker->GetSize().GetHeight() * 5), wxTE_MULTILINE);
     mmToolTip(textNotes_, _t("Specify any text notes you want to add to this transaction."));
     box_sizer_left->Add(textNotes_, wxSizerFlags(g_flagsExpand).Border(wxLEFT | wxRIGHT | wxBOTTOM, 10));
 
@@ -803,7 +803,7 @@ bool TrxDialog::ValidateData()
     }
 
     /* Check if transaction is to proceed.*/
-    if (account_n->is_locked_for(mmDate(dpc_->GetValue()))) {
+    if (account_n->is_locked_for(mmDate(w_date_picker->GetValue()))) {
         if (wxMessageBox(wxString::Format(
             _t("Lock transaction to date: %s") + "\n\n" + _t("Do you want to continue?"),
             mmGetDateTimeForDisplay(account_n->m_stmt_date_n.isoDateN())),
@@ -1101,7 +1101,7 @@ void TrxDialog::OnSwitch(wxCommandEvent& WXUNUSED(event))
 
 void TrxDialog::OnToday(wxCommandEvent& WXUNUSED(event))
 {
-    dpc_->SetValue(wxDateTime::Today());
+    w_date_picker->setValue(wxDateTime::Today());
 }
 
 void TrxDialog::OnAutoTransNum(wxCommandEvent& WXUNUSED(event))
@@ -1236,7 +1236,7 @@ void TrxDialog::OnOk(wxCommandEvent& event)
 {
     m_journal_d.m_notes = textNotes_->GetValue();
     m_journal_d.m_number = textNumber_->GetValue();
-    m_journal_d.m_datetime = mmDateTime(dpc_->GetValue());
+    m_journal_d.m_datetime = mmDateTime(w_date_picker->GetValue());
     wxStringClientData* status_obj = static_cast<wxStringClientData*>(
         choiceStatus_->GetClientObject(choiceStatus_->GetSelection())
     );
@@ -1334,7 +1334,7 @@ void TrxDialog::OnOk(wxCommandEvent& event)
     //wxLogDebug("%s", trx.to_json());
 
     if (event.GetId() == ID_BTN_OK_NEW) {
-        m_previousDate = dpc_->GetValue();  // store date for next invocation
+        m_previousDate = w_date_picker->GetValue();  // store date for next invocation
     }
     else {
         m_previousDate = wxDateTime();
@@ -1405,7 +1405,7 @@ void TrxDialog::SetTooltips()
     }
 
     // Not dynamically changed tooltips
-    mmToolTip(dpc_, _t("Specify the date of the transaction"));
+    mmToolTip(w_date_picker, _t("Specify the date of the transaction"));
     mmToolTip(choiceStatus_, _t("Specify the status for the transaction"));
     mmToolTip(transaction_type_, _t("Specify the type of transactions to be created."));
     mmToolTip(textNumber_, _t("Specify any associated check number or transaction number"));

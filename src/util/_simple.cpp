@@ -29,12 +29,13 @@
 
 #include "mmex.h"
 #include "base/_constants.h"
+#include "base/mmPlatform.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
-#include "base/mmPlatform.h"
+#include "util/mmDatePicker.h"
+#include "util/mmCalcValidator.h"
 #include "_util.h"
 #include "_simple.h"
-#include "util/mmCalcValidator.h"
 
 #include "model/AccountModel.h"
 #include "model/CategoryModel.h"
@@ -53,11 +54,11 @@
 class mmCalendarPopup: public wxPopupTransientWindow
 {
 public:
-    mmCalendarPopup(wxWindow *parent, mmDatePickerCtrl* datePicker);
+    mmCalendarPopup(wxWindow *parent, mmDatePicker* datePicker);
     virtual ~mmCalendarPopup();
 
 private:
-    mmDatePickerCtrl* m_datePicker;
+    mmDatePicker* m_datePicker;
     void OnDateSelected(wxCalendarEvent& event);
     void OnEndSelection(wxCalendarEvent& event);
     wxDECLARE_ABSTRACT_CLASS(mmCalendarPopup);
@@ -65,7 +66,7 @@ private:
 
 wxIMPLEMENT_CLASS(mmCalendarPopup, wxPopupTransientWindow);
 
-mmCalendarPopup::mmCalendarPopup( wxWindow *parent, mmDatePickerCtrl* datePicker)
+mmCalendarPopup::mmCalendarPopup( wxWindow *parent, mmDatePicker* datePicker)
     : wxPopupTransientWindow(parent,
         wxBORDER_NONE)
     , m_datePicker(datePicker)
@@ -93,226 +94,35 @@ mmCalendarPopup::~mmCalendarPopup()
 
 void mmCalendarPopup::OnDateSelected(wxCalendarEvent& event)
 {
-    m_datePicker->SetValue(event.GetDate());
+    m_datePicker->setValue(event.GetDate());
     wxDateEvent evt(m_datePicker, m_datePicker->GetValue(), wxEVT_DATE_CHANGED);
     m_datePicker->GetEventHandler()->AddPendingEvent(evt);
 }
 
 void mmCalendarPopup::OnEndSelection(wxCalendarEvent& event)
 {
-    m_datePicker->SetValue(event.GetDate());
+    m_datePicker->setValue(event.GetDate());
     this->Dismiss();
     wxDateEvent evt(m_datePicker, m_datePicker->GetValue(), wxEVT_DATE_CHANGED);
     m_datePicker->GetEventHandler()->AddPendingEvent(evt);
 }
 
-/* --------------------------------------------------------- */
-
-mmDatePickerCtrl::mmDatePickerCtrl(
-    wxWindow* parent,
-    wxWindowID id,
-    wxDateTime dt,
-    wxPoint pos,
-    wxSize size,
-    long style
-) :
-    wxPanel(parent, id, pos, size, style),
-    m_dateTime(dt),
-    w_parent(parent)
-{
-    if (!m_dateTime.IsValid())
-        m_dateTime = wxDateTime::Now();
-
-    wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
-    SetSizer(sizer);
-    w_date_picker = new wxDatePickerCtrl(this, id, dt, wxDefaultPosition, wxDefaultSize, style);
-    w_date_picker->SetRange(wxDateTime(), DATE_MAX);
-    SetValue(m_dateTime);
-    w_date_picker->Bind(wxEVT_DATE_CHANGED, &mmDatePickerCtrl::OnDateChanged, this);
-    sizer->Add(w_date_picker);
-}
-
-mmDatePickerCtrl::~mmDatePickerCtrl()
-{
-    // CHECK: wrong condition?
-    if (!w_weekday_text)
-        delete w_weekday_text;
-    if (!w_spin_btn)
-        delete w_spin_btn;
-}
-
-wxStaticText* mmDatePickerCtrl::getTextWeek()
-{
-    if (!w_weekday_text) {
-        //Text field for name of day of the week
-        wxSize WeekDayNameMaxSize(wxDefaultSize);
-        for (wxDateTime::WeekDay d = wxDateTime::Sun;
-            d != wxDateTime::Inv_WeekDay;
-            d = wxDateTime::WeekDay(d+1)
-        )
-            WeekDayNameMaxSize.IncTo(GetTextExtent(wxGetTranslation(
-                wxDateTime::GetEnglishWeekDayName(d)
-            ) + " "));
-        WeekDayNameMaxSize.SetHeight(-1);
-        w_weekday_text = new wxStaticText(
-            w_parent, wxID_ANY, "",
-            wxDefaultPosition, WeekDayNameMaxSize, wxST_NO_AUTORESIZE
-        );
-        // Force update
-        wxDateEvent dateEvent(this, w_date_picker->GetValue(), wxEVT_DATE_CHANGED);
-        OnDateChanged(dateEvent);
-    }
-    return w_weekday_text;
-}
-
-wxSpinButton* mmDatePickerCtrl::getSpinButton()
-{
-    if (!w_spin_btn) {
-        w_spin_btn = new wxSpinButton(w_parent, wxID_ANY,
-            wxDefaultPosition, wxSize(-1, GetBestSize().GetHeight()),
-            wxSP_VERTICAL | wxSP_ARROW_KEYS | wxSP_WRAP
-        );
-        w_spin_btn->Bind(wxEVT_SPIN, &mmDatePickerCtrl::OnDateSpin, this);
-        w_spin_btn->SetRange(-32768, 32768);
-    }
-    return w_spin_btn;
-}
-
-void mmDatePickerCtrl::SetValue(const wxDateTime& dt)
-{
-    if (dt > DATE_MAX.GetDateOnly())
-        w_date_picker->SetValue(DATE_MAX.GetDateOnly());
-    else
-        w_date_picker->SetValue(dt);
-
-    if (w_time_picker)
-        w_time_picker->SetValue(dt);
-
-    // trigger date change event
-    wxDateEvent dateEvent(this, dt, wxEVT_DATE_CHANGED);
-    OnDateChanged(dateEvent);
-}
-
-bool mmDatePickerCtrl::Enable(bool state)
-{
-    bool response = w_date_picker->Enable(state);
-    if (w_time_picker)
-        w_time_picker->Enable(state);
-    if (w_weekday_text)
-        w_weekday_text->Enable(state);
-    if (w_spin_btn)
-        w_spin_btn->Enable(state);
-    return response;
-}
-
-bool mmDatePickerCtrl::Show(bool state)
-{
-    bool response = w_date_picker->Show(state);
-    if (w_time_picker) {
-        w_time_picker->Show(state);
-    }
-    if (w_weekday_text) {
-        w_weekday_text->Show(state);
-    }
-    if (w_spin_btn) {
-        w_spin_btn->Show(state);
-    }
-    return response;
-}
-
-// Gets the full layout including spin buttons, time picker, and day of week
-wxBoxSizer* mmDatePickerCtrl::mmGetLayout(bool showTimeCtrl)
-{
-    wxBoxSizer* date_sizer = new wxBoxSizer(wxHORIZONTAL);
-    date_sizer->Add(this, g_flagsH);
-#if defined(__WXMSW__) || defined(__WXGTK__)
-    date_sizer->Add(this->getSpinButton(), g_flagsH);
-#endif
-    // If time picker is requested and turned on in Options, add it to the layout
-    if (showTimeCtrl && PrefModel::instance().getUseTransDateTime()) {
-        w_time_picker = new wxTimePickerCtrl(
-            w_parent, GetId(), m_dateTime,
-            wxDefaultPosition, wxDefaultSize
-        );
-        w_time_picker->Bind(wxEVT_TIME_CHANGED,
-            &mmDatePickerCtrl::OnDateChanged, this
-        );
-        date_sizer->Add(w_time_picker, g_flagsH);
-    }
-    date_sizer->Add(this->getTextWeek(), g_flagsH);
-
-    return date_sizer;
-}
-
-// Adds only the time picker to the layout if "Use time" is turned on in Options
-wxBoxSizer* mmDatePickerCtrl::mmGetLayoutWithTime()
-{
-    wxBoxSizer* date_sizer = new wxBoxSizer(wxHORIZONTAL);
-    date_sizer->Add(this, g_flagsH);
-    if (PrefModel::instance().getUseTransDateTime()) {
-        w_time_picker = new wxTimePickerCtrl(
-            w_parent, GetId(), m_dateTime,
-            wxDefaultPosition, wxDefaultSize
-        );
-        w_time_picker->Bind(wxEVT_TIME_CHANGED,
-            &mmDatePickerCtrl::OnDateChanged, this
-        );
-        date_sizer->Add(w_time_picker, g_flagsH);
-    }
-
-    return date_sizer;
-}
-
-void mmDatePickerCtrl::OnDateChanged(wxDateEvent& event)
-{
-#ifdef __WXMAC__  // https://github.com/moneymanagerex/moneymanagerex/issues/7821
-    if (w_date_picker->GetValue().GetCentury() < 1)
-        w_date_picker->SetValue(w_date_picker->GetValue().Add(wxDateSpan::Years(2000)));
-#endif
-    if (w_time_picker)
-        m_dateTime.ParseISOCombined(
-            w_date_picker->GetValue().FormatISODate() + "T" +
-            w_time_picker->GetValue().FormatISOTime()
-        );
-    else
-        m_dateTime = w_date_picker->GetValue();
-
-    if (w_weekday_text) {
-        w_weekday_text->SetLabelText(wxGetTranslation(
-            m_dateTime.GetEnglishWeekDayName(m_dateTime.GetWeekDay())
-        ));
-    }
-
-    event.SetDate(m_dateTime);
-    event.Skip();
-}
-
-void mmDatePickerCtrl::OnDateSpin(wxSpinEvent&)
-{
-    if (w_spin_btn) {
-        wxDateTime date = GetValue();
-        date = date.Add(wxDateSpan::Days(w_spin_btn->GetValue()));
-        SetValue(date);
-        wxDateEvent evt(this, GetValue(), wxEVT_DATE_CHANGED);
-        GetEventHandler()->AddPendingEvent(evt);
-        w_spin_btn->SetValue(0);
-    }
-}
-
-bool mmDatePickerCtrl::isItMyDateControl(wxObject *obj)
-{
-    return obj && static_cast <wxDatePickerCtrl*>(obj) == w_date_picker;
-}
-
-/*/////////////////////////////////////////////////////////////*/
+// ------------------------------------
 
 wxBEGIN_EVENT_TABLE(mmColorButton, wxButton)
-EVT_MENU(wxID_ANY, mmColorButton::OnMenuSelected)
-EVT_BUTTON(wxID_ANY, mmColorButton::OnColourButton)
+    EVT_MENU(wxID_ANY,   mmColorButton::OnMenuSelected)
+    EVT_BUTTON(wxID_ANY, mmColorButton::OnColourButton)
 wxEND_EVENT_TABLE()
-mmColorButton::mmColorButton(wxWindow* parent, wxWindowID id, wxSize size, bool noColorAllowed)
-    :wxButton(parent, id, " ", wxDefaultPosition, size)
-    , m_color_value(-1), m_noColorAllowed(noColorAllowed)
+
+mmColorButton::mmColorButton(
+    wxWindow* parent,
+    wxWindowID id,
+    wxSize size,
+    bool noColorAllowed
+) :
+    wxButton(parent, id, " ", wxDefaultPosition, size),
+    m_color_value(-1),
+    m_noColorAllowed(noColorAllowed)
 {
 }
 

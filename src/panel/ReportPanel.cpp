@@ -206,7 +206,7 @@ void ReportPanel::createControls()
             itemBoxSizerHeader->Add(w_range_btn, g_flagsH);
             itemBoxSizerHeader->AddSpacer(5);
 
-            w_start_date = new mmDatePickerCtrl(
+            w_start_date = new mmDatePicker(
                 itemPanel3, ID_START_DATE_PICKER,
                 wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
                 wxDP_DROPDOWN | wxDP_SHOWCENTURY
@@ -214,7 +214,7 @@ void ReportPanel::createControls()
             itemBoxSizerHeader->Add(w_start_date, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
             itemBoxSizerHeader->AddSpacer(5);
 
-            w_end_date = new mmDatePickerCtrl(
+            w_end_date = new mmDatePicker(
                 itemPanel3, ID_END_DATE_PICKER,
                 wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
                 wxDP_DROPDOWN | wxDP_SHOWCENTURY
@@ -230,12 +230,12 @@ void ReportPanel::createControls()
             itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
             itemBoxSizerHeader->AddSpacer(5);
             long date_style = wxDP_DROPDOWN | wxDP_SHOWCENTURY;
-            w_single_date = new mmDatePickerCtrl(
+            w_single_date = new mmDatePicker(
                 itemPanel3, ID_SINGLE_DATE_PICKER,
                 wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
                 date_style
             );
-            w_single_date->SetValue(wxDateTime::Today());
+            w_single_date->setValue(wxDateTime::Today());
             w_single_date->Enable(true);
 
             itemBoxSizerHeader->Add(w_single_date, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
@@ -567,8 +567,8 @@ void ReportPanel::loadFilterSettings()
                 end_dateTime.ParseFormat(date_str, "%Y-%m-%d", &end);
             }
             // initialize pickers (also when start/end dates are undefined)
-            w_start_date->SetValue(start_dateTime);
-            w_end_date->SetValue(end_dateTime);
+            w_start_date->setValue(start_dateTime);
+            w_end_date->setValue(end_dateTime);
         }
         else {
             wxLogDebug("ReportPanel warning: Date Pickers are not available");
@@ -677,10 +677,10 @@ void ReportPanel::updateFilter()
         m_date_range.setDefStartDateN(mmDate::min());
         m_date_range.setDefEndDateN(mmDate::max());
         // copy from date range to start/end pickers
-        w_start_date->SetValue(
+        w_start_date->setValue(
             m_date_range.rangeStartN().value().dateTime()
         );
-        w_end_date->SetValue(
+        w_end_date->setValue(
             m_date_range.rangeEndN().value().dateTime()
         );
     }
@@ -1157,13 +1157,13 @@ void ReportPanel::onStartEndDateChanged(wxDateEvent& event)
         if (w_start_date->isItMyDateControl(eo)) {
             //wxLogDebug("Start date changed to %s", start_dateTime.FormatISODate());
             if (start_dateTime > end_dateTime) {
-                w_end_date->SetValue(start_dateTime);
+                w_end_date->setValue(start_dateTime);
                 wxLogDebug("End date changed to %s", start_dateTime.FormatISODate());
             }
         }
         else if (w_end_date->isItMyDateControl(eo)) {
             if (start_dateTime > end_dateTime) {
-                w_start_date->SetValue(end_dateTime);
+                w_start_date->setValue(end_dateTime);
                 wxLogDebug("Start date changed to %s", end_dateTime.FormatISODate());
             }
         }

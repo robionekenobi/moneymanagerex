@@ -17,6 +17,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "AccountDialog.h"
+
 #include "base/_defs.h"
 #include <wx/valnum.h>
 
@@ -33,7 +35,6 @@
 #include "model/PrefModel.h"
 #include "model/StockModel.h"
 
-#include "AccountDialog.h"
 #include "AttachmentDialog.h"
 #include "CurrencyChoiceDialog.h"
 #include "import_export/webapp.h"
@@ -158,7 +159,7 @@ void AccountDialog::CreateControls()
 
     grid_sizer->Add(new wxStaticText(this, wxID_STATIC, _t("Opening Date:")), g_flagsH);
 
-    m_initdate_ctrl = new mmDatePickerCtrl(this, wxID_ANY, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
+    m_initdate_ctrl = new mmDatePicker(this, wxID_ANY, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
     mmToolTip(m_initdate_ctrl, _t("The date when the account was opened"));
     grid_sizer->Add(m_initdate_ctrl, g_flagsExpand);
 
@@ -241,7 +242,7 @@ void AccountDialog::CreateControls()
     statement_grid_sizer->Add(m_statement_lock_ctrl, g_flagsExpand);
 
     statement_grid_sizer->Add(new wxStaticText(statement_tab, wxID_STATIC, _t("Reconciled Date:")), g_flagsH);
-    m_statement_date_ctrl = new mmDatePickerCtrl(statement_tab, wxID_ANY, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
+    m_statement_date_ctrl = new mmDatePicker(statement_tab, wxID_ANY, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
     mmToolTip(m_statement_date_ctrl, _t("The date of the transaction lock"));
     statement_grid_sizer->Add(m_statement_date_ctrl, g_flagsExpand);
 
@@ -271,7 +272,7 @@ void AccountDialog::CreateControls()
     credit_grid_sizer->Add(m_interest_rate_ctrl, g_flagsExpand);
 
     credit_grid_sizer->Add(new wxStaticText(credit_tab, wxID_STATIC, _t("Payment Due Date:")), g_flagsH);
-    m_payment_due_date_ctrl = new mmDatePickerCtrl(credit_tab, wxID_ANY, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
+    m_payment_due_date_ctrl = new mmDatePicker(credit_tab, wxID_ANY, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
     credit_grid_sizer->Add(m_payment_due_date_ctrl, g_flagsExpand);
 
     credit_grid_sizer->Add(new wxStaticText(credit_tab, wxID_STATIC, _t("Minimum Payment:")), g_flagsH);
@@ -345,7 +346,7 @@ void AccountDialog::fillControls()
     m_initbalance_ctrl->SetCurrency(currency_p);
     m_initbalance_ctrl->SetValue(initBal);
 
-    m_initdate_ctrl->SetValue(m_account_n->m_open_date.dateTime());
+    m_initdate_ctrl->setValue(m_account_n->m_open_date.dateTime());
 
     int selectedImage = PrefModel::instance().AccountImageId(
         m_account_n->m_id, false, true
@@ -360,7 +361,7 @@ void AccountDialog::fillControls()
     m_interest_rate_ctrl->SetValue(m_account_n->m_interest_rate, 2);
 
     if (m_account_n->m_payment_due_date_n.has_value()) {
-        m_payment_due_date_ctrl->SetValue(m_account_n->m_payment_due_date_n.dateTimeN());
+        m_payment_due_date_ctrl->setValue(m_account_n->m_payment_due_date_n.dateTimeN());
     }
 
     m_minimum_payment_ctrl->SetCurrency(currency_p);
@@ -369,7 +370,7 @@ void AccountDialog::fillControls()
     m_statement_lock_ctrl->SetValue(m_account_n->m_stmt_locked);
 
     if (m_account_n->m_stmt_date_n.has_value()) {
-        m_statement_date_ctrl->SetValue(m_account_n->m_stmt_date_n.dateTimeN());
+        m_statement_date_ctrl->setValue(m_account_n->m_stmt_date_n.dateTimeN());
     }
     m_minimum_balance_ctrl->SetCurrency(currency_p);
     m_minimum_balance_ctrl->SetValue(m_account_n->m_min_balance);

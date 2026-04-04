@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "base/_defs.h"
 #include "base/_types.h"
 
-class mmDatePickerCtrl;
+class mmDatePicker;
 typedef std::vector<int64> wxArrayInt64;
 
 class mmQIFExportDialog : public wxDialog
@@ -67,8 +67,8 @@ private:
     wxButton* bSelectedAccounts_ = nullptr;
     wxCheckBox* dateFromCheckBox_ = nullptr;
     wxCheckBox* dateToCheckBox_ = nullptr;
-    mmDatePickerCtrl* fromDateCtrl_ = nullptr;
-    mmDatePickerCtrl* toDateCtrl_ = nullptr;
+    mmDatePicker* fromDateCtrl_ = nullptr;
+    mmDatePicker* toDateCtrl_ = nullptr;
     wxStaticText* choiceDateFormat_label_ = nullptr;
     wxComboBox* m_choiceDateFormat = nullptr;
     wxCheckBox* toFileCheckBox_ = nullptr;

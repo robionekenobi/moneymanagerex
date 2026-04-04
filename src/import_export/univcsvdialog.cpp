@@ -35,6 +35,7 @@
 #include "base/mmListBoxItem.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
+#include "util/mmDatePicker.h"
 #include "util/mmSeparatorStat.h"
 #include "util/_util.h"
 #include "util/_simple.h"
@@ -473,11 +474,11 @@ void mmUnivCSVDialog::CreateControls()
         itemStaticText7771->SetFont(staticBoxFontSetting);
         grid_sizer72->Add(itemStaticText7771, g_flagsH);
 
-        m_date_picker_start = new mmDatePickerCtrl(itemPanel72, wxID_STATIC,wxDefaultDateTime
+        m_date_picker_start = new mmDatePicker(itemPanel72, wxID_STATIC,wxDefaultDateTime
     , wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
         mmToolTip(m_date_picker_start, _t("Specify the report start date"));
         wxDateTime specificDate(1, wxDateTime::Jan, 1970);
-        m_date_picker_start->SetValue(specificDate);
+        m_date_picker_start->setValue(specificDate);
         grid_sizer72->Add(m_date_picker_start, g_flagsH);
         m_date_picker_start->Bind(wxEVT_DATE_CHANGED, &mmUnivCSVDialog::OnStartDateChange, this);
         // In the beginning the date pickers are disabled since the checkbox is not checked
@@ -487,10 +488,10 @@ void mmUnivCSVDialog::CreateControls()
         itemStaticText7772->SetFont(staticBoxFontSetting);
         grid_sizer72->Add(itemStaticText7772, g_flagsH);
 
-        m_date_picker_end = new mmDatePickerCtrl(itemPanel72, wxID_STATIC,wxDefaultDateTime
+        m_date_picker_end = new mmDatePicker(itemPanel72, wxID_STATIC,wxDefaultDateTime
     , wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
         mmToolTip(m_date_picker_end, _t("Specify the report end date"));
-        m_date_picker_end->SetValue(wxDateTime::Today());
+        m_date_picker_end->setValue(wxDateTime::Today());
         grid_sizer72->Add(m_date_picker_end, g_flagsH);
         m_date_picker_end->Bind(wxEVT_DATE_CHANGED, &mmUnivCSVDialog::OnEndDateChange, this);
         m_date_picker_end->Enable(false);

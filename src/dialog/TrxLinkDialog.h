@@ -21,8 +21,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "base/_defs.h"
 #include "base/_constants.h"
-#include "util/_simple.h"
+#include "util/mmDatePicker.h"
 #include "util/mmTextCtrl.h"
+#include "util/_simple.h"
 
 #include "model/TrxLinkModel.h"
 
@@ -65,7 +66,7 @@ private:
     int64 m_subcategory_id = -1;
     std::vector<Split> m_local_splits;
 
-    mmDatePickerCtrl*   m_date_selector   = nullptr;
+    mmDatePicker*       m_date_selector   = nullptr;
     wxButton*           m_account         = nullptr;
     wxChoice*           m_status_selector = nullptr;
     wxChoice*           m_type_selector   = nullptr;

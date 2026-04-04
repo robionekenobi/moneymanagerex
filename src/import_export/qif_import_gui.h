@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "util/_simple.h"
 #include "model/TrxModel.h"
 
-class mmDatePickerCtrl;
+class mmDatePicker;
 class wxDataViewListCtrl;
 class mmQIFImport;
 class wxButton;
@@ -123,8 +123,8 @@ private:
     wxTextCtrl* log_field_ = nullptr;
     wxCheckBox* dateFromCheckBox_ = nullptr;
     wxCheckBox* dateToCheckBox_ = nullptr;
-    mmDatePickerCtrl* fromDateCtrl_ = nullptr;
-    mmDatePickerCtrl* toDateCtrl_ = nullptr;
+    mmDatePicker* fromDateCtrl_ = nullptr;
+    mmDatePicker* toDateCtrl_ = nullptr;
     wxComboBox* choiceDateFormat_ = nullptr;
     wxCheckBox* accountCheckBox_ = nullptr;
     wxChoice* accountDropDown_ = nullptr;

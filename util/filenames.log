@@ -208,5 +208,6 @@ under src/ in increasing chronological order.
   base/paths                         -> util/mmPath
   util/_simple:mmCalculatorPopup     -> util/mmCalcPopup
   util/_simple:mmComboBox*           -> util/mmComboBox
+  util/_simple:mmDatePickerCtrl      -> util/mmDatePicker
   util/_util:mmSeparator             -> util/mmSeparatorStat
 

@@ -19,12 +19,12 @@
 
 #pragma once
 
-#include "base/_defs.h"
 #include <memory>
-
-#include "model/AccountModel.h"
-#include "util/_simple.h"
+#include "base/_defs.h"
+#include "util/mmDatePicker.h"
 #include "util/mmTextCtrl.h"
+#include "util/_simple.h"
+#include "model/AccountModel.h"
 
 class AccountDialog : public wxDialog
 {
@@ -39,20 +39,20 @@ private:
     wxVector<wxBitmapBundle> m_images;
     wxString m_accessInfo;
 
-    wxNotebook*       m_notebook              = nullptr;
-    wxTextCtrl*       m_textAccountName       = nullptr;
-    wxTextCtrl*       m_notesCtrl             = nullptr;
-    mmTextCtrl*       m_initbalance_ctrl      = nullptr;
-    mmDatePickerCtrl* m_initdate_ctrl         = nullptr;
-    wxBitmapButton*   m_bitmapButtons         = nullptr;
-    wxBitmapButton*   bAttachments_           = nullptr;
-    wxCheckBox*       m_statement_lock_ctrl   = nullptr;
-    mmDatePickerCtrl* m_statement_date_ctrl   = nullptr;
-    mmTextCtrl*       m_minimum_balance_ctrl  = nullptr;
-    mmTextCtrl*       m_credit_limit_ctrl     = nullptr;
-    mmTextCtrl*       m_interest_rate_ctrl    = nullptr;
-    mmDatePickerCtrl* m_payment_due_date_ctrl = nullptr;
-    mmTextCtrl*       m_minimum_payment_ctrl  = nullptr;
+    wxNotebook*     m_notebook              = nullptr;
+    wxTextCtrl*     m_textAccountName       = nullptr;
+    wxTextCtrl*     m_notesCtrl             = nullptr;
+    mmTextCtrl*     m_initbalance_ctrl      = nullptr;
+    mmDatePicker*   m_initdate_ctrl         = nullptr;
+    wxBitmapButton* m_bitmapButtons         = nullptr;
+    wxBitmapButton* bAttachments_           = nullptr;
+    wxCheckBox*     m_statement_lock_ctrl   = nullptr;
+    mmDatePicker*   m_statement_date_ctrl   = nullptr;
+    mmTextCtrl*     m_minimum_balance_ctrl  = nullptr;
+    mmTextCtrl*     m_credit_limit_ctrl     = nullptr;
+    mmTextCtrl*     m_interest_rate_ctrl    = nullptr;
+    mmDatePicker*   m_payment_due_date_ctrl = nullptr;
+    mmTextCtrl*     m_minimum_payment_ctrl  = nullptr;
 
 public:
     AccountDialog();

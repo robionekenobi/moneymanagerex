@@ -107,7 +107,7 @@ bool TrxLinkDialog::Create(
     main_panel_sizer->Add(transPanelSizer);
 
     // Trans Date --------------------------------------------
-    m_date_selector = new mmDatePickerCtrl(this, ID_TRANS_DATE_SELECTOR);
+    m_date_selector = new mmDatePicker(this, ID_TRANS_DATE_SELECTOR);
     mmToolTip(m_date_selector, _t("Specify the date of the transaction"));
 
     wxBoxSizer* date_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -444,7 +444,7 @@ wxDateTime TrxLinkDialog::TransactionDate()
 
 void TrxLinkDialog::TransactionDate(const wxDateTime& trans_date)
 {
-    m_date_selector->SetValue(trans_date);
+    m_date_selector->setValue(trans_date);
 }
 
 void TrxLinkDialog::SetTransactionValue(const double& trans_value, bool fixed_value)
