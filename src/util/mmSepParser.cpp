@@ -19,11 +19,11 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "mmSeparatorStat.h"
+#include "mmSepParser.h"
 #include "base/_constants.h"
 #include "model/InfoModel.h"
 
-mmSeparatorStat::mmSeparatorStat()
+mmSepParser::mmSepParser()
 {
     const wxString def_delim = InfoModel::instance().getString(
         "DELIMITER", mmex::DEFDELIMTER
@@ -36,11 +36,11 @@ mmSeparatorStat::mmSeparatorStat()
     m_sep_stat_m[def_delim] = 0;
 }
 
-mmSeparatorStat::~mmSeparatorStat()
+mmSepParser::~mmSepParser()
 {
 }
 
-bool mmSeparatorStat::search(const wxString& string)
+bool mmSepParser::search(const wxString& string)
 {
     bool result = false;
 
@@ -59,7 +59,7 @@ bool mmSeparatorStat::search(const wxString& string)
     return result;
 }
 
-const wxString mmSeparatorStat::max() const
+const wxString mmSepParser::max() const
 {
     auto x = std::max_element(m_sep_stat_m.begin(), m_sep_stat_m.end(),
         [](const std::pair<wxString, int>& p1, const std::pair<wxString, int>& p2) {

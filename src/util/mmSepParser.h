@@ -24,14 +24,14 @@
 #include <map>
 #include <wx/string.h>
 
-class mmSeparatorStat
+class mmSepParser
 {
 private:
     std::map<wxString, int> m_sep_stat_m;
 
 public:
-    mmSeparatorStat();
-    ~mmSeparatorStat();
+    mmSepParser();
+    ~mmSepParser();
 
 public:
     bool search(const wxString& string);

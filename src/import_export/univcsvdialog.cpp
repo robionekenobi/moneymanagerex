@@ -36,7 +36,7 @@
 #include "util/mmPath.h"
 #include "util/mmImage.h"
 #include "util/mmDatePicker.h"
-#include "util/mmSeparatorStat.h"
+#include "util/mmSepParser.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -2629,7 +2629,7 @@ void mmUnivCSVDialog::OnFileBrowse(wxCommandEvent& WXUNUSED(event))
                 return;
             }
 
-            wxSharedPtr<mmSeparatorStat> sep(new mmSeparatorStat);
+            wxSharedPtr<mmSepParser> sep(new mmSepParser);
             wxString line;
             size_t count = 0;
             for (line = tFile.GetFirstLine(); !tFile.Eof(); line = tFile.GetNextLine()) {
