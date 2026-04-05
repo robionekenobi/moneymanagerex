@@ -16,19 +16,17 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+// Contains generic base classes, which are used for common defintions,
+// but not directly instantiantiated.
+
 #pragma once
 
 #include "base/_defs.h"
 
-class genericTreeListDialog: public wxDialog
+class TreeListDialog: public wxDialog
 {
 private:
-    wxDECLARE_DYNAMIC_CLASS(genericTreeListDialog);
-
-public:
-    genericTreeListDialog();
-    virtual ~genericTreeListDialog();
-    genericTreeListDialog(wxWindow* parent, wxString title);
+    wxDECLARE_DYNAMIC_CLASS(TreeListDialog);
 
 protected:
     enum {
@@ -41,39 +39,58 @@ protected:
         BTN_size
     };
 
-    wxTreeListCtrl* m_treeList = nullptr;
+// -- state
 
-    virtual void createColumns();
-    virtual void closeAction();
-    virtual void createMiddleElements(wxBoxSizer* itemBox);
-    virtual void createBottomElements(wxBoxSizer* itemBox);
-    virtual void fillControls(wxTreeListItem root);
-    virtual void updateControlState(int selIdx, wxClientData* selData);
-    virtual void setDefault();
-    virtual void copyTreeItemData(wxTreeListItem src, wxTreeListItem dst);
+private:
+    wxButton*       m_up_top      = nullptr;
+    wxBitmapButton* m_up          = nullptr;
+    wxBitmapButton* m_down        = nullptr;
+    wxButton*       m_down_bottom = nullptr;
 
+protected:
+    wxTreeListCtrl* m_treeList    = nullptr;
+
+// -- constructor
+
+public:
+    TreeListDialog();
+    TreeListDialog(wxWindow* parent, wxString title);
+    virtual ~TreeListDialog();
+
+// -- virtual
+
+public:
+    virtual void createColumns() {}
+    virtual void closeAction() {}
+    virtual void createMiddleElements(wxBoxSizer* itemBox) {}
+    virtual void createBottomElements(wxBoxSizer* itemBox) {}
+    virtual void fillControls(wxTreeListItem root) {}
+    virtual void updateControlState(int selIdx, wxClientData* selData) {}
+    virtual void setDefault() {}
+    virtual void copyTreeItemData(wxTreeListItem src, wxTreeListItem dst) {}
+
+// -- methods
+
+public:
     void init(long liststyle = wxTL_3STATE | wxTL_SINGLE);
     void updateButtonState();
     void reloadTree();
 
 private:
-    wxButton*       m_up_top = nullptr;
-    wxBitmapButton* m_up = nullptr;
-    wxBitmapButton* m_down = nullptr;
-    wxButton*       m_down_bottom = nullptr;
-
     void moveSelectedItem(int direction);
     void moveItemData(wxTreeListItem sel, wxTreeListItem newItem);
     wxTreeListItems getChildrenList(wxTreeListItem parent);
     void cloneSubtree(wxTreeListItem src, wxTreeListItem dstParent);
     int findItemIndex(const wxTreeListItems& items, const wxTreeListItem& target);
 
-    void OnTop(wxCommandEvent&);
-    void OnUp(wxCommandEvent&);
-    void OnDown(wxCommandEvent&);
-    void OnBottom(wxCommandEvent&);
-    void OnDefault(wxCommandEvent&);
-    void OnTreeSelectionChange(wxTreeListEvent&);
-    void OnClose(wxCommandEvent&);
-    void OnCloseWin(wxCloseEvent&);
+// -- event handlers
+
+    void OnTop(                 wxCommandEvent&);
+    void OnUp(                  wxCommandEvent&);
+    void OnDown(                wxCommandEvent&);
+    void OnBottom(              wxCommandEvent&);
+    void OnDefault(             wxCommandEvent&);
+    void OnTreeSelectionChange( wxTreeListEvent&);
+    void OnClose(               wxCommandEvent&);
+    void OnCloseWin(            wxCloseEvent&);
 };

@@ -407,6 +407,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     dialog/StockDialog.h
     dialog/ToolbarDialog.cpp
     dialog/ToolbarDialog.h
+    dialog/TreeListDialog.cpp
+    dialog/TreeListDialog.h
     dialog/TrxDialog.cpp
     dialog/TrxDialog.h
     dialog/TrxFilterDialog.cpp
@@ -493,9 +495,6 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     import_export/webapp.h
     import_export/webappdialog.cpp
     import_export/webappdialog.h
-
-    generic/generictreelistdialog.cpp
-    generic/generictreelistdialog.h
 
     wizard/wizard_newaccount.cpp
     wizard/wizard_newaccount.h

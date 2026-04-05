@@ -41,7 +41,7 @@ ToolbarDialog::~ToolbarDialog()
 ToolbarDialog::ToolbarDialog(
     wxWindow* parent
 ) :
-    genericTreeListDialog(parent, _t("Toolbar configuration"))
+    TreeListDialog(parent, _t("Toolbar configuration"))
 {
     m_delete = nullptr;
     init(wxTL_3STATE | wxTL_SINGLE | wxTL_NO_HEADER);

@@ -20,9 +20,9 @@
 
 #include "base/_defs.h"
 #include "util/mmNavigatorList.h"
-#include "generic/generictreelistdialog.h"
+#include "TreeListDialog.h"
 
-class NavigatorDialog: public genericTreeListDialog
+class NavigatorDialog: public TreeListDialog
 {
     wxDECLARE_DYNAMIC_CLASS(NavigatorDialog);
 

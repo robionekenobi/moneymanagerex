@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ********************************************************/
 
+#include "dialog/TreeListDialog.h"
+
 #include "base/_constants.h"
 #include "util/mmImage.h"
 #include "util/mmPath.h"
@@ -23,41 +25,31 @@
 #include "model/PrefModel.h"
 
 #include "dialog/DateRangeDialog.h"
-#include "generictreelistdialog.h"
 
-wxIMPLEMENT_DYNAMIC_CLASS(genericTreeListDialog, wxDialog);
+wxIMPLEMENT_DYNAMIC_CLASS(TreeListDialog, wxDialog);
 
+TreeListDialog::TreeListDialog()
+{
+}
 
-genericTreeListDialog::genericTreeListDialog() {}
-
-genericTreeListDialog::~genericTreeListDialog() {}
-
-genericTreeListDialog::genericTreeListDialog(wxWindow* parent, wxString title)
+TreeListDialog::TreeListDialog(wxWindow* parent, wxString title)
 {
     this->SetFont(parent->GetFont());
-    Create(parent, -1, title, wxDefaultPosition, wxSize(-1, -1), wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCLOSE_BOX, "");
+    Create(parent, -1,
+        title,
+        wxDefaultPosition, wxSize(-1, -1),
+        wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCLOSE_BOX,
+        ""
+    );
     SetIcon(mmPath::getProgramIcon());
 }
 
-// virtual methods reimplemented in derived class:
-void genericTreeListDialog::createColumns() {}
-
-void genericTreeListDialog::createBottomElements(wxBoxSizer* WXUNUSED(itemBox)) {}
-
-void genericTreeListDialog::createMiddleElements(wxBoxSizer* WXUNUSED(itemBox)) {}
-
-void genericTreeListDialog::fillControls(wxTreeListItem WXUNUSED(root)) {}
-
-void genericTreeListDialog::updateControlState(int WXUNUSED(selIdx), wxClientData* WXUNUSED(selData)) {}
-
-void genericTreeListDialog::setDefault() {}
-
-void genericTreeListDialog::closeAction() {}
-
-void genericTreeListDialog::copyTreeItemData(wxTreeListItem WXUNUSED(src), wxTreeListItem WXUNUSED(dst)) {}
+TreeListDialog::~TreeListDialog()
+{
+}
 
 // methods called from derived class:
-void genericTreeListDialog::init(long liststyle)  // Must be called in constructor from derived class !!!
+void TreeListDialog::init(long liststyle)  // Must be called in constructor from derived class !!!
 {
     wxBoxSizer* mainBoxSizer = new wxBoxSizer(wxVERTICAL);
     this->SetSizer(mainBoxSizer);
@@ -69,7 +61,7 @@ void genericTreeListDialog::init(long liststyle)  // Must be called in construct
     mainPanelSizer->Add(itemBoxVleft, g_flagsExpand);
 
     m_treeList = new wxTreeListCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(400, 300), liststyle);
-    m_treeList->Bind(wxEVT_TREELIST_SELECTION_CHANGED, &genericTreeListDialog::OnTreeSelectionChange, this);
+    m_treeList->Bind(wxEVT_TREELIST_SELECTION_CHANGED, &TreeListDialog::OnTreeSelectionChange, this);
 
     createColumns();
 
@@ -82,13 +74,13 @@ void genericTreeListDialog::init(long liststyle)  // Must be called in construct
     m_up_top = new wxButton(this, BTN_UP_TOP, _tu("&Top"));
     m_up_top->SetBitmap(mmImage::bitmapBundle(mmImage::png::UPARROW, mmImage::bitmapButtonSize));
     m_up_top->Enable(false);
-    m_up_top->Bind(wxEVT_BUTTON, &genericTreeListDialog::OnTop, this);
+    m_up_top->Bind(wxEVT_BUTTON, &TreeListDialog::OnTop, this);
 
     itemBoxVright->Add(m_up_top, g_flagsV);
 
     m_up = new wxBitmapButton(this, BTN_UP, mmImage::bitmapBundle(mmImage::png::UPARROW, mmImage::bitmapButtonSize));
     m_up->Enable(false);
-    m_up->Bind(wxEVT_BUTTON, &genericTreeListDialog::OnUp, this);
+    m_up->Bind(wxEVT_BUTTON, &TreeListDialog::OnUp, this);
 
     itemBoxVright->Add(m_up, g_flagsV);
 
@@ -96,13 +88,13 @@ void genericTreeListDialog::init(long liststyle)  // Must be called in construct
 
     m_down = new wxBitmapButton(this, BTN_DOWN, mmImage::bitmapBundle(mmImage::png::DOWNARROW, mmImage::bitmapButtonSize));
     m_down->Enable(false);
-    m_down->Bind(wxEVT_BUTTON, &genericTreeListDialog::OnDown, this);
+    m_down->Bind(wxEVT_BUTTON, &TreeListDialog::OnDown, this);
     itemBoxVright->Add(m_down, g_flagsV);
 
     m_down_bottom = new wxButton(this, BTN_DOWN_BOTTOM, _tu("&Bottom"));
     m_down_bottom->SetBitmap(mmImage::bitmapBundle(mmImage::png::DOWNARROW, mmImage::bitmapButtonSize));
     m_down_bottom->Enable(false);
-    m_down_bottom->Bind(wxEVT_BUTTON, &genericTreeListDialog::OnBottom, this);
+    m_down_bottom->Bind(wxEVT_BUTTON, &TreeListDialog::OnBottom, this);
 
     itemBoxVright->Add(m_down_bottom, g_flagsV);
 
@@ -110,18 +102,18 @@ void genericTreeListDialog::init(long liststyle)  // Must be called in construct
 
     wxButton* btn = new wxButton(this, BTN_DEFAULT, _tu("&Restore defaults"));
     itemBoxVright->Add(btn, 0, wxALL, 5);
-    btn->Bind(wxEVT_BUTTON, &genericTreeListDialog::OnDefault, this);
+    btn->Bind(wxEVT_BUTTON, &TreeListDialog::OnDefault, this);
 
     wxBoxSizer* btnSizer = new wxBoxSizer(wxHORIZONTAL);
     mainBoxSizer->Add(btnSizer, g_flagsCenter);
 
     btn = new wxButton(this, wxID_CLOSE, _tu("&Close"));
     btnSizer->Add(btn, 0, wxALL, 5);
-    btn->Bind(wxEVT_BUTTON, &genericTreeListDialog::OnClose, this);
+    btn->Bind(wxEVT_BUTTON, &TreeListDialog::OnClose, this);
 
     this->Layout();
 
-    Bind(wxEVT_CLOSE_WINDOW, &genericTreeListDialog::OnCloseWin, this);
+    Bind(wxEVT_CLOSE_WINDOW, &TreeListDialog::OnCloseWin, this);
 
     reloadTree();
     m_treeList->Expand(m_treeList->GetRootItem());
@@ -130,7 +122,7 @@ void genericTreeListDialog::init(long liststyle)  // Must be called in construct
     Fit();
 }
 
-void genericTreeListDialog::updateButtonState() {
+void TreeListDialog::updateButtonState() {
     int selIdx = -1;
     int count = 0;
     wxClientData* clientdata = nullptr;
@@ -154,14 +146,14 @@ void genericTreeListDialog::updateButtonState() {
     updateControlState(selIdx, clientdata);
 }
 
-void genericTreeListDialog::reloadTree()
+void TreeListDialog::reloadTree()
 {
     m_treeList->DeleteAllItems();
     fillControls(m_treeList->GetRootItem());
 }
 
 // private methods:
-void genericTreeListDialog::moveSelectedItem(int direction)
+void TreeListDialog::moveSelectedItem(int direction)
 {
     wxTreeListItem sel = m_treeList->GetSelection();
     if (sel.IsOk()) {
@@ -191,7 +183,7 @@ void genericTreeListDialog::moveSelectedItem(int direction)
     }
 }
 
-void genericTreeListDialog::moveItemData(wxTreeListItem sel, wxTreeListItem newItem)
+void TreeListDialog::moveItemData(wxTreeListItem sel, wxTreeListItem newItem)
 {
     copyTreeItemData(sel, newItem);
     wxTreeListItems children = getChildrenList(sel);
@@ -202,7 +194,7 @@ void genericTreeListDialog::moveItemData(wxTreeListItem sel, wxTreeListItem newI
     m_treeList->Select(newItem);
 }
 
-wxTreeListItems genericTreeListDialog::getChildrenList(wxTreeListItem parent)
+wxTreeListItems TreeListDialog::getChildrenList(wxTreeListItem parent)
 {
     wxTreeListItems items;
     wxTreeListItem child = m_treeList->GetFirstChild(parent);
@@ -213,7 +205,7 @@ wxTreeListItems genericTreeListDialog::getChildrenList(wxTreeListItem parent)
     return items;
 }
 
-void genericTreeListDialog::cloneSubtree(wxTreeListItem src, wxTreeListItem dstParent)
+void TreeListDialog::cloneSubtree(wxTreeListItem src, wxTreeListItem dstParent)
 {
     wxTreeListItem newItem = m_treeList->AppendItem(dstParent, m_treeList->GetItemText(src, 0));
     copyTreeItemData(src, newItem);
@@ -224,7 +216,7 @@ void genericTreeListDialog::cloneSubtree(wxTreeListItem src, wxTreeListItem dstP
     }
 }
 
-int genericTreeListDialog::findItemIndex(const wxTreeListItems& items, const wxTreeListItem& target)
+int TreeListDialog::findItemIndex(const wxTreeListItems& items, const wxTreeListItem& target)
 {
     for (int i = 0; i < static_cast<int>(items.size()); ++i) {
         if (items[i] == target)
@@ -233,7 +225,7 @@ int genericTreeListDialog::findItemIndex(const wxTreeListItems& items, const wxT
     return -1;
 }
 
-void genericTreeListDialog::OnTop(wxCommandEvent&)
+void TreeListDialog::OnTop(wxCommandEvent&)
 {
     wxTreeListItem sel = m_treeList->GetSelection();
     wxTreeListItem parent = m_treeList->GetItemParent(sel);
@@ -244,24 +236,24 @@ void genericTreeListDialog::OnTop(wxCommandEvent&)
     updateButtonState();
 }
 
-void genericTreeListDialog::OnUp(wxCommandEvent&)
+void TreeListDialog::OnUp(wxCommandEvent&)
 {
     moveSelectedItem(-1);
     updateButtonState();
 }
 
-void genericTreeListDialog::OnTreeSelectionChange(wxTreeListEvent&)
+void TreeListDialog::OnTreeSelectionChange(wxTreeListEvent&)
 {
     updateButtonState();
 }
 
-void genericTreeListDialog::OnDown(wxCommandEvent&)
+void TreeListDialog::OnDown(wxCommandEvent&)
 {
     moveSelectedItem(1);
     updateButtonState();
 }
 
-void genericTreeListDialog::OnBottom(wxCommandEvent&)
+void TreeListDialog::OnBottom(wxCommandEvent&)
 {
     wxTreeListItem sel = m_treeList->GetSelection();
     wxTreeListItem parent = m_treeList->GetItemParent(sel);
@@ -272,19 +264,19 @@ void genericTreeListDialog::OnBottom(wxCommandEvent&)
     updateButtonState();
 }
 
-void genericTreeListDialog::OnClose(wxCommandEvent&)
+void TreeListDialog::OnClose(wxCommandEvent&)
 {
     closeAction();
     EndModal(wxID_CLOSE);
 }
 
-void genericTreeListDialog::OnCloseWin(wxCloseEvent&)  // for dialog menu
+void TreeListDialog::OnCloseWin(wxCloseEvent&)  // for dialog menu
 {
     closeAction();
     EndModal(wxID_CLOSE);
 }
 
-void genericTreeListDialog::OnDefault(wxCommandEvent&)
+void TreeListDialog::OnDefault(wxCommandEvent&)
 {
     if (wxMessageBox(_tu("Do you really want to restore the default values?\n\nAll customization will be lost!")
         , _tu("&Restore defaults")

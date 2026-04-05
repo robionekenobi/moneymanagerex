@@ -45,7 +45,7 @@ NavigatorDialog::~NavigatorDialog()
     InfoModel::instance().saveSize(DIALOG_SIZE, GetSize());
 }
 
-NavigatorDialog::NavigatorDialog(wxWindow* parent):genericTreeListDialog(parent, _t("Navigator and account type configuration"))
+NavigatorDialog::NavigatorDialog(wxWindow* parent):TreeListDialog(parent, _t("Navigator and account type configuration"))
 {
     init();  // must be called first!!
     SetSize(InfoModel::instance().getSize(DIALOG_SIZE));

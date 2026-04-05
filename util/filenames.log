@@ -224,6 +224,7 @@ under src/ in increasing chronological order.
   util/_util:mmSeparator             -> util/mmSepParser
 
 . PR ? (?)
+  generic/generictreelistdialog      -> dialog/TreeListDialog
   uicontrols/navigatordialog         -> dialog/NavigatorDialog
   uicontrols/navigatoreditdialog     -> dialog/NavigatorEditDialog
   uicontrols/reconciledialog         -> dialog/ReconcileDialog

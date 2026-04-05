@@ -21,9 +21,9 @@
 #include "base/_defs.h"
 #include "base/_constants.h"
 #include "util/mmToolbarList.h"
-#include "generic/generictreelistdialog.h"
+#include "dialog/TreeListDialog.h"
 
-class ToolbarDialog: public genericTreeListDialog
+class ToolbarDialog: public TreeListDialog
 {
 private:
     wxDECLARE_DYNAMIC_CLASS(ToolbarDialog);

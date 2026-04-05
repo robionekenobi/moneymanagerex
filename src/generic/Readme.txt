@@ -1,1 +1,0 @@
-Contains generic base classes, which are used fro common defintions, but not directly instantiantiated.
