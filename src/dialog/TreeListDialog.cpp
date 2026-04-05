@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ********************************************************/
 
-#include "dialog/TreeListDialog.h"
+#include "TreeListDialog.h"
 
 #include "base/_constants.h"
 #include "util/mmImage.h"
@@ -24,7 +24,7 @@
 
 #include "model/PrefModel.h"
 
-#include "dialog/DateRangeDialog.h"
+#include "DateRangeDialog.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(TreeListDialog, wxDialog);
 

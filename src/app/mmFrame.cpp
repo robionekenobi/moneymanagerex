@@ -96,7 +96,7 @@
 #include "wizard/wizard_newaccount.h"
 #include "wizard/wizard_newdb.h"
 #include "wizard/wizard_update.h"
-#include "app/mmApp.h"
+#include "mmApp.h"
 
 //----------------------------------------------------------------------------
 

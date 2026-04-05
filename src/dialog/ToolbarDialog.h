@@ -21,7 +21,7 @@
 #include "base/_defs.h"
 #include "base/_constants.h"
 #include "util/mmToolbarList.h"
-#include "dialog/TreeListDialog.h"
+#include "TreeListDialog.h"
 
 class ToolbarDialog: public TreeListDialog
 {

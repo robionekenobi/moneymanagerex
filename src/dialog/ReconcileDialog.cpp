@@ -31,7 +31,7 @@
 #include "model/PrefModel.h"
 #include "model/TrxModel.h"
 
-#include "dialog/TrxDialog.h"
+#include "TrxDialog.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(ReconcileDialog, wxDialog);
 

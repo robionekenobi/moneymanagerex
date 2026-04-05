@@ -27,7 +27,7 @@
 #include "util/mmTreeItemData.h"
 #include "util/mmMultiChoice.h"
 #include "model/BudgetPeriodModel.h"
-#include "report/_all.h"
+#include "_all.h"
 #include "app/mmFrame.h"
 
 const char* GeneralGroupReport::group_report_template = R"(
