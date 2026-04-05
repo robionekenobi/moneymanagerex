@@ -188,7 +188,7 @@ under src/ in increasing chronological order.
   preferences/                       -> pref/
   pref/*Preferences                  -> pref/*Pref
 
-. PR ? (2026-04-05)
++ PR #8293 (2026-04-05)
   base/constants                     -> base/_constants
   base/defs.h                        -> base/_defs.h
   base/platfdep*                     -> base/mmPlatform*
@@ -206,7 +206,7 @@ under src/ in increasing chronological order.
   util/mmSingleton.h                 -> base/mmSingleton.h
   util/mmTips.h                      -> base/mmTips.h
 
-. PR ? (2026-04-05)
++ PR #8293 (2026-04-05)
   mmcombobox.h                       -> util/_UNUSED_mmComboBoxText
   base/images_list                   -> util/mmImage
   base/paths                         -> util/mmPath
@@ -223,7 +223,7 @@ under src/ in increasing chronological order.
   util/_util:mmDates                 -> util/mmDateParser
   util/_util:mmSeparator             -> util/mmSepParser
 
-. PR ? (2026-04-05)
++ PR #8293 (2026-04-05)
   generic/generictreelistdialog      -> dialog/TreeListDialog
   uicontrols/navigatordialog         -> dialog/NavigatorDialog
   uicontrols/navigatoreditdialog     -> dialog/NavigatorEditDialog
@@ -231,7 +231,7 @@ under src/ in increasing chronological order.
   uicontrols/toolbardialog           -> dialog/ToolbarDialog
   mmframereport.cpp                  -> report/GeneralGroupReport
 
-. PR ? (2026-04-05)
++ PR #8293 (2026-04-05)
   mmex                               -> app/mmApp
   mmframe                            -> app/mmFrame
   mmframereport.cpp                  -> app/mmFrame
