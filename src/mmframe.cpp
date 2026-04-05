@@ -80,7 +80,7 @@
 #include "dialog/TrxFilterDialog.h"
 #include "dialog/NavigatorDialog.h"
 #include "dialog/ToolbarDialog.h"
-#include "uicontrols/reconciledialog.h"
+#include "dialog/ReconcileDialog.h"
 
 #include "report/_all.h"
 #include "report/bugreport.h"
@@ -1469,7 +1469,7 @@ void mmGUIFrame::OnReconcileAccount(wxCommandEvent& WXUNUSED(event))
         return;
 
     JournalPanel* cp = wxDynamicCast(panelCurrent_, JournalPanel);
-    mmReconcileDialog dlg(wxGetTopLevelParent(this), account, cp);
+    ReconcileDialog dlg(wxGetTopLevelParent(this), account, cp);
     if (dlg.ShowModal() == wxID_OK) {
         cp->refreshList();
     }

@@ -395,6 +395,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     dialog/NavigatorDialog.h
     dialog/NavigatorEditDialog.cpp
     dialog/NavigatorEditDialog.h
+    dialog/ReconcileDialog.cpp
+    dialog/ReconcileDialog.h
     dialog/SchedDialog.cpp
     dialog/SchedDialog.h
     dialog/SplitDialog.cpp
@@ -463,9 +465,6 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     report/bugreport.h
     report/htmlbuilder.cpp
     report/htmlbuilder.h
-
-    uicontrols/reconciledialog.cpp
-    uicontrols/reconciledialog.h
 
     db/dbcheck.cpp
     db/dbcheck.h

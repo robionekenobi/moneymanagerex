@@ -24,7 +24,7 @@
 #include "model/TrxModel.h"
 #include "panel/JournalPanel.h"
 
-class mmReconcileDialog: public wxDialog
+class ReconcileDialog: public wxDialog
 {
 private:
     enum
@@ -37,7 +37,7 @@ private:
     };
 
 private:
-    wxDECLARE_DYNAMIC_CLASS(mmReconcileDialog);
+    wxDECLARE_DYNAMIC_CLASS(ReconcileDialog);
     enum
     {
         ID_CHECK_SHOW_STATE_COL = wxID_HIGHEST + 1,
@@ -75,13 +75,13 @@ private:
     mmCalcPopup*       w_calc_popup;
 
 public:
-    mmReconcileDialog();
-    mmReconcileDialog(
+    ReconcileDialog();
+    ReconcileDialog(
         wxWindow* parent_win,
         const AccountData* account_n,
         JournalPanel* journal_panel_n
     );
-    ~mmReconcileDialog();
+    ~ReconcileDialog();
 
 private:
     void CreateControls();

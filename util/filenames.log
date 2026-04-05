@@ -226,5 +226,6 @@ under src/ in increasing chronological order.
 . PR ? (?)
   uicontrols/navigatordialog         -> dialog/NavigatorDialog
   uicontrols/navigatoreditdialog     -> dialog/NavigatorEditDialog
+  uicontrols/reconciledialog         -> dialog/ReconcileDialog
   uicontrols/toolbardialog           -> dialog/ToolbarDialog
 

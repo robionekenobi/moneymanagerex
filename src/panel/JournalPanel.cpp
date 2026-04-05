@@ -52,7 +52,7 @@
 #include "dialog/TrxFilterDialog.h"
 #include "dialog/TrxShareDialog.h"
 #include "dialog/TrxUpdateDialog.h"
-#include "uicontrols/reconciledialog.h"
+#include "dialog/ReconcileDialog.h"
 
 #include "mmex.h"
 #include "mmframe.h"
@@ -1545,7 +1545,7 @@ void JournalPanel::onInfoPanelClick(wxMouseEvent& event, wxStaticText* infoPanel
 
 void JournalPanel::onReconcile(wxCommandEvent& WXUNUSED(event))
 {
-    mmReconcileDialog dlg(wxGetTopLevelParent(this), m_account_n, this);
+    ReconcileDialog dlg(wxGetTopLevelParent(this), m_account_n, this);
     if (dlg.ShowModal() == wxID_OK) {
         refreshList();
     }

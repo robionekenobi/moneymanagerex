@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "reconciledialog.h"
+#include "ReconcileDialog.h"
 
 #include "base/_constants.h"
 #include "base/mmDate.h"
@@ -33,13 +33,13 @@
 
 #include "dialog/TrxDialog.h"
 
-wxIMPLEMENT_DYNAMIC_CLASS(mmReconcileDialog, wxDialog);
+wxIMPLEMENT_DYNAMIC_CLASS(ReconcileDialog, wxDialog);
 
-mmReconcileDialog::mmReconcileDialog()
+ReconcileDialog::ReconcileDialog()
 {
 }
 
-mmReconcileDialog::mmReconcileDialog(
+ReconcileDialog::ReconcileDialog(
     wxWindow* parent_win,
     const AccountData* account_n,
     JournalPanel* journal_panel_n
@@ -76,8 +76,8 @@ mmReconcileDialog::mmReconcileDialog(
     };
     wxAcceleratorTable tab(sizeof(entries) / sizeof(*entries), entries);
     SetAcceleratorTable(tab);
-    Bind(wxEVT_MENU, &mmReconcileDialog::OnNew, this, wxID_NEW);
-    Bind(wxEVT_MENU, &mmReconcileDialog::OnClose, this, wxID_SAVE);
+    Bind(wxEVT_MENU, &ReconcileDialog::OnNew, this, wxID_NEW);
+    Bind(wxEVT_MENU, &ReconcileDialog::OnClose, this, wxID_SAVE);
 
     SetIcon(mmPath::getProgramIcon());
     applyColumnSettings();
@@ -85,7 +85,7 @@ mmReconcileDialog::mmReconcileDialog(
     SetSize(InfoModel::instance().getSize("RECONCILE_DIALOG_SIZE"));
 }
 
-mmReconcileDialog::~mmReconcileDialog()
+ReconcileDialog::~ReconcileDialog()
 {
     wxSize size = GetSize();
     InfoModel::instance().saveSize(
@@ -110,7 +110,7 @@ mmReconcileDialog::~mmReconcileDialog()
     );
 }
 
-void mmReconcileDialog::CreateControls()
+void ReconcileDialog::CreateControls()
 {
     // --- Top panel: ---
     wxPanel* topPanel = new wxPanel(this);
@@ -129,14 +129,14 @@ void mmReconcileDialog::CreateControls()
         wxALIGN_RIGHT | wxTE_PROCESS_ENTER,
         mmCalcValidator()
     );
-    w_amount_text->Bind(wxEVT_TEXT, &mmReconcileDialog::OnAmountChanged, this);
+    w_amount_text->Bind(wxEVT_TEXT, &ReconcileDialog::OnAmountChanged, this);
 
     topSizer->Add(w_amount_text, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 
     w_calc_btn = new wxBitmapButton(topPanel, wxID_ANY,
         mmImage::bitmapBundle(mmImage::png::CALCULATOR, mmImage::bitmapButtonSize)
     );
-    w_calc_btn->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &mmReconcileDialog::OnCalculator, this);
+    w_calc_btn->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ReconcileDialog::OnCalculator, this);
     w_calc_btn->SetCanFocus(false);
     mmToolTip(w_calc_btn, _t("Open Calculator"));
     topSizer->Add(w_calc_btn, 0, wxRIGHT, 20);
@@ -145,26 +145,26 @@ void mmReconcileDialog::CreateControls()
 
     topSizer->AddStretchSpacer();
     w_edit_btn = new wxButton(topPanel, wxID_ANY, _t("&Edit"));
-    w_edit_btn->Bind(wxEVT_BUTTON, &mmReconcileDialog::OnEdit, this);
+    w_edit_btn->Bind(wxEVT_BUTTON, &ReconcileDialog::OnEdit, this);
     w_edit_btn->SetCanFocus(false);
     w_edit_btn->Enable(false);
 
     topSizer->Add(w_edit_btn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 
     wxButton* btn = new wxButton(topPanel, wxID_ANY, _t("&New"));
-    btn->Bind(wxEVT_BUTTON, &mmReconcileDialog::OnNew, this);
+    btn->Bind(wxEVT_BUTTON, &ReconcileDialog::OnNew, this);
     btn->SetCanFocus(false);
     topSizer->Add(btn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 20);
 
     btn = new wxButton(topPanel, wxID_ANY, _t("&All (un)cleared"));
-    btn->Bind(wxEVT_BUTTON, &mmReconcileDialog::OnToggle, this);
+    btn->Bind(wxEVT_BUTTON, &ReconcileDialog::OnToggle, this);
     btn->SetCanFocus(false);
     topSizer->Add(btn, 0, wxRIGHT, 20);
 
     wxBitmapButton* bbtn = new wxBitmapButton(topPanel, ID_BUTTON,
         mmImage::bitmapBundle(mmImage::png::OPTIONS, mmImage::bitmapButtonSize)
     );
-    bbtn->Bind(wxEVT_BUTTON, &mmReconcileDialog::OnSettings, this);
+    bbtn->Bind(wxEVT_BUTTON, &ReconcileDialog::OnSettings, this);
     bbtn->SetCanFocus(false);
     mmToolTip(bbtn, _t("Settings"));
     topSizer->Add(bbtn, 0, wxRIGHT, 20);
@@ -200,13 +200,13 @@ void mmReconcileDialog::CreateControls()
     addColumns(w_left_list);
     w_left_list->SetMinSize(wxSize(250,100));
 
-    w_left_list->Bind(wxEVT_LEFT_DOWN, &mmReconcileDialog::OnLeftItemLeftClick, this);
-    w_left_list->Bind(wxEVT_RIGHT_DOWN, &mmReconcileDialog::OnLeftItemRightClick, this);
-    w_left_list->Bind(wxEVT_KEY_DOWN, &mmReconcileDialog::OnListKeyDown, this);
-    w_left_list->Bind(wxEVT_SET_FOCUS, &mmReconcileDialog::OnLeftFocus, this);
-    w_left_list->Bind(wxEVT_KILL_FOCUS, &mmReconcileDialog::OnLeftFocusKill, this);
-    w_left_list->Bind(wxEVT_LIST_ITEM_SELECTED, &mmReconcileDialog::OnListItemSelection, this);
-    w_left_list->Bind(wxEVT_LIST_ITEM_DESELECTED, &mmReconcileDialog::OnListItemSelection, this);
+    w_left_list->Bind(wxEVT_LEFT_DOWN, &ReconcileDialog::OnLeftItemLeftClick, this);
+    w_left_list->Bind(wxEVT_RIGHT_DOWN, &ReconcileDialog::OnLeftItemRightClick, this);
+    w_left_list->Bind(wxEVT_KEY_DOWN, &ReconcileDialog::OnListKeyDown, this);
+    w_left_list->Bind(wxEVT_SET_FOCUS, &ReconcileDialog::OnLeftFocus, this);
+    w_left_list->Bind(wxEVT_KILL_FOCUS, &ReconcileDialog::OnLeftFocusKill, this);
+    w_left_list->Bind(wxEVT_LIST_ITEM_SELECTED, &ReconcileDialog::OnListItemSelection, this);
+    w_left_list->Bind(wxEVT_LIST_ITEM_DESELECTED, &ReconcileDialog::OnListItemSelection, this);
 
     w_left_list->SetSmallImages(w_images);
     w_left_list->SetNormalImages(w_images);
@@ -227,13 +227,13 @@ void mmReconcileDialog::CreateControls()
     addColumns(w_right_list);
     w_right_list->SetMinSize(wxSize(250,100));
 
-    w_right_list->Bind(wxEVT_LEFT_DOWN, &mmReconcileDialog::OnRightItemLeftClick, this);
-    w_right_list->Bind(wxEVT_RIGHT_DOWN, &mmReconcileDialog::OnRightItemRightClick, this);
-    w_right_list->Bind(wxEVT_KEY_DOWN, &mmReconcileDialog::OnListKeyDown, this);
-    w_right_list->Bind(wxEVT_SET_FOCUS, &mmReconcileDialog::OnRightFocus, this);
-    w_right_list->Bind(wxEVT_KILL_FOCUS, &mmReconcileDialog::OnRightFocusKill, this);
-    w_right_list->Bind(wxEVT_LIST_ITEM_SELECTED, &mmReconcileDialog::OnListItemSelection, this);
-    w_right_list->Bind(wxEVT_LIST_ITEM_DESELECTED, &mmReconcileDialog::OnListItemSelection, this);
+    w_right_list->Bind(wxEVT_LEFT_DOWN, &ReconcileDialog::OnRightItemLeftClick, this);
+    w_right_list->Bind(wxEVT_RIGHT_DOWN, &ReconcileDialog::OnRightItemRightClick, this);
+    w_right_list->Bind(wxEVT_KEY_DOWN, &ReconcileDialog::OnListKeyDown, this);
+    w_right_list->Bind(wxEVT_SET_FOCUS, &ReconcileDialog::OnRightFocus, this);
+    w_right_list->Bind(wxEVT_KILL_FOCUS, &ReconcileDialog::OnRightFocusKill, this);
+    w_right_list->Bind(wxEVT_LIST_ITEM_SELECTED, &ReconcileDialog::OnListItemSelection, this);
+    w_right_list->Bind(wxEVT_LIST_ITEM_DESELECTED, &ReconcileDialog::OnListItemSelection, this);
 
     w_right_list->SetSmallImages(w_images);
     w_right_list->SetNormalImages(w_images);
@@ -247,7 +247,7 @@ void mmReconcileDialog::CreateControls()
     midSizer->Add(rightlistPanel, 1, wxEXPAND | wxALL, 5);
 
     midPanel->SetSizer(midSizer);
-    midPanel->Bind(wxEVT_SIZE, &mmReconcileDialog::OnSize, this);
+    midPanel->Bind(wxEVT_SIZE, &ReconcileDialog::OnSize, this);
 
     // --- Result: ----
     wxPanel* resPanelOut = new wxPanel(this);
@@ -322,10 +322,10 @@ void mmReconcileDialog::CreateControls()
     w_cancel_btn = new wxButton(bottomPanel, wxID_CANCEL, _t("&Cancel "));
 
     w_later_btn = new wxButton(bottomPanel, wxID_ANY, _t("&Finish later"));
-    w_later_btn->Bind(wxEVT_BUTTON, &mmReconcileDialog::OnClose, this);
+    w_later_btn->Bind(wxEVT_BUTTON, &ReconcileDialog::OnClose, this);
 
     w_reconcile_btn = new wxButton(bottomPanel, wxID_OK, _t("&Done"));
-    w_reconcile_btn->Bind(wxEVT_BUTTON, &mmReconcileDialog::OnClose, this);
+    w_reconcile_btn->Bind(wxEVT_BUTTON, &ReconcileDialog::OnClose, this);
 
     bottomSizer->AddStretchSpacer();
     bottomSizer->Add(w_cancel_btn, 0, wxRIGHT, 10);
@@ -336,10 +336,10 @@ void mmReconcileDialog::CreateControls()
     bottomPanel->SetSizer(bottomSizer);
 
     // -- settings menu ---
-    Bind(wxEVT_MENU, &mmReconcileDialog::OnMenuItemChecked, this, ID_CHECK_SHOW_STATE_COL);
-    Bind(wxEVT_MENU, &mmReconcileDialog::OnMenuItemChecked, this, ID_CHECK_SHOW_NUMBER_COL);
-    Bind(wxEVT_MENU, &mmReconcileDialog::OnMenuItemChecked, this, ID_CHECK_INCLUDE_VOID);
-    Bind(wxEVT_MENU, &mmReconcileDialog::OnMenuItemChecked, this, ID_CHECK_INCLUDE_DUPLICATED);
+    Bind(wxEVT_MENU, &ReconcileDialog::OnMenuItemChecked, this, ID_CHECK_SHOW_STATE_COL);
+    Bind(wxEVT_MENU, &ReconcileDialog::OnMenuItemChecked, this, ID_CHECK_SHOW_NUMBER_COL);
+    Bind(wxEVT_MENU, &ReconcileDialog::OnMenuItemChecked, this, ID_CHECK_INCLUDE_VOID);
+    Bind(wxEVT_MENU, &ReconcileDialog::OnMenuItemChecked, this, ID_CHECK_INCLUDE_DUPLICATED);
 
     // --- Main layout ---
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -350,7 +350,7 @@ void mmReconcileDialog::CreateControls()
     SetSizerAndFit(mainSizer);
 }
 
-void mmReconcileDialog::FillControls(bool init)
+void ReconcileDialog::FillControls(bool init)
 {
     if (init) {
         double endval;
@@ -419,7 +419,7 @@ void mmReconcileDialog::FillControls(bool init)
     }
 }
 
-void mmReconcileDialog::UpdateAll()
+void ReconcileDialog::UpdateAll()
 {
     double clearedbalance = m_reconciledBalance;
     for (long i = 0; i < w_left_list->GetItemCount(); ++i) {
@@ -483,12 +483,12 @@ void mmReconcileDialog::UpdateAll()
     Update();
 }
 
-void mmReconcileDialog::OnListItemSelection(wxListEvent& WXUNUSED(event))
+void ReconcileDialog::OnListItemSelection(wxListEvent& WXUNUSED(event))
 {
    updateButtonState();
 }
 
-void mmReconcileDialog::updateButtonState()
+void ReconcileDialog::updateButtonState()
 {
     bool hasSelection = false;
     if (w_left_list->HasFocus() || w_right_list->HasFocus()) {
@@ -500,29 +500,29 @@ void mmReconcileDialog::updateButtonState()
     w_edit_btn->Enable(hasSelection);
 }
 
-void mmReconcileDialog::OnCalculator(wxCommandEvent& WXUNUSED(event))
+void ReconcileDialog::OnCalculator(wxCommandEvent& WXUNUSED(event))
 {
     w_calc_popup->Popup();
 }
 
-void mmReconcileDialog::OnAmountChanged(wxCommandEvent& WXUNUSED(event))
+void ReconcileDialog::OnAmountChanged(wxCommandEvent& WXUNUSED(event))
 {
     UpdateAll();
 }
 
-void mmReconcileDialog::OnLeftItemLeftClick(wxMouseEvent& event)
+void ReconcileDialog::OnLeftItemLeftClick(wxMouseEvent& event)
 {
     processLeftClick(w_left_list, event.GetPosition());
     event.Skip();
 }
 
-void mmReconcileDialog::OnRightItemLeftClick(wxMouseEvent& event)
+void ReconcileDialog::OnRightItemLeftClick(wxMouseEvent& event)
 {
     processLeftClick(w_right_list, event.GetPosition());
     event.Skip();
 }
 
-void mmReconcileDialog::processLeftClick(wxListCtrl* list, wxPoint pt)
+void ReconcileDialog::processLeftClick(wxListCtrl* list, wxPoint pt)
 {
     int flags = 0;
     long idx = list->HitTest(pt, flags);
@@ -536,7 +536,7 @@ void mmReconcileDialog::processLeftClick(wxListCtrl* list, wxPoint pt)
     }
 }
 
-void mmReconcileDialog::OnLeftItemRightClick(wxMouseEvent& event)
+void ReconcileDialog::OnLeftItemRightClick(wxMouseEvent& event)
 {
     wxPoint pt = event.GetPosition();
     int flags = 0;
@@ -544,7 +544,7 @@ void mmReconcileDialog::OnLeftItemRightClick(wxMouseEvent& event)
     event.Skip();
 }
 
-void mmReconcileDialog::OnRightItemRightClick(wxMouseEvent& event)
+void ReconcileDialog::OnRightItemRightClick(wxMouseEvent& event)
 {
     wxPoint pt = event.GetPosition();
     int flags = 0;
@@ -552,7 +552,7 @@ void mmReconcileDialog::OnRightItemRightClick(wxMouseEvent& event)
     event.Skip();
 }
 
-void mmReconcileDialog::processRightClick(wxListCtrl* list, long item)
+void ReconcileDialog::processRightClick(wxListCtrl* list, long item)
 {
     if (item != -1) {
        editTransaction(list, item);
@@ -562,7 +562,7 @@ void mmReconcileDialog::processRightClick(wxListCtrl* list, long item)
     }
 }
 
-void mmReconcileDialog::OnListKeyDown(wxKeyEvent& event)
+void ReconcileDialog::OnListKeyDown(wxKeyEvent& event)
 {
     wxListCtrl* list = nullptr;
     if (w_left_list->GetSelectedItemCount() > 0) {
@@ -605,19 +605,19 @@ void mmReconcileDialog::OnListKeyDown(wxKeyEvent& event)
     event.Skip();
 }
 
-void mmReconcileDialog::OnLeftFocus(wxFocusEvent& event)
+void ReconcileDialog::OnLeftFocus(wxFocusEvent& event)
 {
     handleListFocus(w_left_list);
     event.Skip();
 }
 
-void mmReconcileDialog::OnRightFocus(wxFocusEvent& event)
+void ReconcileDialog::OnRightFocus(wxFocusEvent& event)
 {
     handleListFocus(w_right_list);
     event.Skip();
 }
 
-void mmReconcileDialog::handleListFocus(wxListCtrl* list)
+void ReconcileDialog::handleListFocus(wxListCtrl* list)
 {
     if (list->GetItemCount() > 0) {
         long idx = list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
@@ -626,29 +626,29 @@ void mmReconcileDialog::handleListFocus(wxListCtrl* list)
     updateButtonState();
 }
 
-void mmReconcileDialog::OnLeftFocusKill(wxFocusEvent& event)
+void ReconcileDialog::OnLeftFocusKill(wxFocusEvent& event)
 {
     handleListFocusKill(w_left_list);
     event.Skip();
 }
 
-void mmReconcileDialog::OnRightFocusKill(wxFocusEvent& event)
+void ReconcileDialog::OnRightFocusKill(wxFocusEvent& event)
 {
     handleListFocusKill(w_right_list);
     event.Skip();
 }
 
-void mmReconcileDialog::handleListFocusKill(wxListCtrl* list)
+void ReconcileDialog::handleListFocusKill(wxListCtrl* list)
 {
     resetListSelections(list);
 }
 
-void mmReconcileDialog::OnNew(wxCommandEvent& WXUNUSED(event))
+void ReconcileDialog::OnNew(wxCommandEvent& WXUNUSED(event))
 {
     newTransaction();
 }
 
-void mmReconcileDialog::OnSettings(wxCommandEvent& WXUNUSED(event))
+void ReconcileDialog::OnSettings(wxCommandEvent& WXUNUSED(event))
 {
     wxMenu menu;
     menu.AppendCheckItem(ID_CHECK_SHOW_STATE_COL, _tu("Show &status column"));
@@ -665,12 +665,12 @@ void mmReconcileDialog::OnSettings(wxCommandEvent& WXUNUSED(event))
     //event.Skip();
 }
 
-void mmReconcileDialog::OnMenuSelected(wxCommandEvent& WXUNUSED(event))
+void ReconcileDialog::OnMenuSelected(wxCommandEvent& WXUNUSED(event))
 {
     wxLogDebug("Menu selected");
 }
 
-void mmReconcileDialog::OnMenuItemChecked(wxCommandEvent& event)
+void ReconcileDialog::OnMenuItemChecked(wxCommandEvent& event)
 {
     m_settings[event.GetId() - wxID_HIGHEST - 1] = event.IsChecked();
     switch (event.GetId()) {
@@ -693,7 +693,7 @@ void mmReconcileDialog::OnMenuItemChecked(wxCommandEvent& event)
     }
 }
 
-void mmReconcileDialog::showHideColumn(bool show, int col, int cs) {
+void ReconcileDialog::showHideColumn(bool show, int col, int cs) {
     if (!show) {
         m_colwidth[cs] = w_left_list->GetColumnWidth(col);
     }
@@ -701,7 +701,7 @@ void mmReconcileDialog::showHideColumn(bool show, int col, int cs) {
     w_right_list->SetColumnWidth(col, show ? m_colwidth[cs] : 0);
 }
 
-void mmReconcileDialog::newTransaction()
+void ReconcileDialog::newTransaction()
 {
     TrxDialog dlg(this, m_account_n->m_id, {0, false}, false, TrxType(TrxType::e_withdrawal));
     int i = wxID_CANCEL;
@@ -716,7 +716,7 @@ void mmReconcileDialog::newTransaction()
     } while (i == wxID_NEW);
 }
 
-void mmReconcileDialog::addTransaction2List(const TrxData* trx_n)
+void ReconcileDialog::addTransaction2List(const TrxData* trx_n)
 {
     wxListCtrl* list = (trx_n->is_deposit() ||
         (trx_n->is_transfer() && trx_n->m_to_account_id_n == m_account_n->m_id)
@@ -731,7 +731,7 @@ void mmReconcileDialog::addTransaction2List(const TrxData* trx_n)
     m_itemDataMap.push_back(trx_n->m_id);
 }
 
-void mmReconcileDialog::OnEdit(wxCommandEvent& WXUNUSED(event))
+void ReconcileDialog::OnEdit(wxCommandEvent& WXUNUSED(event))
 {
     wxListCtrl* list = nullptr;
     if (w_left_list->GetSelectedItemCount() > 0) {
@@ -746,7 +746,7 @@ void mmReconcileDialog::OnEdit(wxCommandEvent& WXUNUSED(event))
     }
 }
 
-void mmReconcileDialog::editTransaction(wxListCtrl* list, long item)
+void ReconcileDialog::editTransaction(wxListCtrl* list, long item)
 {
     int64 trx_id = m_itemDataMap[list->GetItemData(item)];
     TrxDialog dlg(this, trx_id, JournalKey(-1, trx_id));
@@ -761,7 +761,7 @@ void mmReconcileDialog::editTransaction(wxListCtrl* list, long item)
     }
 }
 
-long mmReconcileDialog::getListIndexByDate(const TrxData* trx_n, wxListCtrl* list)
+long ReconcileDialog::getListIndexByDate(const TrxData* trx_n, wxListCtrl* list)
 {
     long idx = -1;
     for (long i = 0; i < list->GetItemCount(); ++i) {
@@ -775,7 +775,7 @@ long mmReconcileDialog::getListIndexByDate(const TrxData* trx_n, wxListCtrl* lis
     return idx;
 }
 
-void mmReconcileDialog::moveItemData(wxListCtrl* list, int row1, int row2)
+void ReconcileDialog::moveItemData(wxListCtrl* list, int row1, int row2)
 {
     std::vector<wxString> coldata;
     for (int i = 0; i < list->GetColumnCount(); i++) {
@@ -805,7 +805,7 @@ void mmReconcileDialog::moveItemData(wxListCtrl* list, int row1, int row2)
     list->SetItemState(item, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
 }
 
-void mmReconcileDialog::setListItemData(const TrxData* trx_n, wxListCtrl* list, long item)
+void ReconcileDialog::setListItemData(const TrxData* trx_n, wxListCtrl* list, long item)
 {
     wxString prefix = trx_n->is_transfer()
         ? (trx_n->m_to_account_id_n == m_account_n->m_id ? "< " : "> ")
@@ -824,7 +824,7 @@ void mmReconcileDialog::setListItemData(const TrxData* trx_n, wxListCtrl* list, 
     list->SetItemImage(item, (trx_n->m_status.id() == TrxStatus::e_followup) ? 1 : 0);
 }
 
-void mmReconcileDialog::OnToggle(wxCommandEvent& WXUNUSED(event))
+void ReconcileDialog::OnToggle(wxCommandEvent& WXUNUSED(event))
 {
     DoWindowsFreezeThaw(this);
     bool isChecked = true;
@@ -854,7 +854,7 @@ void mmReconcileDialog::OnToggle(wxCommandEvent& WXUNUSED(event))
     DoWindowsFreezeThaw(this);
 }
 
-void mmReconcileDialog::resetListSelections(wxListCtrl* list)
+void ReconcileDialog::resetListSelections(wxListCtrl* list)
 {
     if (list->GetSelectedItemCount() > 0) {
         long item = list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
@@ -864,7 +864,7 @@ void mmReconcileDialog::resetListSelections(wxListCtrl* list)
     }
 }
 
-bool mmReconcileDialog::isListItemChecked(wxListCtrl* list, long item)
+bool ReconcileDialog::isListItemChecked(wxListCtrl* list, long item)
 {
     bool checked = false;
     wxListItem litem;
@@ -875,13 +875,13 @@ bool mmReconcileDialog::isListItemChecked(wxListCtrl* list, long item)
     return checked;
 }
 
-void mmReconcileDialog::OnSize(wxSizeEvent& event)
+void ReconcileDialog::OnSize(wxSizeEvent& event)
 {
     resizeColumns();
     event.Skip();
 }
 
-void mmReconcileDialog::resizeColumns()
+void ReconcileDialog::resizeColumns()
 {
     auto setColWidth = [] (wxListCtrl* list) {
         int w = 0;
@@ -899,7 +899,7 @@ void mmReconcileDialog::resizeColumns()
     setColWidth(w_right_list);
 }
 
-void mmReconcileDialog::applyColumnSettings()
+void ReconcileDialog::applyColumnSettings()
 {
     m_colwidth[0] = w_left_list->GetColumnWidth(2);
     m_colwidth[1] = w_left_list->GetColumnWidth(5);
@@ -920,7 +920,7 @@ void mmReconcileDialog::applyColumnSettings()
     resizeColumns();
 }
 
-void mmReconcileDialog::OnClose(wxCommandEvent& event)
+void ReconcileDialog::OnClose(wxCommandEvent& event)
 {
     auto saveItem = [](int64 id, bool state, bool final) {
         TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(id);
