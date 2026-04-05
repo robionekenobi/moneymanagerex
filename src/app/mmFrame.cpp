@@ -1760,10 +1760,22 @@ void mmFrame::showTreePopupMenu(const wxTreeItemId& id, const wxPoint& pt)
 
         menu.AppendSeparator();
         wxMenu* viewAccounts(new wxMenu);
-        viewAccounts->AppendRadioItem(MENU_TREEPOPUP_ACCOUNT_VIEWALL, _t("&All"))->Check(m_temp_view == VIEW_ACCOUNTS_ALL_STR);
-        viewAccounts->AppendRadioItem(MENU_TREEPOPUP_ACCOUNT_VIEWFAVORITE, _t("&Favorites"))->Check(m_temp_view == VIEW_ACCOUNTS_FAVORITES_STR);
-        viewAccounts->AppendRadioItem(MENU_TREEPOPUP_ACCOUNT_VIEWOPEN, _t("&Open"))->Check(m_temp_view == VIEW_ACCOUNTS_OPEN_STR);
-        viewAccounts->AppendRadioItem(MENU_TREEPOPUP_ACCOUNT_VIEWCLOSED, _t("&Closed"))->Check(m_temp_view == VIEW_ACCOUNTS_CLOSED_STR);
+        viewAccounts->AppendRadioItem(
+            MENU_TREEPOPUP_ACCOUNT_VIEWALL,
+            _t("&All")
+        )->Check(m_temp_view == VIEW_ACCOUNTS_ALL_STR);
+        viewAccounts->AppendRadioItem(
+            MENU_TREEPOPUP_ACCOUNT_VIEWFAVORITE,
+            _t("&Favorites")
+        )->Check(m_temp_view == VIEW_ACCOUNTS_FAVORITES_STR);
+        viewAccounts->AppendRadioItem(
+            MENU_TREEPOPUP_ACCOUNT_VIEWOPEN,
+            _t("&Open")
+        )->Check(m_temp_view == VIEW_ACCOUNTS_OPEN_STR);
+        viewAccounts->AppendRadioItem(
+            MENU_TREEPOPUP_ACCOUNT_VIEWCLOSED,
+            _t("&Closed")
+        )->Check(m_temp_view == VIEW_ACCOUNTS_CLOSED_STR);
         menu.AppendSubMenu(viewAccounts, _t("Accounts &Visible"));
 
         menu.AppendSeparator();

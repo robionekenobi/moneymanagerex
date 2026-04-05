@@ -204,11 +204,11 @@ void PrefModel::load(bool include_infotable)
 wxLanguage PrefModel::getLanguageID(const bool get_db)
 {
     if (get_db) {
-        auto lang_id = SettingModel::instance().getInt(LANGUAGE_PARAMETER, -1);
+        auto lang_id = SettingModel::instance().getInt("LANGUAGE", -1);
 
         if (lang_id == -1) {
             auto lang_canonical = SettingModel::instance()
-                .getString(LANGUAGE_PARAMETER, wxLocale::GetLanguageCanonicalName(wxLANGUAGE_UNKNOWN));
+                .getString("LANGUAGE", wxLocale::GetLanguageCanonicalName(wxLANGUAGE_UNKNOWN));
 
             for (int lang_code = wxLANGUAGE_DEFAULT; lang_code < wxLANGUAGE_USER_DEFINED; lang_code++) {
                 const auto l = wxLocale::GetLanguageCanonicalName(lang_code);
@@ -821,18 +821,17 @@ int PrefModel::getHtmlScale() const noexcept
 
 int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool ignoreClosure)
 {
-    // TODO: change type of acctStatus to AccountStatus
-    wxString acctStatus = VIEW_ACCOUNTS_OPEN_STR;
+    AccountStatus acctStatus = AccountStatus(AccountStatus::e_open);
     mmNavigatorItem::TYPE_ID acctType = mmNavigatorItem::TYPE_ID_CHECKING;
     int selectedImage = mmImage::img::SAVINGS_ACC_NORMAL_PNG; //Default value
 
     const AccountData* account_n = AccountModel::instance().get_id_data_n(account_id);
     if (account_n) {
         acctType = AccountModel::type_id(*account_n);
-        acctStatus = account_n->m_status.key();
+        acctStatus = account_n->m_status;
     }
 
-    if (!def && !ignoreClosure && (acctStatus == "Closed"))
+    if (!def && !ignoreClosure && acctStatus.id() == AccountStatus::e_closed)
         return mmImage::img::ACCOUNT_CLOSED_PNG;
 
     int max = mmImage::acc_img::MAX_ACC_ICON - static_cast<int>(mmImage::img::LAST_NAVTREE_PNG);
@@ -868,7 +867,7 @@ void PrefModel::saveLanguage(const wxLanguage& language)
 {
     m_language = language;
     SettingModel::instance().saveString(
-        LANGUAGE_PARAMETER,
+        "LANGUAGE",
         wxLocale::GetLanguageCanonicalName(language)
     );
 }

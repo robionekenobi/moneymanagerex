@@ -100,19 +100,17 @@ extern const wxString VIEW_ACCOUNTS_OPEN_STR;
 extern const wxString VIEW_ACCOUNTS_CLOSED_STR;
 extern const wxString VIEW_ACCOUNTS_FAVORITES_STR;
 
-extern const wxString LANGUAGE_PARAMETER;
 extern const wxString INIDB_USE_TRANSACTION_SOUND;
 extern const wxString INIDB_USE_ORG_DATE_COPYPASTE;
 extern const wxString INIDB_USE_ORG_DATE_DUPLICATE;
 extern const wxString INIDB_USE_ORG_STATE_DUPLICATE_PASTE;
 extern const wxString INIDB_SEND_USAGE_STATS;
+extern const wxString INIDB_NEWS_LAST_READ_DATE;
 
 extern const wxString ATTACHMENTS_FOLDER_DOCUMENTS;
 extern const wxString ATTACHMENTS_FOLDER_DATABASE;
 extern const wxString ATTACHMENTS_FOLDER_USERPROFILE;
 extern const wxString ATTACHMENTS_FOLDER_APPDATA;
-
-extern const wxString INIDB_NEWS_LAST_READ_DATE;
 
 extern const wxDateTime DATE_MIN;
 extern const wxDateTime DATE_MAX;
