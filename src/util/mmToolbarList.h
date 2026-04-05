@@ -19,7 +19,7 @@
 #pragma once
 
 #include "base/_defs.h"
-#include "util/mmImage.h"
+#include "mmImage.h"
 #include "mmframe.h"
 
 struct mmToolbarItem

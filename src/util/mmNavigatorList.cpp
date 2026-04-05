@@ -19,7 +19,7 @@
 #include "mmNavigatorList.h"
 
 #include "base/mmSingleton.h"
-#include "util/mmImage.h"
+#include "mmImage.h"
 #include "model/AccountModel.h"
 
 mmNavigatorList::mmNavigatorList()

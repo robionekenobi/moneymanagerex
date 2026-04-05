@@ -44,9 +44,9 @@
 #include "base/mmPlatform.h"
 #include "base/mmUserColor.h"
 #include "table/_TableUpgrade.h"
-#include "util/mmCalcValidator.h"
-#include "util/mmPath.h"
-#include "util/mmImage.h"
+#include "mmCalcValidator.h"
+#include "mmPath.h"
+#include "mmImage.h"
 #include "_simple.h"
 
 #include "model/CurrencyHistoryModel.h"

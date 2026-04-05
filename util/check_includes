@@ -101,6 +101,24 @@ my $level_warn  = 2; # 0: none, 1: not found, 2: fix
 my $level_info  = 0; # 0: none, 1: target path
 my $level_debug = 0; # 0: none, 1: main, 2: old
 
+# @layer_dirs: $layer -> [ $dir, ... ]
+my @layer_dirs = (
+    [ "src/", "src/../resources/" ],
+    [ "src/base/" ],
+    [ "src/data/", "src/table/" ],
+    [ "src/db/", "src/model/", "src/pref/", "src/util/" ],
+    [ "src/dialog/", "src/manager/", "src/panel/", "src/report/" ],
+    [ "src/app/", "src/import_export/", "src/wizard/" ],
+);
+
+# %dir_layer: $dir -> $layer
+my %dir_layer = ();
+for my $layer ( 0 .. @layer_dirs-1 ) {
+    for my $dir (@{$layer_dirs[$layer]}) {
+        $dir_layer{$dir} = $layer;
+    }
+}
+
 # }}}
 # {{{ log
 # {{{ const
@@ -369,30 +387,31 @@ sub check_include { my( $src_dir, $include_type, $dst ) = @_;
     }
 
     if( $include_type eq '""' ) {
-        my( $dst_path, $dst_fix ) = ( "", "" );
+        my( $dst_dir, $dst_fix ) = ( "", "", "" );
         if( $dst_subdir eq "" && -f "$src_dir$dst_file" ) {
-            $dst_path = "$src_dir$dst_file";
+            $dst_dir = "$src_dir";
         }
         elsif( $dst_subdir eq "" && -f "$src_dir$dst_file.in" ) {
-            $dst_path = "$src_dir$dst_file";
+            $dst_dir = "$src_dir";
         }
         elsif( $dst_subdir eq "" && -f "src/$dst_file.in" ) {
-            $dst_path = "src/$dst_file";
+            $dst_dir = "src/";
         }
         elsif( $dst_subdir eq "" && -f "src/model/$dst_file" ) {
-            $dst_path = "src/model/$dst_file";
+            $dst_dir = "src/model/";
             $dst_fix = "model/$dst_file";
         }
         elsif( $dst_subdir eq "" && -f "src/db/$dst_file" ) {
-            $dst_path = "src/db/$dst_file";
+            $dst_dir = "src/db/";
             $dst_fix = "db/$dst_file";
         }
-        elsif( -f "src/$dst" ) {
-            $dst_path = "src/$dst";
+        elsif( -f "src/$dst_subdir$dst_file" ) {
+            $dst_dir = "src/$dst_subdir";
             if( "src/$dst_subdir" eq $src_dir ) {
                 $dst_fix = "$dst_file";
             }
         }
+        my $dst_path = "$dst_dir$dst_file";
 
         if( $dst_path ne "" && $level_info >= 1 ) {
             log_info( "\"$dst\" -> [$dst_path]\n" );
@@ -402,6 +421,22 @@ sub check_include { my( $src_dir, $include_type, $dst ) = @_;
         }
         elsif( $dst_path eq "" && $level_warn >= 1 ) {
             log_warn( "\"$dst\": not found\n" );
+        }
+
+        if( !exists $dir_layer{$src_dir} ) {
+            if( $level_warn >= 2 ) {
+                log_warn( "[$src_dir]: unknown layer\n" );
+            }
+        }
+        elsif( !exists $dir_layer{$dst_dir} ) {
+            if( $level_warn >= 2 ) {
+                log_warn( "[$dst_path]: unknown layer\n" );
+            }
+        }
+        elsif( $dir_layer{$src_dir} < $dir_layer{$dst_dir} ) {
+            if( $level_warn >= 1 ) {
+                log_warn( "[$dst_path] is at higher layer\n" );
+            }
         }
     }
 }
@@ -440,7 +475,6 @@ sub find_wanted {
 # }}}
 
 # {{{ main
-
 {
     # {{{ init
 
@@ -496,5 +530,4 @@ $flag
 
     # }}}
 }
-
 # }}}
