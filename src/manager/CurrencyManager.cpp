@@ -203,11 +203,13 @@ void CurrencyManager::createControls()
     );
     w_groupSep = new wxChoice(this, ID_DIALOG_CURRENCY);
     itemFlexGridSizer3->Add(w_groupSep, g_flagsExpand);
-    w_groupSep->Append(_t("None"),                new wxStringClientData(""));    
-    w_groupSep->Append(_t("Dot")        + " (.)", new wxStringClientData("."));
-    w_groupSep->Append(_t("Comma")      + " (,)", new wxStringClientData(","));
-    w_groupSep->Append(_t("Apostrophe") + " (')", new wxStringClientData("'"));
-    w_groupSep->Append(_t("Space")      + " ( )", new wxStringClientData(" "));
+    w_groupSep->Append(_t("None"), new wxStringClientData(""));    
+    w_groupSep->Append(_t("Dot") + " (.)", new wxStringClientData("."));
+    w_groupSep->Append(_t("Comma") + " (,)", new wxStringClientData(","));
+    // Note: do not use single quote ('), it creates problems with html forms
+    w_groupSep->Append(_t("Apostrophe") + L" (\x2019)", new wxStringClientData(L"\x2019"));
+    // Note: do not use thin space (\x2009), it is not readable in some fonts
+    w_groupSep->Append(_t("Space") + " ( )", new wxStringClientData(" "));
 
     wxIntegerValidator<int> valInt(&m_scale, wxNUM_VAL_THOUSANDS_SEPARATOR);
     valInt.SetMin(0); // Only allow positive numbers
@@ -290,17 +292,23 @@ void CurrencyManager::fillControls()
         w_symbol->ChangeValue(m_currency_n->m_prefix_symbol);
     }
     unsigned int i;
-    for (i = 0; i<w_decimalSep->GetCount(); i++)
+    for (i = 0; i < w_decimalSep->GetCount(); ++i)
         if (static_cast<wxStringClientData *>(w_decimalSep->GetClientObject(i))->GetData()
             == m_currency_n->m_decimal_point
         )
             break;
+    if (i >= w_decimalSep->GetCount())
+        i = 0;
     w_decimalSep->SetSelection(i);
-    for (i = 0; i<w_groupSep->GetCount(); i++)
-        if (static_cast<wxStringClientData *>(w_groupSep->GetClientObject(i))->GetData()
-            == m_currency_n->m_group_separator
-        )
+    for (i = 0; i < w_groupSep->GetCount(); ++i) {
+        wxString choice = static_cast<wxStringClientData*>(
+            w_groupSep->GetClientObject(i)
+        )->GetData();
+        if (choice == m_currency_n->m_group_separator)
             break;
+    }
+    if (i >= w_groupSep->GetCount())
+        i = 0;
     w_groupSep->SetSelection(i);
     m_scale = log10(m_currency_n->m_scale.GetValue());
     w_decimalSep->Enable(!m_locale_used && m_scale > 0); 
@@ -310,7 +318,10 @@ void CurrencyManager::fillControls()
     w_code->ChangeValue(m_currency_n->m_symbol);
 
     bool baseCurrency = (PrefModel::instance().getBaseCurrencyID() == m_currency_n->m_id);
-    w_baseConvRate->SetValue((baseCurrency ? 1.00 : m_currency_n->m_base_conv_rate), SCALE);
+    w_baseConvRate->SetValue(
+        (baseCurrency ? 1.00 : m_currency_n->m_base_conv_rate),
+        SCALE
+    );
     w_baseConvRate->Enable(!baseCurrency);
 }
 
@@ -363,7 +374,7 @@ void CurrencyManager::onDataChanged(wxCommandEvent& WXUNUSED(event))
     const wxString decimal = static_cast<wxStringClientData *>(
         w_decimalSep->GetClientObject(w_decimalSep->GetSelection())
     )->GetData();
-    const wxString grouping = static_cast<wxStringClientData *>(
+    const wxString grouping = static_cast<wxStringClientData*>(
         w_groupSep->GetClientObject(w_groupSep->GetSelection())
     )->GetData();
     int scale = wxAtoi(w_scale->GetValue());
@@ -372,7 +383,7 @@ void CurrencyManager::onDataChanged(wxCommandEvent& WXUNUSED(event))
         mmErrorDialogs::ToolTip4Object(
             w_groupSep,
             _t("Invalid Entry"),
-            _t("Grouping character is unable to be the same as the decimal character")
+            _t("Grouping character shall not be the same as the decimal character")
         );
 
     w_decimalSep->Enable(!m_locale_used && scale > 0); 
