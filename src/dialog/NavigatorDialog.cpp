@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ********************************************************/
 
+#include "NavigatorDialog.h"
+
 #include "base/_constants.h"
 #include "util/mmImage.h"
 
@@ -23,9 +25,8 @@
 #include "model/PrefModel.h"
 
 #include "mmframe.h"
-#include "dialog/DateRangeDialog.h"
-#include "navigatordialog.h"
-#include "navigatoreditdialog.h"
+#include "DateRangeDialog.h"
+#include "NavigatorEditDialog.h"
 
 struct NavData : public wxClientData
 {
@@ -33,25 +34,25 @@ struct NavData : public wxClientData
     explicit NavData(mmNavigatorItem* r): ref(r) {}
 };
 
-wxIMPLEMENT_DYNAMIC_CLASS(mmNavigatorDialog, wxDialog);
+wxIMPLEMENT_DYNAMIC_CLASS(NavigatorDialog, wxDialog);
 
-mmNavigatorDialog::mmNavigatorDialog()
+NavigatorDialog::NavigatorDialog()
 {
 }
 
-mmNavigatorDialog::~mmNavigatorDialog()
+NavigatorDialog::~NavigatorDialog()
 {
     InfoModel::instance().saveSize(DIALOG_SIZE, GetSize());
 }
 
-mmNavigatorDialog::mmNavigatorDialog(wxWindow* parent):genericTreeListDialog(parent, _t("Navigator and account type configuration"))
+NavigatorDialog::NavigatorDialog(wxWindow* parent):genericTreeListDialog(parent, _t("Navigator and account type configuration"))
 {
     init();  // must be called first!!
     SetSize(InfoModel::instance().getSize(DIALOG_SIZE));
-    m_treeList->Bind(wxEVT_TREELIST_ITEM_CHECKED, &mmNavigatorDialog::OnTreeItemChecked, this);
+    m_treeList->Bind(wxEVT_TREELIST_ITEM_CHECKED, &NavigatorDialog::OnTreeItemChecked, this);
 }
 
-void mmNavigatorDialog::createColumns() {
+void NavigatorDialog::createColumns() {
     m_treeList->AppendColumn(_t("Name"), 250);
     m_treeList->AppendColumn(_t("Selection name"));
 
@@ -71,34 +72,34 @@ void mmNavigatorDialog::createColumns() {
 #endif
 }
 
-void mmNavigatorDialog::createMiddleElements(wxBoxSizer* itemBox) {
+void NavigatorDialog::createMiddleElements(wxBoxSizer* itemBox) {
     m_edit = new wxButton(this, BTN_EDIT, _t("&Edit"));
-    Bind(wxEVT_BUTTON, &mmNavigatorDialog::OnEdit, this, BTN_EDIT);
+    Bind(wxEVT_BUTTON, &NavigatorDialog::OnEdit, this, BTN_EDIT);
     m_edit->Enable(false);
     itemBox->Add(m_edit, g_flagsV);
 }
 
-void mmNavigatorDialog::createBottomElements(wxBoxSizer* itemBox) {
+void NavigatorDialog::createBottomElements(wxBoxSizer* itemBox) {
     itemBox->AddSpacer(15);
     itemBox->Add(new wxButton(this, BTN_NEW, _t("&New")), g_flagsV);
-    Bind(wxEVT_BUTTON, &mmNavigatorDialog::OnNew, this, BTN_NEW);
+    Bind(wxEVT_BUTTON, &NavigatorDialog::OnNew, this, BTN_NEW);
 
     itemBox->AddSpacer(15);
     m_delete = new wxButton(this, BTN_DELETE, _t("&Delete"));
-    Bind(wxEVT_BUTTON, &mmNavigatorDialog::OnDelete, this, BTN_DELETE);
+    Bind(wxEVT_BUTTON, &NavigatorDialog::OnDelete, this, BTN_DELETE);
 
     m_delete->Enable(false);
     itemBox->Add(m_delete, g_flagsV);
 
     itemBox->AddSpacer(70);
     wxButton* btn = new wxButton(this, BTN_RESET_NAMES, _t("Re&store default names"));
-    Bind(wxEVT_BUTTON, &mmNavigatorDialog::OnNameReset, this, BTN_RESET_NAMES);
+    Bind(wxEVT_BUTTON, &NavigatorDialog::OnNameReset, this, BTN_RESET_NAMES);
 
     itemBox->Add(btn, 0, wxALL, 5);
     mmToolTip(btn, _t("Restore default names"));
 }
 
-void mmNavigatorDialog::fillControls(wxTreeListItem root)
+void NavigatorDialog::fillControls(wxTreeListItem root)
 {
     mmNavigatorItem* ainfo = mmNavigatorList::instance().getFirstAccount();
     while (ainfo != nullptr) {
@@ -107,7 +108,7 @@ void mmNavigatorDialog::fillControls(wxTreeListItem root)
     }
 }
 
-wxTreeListItem mmNavigatorDialog::appendAccountItem(wxTreeListItem parent, mmNavigatorItem* ainfo)
+wxTreeListItem NavigatorDialog::appendAccountItem(wxTreeListItem parent, mmNavigatorItem* ainfo)
 {
     #ifdef __WXMAC__
         wxString text = mmNavigatorList::GetTranslatedName(ainfo);
@@ -129,11 +130,11 @@ wxTreeListItem mmNavigatorDialog::appendAccountItem(wxTreeListItem parent, mmNav
     return item;
 }
 
-void mmNavigatorDialog::OnEdit(wxCommandEvent&)
+void NavigatorDialog::OnEdit(wxCommandEvent&)
 {
     wxTreeListItem item = m_treeList->GetSelection();
     NavData* data = static_cast<NavData*> (m_treeList->GetItemData(item));
-    mmNavigatorEditDialog dlg(this, data->ref);
+    NavigatorEditDialog dlg(this, data->ref);
     if (dlg.ShowModal() == wxID_OK) {
         dlg.updateInfo(data->ref);
         if (data->ref->navTyp > mmNavigatorItem::NAV_TYP_PANEL) {
@@ -147,9 +148,9 @@ void mmNavigatorDialog::OnEdit(wxCommandEvent&)
     }
 }
 
-void mmNavigatorDialog::OnNew(wxCommandEvent&)
+void NavigatorDialog::OnNew(wxCommandEvent&)
 {
-    mmNavigatorEditDialog dlg(this, nullptr);
+    NavigatorEditDialog dlg(this, nullptr);
     if (dlg.ShowModal() == wxID_OK) {
         mmNavigatorItem* info = mmNavigatorList::instance().FindOrCreateEntry(-1);
         info->navTyp = mmNavigatorItem::NAV_TYP_ACCOUNT;
@@ -159,7 +160,7 @@ void mmNavigatorDialog::OnNew(wxCommandEvent&)
     }
 }
 
-void mmNavigatorDialog::OnDelete(wxCommandEvent&)
+void NavigatorDialog::OnDelete(wxCommandEvent&)
 {
     wxTreeListItem item = m_treeList->GetSelection();
     NavData* data = static_cast<NavData*> (m_treeList->GetItemData(item));
@@ -168,7 +169,7 @@ void mmNavigatorDialog::OnDelete(wxCommandEvent&)
     }
 }
 
-void mmNavigatorDialog::OnTreeItemChecked(wxTreeListEvent& event)
+void NavigatorDialog::OnTreeItemChecked(wxTreeListEvent& event)
 {
     wxTreeListItem item = event.GetItem();
     NavData* data = static_cast<NavData*> (m_treeList->GetItemData(item));
@@ -177,13 +178,13 @@ void mmNavigatorDialog::OnTreeItemChecked(wxTreeListEvent& event)
     }
 }
 
-void mmNavigatorDialog::closeAction()
+void NavigatorDialog::closeAction()
 {
     updateItemsRecursive(m_treeList->GetRootItem());
     mmNavigatorList::instance().SaveSequenceAndState();
 }
 
-void mmNavigatorDialog::setDefault()
+void NavigatorDialog::setDefault()
 {
     mmNavigatorList::instance().SetToDefault();
     // FIXME: The application is not ready for dynamic account types.
@@ -192,7 +193,7 @@ void mmNavigatorDialog::setDefault()
     AccountModel::instance().dangerous_reset_unknown_types();
 }
 
-void mmNavigatorDialog::OnNameReset(wxCommandEvent&)
+void NavigatorDialog::OnNameReset(wxCommandEvent&)
 {
     if (wxMessageBox(_t("Do you really want to restore the default names?")
         , _t("Restore default names")
@@ -204,7 +205,7 @@ void mmNavigatorDialog::OnNameReset(wxCommandEvent&)
     }
 }
 
-void mmNavigatorDialog::updateControlState(int selIdx, wxClientData* selData)
+void NavigatorDialog::updateControlState(int selIdx, wxClientData* selData)
 {
     bool nonfixed = false;
     if (selIdx > -1) {
@@ -215,7 +216,7 @@ void mmNavigatorDialog::updateControlState(int selIdx, wxClientData* selData)
     m_delete->Enable(nonfixed);
 }
 
-void mmNavigatorDialog::copyTreeItemData(wxTreeListItem src, wxTreeListItem dst) {
+void NavigatorDialog::copyTreeItemData(wxTreeListItem src, wxTreeListItem dst) {
     const int colCount = m_treeList->GetColumnCount();
     for (int c = 1; c < colCount; ++c) {
         m_treeList->SetItemText(dst, c, m_treeList->GetItemText(src, c));
@@ -232,7 +233,7 @@ void mmNavigatorDialog::copyTreeItemData(wxTreeListItem src, wxTreeListItem dst)
     }
 }
 
-void mmNavigatorDialog::updateItemsRecursive(wxTreeListItem item)
+void NavigatorDialog::updateItemsRecursive(wxTreeListItem item)
 {
     int idx = 0;
     wxTreeListItem child = m_treeList->GetFirstChild(item);

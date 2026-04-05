@@ -78,6 +78,9 @@
 #include "dialog/StartupDialog.h"
 #include "dialog/TrxDialog.h"
 #include "dialog/TrxFilterDialog.h"
+#include "dialog/NavigatorDialog.h"
+#include "dialog/ToolbarDialog.h"
+#include "uicontrols/reconciledialog.h"
 
 #include "report/_all.h"
 #include "report/bugreport.h"
@@ -86,11 +89,6 @@
 #include "import_export/qif_import_gui.h"
 #include "import_export/univcsvdialog.h"
 #include "import_export/ofx_import_gui.h"
-
-#include "uicontrols/navigatordialog.h"
-#include "uicontrols/reconciledialog.h"
-#include "uicontrols/toolbardialog.h"
-
 #include "import_export/webapp.h"
 #include "import_export/webappdialog.h"
 #include "wizard/wizard_newaccount.h"
@@ -110,8 +108,12 @@ void mmToolbarArt::DrawPlainBackground(wxDC& dc, wxWindow* WXUNUSED(wnd), const 
     );
 }
 
-void mmToolbarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem& item, const wxRect& rect)
-{
+void mmToolbarArt::DrawButton(
+    wxDC& dc,
+    wxWindow* wnd,
+    const wxAuiToolBarItem& item,
+    const wxRect& rect
+) {
     //wxColour clr = mmImage::themeMetaColour(mmImage::COLOR_TOOLBAR);
     bool dark = isDark(mmImage::themeMetaColour(mmImage::COLOR_TOOLBAR));
     int bmpX = 0, bmpY = 0;
@@ -2338,7 +2340,7 @@ void  mmGUIFrame::PopulateToolBar(bool update)
 
 void mmGUIFrame::OnToolbarRightClick(wxMouseEvent& WXUNUSED(event))
 {
-    mmToolbarDialog dlg(this);
+    ToolbarDialog dlg(this);
     dlg.ShowModal();
 }
 
@@ -3345,7 +3347,7 @@ void mmGUIFrame::OnEmptyTreePopUp(wxCommandEvent& event)
         m_nav_tree_ctrl->CollapseAll();
     }
     else if (id == MENU_TREEPOPUP_CONFIG_NAV) {
-        mmNavigatorDialog ndlg(this);
+        NavigatorDialog ndlg(this);
         ndlg.ShowModal();
         DoRecreateNavTreeControl(true);
     }

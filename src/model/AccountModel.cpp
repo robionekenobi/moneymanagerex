@@ -345,7 +345,7 @@ void AccountModel::dangerous_reset_type(wxString old_type)
     }
 }
 
-// FIXME: see comments in mmNavigatorDialog::setDefault()
+// FIXME: see comments in NavigatorDialog::setDefault()
 void AccountModel::dangerous_reset_unknown_types()
 {
     for (const auto& account_d : find_all(

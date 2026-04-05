@@ -16,21 +16,21 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "NavigatorEditDialog.h"
+
 #include "base/_constants.h"
 #include "util/mmImage.h"
 #include "util/mmPath.h"
 
 #include "model/PrefModel.h"
 
-#include "navigatoreditdialog.h"
+wxIMPLEMENT_DYNAMIC_CLASS(NavigatorEditDialog, wxDialog);
 
-wxIMPLEMENT_DYNAMIC_CLASS(mmNavigatorEditDialog, wxDialog);
-
-mmNavigatorEditDialog::mmNavigatorEditDialog()
+NavigatorEditDialog::NavigatorEditDialog()
 {
 }
 
-mmNavigatorEditDialog::mmNavigatorEditDialog(wxWindow* parent, const mmNavigatorItem* info)
+NavigatorEditDialog::NavigatorEditDialog(wxWindow* parent, const mmNavigatorItem* info)
 {
     this->SetFont(parent->GetFont());
 
@@ -72,7 +72,7 @@ mmNavigatorEditDialog::mmNavigatorEditDialog(wxWindow* parent, const mmNavigator
     Fit();
 }
 
-void mmNavigatorEditDialog::CreateControls()
+void NavigatorEditDialog::CreateControls()
 {
     wxPanel* panel = new wxPanel(this);
     wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
@@ -87,14 +87,14 @@ void mmNavigatorEditDialog::CreateControls()
 
     wxStaticText* nameLabel = new wxStaticText(uiBox, wxID_ANY, _t("Name") + ":");
     m_nameTextCtrl = new wxTextCtrl(uiBox, wxID_ANY, "", wxDefaultPosition, wxSize(200, -1));
-    m_nameTextCtrl->Bind(wxEVT_TEXT, &mmNavigatorEditDialog::OnNewText, this);
+    m_nameTextCtrl->Bind(wxEVT_TEXT, &NavigatorEditDialog::OnNewText, this);
 
     uiStyleSizer->Add(nameLabel, g_flagsH);
     uiStyleSizer->Add(m_nameTextCtrl, g_flagsExpand);
 
     m_choiceLabel = new wxStaticText(uiBox, wxID_ANY, _t("Selection name") + ":");
     m_choiceTextCtrl = new wxTextCtrl(uiBox, wxID_ANY, "", wxDefaultPosition, wxSize(200, -1));
-    m_choiceTextCtrl->Bind(wxEVT_TEXT, &mmNavigatorEditDialog::OnNewText, this);
+    m_choiceTextCtrl->Bind(wxEVT_TEXT, &NavigatorEditDialog::OnNewText, this);
 
     uiStyleSizer->Add(m_choiceLabel, g_flagsH);
     uiStyleSizer->Add(m_choiceTextCtrl, g_flagsExpand);
@@ -140,7 +140,7 @@ void mmNavigatorEditDialog::CreateControls()
     this->Centre();
 }
 
-void mmNavigatorEditDialog::updateInfo(mmNavigatorItem* info)
+void NavigatorEditDialog::updateInfo(mmNavigatorItem* info)
 {
     info->name = m_nameTextCtrl->GetValue();
     info->choice = m_choiceTextCtrl->GetValue();
@@ -156,7 +156,7 @@ void mmNavigatorEditDialog::updateInfo(mmNavigatorItem* info)
     }
 }
 
-void mmNavigatorEditDialog::OnNewText(wxCommandEvent& WXUNUSED(event))
+void NavigatorEditDialog::OnNewText(wxCommandEvent& WXUNUSED(event))
 {
     m_saveButton->Enable(m_nameTextCtrl->GetValue().length() > 2);
 }

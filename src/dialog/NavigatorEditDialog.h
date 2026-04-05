@@ -21,13 +21,13 @@
 #include "base/_defs.h"
 #include "util/mmNavigatorList.h"
 
-class mmNavigatorEditDialog: public wxDialog
+class NavigatorEditDialog: public wxDialog
 {
-    wxDECLARE_DYNAMIC_CLASS(mmNavigatorEditDialog);
+    wxDECLARE_DYNAMIC_CLASS(NavigatorEditDialog);
 
 public:
-    mmNavigatorEditDialog();
-    mmNavigatorEditDialog(wxWindow* parent, const mmNavigatorItem* info);
+    NavigatorEditDialog();
+    NavigatorEditDialog(wxWindow* parent, const mmNavigatorItem* info);
     void updateInfo(mmNavigatorItem* info);
     void OnNewText(wxCommandEvent& event);
 

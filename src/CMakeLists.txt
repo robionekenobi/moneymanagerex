@@ -391,6 +391,10 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     dialog/MergePayeeDialog.h
     dialog/MergeTagDialog.cpp
     dialog/MergeTagDialog.h
+    dialog/NavigatorDialog.cpp
+    dialog/NavigatorDialog.h
+    dialog/NavigatorEditDialog.cpp
+    dialog/NavigatorEditDialog.h
     dialog/SchedDialog.cpp
     dialog/SchedDialog.h
     dialog/SplitDialog.cpp
@@ -399,6 +403,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     dialog/StartupDialog.h
     dialog/StockDialog.cpp
     dialog/StockDialog.h
+    dialog/ToolbarDialog.cpp
+    dialog/ToolbarDialog.h
     dialog/TrxDialog.cpp
     dialog/TrxDialog.h
     dialog/TrxFilterDialog.cpp
@@ -460,12 +466,6 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
 
     uicontrols/reconciledialog.cpp
     uicontrols/reconciledialog.h
-    uicontrols/navigatordialog.cpp
-    uicontrols/navigatordialog.h
-    uicontrols/navigatoreditdialog.cpp
-    uicontrols/navigatoreditdialog.h
-    uicontrols/toolbardialog.cpp
-    uicontrols/toolbardialog.h
 
     db/dbcheck.cpp
     db/dbcheck.h

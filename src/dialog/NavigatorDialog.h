@@ -22,14 +22,14 @@
 #include "util/mmNavigatorList.h"
 #include "generic/generictreelistdialog.h"
 
-class mmNavigatorDialog: public genericTreeListDialog
+class NavigatorDialog: public genericTreeListDialog
 {
-    wxDECLARE_DYNAMIC_CLASS(mmNavigatorDialog);
+    wxDECLARE_DYNAMIC_CLASS(NavigatorDialog);
 
 public:
-    mmNavigatorDialog();
-    ~mmNavigatorDialog();
-    mmNavigatorDialog(wxWindow* parent);
+    NavigatorDialog();
+    ~NavigatorDialog();
+    NavigatorDialog(wxWindow* parent);
 
     enum {
         BTN_EDIT = BTN_size,

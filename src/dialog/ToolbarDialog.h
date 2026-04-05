@@ -23,10 +23,10 @@
 #include "util/mmToolbarList.h"
 #include "generic/generictreelistdialog.h"
 
-class mmToolbarDialog: public genericTreeListDialog
+class ToolbarDialog: public genericTreeListDialog
 {
 private:
-    wxDECLARE_DYNAMIC_CLASS(mmToolbarDialog);
+    wxDECLARE_DYNAMIC_CLASS(ToolbarDialog);
 
     enum {
         BTN_NEW_SEPARATOR = BTN_size,
@@ -36,9 +36,9 @@ private:
     };
 
 public:
-    mmToolbarDialog();
-    ~mmToolbarDialog() override;
-    mmToolbarDialog(wxWindow* parent);
+    ToolbarDialog();
+    ~ToolbarDialog() override;
+    ToolbarDialog(wxWindow* parent);
 
 private:
     const std::string DIALOG_SIZE  = "TOOLBAR_DIALOG_SIZE";

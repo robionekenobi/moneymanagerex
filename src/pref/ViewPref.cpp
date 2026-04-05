@@ -27,8 +27,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "ViewPref.h"
 
 #include "manager/ThemeManager.h"
-#include "uicontrols/navigatordialog.h"
-#include "uicontrols/toolbardialog.h"
+#include "dialog/NavigatorDialog.h"
+#include "dialog/ToolbarDialog.h"
 
 /*******************************************************/
 wxBEGIN_EVENT_TABLE(ViewPref, wxPanel)
@@ -296,13 +296,13 @@ void ViewPref::OnThemeManagerSelected(wxCommandEvent&)
 
 void ViewPref::OnNavigationConfigSelected(wxCommandEvent&)
 {
-    mmNavigatorDialog dlg(this);
+    NavigatorDialog dlg(this);
     dlg.ShowModal();
 }
 
 void ViewPref::OnToolbarConfigSelected(wxCommandEvent&)
 {
-    mmToolbarDialog dlg(this);
+    ToolbarDialog dlg(this);
     dlg.ShowModal();
 }
 

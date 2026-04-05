@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ********************************************************/
 
+#include "ToolbarDialog.h"
 #include "mmframe.h"
-#include "toolbardialog.h"
 
 struct TypeDataRef : public wxClientData
 {
@@ -26,26 +26,29 @@ struct TypeDataRef : public wxClientData
 };
 
 
-wxIMPLEMENT_DYNAMIC_CLASS(mmToolbarDialog, wxDialog);
+wxIMPLEMENT_DYNAMIC_CLASS(ToolbarDialog, wxDialog);
 
-mmToolbarDialog::mmToolbarDialog()
+ToolbarDialog::ToolbarDialog()
 {
     m_delete = nullptr;
 }
 
-mmToolbarDialog::~mmToolbarDialog()
+ToolbarDialog::~ToolbarDialog()
 {
     InfoModel::instance().saveSize(DIALOG_SIZE, GetSize());
 }
 
-mmToolbarDialog::mmToolbarDialog(wxWindow* parent):genericTreeListDialog(parent, _t("Toolbar configuration"))
+ToolbarDialog::ToolbarDialog(
+    wxWindow* parent
+) :
+    genericTreeListDialog(parent, _t("Toolbar configuration"))
 {
     m_delete = nullptr;
     init(wxTL_3STATE | wxTL_SINGLE | wxTL_NO_HEADER);
     SetSize(InfoModel::instance().getSize(DIALOG_SIZE));
 }
 
-void mmToolbarDialog::createColumns() {
+void ToolbarDialog::createColumns() {
     m_treeList->AppendColumn("");
     wxImageList* imageList = mmToolbarList::instance().getImageList();
     m_treeList->SetImageList(imageList);
@@ -57,7 +60,7 @@ void mmToolbarDialog::createColumns() {
 #endif
 }
 
-void mmToolbarDialog::closeAction() {
+void ToolbarDialog::closeAction() {
     updateTree();
     mmToolbarList::instance().Save();
     mmGUIFrame* mainFrame = wxDynamicCast(this->GetParent(), mmGUIFrame);
@@ -66,7 +69,7 @@ void mmToolbarDialog::closeAction() {
     }
 };
 
-void mmToolbarDialog::createBottomElements(wxBoxSizer* itemBox)
+void ToolbarDialog::createBottomElements(wxBoxSizer* itemBox)
 {
     itemBox->AddSpacer(50);
 
@@ -77,7 +80,7 @@ void mmToolbarDialog::createBottomElements(wxBoxSizer* itemBox)
     ));
 
     itemBox->Add(sepBtn, g_flagsV);
-    Bind(wxEVT_BUTTON, &mmToolbarDialog::OnNew, this, BTN_NEW_SEPARATOR);
+    Bind(wxEVT_BUTTON, &ToolbarDialog::OnNew, this, BTN_NEW_SEPARATOR);
 
     wxButton* spaceBtn = new wxButton(this, BTN_NEW_SPACE, _t("Insert s&pace"));
     spaceBtn->SetToolTip(_t(
@@ -86,7 +89,7 @@ void mmToolbarDialog::createBottomElements(wxBoxSizer* itemBox)
     ));
 
     itemBox->Add(spaceBtn, g_flagsV);
-    Bind(wxEVT_BUTTON, &mmToolbarDialog::OnNew, this, BTN_NEW_SPACE);
+    Bind(wxEVT_BUTTON, &ToolbarDialog::OnNew, this, BTN_NEW_SPACE);
 
     wxButton* stretchBtn = new wxButton(this, BTN_NEW_STRETCHER, _t("Insert s&tretch space"));
     stretchBtn->SetToolTip(_t(
@@ -96,19 +99,19 @@ void mmToolbarDialog::createBottomElements(wxBoxSizer* itemBox)
     ));
 
     itemBox->Add(stretchBtn, g_flagsV);
-    Bind(wxEVT_BUTTON, &mmToolbarDialog::OnNew, this, BTN_NEW_STRETCHER);
+    Bind(wxEVT_BUTTON, &ToolbarDialog::OnNew, this, BTN_NEW_STRETCHER);
 
 
     itemBox->AddSpacer(10);
     m_delete = new wxButton(this, BTN_DELETE, _t("&Delete"));
     m_delete->Enable(false);
-    m_delete->Bind(wxEVT_BUTTON, &mmToolbarDialog::OnDelete, this);
+    m_delete->Bind(wxEVT_BUTTON, &ToolbarDialog::OnDelete, this);
     itemBox->Add(m_delete, g_flagsV);
 
     itemBox->AddSpacer(70);
 }
 
-void mmToolbarDialog::updateControlState(int WXUNUSED(selIdx), wxClientData* WXUNUSED(selData))
+void ToolbarDialog::updateControlState(int WXUNUSED(selIdx), wxClientData* WXUNUSED(selData))
 {
     bool enable = false;
     wxTreeListItem sel = m_treeList->GetSelection();
@@ -121,13 +124,13 @@ void mmToolbarDialog::updateControlState(int WXUNUSED(selIdx), wxClientData* WXU
     m_delete->Enable(enable);
 }
 
-void mmToolbarDialog::setDefault() {
+void ToolbarDialog::setDefault() {
     mmToolbarList::instance().SetToDefault();
     m_treeList->SetImageList(mmToolbarList::instance().getImageList());
     reloadTree();
 }
 
-void mmToolbarDialog::fillControls(wxTreeListItem root)
+void ToolbarDialog::fillControls(wxTreeListItem root)
 {
     mmToolbarItem* ainfo = mmToolbarList::instance().getFirstEntry();
     while (ainfo != nullptr) {
@@ -136,7 +139,7 @@ void mmToolbarDialog::fillControls(wxTreeListItem root)
     }
 }
 
-wxTreeListItem mmToolbarDialog::appendItem(wxTreeListItem parent, mmToolbarItem* ainfo)
+wxTreeListItem ToolbarDialog::appendItem(wxTreeListItem parent, mmToolbarItem* ainfo)
 {
    wxString text = ainfo->type == mmToolbarItem::TOOLBAR_BTN ? wxGetTranslation(ainfo->helpstring) :
         (ainfo->type == mmToolbarItem::TOOLBAR_SEPARATOR ? std::string(60, '-') :
@@ -155,7 +158,7 @@ wxTreeListItem mmToolbarDialog::appendItem(wxTreeListItem parent, mmToolbarItem*
     return item;
 }
 
-void mmToolbarDialog::OnDelete(wxCommandEvent&)
+void ToolbarDialog::OnDelete(wxCommandEvent&)
 {
     updateTree();
     wxTreeListItem item = m_treeList->GetSelection();
@@ -166,7 +169,7 @@ void mmToolbarDialog::OnDelete(wxCommandEvent&)
     updateButtonState();
 }
 
-void mmToolbarDialog::OnNew(wxCommandEvent& event)
+void ToolbarDialog::OnNew(wxCommandEvent& event)
 {
     updateTree();
     mmToolbarItem* ainfo = nullptr;
@@ -181,7 +184,7 @@ void mmToolbarDialog::OnNew(wxCommandEvent& event)
     updateButtonState();
 }
 
-void mmToolbarDialog::copyTreeItemData(wxTreeListItem src, wxTreeListItem dst) {
+void ToolbarDialog::copyTreeItemData(wxTreeListItem src, wxTreeListItem dst) {
     const int colCount = m_treeList->GetColumnCount();
     for (int c = 1; c < colCount; ++c) {
         m_treeList->SetItemText(dst, c, m_treeList->GetItemText(src, c));
@@ -195,7 +198,7 @@ void mmToolbarDialog::copyTreeItemData(wxTreeListItem src, wxTreeListItem dst) {
     m_treeList->CheckItem(dst, data->ref->active ? wxCHK_CHECKED : wxCHK_UNCHECKED);
 }
 
-void mmToolbarDialog::updateTree()
+void ToolbarDialog::updateTree()
 {
     int idx = 0;
     // reindex tree:

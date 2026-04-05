@@ -223,3 +223,8 @@ under src/ in increasing chronological order.
   util/_util:mmDates                 -> util/mmDateParser
   util/_util:mmSeparator             -> util/mmSepParser
 
+. PR ? (?)
+  uicontrols/navigatordialog         -> dialog/NavigatorDialog
+  uicontrols/navigatoreditdialog     -> dialog/NavigatorEditDialog
+  uicontrols/toolbardialog           -> dialog/ToolbarDialog
+
