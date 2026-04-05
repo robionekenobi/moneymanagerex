@@ -33,8 +33,8 @@ mmCalcPopup::mmCalcPopup(
     bool trigger
 ) :
     wxPopupTransientWindow(parent_win, wxBORDER_THEME | wxPU_CONTAINS_CONTROLS),
-    w_target(target),
-    m_trigger(trigger)
+    m_trigger(trigger),
+    w_target(target)
 {
     w_panel = new wxWindow(this, wxID_ANY);
     m_font = parent_win->GetFont();

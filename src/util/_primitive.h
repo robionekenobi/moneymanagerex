@@ -52,7 +52,7 @@ extern const wxString g_short_days_of_week[7];
 
 inline const wxString mmGetMonthName(const wxDateTime::Month& month)
 {
-    return MONTHS[static_cast<int>(month - wxDateTime::Month::Jan)];
+    return MONTHS[month - wxDateTime::Month::Jan];
 }
 
 bool mmParseISODate(const wxString& in_str, wxDateTime& out_date);

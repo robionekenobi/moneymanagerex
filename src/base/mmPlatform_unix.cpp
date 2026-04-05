@@ -46,11 +46,6 @@ void SetInstallPrefix()
 
 //----------------------------------------------------------------------------
 
-const wxString mmPlatform::platformName()
-{
-    return "unix";
-}
-
 const wxString mmPlatform::appName()
 {
     return "mmex";

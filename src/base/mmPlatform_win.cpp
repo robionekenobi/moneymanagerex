@@ -39,11 +39,6 @@ static const wxFileName GetInstallDir()
     return fname;
 }
 
-const wxString mmPlatform::platformName()
-{
-    return "win";
-}
-
 const wxString mmPlatform::appName()
 {
     return "MoneyManagerEx";

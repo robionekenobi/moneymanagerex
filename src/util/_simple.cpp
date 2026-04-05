@@ -317,8 +317,8 @@ mmTagTextCtrl::mmTagTextCtrl(
     fgColor = *mmUserColor::bestFontColor(bgColorEnabled_);
 #else
     style |= wxBORDER_NONE;
-    bgColorEnabled_ = mmImage::themeMetaColour(COLOR_TEXTCONTROL);
-    fgColor = mmImage::themeMetaColour(COLOR_TEXTCONTROL_FONT);
+    bgColorEnabled_ = mmImage::themeMetaColour(mmImage::COLOR_TEXTCONTROL);
+    fgColor = mmImage::themeMetaColour(mmImage::COLOR_TEXTCONTROL_FONT);
 #endif
     Create(parent, id, pos, size, style);
     SetFont(parent->GetFont());
