@@ -39,7 +39,6 @@
 #include "AttachmentDialog.h"
 #include "AccountDialog.h"
 #include "TrxShareDialog.h"
-#include "app/mmFrame.h"
 
 using namespace rapidjson;
 

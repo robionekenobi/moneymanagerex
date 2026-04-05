@@ -23,12 +23,12 @@
 #include "util/_util.h"
 #include "model/TrxModel.h"
 #include "htmlbuilder.h"
-#include "app/mmApp.h"
 #include "app/mmFrame.h"
 
 class mm_html_template;
 
-ForecastReport::ForecastReport(): ReportBase(_n("Forecast"))
+ForecastReport::ForecastReport() :
+    ReportBase(_n("Forecast"))
 {
     setReportParameters(REPORT_ID::ForecastReport);
 }
@@ -75,8 +75,7 @@ wxString ForecastReport::getHTMLText()
 
     GraphData gd;
     GraphSeries gsWithdrawal, gsDeposit;
-    for (const auto & kv : amount_by_day)
-    {
+    for (const auto & kv : amount_by_day) {
         gd.labels.push_back(kv.first);
         //wxLogDebug(" Values = %d, %d", kv.second.first, kv.second.second);
         gsWithdrawal.values.push_back(kv.second.first);
@@ -88,8 +87,10 @@ wxString ForecastReport::getHTMLText()
     gd.series.push_back(gsWithdrawal);
 
     gd.type = GraphData::LINE_DATETIME;
-    gd.colors = { mmImage::themeMetaColour(mmImage::COLOR_REPORT_CREDIT)
-                    , mmImage::themeMetaColour(mmImage::COLOR_REPORT_DEBIT) };
+    gd.colors = {
+        mmImage::themeMetaColour(mmImage::COLOR_REPORT_CREDIT),
+        mmImage::themeMetaColour(mmImage::COLOR_REPORT_DEBIT)
+    };
     hb.addChart(gd);
 
     hb.end();

@@ -21,7 +21,6 @@
 #include "mmMiniEditor.h"
 
 #include "mmImage.h"
-#include "app/mmApp.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(mmMiniEditor, wxStyledTextCtrl);
 

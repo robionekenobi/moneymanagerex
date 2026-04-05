@@ -28,7 +28,6 @@
 #include "model/PrefModel.h"
 #include "dialog/BudgetEntryDialog.h"
 #include "report/budget.h"
-#include "app/mmApp.h"
 
 enum
 {

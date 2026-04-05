@@ -107,8 +107,11 @@ my @layer_dirs = (
     [ "src/base/" ],
     [ "src/data/", "src/table/" ],
     [ "src/db/", "src/model/", "src/pref/", "src/util/" ],
-    [ "src/dialog/", "src/manager/", "src/panel/", "src/report/" ],
-    [ "src/app/", "src/import_export/", "src/wizard/" ],
+    [
+        "src/dialog/", "src/manager/", "src/panel/", "src/report/",
+        "src/import_export/",
+        "src/frame/", "src/app/", "src/wizard/"
+    ],
 );
 
 # %dir_layer: $dir -> $layer
@@ -423,18 +426,14 @@ sub check_include { my( $src_dir, $include_type, $dst ) = @_;
             log_warn( "\"$dst\": not found\n" );
         }
 
-        if( !exists $dir_layer{$src_dir} ) {
-            if( $level_warn >= 2 ) {
+        if( $level_warn >= 2 ) {
+            if( !exists $dir_layer{$src_dir} ) {
                 log_warn( "[$src_dir]: unknown layer\n" );
             }
-        }
-        elsif( !exists $dir_layer{$dst_dir} ) {
-            if( $level_warn >= 2 ) {
+            elsif( !exists $dir_layer{$dst_dir} ) {
                 log_warn( "[$dst_path]: unknown layer\n" );
             }
-        }
-        elsif( $dir_layer{$src_dir} < $dir_layer{$dst_dir} ) {
-            if( $level_warn >= 1 ) {
+            elsif( $dir_layer{$src_dir} < $dir_layer{$dst_dir} ) {
                 log_warn( "[$dst_path] is at higher layer\n" );
             }
         }

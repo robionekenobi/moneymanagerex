@@ -26,13 +26,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "model/SchedModel.h"
 #include "model/CurrencyHistoryModel.h"
 #include "htmlbuilder.h"
-#include "app/mmApp.h"
 #include "app/mmFrame.h"
 
-// --------- CashFlow base class
+// -- CashFlow base class
 
-FlowReport::FlowReport(const wxString& name)
-    : ReportBase(name), m_today(wxDateTime::Now().ResetTime())
+FlowReport::FlowReport(const wxString& name) :
+    ReportBase(name),
+    m_today(wxDateTime::Now().ResetTime())
 {
     m_only_active = true;
 }

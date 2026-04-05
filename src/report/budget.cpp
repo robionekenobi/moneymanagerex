@@ -21,10 +21,9 @@
 #include "budget.h"
 
 #include "htmlbuilder.h"
-#include "app/mmApp.h"
-#include "app/mmFrame.h"
 
-mmReportBudget::mmReportBudget(): ReportBase("mmReportBudget")
+mmReportBudget::mmReportBudget() :
+    ReportBase("mmReportBudget")
 {
     setReportParameters(REPORT_ID::NONE);
 }
@@ -32,14 +31,22 @@ mmReportBudget::mmReportBudget(): ReportBase("mmReportBudget")
 mmReportBudget::~mmReportBudget()
 {}
 
-void mmReportBudget::SetDateToEndOfMonth(const wxDateTime::Month month, wxDateTime& date) const
+void mmReportBudget::SetDateToEndOfMonth(
+    const wxDateTime::Month month,
+    wxDateTime& date
+) const
 {
     date.SetDay(28);
     date.SetMonth(month);
     date.SetToLastMonthDay();
 }
 
-void mmReportBudget::SetDateToEndOfYear(const int day, const wxDateTime::Month month, wxDateTime& date, bool isEndDate) const
+void mmReportBudget::SetDateToEndOfYear(
+    const int day,
+    const wxDateTime::Month month,
+    wxDateTime& date,
+    bool isEndDate
+) const
 {
     date.SetDay(day);
     date.SetMonth(month);
@@ -50,7 +57,11 @@ void mmReportBudget::SetDateToEndOfYear(const int day, const wxDateTime::Month m
     }
 }
 
-void mmReportBudget::SetBudgetMonth(wxString budgetYear, wxDateTime& startDate, wxDateTime& endDate) const
+void mmReportBudget::SetBudgetMonth(
+    wxString budgetYear,
+    wxDateTime& startDate,
+    wxDateTime& endDate
+) const
 {
     wxRegEx pattern_month(R"(^([0-9]{4})-([0-9]{2})$)");
     if (pattern_month.Matches(budgetYear))
@@ -81,23 +92,24 @@ void mmReportBudget::GetFinancialYearValues(int& day, wxDateTime::Month& month) 
     }
 }
 
-const wxString mmReportBudget::AdjustYearValues(int day, wxDateTime::Month month, int year, const wxString& yearStr) const
+const wxString mmReportBudget::AdjustYearValues(
+    int day,
+    wxDateTime::Month month,
+    int year,
+    const wxString& yearStr
+) const
 {
     wxString ret = yearStr;
-    if ((ret.length() < 5))
-    {
-        if (PrefModel::instance().getBudgetFinancialYears())
-        {
+    if ((ret.length() < 5)) {
+        if (PrefModel::instance().getBudgetFinancialYears()) {
             GetFinancialYearValues(day, month);
             ret = wxString::Format(_t("Financial Year: %s - %i"), yearStr, (year + 1));
         }
-        else
-        {
+        else {
             ret = wxString::Format(_t("Year: %s"), yearStr);
         }
     }
-    else
-    {
+    else {
         const wxString month_str = wxGetTranslation(mmGetMonthName(month));
         if (PrefModel::instance().getBudgetFinancialYears())
             ret = wxString::Format(_t("Financial Year: %i Month: %s"), year, month_str);
@@ -108,10 +120,13 @@ const wxString mmReportBudget::AdjustYearValues(int day, wxDateTime::Month month
     return ret;
 }
 
-void mmReportBudget::AdjustYearValues(int day, wxDateTime::Month month, wxDateTime& date) const
+void mmReportBudget::AdjustYearValues(
+    int day,
+    wxDateTime::Month month,
+    wxDateTime& date
+) const
 {
-    if (PrefModel::instance().getBudgetFinancialYears())
-    {
+    if (PrefModel::instance().getBudgetFinancialYears()) {
         GetFinancialYearValues(day, month);
         SetDateToEndOfYear(day, month, date, false);
     }
@@ -119,8 +134,7 @@ void mmReportBudget::AdjustYearValues(int day, wxDateTime::Month month, wxDateTi
 
 void mmReportBudget::AdjustDateForEndFinancialYear(wxDateTime& date) const
 {
-    if (PrefModel::instance().getBudgetFinancialYears())
-    {
+    if (PrefModel::instance().getBudgetFinancialYears()) {
         int day;
         wxDateTime::Month month;
         GetFinancialYearValues(day, month);

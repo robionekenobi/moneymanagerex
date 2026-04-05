@@ -21,7 +21,6 @@
 #include <vector>
 #include "model/AccountModel.h"
 #include "_ReportBase.h"
-#include "app/mmApp.h"
 
 // FIXME: m_stock_xa is set but mot used
 struct StockDataExt : StockData

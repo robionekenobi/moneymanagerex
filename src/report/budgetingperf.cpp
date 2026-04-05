@@ -27,8 +27,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "model/BudgetModel.h"
 #include "model/CategoryModel.h"
 #include "htmlbuilder.h"
-#include "app/mmApp.h"
-#include "app/mmFrame.h"
 
 mmReportBudgetingPerformance::mmReportBudgetingPerformance()
 {
@@ -41,7 +39,6 @@ mmReportBudgetingPerformance::~mmReportBudgetingPerformance()
 
 wxString mmReportBudgetingPerformance::getHTMLText()
 {
-
     int startDay;
     wxDateTime::Month startMonth;
     if (PrefModel::instance().getBudgetFinancialYears()) {

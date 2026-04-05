@@ -34,7 +34,6 @@ Copyright (C) 2026 Klaus Wich
 #include "DashboardPanel.h"
 #include "DashboardWidget.h"
 #include "SchedPanel.h"
-#include "app/mmApp.h"
 #include "app/mmFrame.h"
 
 wxBEGIN_EVENT_TABLE(DashboardPanel, wxPanel)

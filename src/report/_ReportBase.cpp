@@ -27,7 +27,6 @@
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "model/AccountModel.h"
-#include "app/mmApp.h"
 
 ReportBase::ReportBase(const wxString& title)
     : m_title(title)

@@ -23,7 +23,6 @@
 #include "base/_constants.h"
 #include "util/mmPath.h"
 #include "model/UsageModel.h"
-#include "app/mmApp.h"
 #include "app/mmFrame.h"
 
 BEGIN_EVENT_TABLE(HelpPanel, wxPanel)

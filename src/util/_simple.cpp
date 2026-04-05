@@ -45,7 +45,6 @@
 #include "model/TagModel.h"
 
 #include "manager/TagManager.h"
-#include "app/mmApp.h"
 
 //------- Pop-up calendar, currently only used for MacOS only
 // See: https://github.com/moneymanagerex/moneymanagerex/issues/3139
