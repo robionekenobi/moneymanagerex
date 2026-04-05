@@ -505,8 +505,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
 
     app/mmApp.cpp
     app/mmApp.h
-    mmframe.cpp
-    mmframe.h
+    app/mmFrame.cpp
+    app/mmFrame.h
     mmframereport.cpp
 
     "${CMAKE_CURRENT_BINARY_DIR}/versions.h"

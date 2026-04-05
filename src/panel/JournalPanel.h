@@ -34,7 +34,7 @@ Copyright (C) 2025 Klaus Wich
 #include "JournalList.h"
 
 class TrxFilterDialog;
-class mmGUIFrame;
+class mmFrame;
 
 class JournalPanel : public PanelBase
 {
@@ -129,7 +129,7 @@ private:
     wxSharedPtr<TrxFilterDialog> w_filter_dlg;
     wxVector<wxBitmapBundle> w_image_a;
     JournalList*          w_list             = nullptr;
-    mmGUIFrame*           w_frame            = nullptr;
+    mmFrame*              w_frame            = nullptr;
     wxButton*             w_range_btn        = nullptr;
     wxDatePickerCtrl*     w_start_date       = nullptr;
     wxDatePickerCtrl*     w_end_date         = nullptr;
@@ -164,7 +164,7 @@ private:
 
 public:
     JournalPanel(
-        mmGUIFrame* frame,
+        mmFrame* frame,
         wxWindow* parent_win,
         int64 account_group_id,
         const std::vector<int64>& group_ids = std::vector<int64>{}

@@ -46,7 +46,7 @@ END_EVENT_TABLE()
 
 StockPanel::StockPanel(
     int64 account_id,
-    mmGUIFrame* frame,
+    mmFrame* frame,
     wxWindow* parent_win,
     wxWindowID win_id
 ) :

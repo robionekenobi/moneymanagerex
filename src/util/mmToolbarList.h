@@ -20,7 +20,7 @@
 
 #include "base/_defs.h"
 #include "mmImage.h"
-#include "mmframe.h"
+#include "app/mmFrame.h"
 
 struct mmToolbarItem
 {
@@ -52,7 +52,7 @@ private:
     std::vector<mmToolbarItem*> m_toolbar_entries;
     long unsigned int m_lastIdx;
     mmToolbarItem* m_previous;
-    mmGUIFrame* m_toolbarParent;
+    mmFrame* m_toolbarParent;
 
 // -- constructor
 
@@ -74,6 +74,6 @@ public:
     bool DeleteEntry(mmToolbarItem* info);
     void Save();
     void Load();
-    void SetToolbarParent(mmGUIFrame* parent);
+    void SetToolbarParent(mmFrame* parent);
     void SortEntriesBySeq();
 };

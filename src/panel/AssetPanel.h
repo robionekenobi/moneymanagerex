@@ -20,7 +20,7 @@
 #include "model/AccountModel.h"
 #include "_PanelBase.h"
 #include "AssetList.h"
-#include "mmframe.h"
+#include "app/mmFrame.h"
 
 class wxButton;
 
@@ -54,14 +54,14 @@ private:
     int m_asset_type_id_n; // -1 (All), AssetType
     wxString m_tip;
 
-    mmGUIFrame*   w_frame      = nullptr;
+    mmFrame*      w_frame      = nullptr;
     AssetList*    w_list       = nullptr;
     wxStaticText* w_header     = nullptr;
     wxButton*     w_filter_btn = nullptr;
 
 public:
     AssetPanel(
-        mmGUIFrame* frame,
+        mmFrame* frame,
         wxWindow* parent_win,
         wxWindowID win_id,
         const wxString& name="AssetPanel"

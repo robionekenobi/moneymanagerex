@@ -25,7 +25,7 @@
 #include <wx/sharedptr.h>
 
 //----------------------------------------------------------------------------
-class mmGUIFrame;
+class mmFrame;
 class wxSQLite3Database;
 //----------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ public:
     bool setGUILanguage(wxLanguage lang);
     virtual void OnInitCmdLine(wxCmdLineParser& parser);
     virtual bool OnCmdLineParsed(wxCmdLineParser& parser);
-    mmGUIFrame* m_frame = nullptr;
+    mmFrame* m_frame = nullptr;
     const wxString GetOptParam() const;
     const wxString GetIniParam() const;
     bool GetSilentParam() const;

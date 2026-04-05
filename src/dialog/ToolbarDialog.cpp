@@ -17,7 +17,7 @@
  ********************************************************/
 
 #include "ToolbarDialog.h"
-#include "mmframe.h"
+#include "app/mmFrame.h"
 
 struct TypeDataRef : public wxClientData
 {
@@ -63,7 +63,7 @@ void ToolbarDialog::createColumns() {
 void ToolbarDialog::closeAction() {
     updateTree();
     mmToolbarList::instance().Save();
-    mmGUIFrame* mainFrame = wxDynamicCast(this->GetParent(), mmGUIFrame);
+    mmFrame* mainFrame = wxDynamicCast(this->GetParent(), mmFrame);
     if (mainFrame) {
         mainFrame->PopulateToolBar();
     }

@@ -35,7 +35,7 @@ Copyright (C) 2026 Klaus Wich
 #include "DashboardWidget.h"
 #include "SchedPanel.h"
 #include "app/mmApp.h"
-#include "mmframe.h"
+#include "app/mmFrame.h"
 
 wxBEGIN_EVENT_TABLE(DashboardPanel, wxPanel)
     EVT_WEBVIEW_NAVIGATING(wxID_ANY, DashboardPanel::onLinkClicked)
@@ -43,7 +43,7 @@ wxEND_EVENT_TABLE()
 
 DashboardPanel::DashboardPanel(
     wxWindow* parent_win,
-    mmGUIFrame* frame,
+    mmFrame* frame,
     wxWindowID win_id,
     const wxPoint& pos,
     const wxSize& size,

@@ -27,7 +27,7 @@
 #include "JournalPanel.h"
 #include "report/_ReportBase.h"
 
-class mmGUIFrame;
+class mmFrame;
 class mmDateRange;
 
 class ReportPanel : public PanelBase
@@ -79,7 +79,7 @@ private:
     bool m_use_account_specific_filter;
 
 private:
-    mmGUIFrame*       w_frame            = nullptr;
+    mmFrame*          w_frame            = nullptr;
     wxWebView*        w_browser          = nullptr;
     wxButton*         w_range_btn        = nullptr;
     mmDatePicker*     w_single_date      = nullptr;
@@ -105,7 +105,7 @@ public:
         ReportBase* rb,
         bool cleanup,
         wxWindow* parent_win,
-        mmGUIFrame* frame,
+        mmFrame* frame,
         wxWindowID win_id = wxID_ANY,
         const wxPoint& pos = wxDefaultPosition,
         const wxSize& size = wxDefaultSize,

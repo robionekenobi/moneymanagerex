@@ -24,7 +24,7 @@
 #include "model/TrxModel.h"
 #include "htmlbuilder.h"
 #include "app/mmApp.h"
-#include "mmframe.h"
+#include "app/mmFrame.h"
 
 class mm_html_template;
 

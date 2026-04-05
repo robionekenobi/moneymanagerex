@@ -55,7 +55,7 @@
 #include "dialog/ReconcileDialog.h"
 
 #include "app/mmApp.h"
-#include "mmframe.h"
+#include "app/mmFrame.h"
 
 // -- static
 
@@ -165,7 +165,7 @@ wxString JournalPanel::getPanelTitle() const
 // -- constructor
 
 JournalPanel::JournalPanel(
-    mmGUIFrame* frame,
+    mmFrame* frame,
     wxWindow* perent_win,
     int64 account_group_id,
     const std::vector<int64>& group_ids /*={}*/

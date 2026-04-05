@@ -25,7 +25,7 @@
 
 class mmDatePicker;
 class mmTextCtrl;
-class mmGUIFrame;
+class mmFrame;
 
 class StockDialog : public wxDialog
 {

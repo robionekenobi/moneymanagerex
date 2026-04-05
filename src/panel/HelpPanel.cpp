@@ -24,7 +24,7 @@
 #include "util/mmPath.h"
 #include "model/UsageModel.h"
 #include "app/mmApp.h"
-#include "mmframe.h"
+#include "app/mmFrame.h"
 
 BEGIN_EVENT_TABLE(HelpPanel, wxPanel)
     EVT_BUTTON(wxID_BACKWARD, HelpPanel::onHelpPageBack)
@@ -33,7 +33,7 @@ END_EVENT_TABLE()
 
 HelpPanel::HelpPanel(
     wxWindow* parent_win,
-    mmGUIFrame* frame,
+    mmFrame* frame,
     wxWindowID win_id,
     const wxPoint& pos,
     const wxSize& size,

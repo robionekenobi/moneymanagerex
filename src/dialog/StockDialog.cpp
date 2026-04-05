@@ -19,6 +19,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "StockDialog.h"
+
 #include "base/_defs.h"
 #include <wx/numdlg.h>
 #include <wx/textdlg.h>
@@ -34,11 +36,10 @@
 
 #include "model/_all.h"
 
-#include "mmframe.h"
 #include "AttachmentDialog.h"
 #include "AccountDialog.h"
-#include "StockDialog.h"
 #include "TrxShareDialog.h"
+#include "app/mmFrame.h"
 
 using namespace rapidjson;
 

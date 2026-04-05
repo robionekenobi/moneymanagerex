@@ -25,7 +25,7 @@
 class mmDatePicker;
 class mmTextCtrl;
 class TrxLinkDialog;
-class mmGUIFrame;
+class mmFrame;
 
 class AssetDialog : public wxDialog
 {

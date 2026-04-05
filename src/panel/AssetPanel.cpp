@@ -47,7 +47,7 @@ BEGIN_EVENT_TABLE(AssetPanel, wxPanel)
 END_EVENT_TABLE()
 
 AssetPanel::AssetPanel(
-    mmGUIFrame* frame, wxWindow* parent_win, wxWindowID win_id, const wxString& name
+    mmFrame* frame, wxWindow* parent_win, wxWindowID win_id, const wxString& name
 ) :
     m_asset_type_id_n(-1),
     m_tip(),

@@ -21,13 +21,13 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "mmframe.h"
 #include "util/mmImage.h"
 #include "util/mmTreeItemData.h"
 #include "util/mmMultiChoice.h"
 #include "model/BudgetPeriodModel.h"
 #include "model/ReportModel.h"
 #include "report/_all.h"
+#include "app/mmFrame.h"
 
 const char *group_report_template = R"(
 <!DOCTYPE html>
@@ -116,7 +116,7 @@ private:
     ReportModel::DataA m_sub_reports;
 };
 
-void mmGUIFrame::DoUpdateReportNavigation(wxTreeItemId& parent_item)
+void mmFrame::DoUpdateReportNavigation(wxTreeItemId& parent_item)
 {
     wxArrayString hidden_reports = InfoModel::instance().getArrayString("HIDDEN_REPORTS");
 
@@ -249,7 +249,7 @@ void mmGUIFrame::DoUpdateReportNavigation(wxTreeItemId& parent_item)
 
 }
 
-void mmGUIFrame::DoUpdateGRMNavigation(wxTreeItemId& parent_item)
+void mmFrame::DoUpdateGRMNavigation(wxTreeItemId& parent_item)
 {
     // GRM Reports
     auto report_a = ReportModel::instance().find(
@@ -289,7 +289,7 @@ void mmGUIFrame::DoUpdateGRMNavigation(wxTreeItemId& parent_item)
 
 }
 
-void mmGUIFrame::DoUpdateFilterNavigation(wxTreeItemId& parent_item)
+void mmFrame::DoUpdateFilterNavigation(wxTreeItemId& parent_item)
 {
 
     wxArrayString filter_settings = InfoModel::instance().getArrayString("TRANSACTIONS_FILTER", true);
@@ -309,7 +309,7 @@ void mmGUIFrame::DoUpdateFilterNavigation(wxTreeItemId& parent_item)
 
 }
 
-void mmGUIFrame::mmDoHideReportsDialog()
+void mmFrame::mmDoHideReportsDialog()
 {
     wxString rep[] =
     {

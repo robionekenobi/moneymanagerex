@@ -42,7 +42,7 @@
 #include "dialog/BudgetEntryDialog.h"
 #include "report/htmlbuilder.h"
 #include "app/mmApp.h"
-#include "mmframe.h"
+#include "app/mmFrame.h"
 
 // -- static
 
@@ -112,7 +112,7 @@ ReportPanel::ReportPanel(
     ReportBase* rb,
     bool cleanup,
     wxWindow* parent_win,
-    mmGUIFrame* frame,
+    mmFrame* frame,
     wxWindowID win_id,
     const wxPoint& pos,
     const wxSize& size,

@@ -24,9 +24,9 @@
 #include "model/AccountModel.h"
 #include "model/PrefModel.h"
 
-#include "mmframe.h"
 #include "DateRangeDialog.h"
 #include "NavigatorEditDialog.h"
+#include "app/mmFrame.h"
 
 struct NavData : public wxClientData
 {
@@ -248,7 +248,7 @@ void NavigatorDialog::updateItemsRecursive(wxTreeListItem item)
             // Special for Trash:
             if (data->ref->type == mmNavigatorItem::NAV_ENTRY_DELETED_TRANSACTIONS) {
                 PrefModel::instance().saveHideDeletedTransactions(!data->ref->active);
-                mmGUIFrame* mainFrame = wxDynamicCast(this->GetParent(), mmGUIFrame);
+                mmFrame* mainFrame = wxDynamicCast(this->GetParent(), mmFrame);
                 if (mainFrame) {
                     mainFrame->SetTrashState(data->ref->active);
                 }
@@ -256,7 +256,7 @@ void NavigatorDialog::updateItemsRecursive(wxTreeListItem item)
             // Special for Share Accounts:
             if (data->ref->type == mmNavigatorItem::TYPE_ID_SHARES) {
                 PrefModel::instance().saveHideShareAccounts(!data->ref->active);
-                mmGUIFrame* mainFrame = wxDynamicCast(this->GetParent(), mmGUIFrame);
+                mmFrame* mainFrame = wxDynamicCast(this->GetParent(), mmFrame);
                 if (mainFrame) {
                     mainFrame->SetShareAccountState(data->ref->active);
                 }

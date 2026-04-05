@@ -22,7 +22,7 @@
 
 #include "htmlbuilder.h"
 #include "app/mmApp.h"
-#include "mmframe.h"
+#include "app/mmFrame.h"
 
 mmReportBudget::mmReportBudget(): ReportBase("mmReportBudget")
 {

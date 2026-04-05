@@ -36,7 +36,7 @@
 #include "util/_simple.h"
 #include "model/SettingModel.h"
 #include "model/UsageModel.h"
-#include "mmframe.h"
+#include "mmFrame.h"
 
 //----------------------------------------------------------------------------
 wxIMPLEMENT_APP(mmApp);
@@ -394,7 +394,7 @@ bool OnInitImpl(mmApp* app)
         valH = defValH;
     }
 
-    app->m_frame = new mmGUIFrame(app, mmex::getProgramName(), wxPoint(valX, valY), wxSize(valW, valH));
+    app->m_frame = new mmFrame(app, mmex::getProgramName(), wxPoint(valX, valY), wxSize(valW, valH));
     #ifdef __WXMSW__
         enableMSWDarkMode(app->m_frame, mmPlatform::isDarkMode());
     #endif

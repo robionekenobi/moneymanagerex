@@ -20,7 +20,7 @@
 
 #include "base/_constants.h"
 #include "model/SettingModel.h"
-#include "mmframe.h"
+#include "app/mmFrame.h"
 
 static const wxString TOOLBAR_INFO_KEY = "TOOLBAR_SETTINGS";
 
@@ -54,23 +54,23 @@ void mmToolbarList::SetToDefault()
     m_toolbar_entries.clear();
 
     // init with default entries
-    m_toolbar_entries.push_back(new  mmToolbarItem{mmGUIFrame::MENU_NEW,                    "New",                    "New Database",                       0, -1, mmImage::png::NEW_DB,          true,  mmToolbarItem::TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  mmToolbarItem{mmGUIFrame::MENU_OPEN,                   "Open",                   "Open Database",                      1, -1, mmImage::png::OPEN,            true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_NEW,                    "New",                    "New Database",                       0, -1, mmImage::png::NEW_DB,          true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_OPEN,                   "Open",                   "Open Database",                      1, -1, mmImage::png::OPEN,            true,  mmToolbarItem::TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                   2, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
-    m_toolbar_entries.push_back(new  mmToolbarItem{mmGUIFrame::MENU_NEWACCT,                "New Account",            "New Account",                        4, -1, mmImage::png::NEW_ACC,         true,  mmToolbarItem::TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  mmToolbarItem{mmGUIFrame::MENU_HOMEPAGE,               "Dashboard",              "Open Dashboard",                     5, -1, mmImage::png::HOME,            true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_NEWACCT,                "New Account",            "New Account",                        4, -1, mmImage::png::NEW_ACC,         true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_HOMEPAGE,               "Dashboard",              "Open Dashboard",                     5, -1, mmImage::png::HOME,            true,  mmToolbarItem::TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                   6, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
     m_toolbar_entries.push_back(new  mmToolbarItem{wxID_NEW,                                "New",                    "New Transaction",                    7, -1, mmImage::png::NEW_TRX,         true,  mmToolbarItem::TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                   8, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
-    m_toolbar_entries.push_back(new  mmToolbarItem{mmGUIFrame::MENU_ORGPAYEE,               "Payee Manager",          "Payee Manager",                      9, -1, mmImage::png::PAYEE,           true,  mmToolbarItem::TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  mmToolbarItem{mmGUIFrame::MENU_ORGCATEGS,              "Category Manager",       "Category Manager",                  10, -1, mmImage::png::CATEGORY,        true,  mmToolbarItem::TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  mmToolbarItem{mmGUIFrame::MENU_ORGTAGS,                "Tag Manager",            "Tag Manager",                       11, -1, mmImage::png::TAG,             true,  mmToolbarItem::TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  mmToolbarItem{mmGUIFrame::MENU_CURRENCY,               "Currency Manager",       "Currency Manager",                  12, -1, mmImage::png::CURR,            true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_ORGPAYEE,               "Payee Manager",          "Payee Manager",                      9, -1, mmImage::png::PAYEE,           true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_ORGCATEGS,              "Category Manager",       "Category Manager",                  10, -1, mmImage::png::CATEGORY,        true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_ORGTAGS,                "Tag Manager",            "Tag Manager",                       11, -1, mmImage::png::TAG,             true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_CURRENCY,               "Currency Manager",       "Currency Manager",                  12, -1, mmImage::png::CURR,            true,  mmToolbarItem::TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                  13, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
-    m_toolbar_entries.push_back(new  mmToolbarItem{mmGUIFrame::MENU_TRANSACTIONREPORT,      "Transaction Report",     "Transaction Report",                14, -1, mmImage::png::FILTER,          true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_TRANSACTIONREPORT,      "Transaction Report",     "Transaction Report",                14, -1, mmImage::png::FILTER,          true,  mmToolbarItem::TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                  15, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
     m_toolbar_entries.push_back(new  mmToolbarItem{wxID_VIEW_LIST,                          "General Report Manager", "General Report Manager",            16, -1, mmImage::png::GRM,             true,  mmToolbarItem::TOOLBAR_BTN});
-    m_toolbar_entries.push_back(new  mmToolbarItem{mmGUIFrame::MENU_RATES,                  "Download Rates",         "Download currency and stock rates", 17, -1, mmImage::png::CURRATES,        true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_RATES,                  "Download Rates",         "Download currency and stock rates", 17, -1, mmImage::png::CURRATES,        true,  mmToolbarItem::TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                  18, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
     m_toolbar_entries.push_back(new  mmToolbarItem{wxID_PRINT,                              "&Print",                 "Print",                             19, -1, mmImage::png::PRINT,           true,  mmToolbarItem::TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                  20, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
@@ -79,7 +79,7 @@ void mmToolbarList::SetToDefault()
     m_toolbar_entries.push_back(new  mmToolbarItem{MENU_VIEW_TOGGLE_FULLSCREEN,             "Full Screen\tF11",       "Toggle full screen",                23, -1, mmImage::png::FULLSCREEN,      true,  mmToolbarItem::TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  mmToolbarItem{wxID_PREFERENCES,                        "&Settings",              "Settings",                          24, -1, mmImage::png::OPTIONS,         true,  mmToolbarItem::TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                  25, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
-    m_toolbar_entries.push_back(new  mmToolbarItem{mmGUIFrame::MENU_ANNOUNCEMENTMAILING,    "News",                   "News",                              26, -1, mmImage::png::NEW_NEWS,        true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_ANNOUNCEMENTMAILING,    "News",                   "News",                              26, -1, mmImage::png::NEW_NEWS,        true,  mmToolbarItem::TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  mmToolbarItem{wxID_ABOUT,                              "&About",                 "About",                             27, -1, mmImage::png::ABOUT,           true,  mmToolbarItem::TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  mmToolbarItem{wxID_HELP,                               "&Help\tF1",              "Help",                              28, -1, mmImage::png::HELP,            true,  mmToolbarItem::TOOLBAR_BTN});
     m_toolbar_entries.push_back(new  mmToolbarItem{MENU_BILLSDEPOSITS,                      "Scheduled Transactions", "Scheduled Transactions",            29, -1, mmImage::png::RECURRING,       false, mmToolbarItem::TOOLBAR_BTN});
@@ -232,7 +232,7 @@ void mmToolbarList::Load() {
     }
 }
 
-void mmToolbarList::SetToolbarParent(mmGUIFrame* parent)
+void mmToolbarList::SetToolbarParent(mmFrame* parent)
 {
     m_toolbarParent = parent;
 }

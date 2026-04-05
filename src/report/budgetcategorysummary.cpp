@@ -31,7 +31,7 @@
 #include "model/CategoryModel.h"
 #include "htmlbuilder.h"
 #include "app/mmApp.h"
-#include "mmframe.h"
+#include "app/mmFrame.h"
 
 mmReportBudgetCategorySummary::mmReportBudgetCategorySummary()
 {

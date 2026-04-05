@@ -45,7 +45,7 @@
 #include "dialog/TrxFilterDialog.h"
 #include "dialog/TrxShareDialog.h"
 #include "dialog/TrxUpdateDialog.h"
-#include "mmframe.h"
+#include "app/mmFrame.h"
 
 // -- static
 
