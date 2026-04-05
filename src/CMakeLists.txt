@@ -445,6 +445,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     report/FlowReport.h
     report/ForecastReport.cpp
     report/ForecastReport.h
+    report/GeneralGroupReport.cpp
+    report/GeneralGroupReport.h
     report/InExReport.cpp
     report/InExReport.h
     report/PayeeReport.cpp
@@ -507,7 +509,6 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     app/mmApp.h
     app/mmFrame.cpp
     app/mmFrame.h
-    mmframereport.cpp
 
     "${CMAKE_CURRENT_BINARY_DIR}/versions.h"
     "base/mmPlatform_${MMEX_PLATFDEP}"

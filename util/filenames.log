@@ -229,8 +229,10 @@ under src/ in increasing chronological order.
   uicontrols/navigatoreditdialog     -> dialog/NavigatorEditDialog
   uicontrols/reconciledialog         -> dialog/ReconcileDialog
   uicontrols/toolbardialog           -> dialog/ToolbarDialog
+  mmframereport.cpp                  -> report/GeneralGroupReport
 
 . PR ? (?)
   mmex                               -> app/mmApp
   mmframe                            -> app/mmFrame
+  mmframereport.cpp                  -> app/mmFrame
 
