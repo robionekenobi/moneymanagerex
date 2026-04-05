@@ -45,7 +45,7 @@ GeneralPref::GeneralPref()
 {
 }
 
-GeneralPref::GeneralPref(wxWindow *parent, mmGUIApp* app
+GeneralPref::GeneralPref(wxWindow *parent, mmApp* app
     , wxWindowID id
     , const wxPoint &pos
     , const wxSize &size

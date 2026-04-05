@@ -19,8 +19,9 @@
 // Thanks to geralds for SetLexerXml() - http://wxforum.shadonet.com/viewtopic.php?t=7155
 
 #include "mmMiniEditor.h"
+
 #include "mmImage.h"
-#include "mmex.h"
+#include "app/mmApp.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(mmMiniEditor, wxStyledTextCtrl);
 

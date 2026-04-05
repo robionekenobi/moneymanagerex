@@ -94,7 +94,7 @@
 #include "wizard/wizard_newaccount.h"
 #include "wizard/wizard_newdb.h"
 #include "wizard/wizard_update.h"
-#include "mmex.h"
+#include "app/mmApp.h"
 
 //----------------------------------------------------------------------------
 
@@ -275,7 +275,7 @@ wxEND_EVENT_TABLE()
 //----------------------------------------------------------------------------
 
 mmGUIFrame::mmGUIFrame(
-    mmGUIApp* app,
+    mmApp* app,
     const wxString& title,
     const wxPoint& pos,
     const wxSize& size

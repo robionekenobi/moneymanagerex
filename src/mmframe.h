@@ -47,7 +47,7 @@ class ReportPanel;
 class SchedPanel;
 class UpdateCallbackHook;
 class mmFileHistory;
-class mmGUIApp;
+class mmApp;
 class mmStockPanel;
 class mmTreeItemData;
 class wxSQLite3Database;
@@ -70,10 +70,10 @@ class mmGUIFrame : public wxFrame
 {
 public:
     static wxArrayString ACCOUNT_SECTION;
-    mmGUIApp *m_app;
+    mmApp *m_app;
 
 public:
-    mmGUIFrame(mmGUIApp* m_app, const wxString& title, const wxPoint& pos, const wxSize& size);
+    mmGUIFrame(mmApp* m_app, const wxString& title, const wxPoint& pos, const wxSize& size);
     ~mmGUIFrame();
 
 public:

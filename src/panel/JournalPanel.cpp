@@ -54,7 +54,7 @@
 #include "dialog/TrxUpdateDialog.h"
 #include "dialog/ReconcileDialog.h"
 
-#include "mmex.h"
+#include "app/mmApp.h"
 #include "mmframe.h"
 
 // -- static

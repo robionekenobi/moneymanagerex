@@ -18,16 +18,16 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "base/_defs.h"
-#include "mmex.h"
-#include "util/_util.h"
-#include "htmlbuilder.h"
+#include "FlowReport.h"
 
+#include "base/_defs.h"
+#include "util/_util.h"
 #include "model/AccountModel.h"
 #include "model/SchedModel.h"
 #include "model/CurrencyHistoryModel.h"
+#include "htmlbuilder.h"
+#include "app/mmApp.h"
 #include "mmframe.h"
-#include "FlowReport.h"
 
 // --------- CashFlow base class
 

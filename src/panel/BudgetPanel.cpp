@@ -19,17 +19,16 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "BudgetPanel.h"
+
 #include "base/_constants.h"
 #include "util/mmImage.h"
 #include "util/mmDateRange.h"
-#include "mmex.h"
-
 #include "model/_all.h"
 #include "model/PrefModel.h"
-
-#include "BudgetPanel.h"
 #include "dialog/BudgetEntryDialog.h"
 #include "report/budget.h"
+#include "app/mmApp.h"
 
 enum
 {

@@ -17,6 +17,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "mmApp.h"
+
 #include "base/_defs.h"
 #include <wx/cmdline.h>
 #include <wx/display.h>
@@ -31,16 +33,13 @@
 #include "util/mmPath.h"
 #include "util/mmDateRange2.h"
 #include "util/_util.h"
-#include "mmex.h"
-
+#include "util/_simple.h"
 #include "model/SettingModel.h"
 #include "model/UsageModel.h"
-
 #include "mmframe.h"
-#include "util/_simple.h"
 
 //----------------------------------------------------------------------------
-wxIMPLEMENT_APP(mmGUIApp);
+wxIMPLEMENT_APP(mmApp);
 //----------------------------------------------------------------------------
 
 static const wxCmdLineEntryDesc g_cmdLineDesc[] = {
@@ -57,7 +56,7 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] = {
 
 //----------------------------------------------------------------------------
 
-mmGUIApp::mmGUIApp()
+mmApp::mmApp()
     : m_optParam1(wxEmptyString), m_optParam2(wxEmptyString), m_lang(wxLANGUAGE_UNKNOWN),
       m_locale(wxLANGUAGE_DEFAULT)
 {
@@ -67,12 +66,12 @@ mmGUIApp::mmGUIApp()
 #endif
 }
 
-wxLanguage mmGUIApp::getGUILanguage() const
+wxLanguage mmApp::getGUILanguage() const
 {
     return this->m_lang;
 }
 
-bool mmGUIApp::setGUILanguage(wxLanguage lang)
+bool mmApp::setGUILanguage(wxLanguage lang)
 {
     if (lang == this->m_lang && lang != wxLANGUAGE_UNKNOWN)
         return false;
@@ -85,7 +84,7 @@ bool mmGUIApp::setGUILanguage(wxLanguage lang)
 
     trans->SetLanguage(lang);
     if (!trans->AddStdCatalog()) {
-        wxLogDebug("ERROR: mmGUIApp::setGUILanguage(): cannot add std catalog");
+        wxLogDebug("ERROR: mmApp::setGUILanguage(): cannot add std catalog");
     }
     if (trans->AddCatalog("mmex", wxLANGUAGE_ENGLISH_US) ||
         lang == wxLANGUAGE_ENGLISH_US || lang == wxLANGUAGE_DEFAULT
@@ -143,12 +142,12 @@ bool mmGUIApp::setGUILanguage(wxLanguage lang)
     }
 }
 
-void mmGUIApp::OnInitCmdLine(wxCmdLineParser& parser)
+void mmApp::OnInitCmdLine(wxCmdLineParser& parser)
 {
     parser.SetDesc(g_cmdLineDesc);
 }
 
-bool mmGUIApp::OnCmdLineParsed(wxCmdLineParser& parser)
+bool mmApp::OnCmdLineParsed(wxCmdLineParser& parser)
 {
     wxString ini_file;
     if (parser.Found("i", &ini_file))
@@ -168,7 +167,7 @@ bool mmGUIApp::OnCmdLineParsed(wxCmdLineParser& parser)
 /*
     See also: wxStackWalker, wxDebugReportUpload.
 */
-void mmGUIApp::ReportFatalException(wxDebugReport::Context ctx)
+void mmApp::ReportFatalException(wxDebugReport::Context ctx)
 {
     // TODO email it or upload it
     wxDebugReportCompress report;
@@ -190,7 +189,7 @@ void mmGUIApp::ReportFatalException(wxDebugReport::Context ctx)
 }
 
 // This method allows catching the exceptions thrown by any event handler.
-void mmGUIApp::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event) const
+void mmApp::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event) const
 {
     try {
         wxApp::HandleEvent(handler, func, event);
@@ -203,7 +202,7 @@ void mmGUIApp::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
     }
 }
 
-int mmGUIApp::FilterEvent(wxEvent& event)
+int mmApp::FilterEvent(wxEvent& event)
 {
     int ret = wxApp::FilterEvent(event);
 
@@ -221,12 +220,12 @@ int mmGUIApp::FilterEvent(wxEvent& event)
 
 //----------------------------------------------------------------------------
 
-void mmGUIApp::OnFatalException()
+void mmApp::OnFatalException()
 {
     ReportFatalException(wxDebugReport::Context_Exception);
 }
 
-bool OnInitImpl(mmGUIApp* app)
+bool OnInitImpl(mmApp* app)
 {
     bool ok = true;
 
@@ -415,7 +414,7 @@ bool OnInitImpl(mmGUIApp* app)
 }
 
 //----------------------------------------------------------------------------
-bool mmGUIApp::OnInit()
+bool mmApp::OnInit()
 {
     bool ok = false;
 
@@ -440,9 +439,9 @@ bool mmGUIApp::OnInit()
     return ok;
 }
 
-int mmGUIApp::OnExit()
+int mmApp::OnExit()
 {
-    wxLogDebug("{{{ mmGUIApp::OnExit()");
+    wxLogDebug("{{{ mmApp::OnExit()");
 
 #ifndef __WXOSX__
     if (m_frame && !m_frame->IsBeingDeleted())
@@ -488,7 +487,7 @@ bool findModal(wxWindow* w)
     }
     return false;
 }
-bool mmGUIApp::OSXOnShouldTerminate()
+bool mmApp::OSXOnShouldTerminate()
 {
     wxLogDebug("Called: OSXOnShouldTerminate");
 

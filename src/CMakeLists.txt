@@ -503,8 +503,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     wizard/wizard_update.cpp
     wizard/wizard_update.h
 
-    mmex.cpp
-    mmex.h
+    app/mmApp.cpp
+    app/mmApp.h
     mmframe.cpp
     mmframe.h
     mmframereport.cpp

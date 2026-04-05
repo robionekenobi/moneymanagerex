@@ -42,7 +42,7 @@ wxBEGIN_EVENT_TABLE(StartupDialog, wxDialog)
     EVT_CLOSE(               StartupDialog::OnClose)
 wxEND_EVENT_TABLE()
 
-StartupDialog::StartupDialog(wxWindow* parent, mmGUIApp* app, const wxString& name)
+StartupDialog::StartupDialog(wxWindow* parent, mmApp* app, const wxString& name)
     : m_app(app)
 {
     this->SetFont(parent->GetFont());

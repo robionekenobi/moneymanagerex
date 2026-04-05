@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "_PrefBase.h"
 
-class mmGUIApp;
+class mmApp;
 
 class GeneralPref : public PrefBase
 {
@@ -30,7 +30,7 @@ class GeneralPref : public PrefBase
 public:
     GeneralPref();
 
-    GeneralPref(wxWindow *parent, mmGUIApp* app
+    GeneralPref(wxWindow *parent, mmApp* app
         , wxWindowID id = wxID_ANY
         , const wxPoint &pos = wxDefaultPosition
         , const wxSize &size = wxDefaultSize
@@ -54,7 +54,7 @@ private:
     bool doFormatDoubleValue(const wxString& locale, wxString& result);
 
 private:
-    mmGUIApp* m_app = nullptr;
+    mmApp* m_app = nullptr;
     wxStaticBoxSizer* m_currencyStaticBoxSizer = nullptr;
     mmComboBoxCurrency* baseCurrencyComboBox_ = nullptr;
 

@@ -33,9 +33,8 @@
 #include "mmComboBox.h"
 #include "mmTextCtrl.h"
 #include "_util.h"
-#include "mmex.h"
-
 #include "model/AccountModel.h"
+#include "app/mmApp.h"
 
 class wxComboBox;
 class wxTextCtrl;
@@ -82,7 +81,7 @@ public:
     const wxString getText() const;
 };
 
-class mmGUIApp;
+class mmApp;
 class mmErrorDialogs
 {
 public:

@@ -41,8 +41,8 @@
 #include "dialog/TrxShareDialog.h"
 #include "dialog/BudgetEntryDialog.h"
 #include "report/htmlbuilder.h"
+#include "app/mmApp.h"
 #include "mmframe.h"
-#include "mmex.h"
 
 // -- static
 

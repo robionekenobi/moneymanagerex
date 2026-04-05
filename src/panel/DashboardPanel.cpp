@@ -25,17 +25,17 @@ Copyright (C) 2026 Klaus Wich
 
 #include "base/_constants.h"
 #include "util/mmImage.h"
-#include "mmex.h"
 #include "util/mmPath.h"
 #include "util/_util.h"
 
 #include "model/_all.h"
 #include "model/PrefModel.h"
 
-#include "mmframe.h"
 #include "DashboardPanel.h"
 #include "DashboardWidget.h"
 #include "SchedPanel.h"
+#include "app/mmApp.h"
+#include "mmframe.h"
 
 wxBEGIN_EVENT_TABLE(DashboardPanel, wxPanel)
     EVT_WEBVIEW_NAVIGATING(wxID_ANY, DashboardPanel::onLinkClicked)

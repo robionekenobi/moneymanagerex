@@ -230,3 +230,6 @@ under src/ in increasing chronological order.
   uicontrols/reconciledialog         -> dialog/ReconcileDialog
   uicontrols/toolbardialog           -> dialog/ToolbarDialog
 
+. PR ? (?)
+  mmex                               -> app/mmApp
+

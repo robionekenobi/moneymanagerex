@@ -29,10 +29,10 @@ class mmGUIFrame;
 class wxSQLite3Database;
 //----------------------------------------------------------------------------
 
-class mmGUIApp : public wxApp
+class mmApp : public wxApp
 {
 public:
-    mmGUIApp();
+    mmApp();
     virtual int FilterEvent(wxEvent& event);
 
     wxLanguage getGUILanguage() const;
@@ -63,13 +63,13 @@ private:
     wxLocale m_locale;
 };
 
-inline wxSQLite3Database* mmGUIApp::GetSettingDB() const { return m_setting_db.get(); }
-inline const wxString mmGUIApp::GetOptParam() const { return m_optParam1; }
-inline const wxString mmGUIApp::GetIniParam() const { return m_optParam2; }
-inline bool mmGUIApp::GetSilentParam() const { return m_optParamSilent; }
-inline void mmGUIApp::SetSettingDB(wxSQLite3Database* db) { m_setting_db = db; }
+inline wxSQLite3Database* mmApp::GetSettingDB() const { return m_setting_db.get(); }
+inline const wxString mmApp::GetOptParam() const { return m_optParam1; }
+inline const wxString mmApp::GetIniParam() const { return m_optParam2; }
+inline bool mmApp::GetSilentParam() const { return m_optParamSilent; }
+inline void mmApp::SetSettingDB(wxSQLite3Database* db) { m_setting_db = db; }
 
 //----------------------------------------------------------------------------
-wxDECLARE_APP(mmGUIApp);
+wxDECLARE_APP(mmApp);
 //----------------------------------------------------------------------------
 

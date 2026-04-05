@@ -57,7 +57,7 @@ PrefManager::~PrefManager( )
 {
 }
 
-PrefManager::PrefManager(wxWindow* parent, mmGUIApp* app): m_app(app)
+PrefManager::PrefManager(wxWindow* parent, mmApp* app): m_app(app)
 {
     this->SetFont(parent->GetFont());
     Create(parent);

@@ -18,13 +18,13 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *************************************************************************/
 
+#include "HelpPanel.h"
+
 #include "base/_constants.h"
 #include "util/mmPath.h"
-#include "mmex.h"
-
 #include "model/UsageModel.h"
+#include "app/mmApp.h"
 #include "mmframe.h"
-#include "HelpPanel.h"
 
 BEGIN_EVENT_TABLE(HelpPanel, wxPanel)
     EVT_BUTTON(wxID_BACKWARD, HelpPanel::onHelpPageBack)

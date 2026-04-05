@@ -17,14 +17,14 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "mmex.h"
+#include "ForecastReport.h"
+
 #include "util/mmImage.h"
 #include "util/_util.h"
-#include "htmlbuilder.h"
-
-#include "mmframe.h"
 #include "model/TrxModel.h"
-#include "ForecastReport.h"
+#include "htmlbuilder.h"
+#include "app/mmApp.h"
+#include "mmframe.h"
 
 class mm_html_template;
 

@@ -20,10 +20,9 @@
 
 #include "base/_defs.h"
 #include <wx/dialog.h>
-#include "mmex.h"
+#include "app/mmApp.h"
 
 class wxCheckBox;
-class mmGUIApp;
 
 class StartupDialog: public wxDialog
 {
@@ -31,8 +30,8 @@ class StartupDialog: public wxDialog
     wxDECLARE_EVENT_TABLE();
 
 public:
-    mmGUIApp* m_app = nullptr;
-    StartupDialog(wxWindow* parent, mmGUIApp* app, const wxString& name = "StartupDialog");
+    mmApp* m_app = nullptr;
+    StartupDialog(wxWindow* parent, mmApp* app, const wxString& name = "StartupDialog");
     ~StartupDialog();
     void SetCloseButtonToExit();
 

@@ -18,18 +18,17 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include <string>
+#include "budgetingperf.h"
 
+#include <string>
 #include "base/_defs.h"
 #include "util/mmDateRange.h"
-#include "htmlbuilder.h"
-#include "mmex.h"
-
 #include "model/BudgetPeriodModel.h"
 #include "model/BudgetModel.h"
 #include "model/CategoryModel.h"
+#include "htmlbuilder.h"
+#include "app/mmApp.h"
 #include "mmframe.h"
-#include "budgetingperf.h"
 
 mmReportBudgetingPerformance::mmReportBudgetingPerformance()
 {

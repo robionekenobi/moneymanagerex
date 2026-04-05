@@ -32,7 +32,7 @@
 #include "_primitive.h"
 #include "model/PrefModel.h"
 
-class mmGUIApp;
+class mmApp;
 
 // -- Platform
 
