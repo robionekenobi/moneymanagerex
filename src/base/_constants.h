@@ -112,9 +112,6 @@ extern const wxString ATTACHMENTS_FOLDER_DATABASE;
 extern const wxString ATTACHMENTS_FOLDER_USERPROFILE;
 extern const wxString ATTACHMENTS_FOLDER_APPDATA;
 
-extern const wxDateTime DATE_MIN;
-extern const wxDateTime DATE_MAX;
-
 extern const wxArrayString g_locales();
 extern const wxString g_fiat_curr();
 

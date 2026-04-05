@@ -47,7 +47,7 @@ mmDatePicker::mmDatePicker(
         wxDefaultPosition, wxDefaultSize,
         style
     );
-    w_date_picker->SetRange(wxDateTime(), DATE_MAX);
+    w_date_picker->SetRange(wxDateTime(), mmDate::max().dateTime());
     setValue(m_dateTime);
     w_date_picker->Bind(wxEVT_DATE_CHANGED, &mmDatePicker::onDateChanged, this);
     sizer->Add(w_date_picker);
@@ -95,16 +95,16 @@ bool mmDatePicker::Show(bool state)
 
 void mmDatePicker::setValue(const wxDateTime& dateTime)
 {
-    if (dateTime > DATE_MAX.GetDateOnly())
-        w_date_picker->SetValue(DATE_MAX.GetDateOnly());
-    else
-        w_date_picker->SetValue(dateTime);
+    wxDateTime dt_max = mmDate::max().dateTime();
+    wxDateTime dt = (dateTime <= dt_max) ? dateTime : dt_max;
+
+    w_date_picker->SetValue(dt);
 
     if (w_time_picker)
-        w_time_picker->SetValue(dateTime);
+        w_time_picker->SetValue(dt);
 
     // trigger date change event
-    wxDateEvent dateEvent(this, dateTime, wxEVT_DATE_CHANGED);
+    wxDateEvent dateEvent(this, dt, wxEVT_DATE_CHANGED);
     onDateChanged(dateEvent);
 }
 
