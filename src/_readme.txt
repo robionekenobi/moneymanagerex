@@ -5,8 +5,7 @@ Tentative layers:
   base/
   data/, table/
   db/, model/, pref/, util/
-  dialog/, frame/, import_export/, manager/, panel/, report/
-  app/, wizard/
+  dialog/, manager/, panel/, report/, import_export/, frame/, app/, wizard/
 
 Common prefix symbols (to avoid name collision with methods):
   prefix c_ : cache
