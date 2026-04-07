@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,15 +27,21 @@ template class mmCache<int64, FieldValueData>;
 
 // List of column names in database table CUSTOMFIELDDATA_V1,
 // in the order of FieldValueCol::COL_ID.
-const wxArrayString FieldValueCol::COL_NAME_A = {
+const wxArrayString FieldValueCol::s_col_name_a = {
     "FIELDATADID",
     "FIELDID",
     "REFID",
     "CONTENT"
 };
 
-const FieldValueCol::COL_ID FieldValueCol::PRIMARY_ID = COL_ID_FIELDATADID;
-const wxString FieldValueCol::PRIMARY_NAME = COL_NAME_A[COL_ID_FIELDATADID];
+const FieldValueCol::COL_ID FieldValueCol::s_primary_id = COL_ID_FIELDATADID;
+const wxString FieldValueCol::s_primary_name = s_col_name_a[COL_ID_FIELDATADID];
+
+// convenience variables
+const wxString FieldValueCol::NAME_FIELDATADID = s_col_name_a[COL_ID_FIELDATADID];
+const wxString FieldValueCol::NAME_FIELDID = s_col_name_a[COL_ID_FIELDID];
+const wxString FieldValueCol::NAME_REFID = s_col_name_a[COL_ID_REFID];
+const wxString FieldValueCol::NAME_CONTENT = s_col_name_a[COL_ID_CONTENT];
 
 FieldValueRow::FieldValueRow()
 {

@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,15 +27,21 @@ template class mmCache<int64, CategoryData>;
 
 // List of column names in database table CATEGORY_V1,
 // in the order of CategoryCol::COL_ID.
-const wxArrayString CategoryCol::COL_NAME_A = {
+const wxArrayString CategoryCol::s_col_name_a = {
     "CATEGID",
     "CATEGNAME",
     "ACTIVE",
     "PARENTID"
 };
 
-const CategoryCol::COL_ID CategoryCol::PRIMARY_ID = COL_ID_CATEGID;
-const wxString CategoryCol::PRIMARY_NAME = COL_NAME_A[COL_ID_CATEGID];
+const CategoryCol::COL_ID CategoryCol::s_primary_id = COL_ID_CATEGID;
+const wxString CategoryCol::s_primary_name = s_col_name_a[COL_ID_CATEGID];
+
+// convenience variables
+const wxString CategoryCol::NAME_CATEGID = s_col_name_a[COL_ID_CATEGID];
+const wxString CategoryCol::NAME_CATEGNAME = s_col_name_a[COL_ID_CATEGNAME];
+const wxString CategoryCol::NAME_ACTIVE = s_col_name_a[COL_ID_ACTIVE];
+const wxString CategoryCol::NAME_PARENTID = s_col_name_a[COL_ID_PARENTID];
 
 CategoryRow::CategoryRow()
 {

@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, AttachmentData>;
 
 // List of column names in database table ATTACHMENT_V1,
 // in the order of AttachmentCol::COL_ID.
-const wxArrayString AttachmentCol::COL_NAME_A = {
+const wxArrayString AttachmentCol::s_col_name_a = {
     "ATTACHMENTID",
     "REFTYPE",
     "REFID",
@@ -35,8 +35,15 @@ const wxArrayString AttachmentCol::COL_NAME_A = {
     "FILENAME"
 };
 
-const AttachmentCol::COL_ID AttachmentCol::PRIMARY_ID = COL_ID_ATTACHMENTID;
-const wxString AttachmentCol::PRIMARY_NAME = COL_NAME_A[COL_ID_ATTACHMENTID];
+const AttachmentCol::COL_ID AttachmentCol::s_primary_id = COL_ID_ATTACHMENTID;
+const wxString AttachmentCol::s_primary_name = s_col_name_a[COL_ID_ATTACHMENTID];
+
+// convenience variables
+const wxString AttachmentCol::NAME_ATTACHMENTID = s_col_name_a[COL_ID_ATTACHMENTID];
+const wxString AttachmentCol::NAME_REFTYPE = s_col_name_a[COL_ID_REFTYPE];
+const wxString AttachmentCol::NAME_REFID = s_col_name_a[COL_ID_REFID];
+const wxString AttachmentCol::NAME_DESCRIPTION = s_col_name_a[COL_ID_DESCRIPTION];
+const wxString AttachmentCol::NAME_FILENAME = s_col_name_a[COL_ID_FILENAME];
 
 AttachmentRow::AttachmentRow()
 {

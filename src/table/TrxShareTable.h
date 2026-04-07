@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -36,16 +36,53 @@ struct TrxShareCol
         COL_ID_size
     };
 
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
 
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+
+    // convenience variables
+
+    static const wxString NAME_SHAREINFOID;
+    static const wxString NAME_CHECKINGACCOUNTID;
+    static const wxString NAME_SHARENUMBER;
+    static const wxString NAME_SHAREPRICE;
+    static const wxString NAME_SHARECOMMISSION;
+    static const wxString NAME_SHARELOT;
+
+    // convenience methods
+
+    static TableClauseV<int64> WHERE_SHAREINFOID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_SHAREINFOID, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_CHECKINGACCOUNTID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_CHECKINGACCOUNTID, op, value);
+    }
+
+    static TableClauseV<double> WHERE_SHARENUMBER(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_SHARENUMBER, op, value);
+    }
+
+    static TableClauseV<double> WHERE_SHAREPRICE(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_SHAREPRICE, op, value);
+    }
+
+    static TableClauseV<double> WHERE_SHARECOMMISSION(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_SHARECOMMISSION, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_SHARELOT(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_SHARELOT, op, value);
+    }
+
+    // deprecated
 
     struct SHAREINFOID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_SHAREINFOID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_SHAREINFOID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_SHAREINFOID]; }
         explicit SHAREINFOID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit SHAREINFOID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -53,7 +90,7 @@ struct TrxShareCol
     struct CHECKINGACCOUNTID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_CHECKINGACCOUNTID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CHECKINGACCOUNTID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CHECKINGACCOUNTID]; }
         explicit CHECKINGACCOUNTID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit CHECKINGACCOUNTID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -61,7 +98,7 @@ struct TrxShareCol
     struct SHARENUMBER : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_SHARENUMBER; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_SHARENUMBER]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_SHARENUMBER]; }
         explicit SHARENUMBER(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit SHARENUMBER(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -69,7 +106,7 @@ struct TrxShareCol
     struct SHAREPRICE : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_SHAREPRICE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_SHAREPRICE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_SHAREPRICE]; }
         explicit SHAREPRICE(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit SHAREPRICE(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -77,7 +114,7 @@ struct TrxShareCol
     struct SHARECOMMISSION : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_SHARECOMMISSION; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_SHARECOMMISSION]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_SHARECOMMISSION]; }
         explicit SHARECOMMISSION(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit SHARECOMMISSION(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -85,7 +122,7 @@ struct TrxShareCol
     struct SHARELOT : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_SHARELOT; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_SHARELOT]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_SHARELOT]; }
         explicit SHARELOT(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit SHARELOT(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };

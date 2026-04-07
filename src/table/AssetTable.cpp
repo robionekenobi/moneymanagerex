@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, AssetData>;
 
 // List of column names in database table ASSETS_V1,
 // in the order of AssetCol::COL_ID.
-const wxArrayString AssetCol::COL_NAME_A = {
+const wxArrayString AssetCol::s_col_name_a = {
     "ASSETID",
     "STARTDATE",
     "ASSETNAME",
@@ -41,8 +41,21 @@ const wxArrayString AssetCol::COL_NAME_A = {
     "ASSETTYPE"
 };
 
-const AssetCol::COL_ID AssetCol::PRIMARY_ID = COL_ID_ASSETID;
-const wxString AssetCol::PRIMARY_NAME = COL_NAME_A[COL_ID_ASSETID];
+const AssetCol::COL_ID AssetCol::s_primary_id = COL_ID_ASSETID;
+const wxString AssetCol::s_primary_name = s_col_name_a[COL_ID_ASSETID];
+
+// convenience variables
+const wxString AssetCol::NAME_ASSETID = s_col_name_a[COL_ID_ASSETID];
+const wxString AssetCol::NAME_STARTDATE = s_col_name_a[COL_ID_STARTDATE];
+const wxString AssetCol::NAME_ASSETNAME = s_col_name_a[COL_ID_ASSETNAME];
+const wxString AssetCol::NAME_ASSETSTATUS = s_col_name_a[COL_ID_ASSETSTATUS];
+const wxString AssetCol::NAME_CURRENCYID = s_col_name_a[COL_ID_CURRENCYID];
+const wxString AssetCol::NAME_VALUECHANGEMODE = s_col_name_a[COL_ID_VALUECHANGEMODE];
+const wxString AssetCol::NAME_VALUE = s_col_name_a[COL_ID_VALUE];
+const wxString AssetCol::NAME_VALUECHANGE = s_col_name_a[COL_ID_VALUECHANGE];
+const wxString AssetCol::NAME_NOTES = s_col_name_a[COL_ID_NOTES];
+const wxString AssetCol::NAME_VALUECHANGERATE = s_col_name_a[COL_ID_VALUECHANGERATE];
+const wxString AssetCol::NAME_ASSETTYPE = s_col_name_a[COL_ID_ASSETTYPE];
 
 AssetRow::AssetRow()
 {

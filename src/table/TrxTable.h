@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -46,16 +46,103 @@ struct TrxCol
         COL_ID_size
     };
 
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
 
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+
+    // convenience variables
+
+    static const wxString NAME_TRANSID;
+    static const wxString NAME_ACCOUNTID;
+    static const wxString NAME_TOACCOUNTID;
+    static const wxString NAME_PAYEEID;
+    static const wxString NAME_TRANSCODE;
+    static const wxString NAME_TRANSAMOUNT;
+    static const wxString NAME_STATUS;
+    static const wxString NAME_TRANSACTIONNUMBER;
+    static const wxString NAME_NOTES;
+    static const wxString NAME_CATEGID;
+    static const wxString NAME_TRANSDATE;
+    static const wxString NAME_LASTUPDATEDTIME;
+    static const wxString NAME_DELETEDTIME;
+    static const wxString NAME_FOLLOWUPID;
+    static const wxString NAME_TOTRANSAMOUNT;
+    static const wxString NAME_COLOR;
+
+    // convenience methods
+
+    static TableClauseV<int64> WHERE_TRANSID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_TRANSID, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_ACCOUNTID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_ACCOUNTID, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_TOACCOUNTID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_TOACCOUNTID, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_PAYEEID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_PAYEEID, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_TRANSCODE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_TRANSCODE, op, value);
+    }
+
+    static TableClauseV<double> WHERE_TRANSAMOUNT(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_TRANSAMOUNT, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_STATUS(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_STATUS, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_TRANSACTIONNUMBER(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_TRANSACTIONNUMBER, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_NOTES(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_NOTES, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_CATEGID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_CATEGID, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_TRANSDATE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_TRANSDATE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_LASTUPDATEDTIME(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_LASTUPDATEDTIME, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_DELETEDTIME(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_DELETEDTIME, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_FOLLOWUPID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_FOLLOWUPID, op, value);
+    }
+
+    static TableClauseV<double> WHERE_TOTRANSAMOUNT(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_TOTRANSAMOUNT, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_COLOR(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_COLOR, op, value);
+    }
+
+    // deprecated
 
     struct TRANSID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_TRANSID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_TRANSID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_TRANSID]; }
         explicit TRANSID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit TRANSID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -63,7 +150,7 @@ struct TrxCol
     struct ACCOUNTID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_ACCOUNTID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_ACCOUNTID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_ACCOUNTID]; }
         explicit ACCOUNTID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit ACCOUNTID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -71,7 +158,7 @@ struct TrxCol
     struct TOACCOUNTID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_TOACCOUNTID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_TOACCOUNTID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_TOACCOUNTID]; }
         explicit TOACCOUNTID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit TOACCOUNTID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -79,7 +166,7 @@ struct TrxCol
     struct PAYEEID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_PAYEEID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_PAYEEID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_PAYEEID]; }
         explicit PAYEEID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit PAYEEID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -87,7 +174,7 @@ struct TrxCol
     struct TRANSCODE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_TRANSCODE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_TRANSCODE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_TRANSCODE]; }
         explicit TRANSCODE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit TRANSCODE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -95,7 +182,7 @@ struct TrxCol
     struct TRANSAMOUNT : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_TRANSAMOUNT; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_TRANSAMOUNT]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_TRANSAMOUNT]; }
         explicit TRANSAMOUNT(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit TRANSAMOUNT(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -103,7 +190,7 @@ struct TrxCol
     struct STATUS : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_STATUS; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_STATUS]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_STATUS]; }
         explicit STATUS(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit STATUS(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -111,7 +198,7 @@ struct TrxCol
     struct TRANSACTIONNUMBER : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_TRANSACTIONNUMBER; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_TRANSACTIONNUMBER]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_TRANSACTIONNUMBER]; }
         explicit TRANSACTIONNUMBER(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit TRANSACTIONNUMBER(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -119,7 +206,7 @@ struct TrxCol
     struct NOTES : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_NOTES; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_NOTES]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_NOTES]; }
         explicit NOTES(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit NOTES(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -127,7 +214,7 @@ struct TrxCol
     struct CATEGID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_CATEGID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CATEGID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CATEGID]; }
         explicit CATEGID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit CATEGID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -135,7 +222,7 @@ struct TrxCol
     struct TRANSDATE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_TRANSDATE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_TRANSDATE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_TRANSDATE]; }
         explicit TRANSDATE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit TRANSDATE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -143,7 +230,7 @@ struct TrxCol
     struct LASTUPDATEDTIME : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_LASTUPDATEDTIME; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_LASTUPDATEDTIME]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_LASTUPDATEDTIME]; }
         explicit LASTUPDATEDTIME(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit LASTUPDATEDTIME(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -151,7 +238,7 @@ struct TrxCol
     struct DELETEDTIME : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_DELETEDTIME; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_DELETEDTIME]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_DELETEDTIME]; }
         explicit DELETEDTIME(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit DELETEDTIME(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -159,7 +246,7 @@ struct TrxCol
     struct FOLLOWUPID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_FOLLOWUPID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_FOLLOWUPID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_FOLLOWUPID]; }
         explicit FOLLOWUPID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit FOLLOWUPID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -167,7 +254,7 @@ struct TrxCol
     struct TOTRANSAMOUNT : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_TOTRANSAMOUNT; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_TOTRANSAMOUNT]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_TOTRANSAMOUNT]; }
         explicit TOTRANSAMOUNT(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit TOTRANSAMOUNT(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -175,7 +262,7 @@ struct TrxCol
     struct COLOR : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_COLOR; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_COLOR]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_COLOR]; }
         explicit COLOR(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit COLOR(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };

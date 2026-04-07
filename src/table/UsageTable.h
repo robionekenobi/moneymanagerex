@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -33,16 +33,38 @@ struct UsageCol
         COL_ID_size
     };
 
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
 
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+
+    // convenience variables
+
+    static const wxString NAME_USAGEID;
+    static const wxString NAME_USAGEDATE;
+    static const wxString NAME_JSONCONTENT;
+
+    // convenience methods
+
+    static TableClauseV<int64> WHERE_USAGEID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_USAGEID, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_USAGEDATE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_USAGEDATE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_JSONCONTENT(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_JSONCONTENT, op, value);
+    }
+
+    // deprecated
 
     struct USAGEID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_USAGEID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_USAGEID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_USAGEID]; }
         explicit USAGEID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit USAGEID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -50,7 +72,7 @@ struct UsageCol
     struct USAGEDATE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_USAGEDATE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_USAGEDATE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_USAGEDATE]; }
         explicit USAGEDATE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit USAGEDATE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -58,7 +80,7 @@ struct UsageCol
     struct JSONCONTENT : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_JSONCONTENT; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_JSONCONTENT]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_JSONCONTENT]; }
         explicit JSONCONTENT(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit JSONCONTENT(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };

@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -33,16 +33,38 @@ struct SettingCol
         COL_ID_size
     };
 
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
 
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+
+    // convenience variables
+
+    static const wxString NAME_SETTINGID;
+    static const wxString NAME_SETTINGNAME;
+    static const wxString NAME_SETTINGVALUE;
+
+    // convenience methods
+
+    static TableClauseV<int64> WHERE_SETTINGID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_SETTINGID, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_SETTINGNAME(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_SETTINGNAME, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_SETTINGVALUE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_SETTINGVALUE, op, value);
+    }
+
+    // deprecated
 
     struct SETTINGID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_SETTINGID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_SETTINGID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_SETTINGID]; }
         explicit SETTINGID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit SETTINGID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -50,7 +72,7 @@ struct SettingCol
     struct SETTINGNAME : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_SETTINGNAME; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_SETTINGNAME]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_SETTINGNAME]; }
         explicit SETTINGNAME(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit SETTINGNAME(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -58,7 +80,7 @@ struct SettingCol
     struct SETTINGVALUE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_SETTINGVALUE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_SETTINGVALUE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_SETTINGVALUE]; }
         explicit SETTINGVALUE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit SETTINGVALUE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };

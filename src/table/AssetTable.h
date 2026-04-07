@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -41,16 +41,78 @@ struct AssetCol
         COL_ID_size
     };
 
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
 
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+
+    // convenience variables
+
+    static const wxString NAME_ASSETID;
+    static const wxString NAME_STARTDATE;
+    static const wxString NAME_ASSETNAME;
+    static const wxString NAME_ASSETSTATUS;
+    static const wxString NAME_CURRENCYID;
+    static const wxString NAME_VALUECHANGEMODE;
+    static const wxString NAME_VALUE;
+    static const wxString NAME_VALUECHANGE;
+    static const wxString NAME_NOTES;
+    static const wxString NAME_VALUECHANGERATE;
+    static const wxString NAME_ASSETTYPE;
+
+    // convenience methods
+
+    static TableClauseV<int64> WHERE_ASSETID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_ASSETID, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_STARTDATE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_STARTDATE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_ASSETNAME(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_ASSETNAME, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_ASSETSTATUS(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_ASSETSTATUS, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_CURRENCYID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_CURRENCYID, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_VALUECHANGEMODE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_VALUECHANGEMODE, op, value);
+    }
+
+    static TableClauseV<double> WHERE_VALUE(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_VALUE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_VALUECHANGE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_VALUECHANGE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_NOTES(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_NOTES, op, value);
+    }
+
+    static TableClauseV<double> WHERE_VALUECHANGERATE(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_VALUECHANGERATE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_ASSETTYPE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_ASSETTYPE, op, value);
+    }
+
+    // deprecated
 
     struct ASSETID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_ASSETID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_ASSETID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_ASSETID]; }
         explicit ASSETID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit ASSETID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -58,7 +120,7 @@ struct AssetCol
     struct STARTDATE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_STARTDATE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_STARTDATE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_STARTDATE]; }
         explicit STARTDATE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit STARTDATE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -66,7 +128,7 @@ struct AssetCol
     struct ASSETNAME : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_ASSETNAME; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_ASSETNAME]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_ASSETNAME]; }
         explicit ASSETNAME(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit ASSETNAME(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -74,7 +136,7 @@ struct AssetCol
     struct ASSETSTATUS : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_ASSETSTATUS; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_ASSETSTATUS]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_ASSETSTATUS]; }
         explicit ASSETSTATUS(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit ASSETSTATUS(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -82,7 +144,7 @@ struct AssetCol
     struct CURRENCYID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_CURRENCYID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CURRENCYID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CURRENCYID]; }
         explicit CURRENCYID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit CURRENCYID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -90,7 +152,7 @@ struct AssetCol
     struct VALUECHANGEMODE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_VALUECHANGEMODE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_VALUECHANGEMODE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_VALUECHANGEMODE]; }
         explicit VALUECHANGEMODE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit VALUECHANGEMODE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -98,7 +160,7 @@ struct AssetCol
     struct VALUE : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_VALUE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_VALUE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_VALUE]; }
         explicit VALUE(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit VALUE(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -106,7 +168,7 @@ struct AssetCol
     struct VALUECHANGE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_VALUECHANGE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_VALUECHANGE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_VALUECHANGE]; }
         explicit VALUECHANGE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit VALUECHANGE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -114,7 +176,7 @@ struct AssetCol
     struct NOTES : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_NOTES; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_NOTES]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_NOTES]; }
         explicit NOTES(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit NOTES(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -122,7 +184,7 @@ struct AssetCol
     struct VALUECHANGERATE : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_VALUECHANGERATE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_VALUECHANGERATE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_VALUECHANGERATE]; }
         explicit VALUECHANGERATE(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit VALUECHANGERATE(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -130,7 +192,7 @@ struct AssetCol
     struct ASSETTYPE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_ASSETTYPE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_ASSETTYPE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_ASSETTYPE]; }
         explicit ASSETTYPE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit ASSETTYPE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
