@@ -175,8 +175,8 @@ bool TrxLinkDialog::Create(
         , wxDefaultPosition, std_half_size);
 
     for (int i = 0; i < TrxStatus::size; ++i) {
-        wxString name = TrxStatus(i).name();
-        m_status_selector->Append(wxGetTranslation(name), new wxStringClientData(name));
+        wxString nname = TrxStatus(i).name();
+        m_status_selector->Append(wxGetTranslation(nname), new wxStringClientData(nname));
     }
 
     m_status_selector->SetSelection(TrxStatus::e_reconciled);
