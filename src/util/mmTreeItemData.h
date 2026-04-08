@@ -60,14 +60,14 @@ public:
     mmTreeItemData(int type, int64 id, const wxString& data);
     mmTreeItemData(const wxString& data, ReportBase* report);
     mmTreeItemData(ReportBase* report, const wxString& data);
-    
+
     ~mmTreeItemData() {}
 
     int getType() const;
     int64 getId() const;
     const wxString getString() const;
     ReportBase* getReport() const;
-    bool isReadOnly() const;
+    //bool isReadOnly() const;
 };
 
 inline int mmTreeItemData::getType() const { return type_; }
@@ -83,4 +83,3 @@ inline bool operator==(const mmTreeItemData& lhs, const mmTreeItemData& rhs)
         lhs.getString() == rhs.getString()
     );
 };
-
