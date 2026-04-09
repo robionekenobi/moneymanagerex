@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -34,16 +34,43 @@ struct TrxLinkCol
         COL_ID_size
     };
 
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
 
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+
+    // convenience variables
+
+    static const wxString NAME_TRANSLINKID;
+    static const wxString NAME_CHECKINGACCOUNTID;
+    static const wxString NAME_LINKTYPE;
+    static const wxString NAME_LINKRECORDID;
+
+    // convenience methods
+
+    static TableClauseV<int64> WHERE_TRANSLINKID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_TRANSLINKID, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_CHECKINGACCOUNTID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_CHECKINGACCOUNTID, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_LINKTYPE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_LINKTYPE, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_LINKRECORDID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_LINKRECORDID, op, value);
+    }
+
+    // deprecated
 
     struct TRANSLINKID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_TRANSLINKID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_TRANSLINKID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_TRANSLINKID]; }
         explicit TRANSLINKID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit TRANSLINKID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -51,7 +78,7 @@ struct TrxLinkCol
     struct CHECKINGACCOUNTID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_CHECKINGACCOUNTID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CHECKINGACCOUNTID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CHECKINGACCOUNTID]; }
         explicit CHECKINGACCOUNTID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit CHECKINGACCOUNTID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -59,7 +86,7 @@ struct TrxLinkCol
     struct LINKTYPE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_LINKTYPE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_LINKTYPE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_LINKTYPE]; }
         explicit LINKTYPE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit LINKTYPE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -67,7 +94,7 @@ struct TrxLinkCol
     struct LINKRECORDID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_LINKRECORDID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_LINKRECORDID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_LINKRECORDID]; }
         explicit LINKRECORDID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit LINKRECORDID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };

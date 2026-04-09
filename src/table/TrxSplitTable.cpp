@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, TrxSplitData>;
 
 // List of column names in database table SPLITTRANSACTIONS_V1,
 // in the order of TrxSplitCol::COL_ID.
-const wxArrayString TrxSplitCol::COL_NAME_A = {
+const wxArrayString TrxSplitCol::s_col_name_a = {
     "SPLITTRANSID",
     "TRANSID",
     "CATEGID",
@@ -35,8 +35,15 @@ const wxArrayString TrxSplitCol::COL_NAME_A = {
     "NOTES"
 };
 
-const TrxSplitCol::COL_ID TrxSplitCol::PRIMARY_ID = COL_ID_SPLITTRANSID;
-const wxString TrxSplitCol::PRIMARY_NAME = COL_NAME_A[COL_ID_SPLITTRANSID];
+const TrxSplitCol::COL_ID TrxSplitCol::s_primary_id = COL_ID_SPLITTRANSID;
+const wxString TrxSplitCol::s_primary_name = s_col_name_a[COL_ID_SPLITTRANSID];
+
+// convenience variables
+const wxString TrxSplitCol::NAME_SPLITTRANSID = s_col_name_a[COL_ID_SPLITTRANSID];
+const wxString TrxSplitCol::NAME_TRANSID = s_col_name_a[COL_ID_TRANSID];
+const wxString TrxSplitCol::NAME_CATEGID = s_col_name_a[COL_ID_CATEGID];
+const wxString TrxSplitCol::NAME_SPLITTRANSAMOUNT = s_col_name_a[COL_ID_SPLITTRANSAMOUNT];
+const wxString TrxSplitCol::NAME_NOTES = s_col_name_a[COL_ID_NOTES];
 
 TrxSplitRow::TrxSplitRow()
 {

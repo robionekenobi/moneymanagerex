@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, SchedSplitData>;
 
 // List of column names in database table BUDGETSPLITTRANSACTIONS_V1,
 // in the order of SchedSplitCol::COL_ID.
-const wxArrayString SchedSplitCol::COL_NAME_A = {
+const wxArrayString SchedSplitCol::s_col_name_a = {
     "SPLITTRANSID",
     "TRANSID",
     "CATEGID",
@@ -35,8 +35,15 @@ const wxArrayString SchedSplitCol::COL_NAME_A = {
     "NOTES"
 };
 
-const SchedSplitCol::COL_ID SchedSplitCol::PRIMARY_ID = COL_ID_SPLITTRANSID;
-const wxString SchedSplitCol::PRIMARY_NAME = COL_NAME_A[COL_ID_SPLITTRANSID];
+const SchedSplitCol::COL_ID SchedSplitCol::s_primary_id = COL_ID_SPLITTRANSID;
+const wxString SchedSplitCol::s_primary_name = s_col_name_a[COL_ID_SPLITTRANSID];
+
+// convenience variables
+const wxString SchedSplitCol::NAME_SPLITTRANSID = s_col_name_a[COL_ID_SPLITTRANSID];
+const wxString SchedSplitCol::NAME_TRANSID = s_col_name_a[COL_ID_TRANSID];
+const wxString SchedSplitCol::NAME_CATEGID = s_col_name_a[COL_ID_CATEGID];
+const wxString SchedSplitCol::NAME_SPLITTRANSAMOUNT = s_col_name_a[COL_ID_SPLITTRANSAMOUNT];
+const wxString SchedSplitCol::NAME_NOTES = s_col_name_a[COL_ID_NOTES];
 
 SchedSplitRow::SchedSplitRow()
 {

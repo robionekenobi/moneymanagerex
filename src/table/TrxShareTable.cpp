@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, TrxShareData>;
 
 // List of column names in database table SHAREINFO_V1,
 // in the order of TrxShareCol::COL_ID.
-const wxArrayString TrxShareCol::COL_NAME_A = {
+const wxArrayString TrxShareCol::s_col_name_a = {
     "SHAREINFOID",
     "CHECKINGACCOUNTID",
     "SHARENUMBER",
@@ -36,8 +36,16 @@ const wxArrayString TrxShareCol::COL_NAME_A = {
     "SHARELOT"
 };
 
-const TrxShareCol::COL_ID TrxShareCol::PRIMARY_ID = COL_ID_SHAREINFOID;
-const wxString TrxShareCol::PRIMARY_NAME = COL_NAME_A[COL_ID_SHAREINFOID];
+const TrxShareCol::COL_ID TrxShareCol::s_primary_id = COL_ID_SHAREINFOID;
+const wxString TrxShareCol::s_primary_name = s_col_name_a[COL_ID_SHAREINFOID];
+
+// convenience variables
+const wxString TrxShareCol::NAME_SHAREINFOID = s_col_name_a[COL_ID_SHAREINFOID];
+const wxString TrxShareCol::NAME_CHECKINGACCOUNTID = s_col_name_a[COL_ID_CHECKINGACCOUNTID];
+const wxString TrxShareCol::NAME_SHARENUMBER = s_col_name_a[COL_ID_SHARENUMBER];
+const wxString TrxShareCol::NAME_SHAREPRICE = s_col_name_a[COL_ID_SHAREPRICE];
+const wxString TrxShareCol::NAME_SHARECOMMISSION = s_col_name_a[COL_ID_SHARECOMMISSION];
+const wxString TrxShareCol::NAME_SHARELOT = s_col_name_a[COL_ID_SHARELOT];
 
 TrxShareRow::TrxShareRow()
 {

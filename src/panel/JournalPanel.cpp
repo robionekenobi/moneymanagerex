@@ -645,21 +645,23 @@ void JournalPanel::filterList()
     w_list->m_journal_xa.clear();
 
     TrxModel::DataA trx_a =
-        isDeletedTrans() ? TrxModel::instance().find(
-            TrxModel::DATE(OP_GE, range_start),
-            TrxModel::DATE(OP_LE, range_end),
-            TrxModel::IS_DELETED(true)
+        isDeletedTrans() ? TrxModel::instance().find_data_a(
+            TrxModel::WHERE_DATE(OP_GE, range_start),
+            TrxModel::WHERE_DATE(OP_LE, range_end),
+            TrxModel::WHERE_IS_DELETED(true)
         )
-        : isAccount() ? TrxModel::instance().find_or(
-            // TODO: fetch transactions until range_end
-            // TODO: filter out deleted transactions
-            TrxCol::ACCOUNTID(m_account_n->m_id),
-            TrxCol::TOACCOUNTID(m_account_n->m_id)
+        : isAccount() ? TrxModel::instance().find_data_a(
+            TableClause::BEGIN_OR(),
+                TrxCol::WHERE_ACCOUNTID(OP_EQ, m_account_n->m_id),
+                TrxCol::WHERE_TOACCOUNTID(OP_EQ, m_account_n->m_id),
+            TableClause::END(),
+            TrxModel::WHERE_DATE(OP_LE, range_end),
+            TrxModel::WHERE_IS_DELETED(false)
         )
-        : TrxModel::instance().find(
-            TrxModel::DATE(OP_GE, range_start),
-            TrxModel::DATE(OP_LE, range_end),
-            TrxModel::IS_DELETED(false)
+        : TrxModel::instance().find_data_a(
+            TrxModel::WHERE_DATE(OP_GE, range_start),
+            TrxModel::WHERE_DATE(OP_LE, range_end),
+            TrxModel::WHERE_IS_DELETED(false)
         );
     if (PrefModel::instance().getUseTransDateTime()) {
         std::sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTimeId());

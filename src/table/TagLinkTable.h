@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -34,16 +34,43 @@ struct TagLinkCol
         COL_ID_size
     };
 
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
 
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+
+    // convenience variables
+
+    static const wxString NAME_TAGLINKID;
+    static const wxString NAME_REFTYPE;
+    static const wxString NAME_REFID;
+    static const wxString NAME_TAGID;
+
+    // convenience methods
+
+    static TableClauseV<int64> WHERE_TAGLINKID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_TAGLINKID, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_REFTYPE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_REFTYPE, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_REFID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_REFID, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_TAGID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_TAGID, op, value);
+    }
+
+    // deprecated
 
     struct TAGLINKID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_TAGLINKID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_TAGLINKID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_TAGLINKID]; }
         explicit TAGLINKID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit TAGLINKID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -51,7 +78,7 @@ struct TagLinkCol
     struct REFTYPE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_REFTYPE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_REFTYPE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_REFTYPE]; }
         explicit REFTYPE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit REFTYPE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -59,7 +86,7 @@ struct TagLinkCol
     struct REFID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_REFID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_REFID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_REFID]; }
         explicit REFID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit REFID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -67,7 +94,7 @@ struct TagLinkCol
     struct TAGID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_TAGID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_TAGID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_TAGID]; }
         explicit TAGID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit TAGID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };

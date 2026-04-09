@@ -164,8 +164,11 @@ void TrxUpdateDialog::CreateControls()
     w_status_choice = new wxChoice(this, wxID_ANY
         , wxDefaultPosition, wxDefaultSize);
     for (int i = 0; i < TrxStatus::size; ++i) {
-        wxString name = TrxStatus(i).name();
-        w_status_choice->Append(wxGetTranslation(name), new wxStringClientData(name));
+        wxString status_name = TrxStatus(i).name();
+        w_status_choice->Append(
+            wxGetTranslation(status_name),
+            new wxStringClientData(status_name)
+        );
     }
 
     w_status_choice->Enable(false);
@@ -182,8 +185,11 @@ void TrxUpdateDialog::CreateControls()
         , wxDefaultPosition, wxDefaultSize);
     for (int i = 0; i < TrxType::size; ++i) {
         if (!(m_hasSplits && i == TrxType::e_transfer)) {
-            wxString name = TrxType(i).name();
-            w_type_choice->Append(wxGetTranslation(name), new wxStringClientData(name));
+            wxString type_name = TrxType(i).name();
+            w_type_choice->Append(
+                wxGetTranslation(type_name),
+                new wxStringClientData(type_name)
+            );
         }
     }
     w_type_choice->Enable(false);

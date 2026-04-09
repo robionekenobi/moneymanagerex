@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, AccountData>;
 
 // List of column names in database table ACCOUNTLIST_V1,
 // in the order of AccountCol::COL_ID.
-const wxArrayString AccountCol::COL_NAME_A = {
+const wxArrayString AccountCol::s_col_name_a = {
     "ACCOUNTID",
     "ACCOUNTNAME",
     "ACCOUNTTYPE",
@@ -51,8 +51,31 @@ const wxArrayString AccountCol::COL_NAME_A = {
     "MINIMUMPAYMENT"
 };
 
-const AccountCol::COL_ID AccountCol::PRIMARY_ID = COL_ID_ACCOUNTID;
-const wxString AccountCol::PRIMARY_NAME = COL_NAME_A[COL_ID_ACCOUNTID];
+const AccountCol::COL_ID AccountCol::s_primary_id = COL_ID_ACCOUNTID;
+const wxString AccountCol::s_primary_name = s_col_name_a[COL_ID_ACCOUNTID];
+
+// convenience variables
+const wxString AccountCol::NAME_ACCOUNTID = s_col_name_a[COL_ID_ACCOUNTID];
+const wxString AccountCol::NAME_ACCOUNTNAME = s_col_name_a[COL_ID_ACCOUNTNAME];
+const wxString AccountCol::NAME_ACCOUNTTYPE = s_col_name_a[COL_ID_ACCOUNTTYPE];
+const wxString AccountCol::NAME_ACCOUNTNUM = s_col_name_a[COL_ID_ACCOUNTNUM];
+const wxString AccountCol::NAME_STATUS = s_col_name_a[COL_ID_STATUS];
+const wxString AccountCol::NAME_NOTES = s_col_name_a[COL_ID_NOTES];
+const wxString AccountCol::NAME_HELDAT = s_col_name_a[COL_ID_HELDAT];
+const wxString AccountCol::NAME_WEBSITE = s_col_name_a[COL_ID_WEBSITE];
+const wxString AccountCol::NAME_CONTACTINFO = s_col_name_a[COL_ID_CONTACTINFO];
+const wxString AccountCol::NAME_ACCESSINFO = s_col_name_a[COL_ID_ACCESSINFO];
+const wxString AccountCol::NAME_INITIALBAL = s_col_name_a[COL_ID_INITIALBAL];
+const wxString AccountCol::NAME_INITIALDATE = s_col_name_a[COL_ID_INITIALDATE];
+const wxString AccountCol::NAME_FAVORITEACCT = s_col_name_a[COL_ID_FAVORITEACCT];
+const wxString AccountCol::NAME_CURRENCYID = s_col_name_a[COL_ID_CURRENCYID];
+const wxString AccountCol::NAME_STATEMENTLOCKED = s_col_name_a[COL_ID_STATEMENTLOCKED];
+const wxString AccountCol::NAME_STATEMENTDATE = s_col_name_a[COL_ID_STATEMENTDATE];
+const wxString AccountCol::NAME_MINIMUMBALANCE = s_col_name_a[COL_ID_MINIMUMBALANCE];
+const wxString AccountCol::NAME_CREDITLIMIT = s_col_name_a[COL_ID_CREDITLIMIT];
+const wxString AccountCol::NAME_INTERESTRATE = s_col_name_a[COL_ID_INTERESTRATE];
+const wxString AccountCol::NAME_PAYMENTDUEDATE = s_col_name_a[COL_ID_PAYMENTDUEDATE];
+const wxString AccountCol::NAME_MINIMUMPAYMENT = s_col_name_a[COL_ID_MINIMUMPAYMENT];
 
 AccountRow::AccountRow()
 {

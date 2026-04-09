@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -33,16 +33,38 @@ struct InfoCol
         COL_ID_size
     };
 
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
 
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+
+    // convenience variables
+
+    static const wxString NAME_INFOID;
+    static const wxString NAME_INFONAME;
+    static const wxString NAME_INFOVALUE;
+
+    // convenience methods
+
+    static TableClauseV<int64> WHERE_INFOID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_INFOID, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_INFONAME(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_INFONAME, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_INFOVALUE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_INFOVALUE, op, value);
+    }
+
+    // deprecated
 
     struct INFOID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_INFOID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_INFOID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_INFOID]; }
         explicit INFOID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit INFOID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -50,7 +72,7 @@ struct InfoCol
     struct INFONAME : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_INFONAME; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_INFONAME]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_INFONAME]; }
         explicit INFONAME(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit INFONAME(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -58,7 +80,7 @@ struct InfoCol
     struct INFOVALUE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_INFOVALUE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_INFOVALUE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_INFOVALUE]; }
         explicit INFOVALUE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit INFOVALUE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };

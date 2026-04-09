@@ -38,6 +38,55 @@
 
 const RefTypeN TrxModel::s_ref_type = RefTypeN(RefTypeN::e_trx);
 
+TableClauseV<wxString> TrxModel::WHERE_DATE(OP op, const mmDate& date)
+{
+    // OP_EQ and OP_NE should not be used for date comparisons.
+    // if needed, create an equivalent AND/OR combination of two other operators.
+    wxString bound =
+        (op == OP_GE || op == OP_LT)
+            ? date.isoStart()
+        : (op == OP_LE || op == OP_GT)
+            ? date.isoEnd()
+            : date.isoDate();
+    return TrxCol::WHERE_TRANSDATE(op, bound);
+}
+
+TableClauseV<wxString> TrxModel::WHERE_TYPE(OP op, TrxType trx_type)
+{
+    return TrxCol::WHERE_TRANSCODE(op, trx_type.key());
+}
+
+TableClauseV<wxString> TrxModel::WHERE_STATUS(OP op, TrxStatus trx_status)
+{
+    return TrxCol::WHERE_STATUS(op, trx_status.key());
+}
+
+TableClauseV<wxString> TrxModel::WHERE_IS_VOID(bool value)
+{
+    return TrxCol::WHERE_STATUS(value ? OP_EQ : OP_NE, TrxStatus(TrxStatus::e_void).key());
+}
+
+TableClauseV<wxString> TrxModel::WHERE_IS_DELETED(bool value)
+{
+    return TrxCol::WHERE_DELETEDTIME(value ? OP_NEN : OP_EQN, "");
+}
+
+TableClauseD TrxModel::WHERE_IS_VALID(bool value)
+{
+    return value
+        ? TableClause::merge(
+            TableClause::BEGIN_AND(),
+                TableClause::eval(WHERE_IS_VOID(false)),
+                TableClause::eval(WHERE_IS_DELETED(false)),
+            TableClause::END()
+        ) : TableClause::merge(
+            TableClause::BEGIN_OR(),
+                TableClause::eval(WHERE_IS_VOID(true)),
+                TableClause::eval(WHERE_IS_DELETED(true)),
+            TableClause::END()
+        );
+}
+
 TrxCol::TRANSDATE TrxModel::DATE(OP op, const mmDate& date)
 {
     // OP_EQ and OP_NE should not be used for date comparisons.

@@ -211,8 +211,11 @@ void AssetDialog::CreateControls()
 
     w_assetType = new wxChoice(asset_details_panel, wxID_STATIC);
     for (int i = 0; i < AssetType::size; ++i) {
-        wxString name = AssetType(i).name();
-        w_assetType->Append(wxGetTranslation(name), new wxStringClientData(name));
+        wxString type_name = AssetType(i).name();
+        w_assetType->Append(
+            wxGetTranslation(type_name),
+            new wxStringClientData(type_name)
+        );
     }
 
     mmToolTip(w_assetType, _t("Select type of asset"));
@@ -248,8 +251,8 @@ void AssetDialog::CreateControls()
 
     w_valueChange = new wxChoice(asset_details_panel, IDC_COMBO_TYPE);
     for (mmChoiceId i = 0; i < AssetChange::size; ++i) {
-        wxString name = AssetChange(i).name();
-        w_valueChange->Append(wxGetTranslation(name));
+        wxString change_name = AssetChange(i).name();
+        w_valueChange->Append(wxGetTranslation(change_name));
     }
 
     mmToolTip(w_valueChange, _t("Specify if the value of the asset changes over time"));

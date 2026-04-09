@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, ReportData>;
 
 // List of column names in database table REPORT_V1,
 // in the order of ReportCol::COL_ID.
-const wxArrayString ReportCol::COL_NAME_A = {
+const wxArrayString ReportCol::s_col_name_a = {
     "REPORTID",
     "REPORTNAME",
     "GROUPNAME",
@@ -38,8 +38,18 @@ const wxArrayString ReportCol::COL_NAME_A = {
     "DESCRIPTION"
 };
 
-const ReportCol::COL_ID ReportCol::PRIMARY_ID = COL_ID_REPORTID;
-const wxString ReportCol::PRIMARY_NAME = COL_NAME_A[COL_ID_REPORTID];
+const ReportCol::COL_ID ReportCol::s_primary_id = COL_ID_REPORTID;
+const wxString ReportCol::s_primary_name = s_col_name_a[COL_ID_REPORTID];
+
+// convenience variables
+const wxString ReportCol::NAME_REPORTID = s_col_name_a[COL_ID_REPORTID];
+const wxString ReportCol::NAME_REPORTNAME = s_col_name_a[COL_ID_REPORTNAME];
+const wxString ReportCol::NAME_GROUPNAME = s_col_name_a[COL_ID_GROUPNAME];
+const wxString ReportCol::NAME_ACTIVE = s_col_name_a[COL_ID_ACTIVE];
+const wxString ReportCol::NAME_SQLCONTENT = s_col_name_a[COL_ID_SQLCONTENT];
+const wxString ReportCol::NAME_LUACONTENT = s_col_name_a[COL_ID_LUACONTENT];
+const wxString ReportCol::NAME_TEMPLATECONTENT = s_col_name_a[COL_ID_TEMPLATECONTENT];
+const wxString ReportCol::NAME_DESCRIPTION = s_col_name_a[COL_ID_DESCRIPTION];
 
 ReportRow::ReportRow()
 {

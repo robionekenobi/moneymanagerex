@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -42,16 +42,83 @@ struct CurrencyCol
         COL_ID_size
     };
 
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
 
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+
+    // convenience variables
+
+    static const wxString NAME_CURRENCYID;
+    static const wxString NAME_CURRENCYNAME;
+    static const wxString NAME_PFX_SYMBOL;
+    static const wxString NAME_SFX_SYMBOL;
+    static const wxString NAME_DECIMAL_POINT;
+    static const wxString NAME_GROUP_SEPARATOR;
+    static const wxString NAME_UNIT_NAME;
+    static const wxString NAME_CENT_NAME;
+    static const wxString NAME_SCALE;
+    static const wxString NAME_BASECONVRATE;
+    static const wxString NAME_CURRENCY_SYMBOL;
+    static const wxString NAME_CURRENCY_TYPE;
+
+    // convenience methods
+
+    static TableClauseV<int64> WHERE_CURRENCYID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_CURRENCYID, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_CURRENCYNAME(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_CURRENCYNAME, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_PFX_SYMBOL(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_PFX_SYMBOL, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_SFX_SYMBOL(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_SFX_SYMBOL, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_DECIMAL_POINT(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_DECIMAL_POINT, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_GROUP_SEPARATOR(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_GROUP_SEPARATOR, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_UNIT_NAME(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_UNIT_NAME, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_CENT_NAME(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_CENT_NAME, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_SCALE(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_SCALE, op, value);
+    }
+
+    static TableClauseV<double> WHERE_BASECONVRATE(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_BASECONVRATE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_CURRENCY_SYMBOL(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_CURRENCY_SYMBOL, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_CURRENCY_TYPE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_CURRENCY_TYPE, op, value);
+    }
+
+    // deprecated
 
     struct CURRENCYID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_CURRENCYID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CURRENCYID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CURRENCYID]; }
         explicit CURRENCYID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit CURRENCYID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -59,7 +126,7 @@ struct CurrencyCol
     struct CURRENCYNAME : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_CURRENCYNAME; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CURRENCYNAME]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CURRENCYNAME]; }
         explicit CURRENCYNAME(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit CURRENCYNAME(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -67,7 +134,7 @@ struct CurrencyCol
     struct PFX_SYMBOL : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_PFX_SYMBOL; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_PFX_SYMBOL]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_PFX_SYMBOL]; }
         explicit PFX_SYMBOL(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit PFX_SYMBOL(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -75,7 +142,7 @@ struct CurrencyCol
     struct SFX_SYMBOL : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_SFX_SYMBOL; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_SFX_SYMBOL]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_SFX_SYMBOL]; }
         explicit SFX_SYMBOL(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit SFX_SYMBOL(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -83,7 +150,7 @@ struct CurrencyCol
     struct DECIMAL_POINT : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_DECIMAL_POINT; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_DECIMAL_POINT]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_DECIMAL_POINT]; }
         explicit DECIMAL_POINT(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit DECIMAL_POINT(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -91,7 +158,7 @@ struct CurrencyCol
     struct GROUP_SEPARATOR : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_GROUP_SEPARATOR; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_GROUP_SEPARATOR]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_GROUP_SEPARATOR]; }
         explicit GROUP_SEPARATOR(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit GROUP_SEPARATOR(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -99,7 +166,7 @@ struct CurrencyCol
     struct UNIT_NAME : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_UNIT_NAME; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_UNIT_NAME]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_UNIT_NAME]; }
         explicit UNIT_NAME(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit UNIT_NAME(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -107,7 +174,7 @@ struct CurrencyCol
     struct CENT_NAME : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_CENT_NAME; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CENT_NAME]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CENT_NAME]; }
         explicit CENT_NAME(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit CENT_NAME(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -115,7 +182,7 @@ struct CurrencyCol
     struct SCALE : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_SCALE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_SCALE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_SCALE]; }
         explicit SCALE(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit SCALE(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -123,7 +190,7 @@ struct CurrencyCol
     struct BASECONVRATE : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_BASECONVRATE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_BASECONVRATE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_BASECONVRATE]; }
         explicit BASECONVRATE(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit BASECONVRATE(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -131,7 +198,7 @@ struct CurrencyCol
     struct CURRENCY_SYMBOL : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_CURRENCY_SYMBOL; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CURRENCY_SYMBOL]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CURRENCY_SYMBOL]; }
         explicit CURRENCY_SYMBOL(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit CURRENCY_SYMBOL(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -139,7 +206,7 @@ struct CurrencyCol
     struct CURRENCY_TYPE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_CURRENCY_TYPE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CURRENCY_TYPE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CURRENCY_TYPE]; }
         explicit CURRENCY_TYPE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit CURRENCY_TYPE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };

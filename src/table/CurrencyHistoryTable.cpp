@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, CurrencyHistoryData>;
 
 // List of column names in database table CURRENCYHISTORY_V1,
 // in the order of CurrencyHistoryCol::COL_ID.
-const wxArrayString CurrencyHistoryCol::COL_NAME_A = {
+const wxArrayString CurrencyHistoryCol::s_col_name_a = {
     "CURRHISTID",
     "CURRENCYID",
     "CURRDATE",
@@ -35,8 +35,15 @@ const wxArrayString CurrencyHistoryCol::COL_NAME_A = {
     "CURRUPDTYPE"
 };
 
-const CurrencyHistoryCol::COL_ID CurrencyHistoryCol::PRIMARY_ID = COL_ID_CURRHISTID;
-const wxString CurrencyHistoryCol::PRIMARY_NAME = COL_NAME_A[COL_ID_CURRHISTID];
+const CurrencyHistoryCol::COL_ID CurrencyHistoryCol::s_primary_id = COL_ID_CURRHISTID;
+const wxString CurrencyHistoryCol::s_primary_name = s_col_name_a[COL_ID_CURRHISTID];
+
+// convenience variables
+const wxString CurrencyHistoryCol::NAME_CURRHISTID = s_col_name_a[COL_ID_CURRHISTID];
+const wxString CurrencyHistoryCol::NAME_CURRENCYID = s_col_name_a[COL_ID_CURRENCYID];
+const wxString CurrencyHistoryCol::NAME_CURRDATE = s_col_name_a[COL_ID_CURRDATE];
+const wxString CurrencyHistoryCol::NAME_CURRVALUE = s_col_name_a[COL_ID_CURRVALUE];
+const wxString CurrencyHistoryCol::NAME_CURRUPDTYPE = s_col_name_a[COL_ID_CURRUPDTYPE];
 
 CurrencyHistoryRow::CurrencyHistoryRow()
 {

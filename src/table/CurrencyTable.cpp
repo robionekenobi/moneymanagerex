@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, CurrencyData>;
 
 // List of column names in database table CURRENCYFORMATS_V1,
 // in the order of CurrencyCol::COL_ID.
-const wxArrayString CurrencyCol::COL_NAME_A = {
+const wxArrayString CurrencyCol::s_col_name_a = {
     "CURRENCYID",
     "CURRENCYNAME",
     "PFX_SYMBOL",
@@ -42,8 +42,22 @@ const wxArrayString CurrencyCol::COL_NAME_A = {
     "CURRENCY_TYPE"
 };
 
-const CurrencyCol::COL_ID CurrencyCol::PRIMARY_ID = COL_ID_CURRENCYID;
-const wxString CurrencyCol::PRIMARY_NAME = COL_NAME_A[COL_ID_CURRENCYID];
+const CurrencyCol::COL_ID CurrencyCol::s_primary_id = COL_ID_CURRENCYID;
+const wxString CurrencyCol::s_primary_name = s_col_name_a[COL_ID_CURRENCYID];
+
+// convenience variables
+const wxString CurrencyCol::NAME_CURRENCYID = s_col_name_a[COL_ID_CURRENCYID];
+const wxString CurrencyCol::NAME_CURRENCYNAME = s_col_name_a[COL_ID_CURRENCYNAME];
+const wxString CurrencyCol::NAME_PFX_SYMBOL = s_col_name_a[COL_ID_PFX_SYMBOL];
+const wxString CurrencyCol::NAME_SFX_SYMBOL = s_col_name_a[COL_ID_SFX_SYMBOL];
+const wxString CurrencyCol::NAME_DECIMAL_POINT = s_col_name_a[COL_ID_DECIMAL_POINT];
+const wxString CurrencyCol::NAME_GROUP_SEPARATOR = s_col_name_a[COL_ID_GROUP_SEPARATOR];
+const wxString CurrencyCol::NAME_UNIT_NAME = s_col_name_a[COL_ID_UNIT_NAME];
+const wxString CurrencyCol::NAME_CENT_NAME = s_col_name_a[COL_ID_CENT_NAME];
+const wxString CurrencyCol::NAME_SCALE = s_col_name_a[COL_ID_SCALE];
+const wxString CurrencyCol::NAME_BASECONVRATE = s_col_name_a[COL_ID_BASECONVRATE];
+const wxString CurrencyCol::NAME_CURRENCY_SYMBOL = s_col_name_a[COL_ID_CURRENCY_SYMBOL];
+const wxString CurrencyCol::NAME_CURRENCY_TYPE = s_col_name_a[COL_ID_CURRENCY_TYPE];
 
 CurrencyRow::CurrencyRow()
 {

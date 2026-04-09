@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, SchedData>;
 
 // List of column names in database table BILLSDEPOSITS_V1,
 // in the order of SchedCol::COL_ID.
-const wxArrayString SchedCol::COL_NAME_A = {
+const wxArrayString SchedCol::s_col_name_a = {
     "BDID",
     "ACCOUNTID",
     "TOACCOUNTID",
@@ -47,8 +47,27 @@ const wxArrayString SchedCol::COL_NAME_A = {
     "COLOR"
 };
 
-const SchedCol::COL_ID SchedCol::PRIMARY_ID = COL_ID_BDID;
-const wxString SchedCol::PRIMARY_NAME = COL_NAME_A[COL_ID_BDID];
+const SchedCol::COL_ID SchedCol::s_primary_id = COL_ID_BDID;
+const wxString SchedCol::s_primary_name = s_col_name_a[COL_ID_BDID];
+
+// convenience variables
+const wxString SchedCol::NAME_BDID = s_col_name_a[COL_ID_BDID];
+const wxString SchedCol::NAME_ACCOUNTID = s_col_name_a[COL_ID_ACCOUNTID];
+const wxString SchedCol::NAME_TOACCOUNTID = s_col_name_a[COL_ID_TOACCOUNTID];
+const wxString SchedCol::NAME_PAYEEID = s_col_name_a[COL_ID_PAYEEID];
+const wxString SchedCol::NAME_TRANSCODE = s_col_name_a[COL_ID_TRANSCODE];
+const wxString SchedCol::NAME_TRANSAMOUNT = s_col_name_a[COL_ID_TRANSAMOUNT];
+const wxString SchedCol::NAME_STATUS = s_col_name_a[COL_ID_STATUS];
+const wxString SchedCol::NAME_TRANSACTIONNUMBER = s_col_name_a[COL_ID_TRANSACTIONNUMBER];
+const wxString SchedCol::NAME_NOTES = s_col_name_a[COL_ID_NOTES];
+const wxString SchedCol::NAME_CATEGID = s_col_name_a[COL_ID_CATEGID];
+const wxString SchedCol::NAME_TRANSDATE = s_col_name_a[COL_ID_TRANSDATE];
+const wxString SchedCol::NAME_FOLLOWUPID = s_col_name_a[COL_ID_FOLLOWUPID];
+const wxString SchedCol::NAME_TOTRANSAMOUNT = s_col_name_a[COL_ID_TOTRANSAMOUNT];
+const wxString SchedCol::NAME_REPEATS = s_col_name_a[COL_ID_REPEATS];
+const wxString SchedCol::NAME_NEXTOCCURRENCEDATE = s_col_name_a[COL_ID_NEXTOCCURRENCEDATE];
+const wxString SchedCol::NAME_NUMOCCURRENCES = s_col_name_a[COL_ID_NUMOCCURRENCES];
+const wxString SchedCol::NAME_COLOR = s_col_name_a[COL_ID_COLOR];
 
 SchedRow::SchedRow()
 {
