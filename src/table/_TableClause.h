@@ -101,7 +101,9 @@ public:
 private:
     TableClause(CLAUSE_ID id, const wxString& text = "", int mult = 0) :
         m_id(id), m_text(text), m_mult(mult) {}
-    TableClause(const TableClause& other) { *this = other; }
+    //TableClause(const TableClause& other) { *this = other; }
+    TableClause(const TableClause&) = default;
+    TableClause& operator=(const TableClause&) = default;
 
 public:
     static auto RESULT(const wxString& result) -> TableClauseD;
