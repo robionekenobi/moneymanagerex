@@ -133,6 +133,9 @@ void TableBase::select_query(
             state.query = clause.m_text;
             state.is_empty = false;
             break;
+
+        default:
+            break;
         }
 
         for (int p = 0; p < clause.m_mult; ++p)
