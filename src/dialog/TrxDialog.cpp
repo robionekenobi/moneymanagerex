@@ -499,8 +499,11 @@ void TrxDialog::CreateControls()
 
     for (int i = 0; i < TrxType::size; ++i) {
         if (i != TrxType::e_transfer || AccountModel::instance().find_all().size() > 1) {
-            wxString name = TrxType(i).name();
-            transaction_type_->Append(wxGetTranslation(name), new wxStringClientData(name));
+            wxString type_name = TrxType(i).name();
+            transaction_type_->Append(
+                wxGetTranslation(type_name),
+                new wxStringClientData(type_name)
+            );
         }
     }
 
@@ -598,8 +601,11 @@ void TrxDialog::CreateControls()
     choiceStatus_ = new wxChoice(static_box, ID_DIALOG_TRANS_STATUS);
 
     for (int i = 0; i < TrxStatus::size; ++i) {
-        wxString name = TrxStatus(i).name();
-        choiceStatus_->Append(wxGetTranslation(name), new wxStringClientData(name));
+        wxString status_name = TrxStatus(i).name();
+        choiceStatus_->Append(
+            wxGetTranslation(status_name),
+            new wxStringClientData(status_name)
+        );
     }
 
     flex_sizer->Add(new wxStaticText(static_box, wxID_STATIC, _t("Status")), g_flagsH);

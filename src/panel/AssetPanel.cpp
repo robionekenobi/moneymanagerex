@@ -402,8 +402,8 @@ void AssetPanel::onMouseLeftDown (wxCommandEvent& event)
     menu.Append(++i, _t("All"));
 
     for (int type_id = 0; type_id < AssetType::size; ++type_id) {
-        wxString name = AssetType(type_id).name();
-        menu.Append(++i, wxGetTranslation(name));
+        wxString type_name = AssetType(type_id).name();
+        menu.Append(++i, wxGetTranslation(type_name));
     }
     PopupMenu(&menu);
 
