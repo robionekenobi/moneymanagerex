@@ -17,12 +17,13 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/mimetype.h>
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "base/mmPlatform.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -65,7 +66,7 @@ AttachmentDialog::AttachmentDialog(
     Create(parent, name);
     mmThemeAutoColour(this);
 
-    const wxString folder = mmex::getPathAttachment(mmAttachmentManage::InfotablePathSetting());
+    const wxString folder = mmPath::getPathAttachment(mmAttachmentManage::InfotablePathSetting());
 
     if (folder == wxEmptyString) {
         wxString msgStr = wxString() << _t("Attachment folder not defined.") << "\n"
@@ -131,7 +132,7 @@ void AttachmentDialog::Create(wxWindow* parent, const wxString& name)
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
     fillControls();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre();
 }
 
@@ -162,7 +163,7 @@ void AttachmentDialog::CreateControls()
     buttons_sizer->Add(btnCancel, g_flagsH);
 
     wxBitmapButton* magicButton = new wxBitmapButton(buttons_panel
-        , wxID_APPLY, mmBitmapBundle(png::MORE_OPTIONS, mmBitmapButtonSize));
+        , wxID_APPLY, mmImage::bitmapBundle(mmImage::png::MORE_OPTIONS, mmImage::bitmapButtonSize));
     mmToolTip(magicButton, _t("Other tools"));
     buttons_sizer->Add(magicButton, g_flagsH);
 
@@ -224,7 +225,7 @@ void AttachmentDialog::AddAttachment(wxString file_path)
 
     const wxString desc = dlg.getText();
 
-    const wxString folder = mmex::getPathAttachment(mmAttachmentManage::InfotablePathSetting());
+    const wxString folder = mmPath::getPathAttachment(mmAttachmentManage::InfotablePathSetting());
     int last_num = AttachmentModel::instance().find_ref_last_num(m_ref_type, m_ref_id);
 
     wxString importedFileName = m_ref_type.key_n() + "_" + wxString::Format("%lld", m_ref_id) + "_Attach"
@@ -254,7 +255,7 @@ void AttachmentDialog::AddAttachment(wxString file_path)
 void AttachmentDialog::OpenAttachment()
 {
     const AttachmentData* att_n = AttachmentModel::instance().get_id_data_n(m_attachment_id);
-    wxString file_path = mmex::getPathAttachment(mmAttachmentManage::InfotablePathSetting())
+    wxString file_path = mmPath::getPathAttachment(mmAttachmentManage::InfotablePathSetting())
         + att_n->m_ref_type_n.key_n() + m_PathSep + att_n->m_filename;
     mmAttachmentManage::OpenAttachment(file_path);
 }
@@ -301,7 +302,7 @@ void AttachmentDialog::DeleteAttachment()
         wxYES_NO | wxNO_DEFAULT | wxICON_ERROR
     );
     if (deleteResponse == wxYES) {
-        const wxString AttachmentsFolder = mmex::getPathAttachment(
+        const wxString AttachmentsFolder = mmPath::getPathAttachment(
             mmAttachmentManage::InfotablePathSetting()
         ) + att_n->m_ref_type_n.key_n();
         if (mmAttachmentManage::DeleteAttachment(
@@ -340,7 +341,7 @@ void AttachmentDialog::OnListItemSelected(wxDataViewEvent& event)
 void AttachmentDialog::OnListItemActivated(wxDataViewEvent& WXUNUSED(event))
 {
     const AttachmentData* att_n = AttachmentModel::instance().get_id_data_n(m_attachment_id);
-    const wxString path = mmex::getPathAttachment(
+    const wxString path = mmPath::getPathAttachment(
         mmAttachmentManage::InfotablePathSetting()
     ) + att_n->m_ref_type_n.key_n() + m_PathSep + att_n->m_filename;
 
@@ -384,7 +385,7 @@ void AttachmentDialog::OnItemRightClick(wxDataViewEvent& event)
     mainMenu->Append(new wxMenuItem(mainMenu, MENU_DELETE_ATTACHMENT, _t("&Remove ")));
     
     //Disable buttons
-    const wxString AttachmentsFolder = mmex::getPathAttachment(
+    const wxString AttachmentsFolder = mmPath::getPathAttachment(
         mmAttachmentManage::InfotablePathSetting()
     );
     if (AttachmentsFolder == wxEmptyString || !wxDirExists(AttachmentsFolder))
@@ -419,7 +420,10 @@ wxString mmAttachmentManage::m_PathSep = wxFileName::GetPathSeparator();
 
 const wxString mmAttachmentManage::InfotablePathSetting()
 {
-    return InfoModel::instance().getString("ATTACHMENTSFOLDER:" + mmPlatformType(), "");
+    return InfoModel::instance().getString(
+        "ATTACHMENTSFOLDER:" + mmPlatform::platformType(),
+        ""
+    );
 }
 
 const wxString mmAttachmentManage::GetAttachmentNoteSign()
@@ -502,7 +506,7 @@ bool mmAttachmentManage::DeleteAttachment(const wxString& FileToDelete)
 {
     if (wxFileExists(FileToDelete)) {
         if (InfoModel::instance().getBool("ATTACHMENTSTRASH", false)) {
-            const wxString folder = mmex::getPathAttachment(mmAttachmentManage::InfotablePathSetting());
+            const wxString folder = mmPath::getPathAttachment(mmAttachmentManage::InfotablePathSetting());
             const wxString folder_deleted = folder + m_PathSep + "Deleted";
 
             if (!wxDirExists(folder_deleted)) {
@@ -556,7 +560,7 @@ bool mmAttachmentManage::OpenAttachment(const wxString& FileToOpen)
 
 bool mmAttachmentManage::DeleteAllAttachments(RefTypeN ref_type, int64 ref_id)
 {
-    wxString folder = mmex::getPathAttachment(
+    wxString folder = mmPath::getPathAttachment(
         mmAttachmentManage::InfotablePathSetting()
     ) + m_PathSep + ref_type.key_n();
 
@@ -585,10 +589,10 @@ bool mmAttachmentManage::RelocateAllAttachments(
     if (att_a.size() == 0)
         return false;
 
-    const wxString old_folder = mmex::getPathAttachment(
+    const wxString old_folder = mmPath::getPathAttachment(
         mmAttachmentManage::InfotablePathSetting()
     ) + old_ref_type.key_n() + m_PathSep;
-    const wxString new_folder = mmex::getPathAttachment(
+    const wxString new_folder = mmPath::getPathAttachment(
         mmAttachmentManage::InfotablePathSetting()
     ) + new_ref_type.key_n() + m_PathSep;
 
@@ -621,7 +625,7 @@ bool mmAttachmentManage::CloneAllAttachments(
     int64 src_ref_id,
     int64 dst_ref_id
 ) {
-    const wxString folder = mmex::getPathAttachment(
+    const wxString folder = mmPath::getPathAttachment(
         mmAttachmentManage::InfotablePathSetting()
     ) + ref_type.key_n() + m_PathSep;
 
@@ -660,7 +664,7 @@ void mmAttachmentManage::OpenAttachmentFromPanelIcon(
         AttachmentModel::DataA att_a = AttachmentModel::instance().find_ref_data_a(
             ref_type, ref_id
         );
-        wxString file_path = mmex::getPathAttachment(
+        wxString file_path = mmPath::getPathAttachment(
             mmAttachmentManage::InfotablePathSetting()
         ) + att_a[0].m_ref_type_n.key_n() + m_PathSep + att_a[0].m_filename;
         mmAttachmentManage::OpenAttachment(file_path);

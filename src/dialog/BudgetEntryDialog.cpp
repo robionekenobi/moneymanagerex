@@ -16,11 +16,11 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
+#include "base/_constants.h"
 #include <wx/valnum.h>
 
-#include "base/defs.h"
-#include "base/paths.h"
+#include "base/_defs.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 #include "util/mmCalcValidator.h"
 
@@ -72,7 +72,7 @@ bool BudgetEntryDialog::Create(
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
     this->SetInitialSize();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre();
     return true;
 }

@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "TrxFilter.h"
 
+#include "base/mmUserColor.h"
 #include "dialog/AttachmentDialog.h"
 #include "report/htmlbuilder.h"
 
@@ -212,7 +213,7 @@ table {
             wxString::Format("%lld", trx_dx.m_id),
             true
         );
-        hb.addColorMarker(getUDColour(trx_dx.m_color.GetValue()).GetAsString(), true);
+        hb.addColorMarker(mmUserColor::getId(trx_dx.m_color.GetValue()).GetAsString(), true);
         hb.addTableCellDate(trx_dx.m_isoDateTime());
         hb.addTableCell(trx_dx.m_number);
         hb.addTableCellLink(

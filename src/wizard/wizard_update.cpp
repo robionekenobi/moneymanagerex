@@ -18,16 +18,16 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/webview.h>
 #include <wx/webviewfshandler.h>
 #include <wx/fs_mem.h>
 #include <rapidjson/error/en.h>
 
-#include "base/constants.h"
-#include "base/paths.h"
+#include "base/_constants.h"
+#include "base/mmTips.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
-#include "util/mmTips.h"
 
 #include "model/SettingModel.h"
 #include "wizard_update.h"
@@ -85,7 +85,7 @@ mmUpdateWizard::mmUpdateWizard(wxWindow* parent, const Document& json_releases, 
 
         CreateControls(json_releases, new_releases);
 
-        this->SetIcon(mmex::getProgramIcon());
+        this->SetIcon(mmPath::getProgramIcon());
         this->Centre();
         this->Layout();
     }
@@ -173,8 +173,8 @@ void mmUpdateWizard::CreateControls(const Document& json_releases, wxArrayInt ne
             "-win32";
 #endif
         new_html_url.Replace("/tag/", "/download/");
-        const auto portable = mmex::isPortableMode() ? "-portable" : "";
-        const auto extension = mmex::isPortableMode() ? ".zip" : ".exe";
+        const auto portable = mmPath::isPortableMode() ? "-portable" : "";
+        const auto extension = mmPath::isPortableMode() ? ".zip" : ".exe";
         new_html_url.Append(wxString::Format("/mmex-%s%s%s%s", ver_num, win_ver, portable, extension));
         version = wxString::Format(R"(<a href="%s" target="_blank">%s</a>)", new_html_url, version);
 #endif

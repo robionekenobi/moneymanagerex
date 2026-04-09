@@ -22,26 +22,7 @@
 #include <unordered_map>
 #include "_primitive.h"
 
-//----------------------------------------------------------------------------
-
-int pow10(const int y)
-{
-    switch (y) {
-    case 0: return 1;
-    case 1: return 10;
-    case 2: return 100;
-    case 3: return 1000;
-    case 4: return 10000;
-    case 5: return 100000;
-    case 6: return 1000000;
-    case 7: return 10000000;
-    case 8: return 100000000;
-    case 9: return 1000000000;
-    default: return 10;
-    }
-}
-
-//----------------------------------------------------------------------------
+// -- String
 
 int CaseInsensitiveCmp(const wxString &s1, const wxString &s2)
 {
@@ -51,20 +32,6 @@ int CaseInsensitiveCmp(const wxString &s1, const wxString &s2)
 int CaseInsensitiveLocaleCmp(const wxString &s1, const wxString &s2)
 {
     return std::wcscoll(s1.Lower().wc_str(),s2.Lower().wc_str());
-}
-
-void StringBuilder::append(const wxString x) {
-    if (x.empty())
-        return;
-    buffer.Append(x);
-    flag = true;
-}
-
-void StringBuilder::sep(const wxString s) {
-    if (!flag)
-        return;
-    buffer.Append(s);
-    flag = false;
 }
 
 const wxString mmTrimAmount(
@@ -81,6 +48,8 @@ const wxString mmTrimAmount(
     return str;
 }
 
+// -- URI
+
 bool isValidURI(const wxString& validate)
 {
     wxString uri = validate.Lower().Trim();
@@ -88,30 +57,7 @@ bool isValidURI(const wxString& validate)
     return pattern.Matches(uri);
 }
 
-//----------------------------------------------------------------------------
-
-wxDateTime parseDateTime(const wxString& str_date)
-{
-    static std::unordered_map<wxString, wxDateTime> cache;
-
-    if (str_date.empty())
-        return wxInvalidDateTime;
-    if (auto it = cache.find(str_date); it != cache.end())
-        return it->second;
-
-    // reset cache if it is too big
-    if (cache.size() > 50000) {
-        cache.clear();
-    }
-
-    // str_date is in ISO 8601 format "YYYY-MM-DD"
-    wxDateTime date;
-    date.ParseISOCombined(str_date) || date.ParseISODate(str_date);
-    cache.insert(std::make_pair(str_date, date));
-    return date;
-}
-
-//----------------------------------------------------------------------------
+// -- DateTime
 
 const wxString MONTHS[12] =
 {
@@ -154,32 +100,23 @@ bool mmParseISODate(const wxString& in, wxDateTime& out)
     return true;
 }
 
-//----------------------------------------------------------------------------
-
-const wxColor* bestFontColour(const wxColour& background)
+wxDateTime DEPRECATED_parseDateTime(const wxString& str_date)
 {
-    // http://stackoverflow.com/a/3943023/112731
-    int r = static_cast<int>(background.Red());
-    int g = static_cast<int>(background.Green());
-    int b = static_cast<int>(background.Blue());
-    int k = (r * 299 + g * 587 + b * 114);
-    /*wxLogDebug(
-        "best FontColour: [%s] -> r=%d, g=%d, b=%d | k: %d",
-        background.GetAsString(wxC2S_HTML_SYNTAX), r, g, b, k
-    );*/
-    return (k > 149000) ? wxBLACK : wxWHITE;
-}
+    static std::unordered_map<wxString, wxDateTime> cache;
 
-wxColour getUDColour(const int c)
-{
-    switch (c) {
-    case 1: return  mmColors::userDefColor1;
-    case 2: return  mmColors::userDefColor2;
-    case 3: return  mmColors::userDefColor3;
-    case 4: return  mmColors::userDefColor4;
-    case 5: return  mmColors::userDefColor5;
-    case 6: return  mmColors::userDefColor6;
-    case 7: return  mmColors::userDefColor7;
+    if (str_date.empty())
+        return wxInvalidDateTime;
+    if (auto it = cache.find(str_date); it != cache.end())
+        return it->second;
+
+    // reset cache if it is too big
+    if (cache.size() > 50000) {
+        cache.clear();
     }
-    return wxNullColour;
+
+    // str_date is in ISO 8601 format "YYYY-MM-DD"
+    wxDateTime date;
+    date.ParseISOCombined(str_date) || date.ParseISODate(str_date);
+    cache.insert(std::make_pair(str_date, date));
+    return date;
 }

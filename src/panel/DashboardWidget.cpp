@@ -18,12 +18,15 @@ Copyright (C) 2025, 2026 Klaus Wich
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "DashboardWidget.h"
+
 #include <algorithm>
 #include <cmath>
 #include <html_template.h>
 
-#include "base/constants.h"
-#include "util/mmDate.h"
+#include "base/_constants.h"
+#include "base/mmDate.h"
+#include "util/mmNavigatorList.h"
 
 #include "model/AssetModel.h"
 #include "model/CategoryModel.h"
@@ -35,12 +38,10 @@ Copyright (C) 2025, 2026 Klaus Wich
 #include "model/StockHistoryModel.h"
 #include "model/StockModel.h"
 
-#include "DashboardWidget.h"
 #include "SchedPanel.h"
 
 #include "pref/DashboardPref.h"
 #include "report/_ReportBase.h"
-#include "uicontrols/navigatortypes.h"
 
 static const wxString TOP_CATEGS = R"(
 <table class = 'table'>
@@ -83,7 +84,7 @@ const wxString htmlWidgetStocks::getHTMLText()
 
     wxString output = "";
     AccountModel::DataA account_a = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_EQ, NavigatorTypes::instance().getInvestmentAccountStr())
+        AccountCol::ACCOUNTTYPE(OP_EQ, mmNavigatorList::instance().getInvestmentAccountStr())
     );
     if (account_a.empty())
         return output;
@@ -594,7 +595,7 @@ htmlWidgetGrandTotals::~htmlWidgetGrandTotals()
 const wxString htmlWidgetAssets::getHTMLText()
 {
     AccountModel::DataA asset_account_a = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().getAssetAccountStr())
+        AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().getAssetAccountStr())
     );
     if (asset_account_a.empty())
         return wxEmptyString;
@@ -734,9 +735,9 @@ void htmlWidgetAccounts::get_account_stats()
 const wxString htmlWidgetAccounts::displayAccounts(
     double& tBalance,
     double& tReconciled,
-    int type = NavigatorTypes::TYPE_ID_CHECKING
+    int type = mmNavigatorItem::TYPE_ID_CHECKING
 ) {
-    NavigatorTypesInfo* ninfo = NavigatorTypes::instance().FindEntry(type);
+    mmNavigatorItem* ninfo = mmNavigatorList::instance().FindEntry(type);
     bool showReconciled = PrefModel::instance().getShowReconciledInHomePage();
 
     wxString idStr = ninfo->choice;
@@ -762,7 +763,7 @@ const wxString htmlWidgetAccounts::displayAccounts(
     double tabBalance = 0.0, tabReconciled = 0.0;
     wxString vAccts = SettingModel::instance().getViewAccounts();
     auto account_a = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().type_name(type)),
+        AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(type)),
         AccountModel::STATUS(OP_NE, AccountStatus(AccountStatus::e_closed))
     );
     std::stable_sort(account_a.begin(), account_a.end(), AccountData::SorterByName());

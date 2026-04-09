@@ -19,19 +19,19 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "StockPanel.h"
+
+#include "base/_defs.h"
 #include <wx/clipbrd.h>
 
-#include "base/images_list.h"
+#include "base/mmTips.h"
+#include "util/mmImage.h"
+#include "util/mmSplitterWindow.h"
 #include "util/_simple.h"
-#include "util/mmTips.h"
 #include "model/_all.h"
 
-#include "StockPanel.h"
 #include "dialog/StockDialog.h"
 #include "dialog/TrxShareDialog.h"
-
-class StockPanel;
 
 BEGIN_EVENT_TABLE(StockPanel, wxPanel)
     EVT_BUTTON(wxID_NEW,          StockPanel::onNewStocks)
@@ -46,7 +46,7 @@ END_EVENT_TABLE()
 
 StockPanel::StockPanel(
     int64 account_id,
-    mmGUIFrame* frame,
+    mmFrame* frame,
     wxWindow* parent_win,
     wxWindowID win_id
 ) :
@@ -128,15 +128,21 @@ void StockPanel::createControls()
     itemBoxSizerVHeader->Add(w_header_total, 1, wxALL, 1);
 
     /* ---------------------- */
-    mmSplitterWindow* itemSplitterWindow10 = new mmSplitterWindow(this
-        , wxID_ANY, wxDefaultPosition, wxSize(200, 200)
-        , wxSP_3DBORDER | wxSP_3DSASH | wxNO_BORDER, mmThemeMetaColour(meta::COLOR_LISTPANEL));
+    mmSplitterWindow* itemSplitterWindow10 = new mmSplitterWindow(
+        this, wxID_ANY,
+        wxDefaultPosition, wxSize(200, 200),
+        wxSP_3DBORDER | wxSP_3DSASH | wxNO_BORDER,
+        mmImage::themeMetaColour(mmImage::COLOR_LISTPANEL)
+    );
 
     w_list = new StockList(this, itemSplitterWindow10, wxID_ANY);
 
-    wxPanel* BottomPanel = new wxPanel(itemSplitterWindow10, wxID_ANY
-        , wxDefaultPosition, wxDefaultSize, wxNO_BORDER | wxTAB_TRAVERSAL);
-    mmThemeMetaColour(BottomPanel, meta::COLOR_LISTPANEL);
+    wxPanel* BottomPanel = new wxPanel(
+        itemSplitterWindow10, wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxNO_BORDER | wxTAB_TRAVERSAL
+    );
+    mmImage::themeMetaColour(BottomPanel, mmImage::COLOR_LISTPANEL);
 
     itemSplitterWindow10->SplitHorizontally(w_list, BottomPanel);
     itemSplitterWindow10->SetMinimumPaneSize(100);
@@ -179,7 +185,7 @@ void StockPanel::createControls()
     bMove->Enable(false);
 
     w_attachment_btn = new wxBitmapButton(BottomPanel,
-        wxID_FILE, mmBitmapBundle(png::CLIP, mmBitmapButtonSize), wxDefaultPosition,
+        wxID_FILE, mmImage::bitmapBundle(mmImage::png::CLIP, mmImage::bitmapButtonSize), wxDefaultPosition,
         wxSize(30, bMove->GetSize().GetY())
     );
     mmToolTip(w_attachment_btn, _t("Open attachments"));
@@ -187,7 +193,7 @@ void StockPanel::createControls()
     w_attachment_btn->Enable(false);
 
     w_refresh_btn = new wxBitmapButton(BottomPanel,
-        wxID_REFRESH, mmBitmapBundle(png::LED_OFF, mmBitmapButtonSize),
+        wxID_REFRESH, mmImage::bitmapBundle(mmImage::png::LED_OFF, mmImage::bitmapButtonSize),
         wxDefaultPosition, wxSize(30, bMove->GetSize().GetY())
     );
     w_refresh_btn->SetLabelText(_t("Refresh"));
@@ -241,7 +247,7 @@ void StockPanel::viewStockTransactions(int selectedIndex)
         wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER
     );
 
-    dlg.SetIcon(mmex::getProgramIcon());
+    dlg.SetIcon(mmPath::getProgramIcon());
     wxWindow* parent_win = dlg.GetMainWindowOfCompositeControl();
     wxBoxSizer* topsizer = new wxBoxSizer(wxVERTICAL);
 
@@ -497,10 +503,10 @@ void StockPanel::onRefreshQuotes(wxCommandEvent& WXUNUSED(event))
         w_details_short->SetLabelText(wxString::Format(_t("Last updated %s"), m_last_update));
         wxMessageDialog msgDlg(this, sError, header);
         msgDlg.ShowModal();
-        w_refresh_btn->SetBitmapLabel(mmBitmapBundle(png::LED_GREEN, mmBitmapButtonSize));
+        w_refresh_btn->SetBitmapLabel(mmImage::bitmapBundle(mmImage::png::LED_GREEN, mmImage::bitmapButtonSize));
     }
     else {
-        w_refresh_btn->SetBitmapLabel(mmBitmapBundle(png::LED_RED, mmBitmapButtonSize));
+        w_refresh_btn->SetBitmapLabel(mmImage::bitmapBundle(mmImage::png::LED_RED, mmImage::bitmapButtonSize));
         w_details->SetLabelText(sError);
         w_details_short->SetLabelText(_t("Error"));
         mmErrorDialogs::MessageError(this, sError, _t("Error"));
@@ -529,7 +535,7 @@ bool StockPanel::onlineQuoteRefresh(wxString& msg)
         symbols[symbol] = stock_d.m_purchase_value;
     }
 
-    w_refresh_btn->SetBitmapLabel(mmBitmapBundle(png::LED_YELLOW, mmBitmapButtonSize));
+    w_refresh_btn->SetBitmapLabel(mmImage::bitmapBundle(mmImage::png::LED_YELLOW, mmImage::bitmapButtonSize));
     w_details->SetLabelText(_tu("Connecting…"));
 
     std::map<wxString, double > stocks_data;

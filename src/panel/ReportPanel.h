@@ -20,16 +20,14 @@
 
 #pragma once
 
-#include "base/defs.h"
-#include <wx/spinctrl.h>
-#include <wx/timectrl.h>
-
+#include "base/_defs.h"
+#include "util/mmDatePicker.h"
 #include "util/_simple.h"
 #include "_PanelBase.h"
 #include "JournalPanel.h"
 #include "report/_ReportBase.h"
 
-class mmGUIFrame;
+class mmFrame;
 class mmDateRange;
 
 class ReportPanel : public PanelBase
@@ -81,12 +79,12 @@ private:
     bool m_use_account_specific_filter;
 
 private:
-    mmGUIFrame*       w_frame            = nullptr;
+    mmFrame*          w_frame            = nullptr;
     wxWebView*        w_browser          = nullptr;
     wxButton*         w_range_btn        = nullptr;
-    mmDatePickerCtrl* w_single_date      = nullptr;
-    mmDatePickerCtrl* w_start_date       = nullptr;
-    mmDatePickerCtrl* w_end_date         = nullptr;
+    mmDatePicker*     w_single_date      = nullptr;
+    mmDatePicker*     w_start_date       = nullptr;
+    mmDatePicker*     w_end_date         = nullptr;
     wxTimePickerCtrl* w_time             = nullptr;
     wxChoice*         w_year_choice      = nullptr;
     wxSpinCtrl*       w_forward_months   = nullptr;
@@ -107,7 +105,7 @@ public:
         ReportBase* rb,
         bool cleanup,
         wxWindow* parent_win,
-        mmGUIFrame* frame,
+        mmFrame* frame,
         wxWindowID win_id = wxID_ANY,
         const wxPoint& pos = wxDefaultPosition,
         const wxSize& size = wxDefaultSize,

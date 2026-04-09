@@ -16,8 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "util/mmImage.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 
 #include "model/PrefModel.h"
@@ -72,7 +73,7 @@ DateRangeManager::DateRangeManager(
     );
     CreateControls();
     mmThemeAutoColour(this);
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     fillControls();
     GetSizer()->SetSizeHints(this);
     SetSize(500,700);
@@ -127,11 +128,11 @@ void DateRangeManager::CreateControls()
     itemBoxVright->AddSpacer(20);
 
     m_up_top = new wxButton(this, BTN_UP_TOP, _t("&Top"));
-    m_up_top->SetBitmap(mmBitmapBundle(png::UPARROW, mmBitmapButtonSize));
+    m_up_top->SetBitmap(mmImage::bitmapBundle(mmImage::png::UPARROW, mmImage::bitmapButtonSize));
     m_up_top->Enable(false);
     itemBoxVright->Add(m_up_top, g_flagsV);
 
-    m_up = new wxBitmapButton(this, BTN_UP, mmBitmapBundle(png::UPARROW, mmBitmapButtonSize));
+    m_up = new wxBitmapButton(this, BTN_UP, mmImage::bitmapBundle(mmImage::png::UPARROW, mmImage::bitmapButtonSize));
     m_up->Enable(false);
     itemBoxVright->Add(m_up, g_flagsV);
 
@@ -140,13 +141,13 @@ void DateRangeManager::CreateControls()
     itemBoxVright->Add(m_edit, g_flagsV);
 
     m_down = new wxBitmapButton(
-        this, BTN_DOWN, mmBitmapBundle(png::DOWNARROW, mmBitmapButtonSize)
+        this, BTN_DOWN, mmImage::bitmapBundle(mmImage::png::DOWNARROW, mmImage::bitmapButtonSize)
     );
     m_down->Enable(false);
     itemBoxVright->Add(m_down, g_flagsV);
 
     m_down_bottom = new wxButton(this, BTN_DOWN_BOTTOM, _t("&Bottom"));
-    m_down_bottom->SetBitmap(mmBitmapBundle(png::DOWNARROW, mmBitmapButtonSize));
+    m_down_bottom->SetBitmap(mmImage::bitmapBundle(mmImage::png::DOWNARROW, mmImage::bitmapButtonSize));
     m_down_bottom->Enable(false);
     itemBoxVright->Add(m_down_bottom, g_flagsV);
 

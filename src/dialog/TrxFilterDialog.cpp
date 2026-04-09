@@ -27,25 +27,26 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #pragma hdrstop
 #endif
 
-#include "base/defs.h"
+#include "TrxFilterDialog.h"
+
+#include "base/_defs.h"
 #include <wx/display.h>
 #include <wx/regex.h>
 #include <wx/valnum.h>
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
+#include "util/mmMultiChoice.h"
+#include "util/mmCalcValidator.h"
+#include "util/mmNavigatorList.h"
 #include "util/_util.h"
 #include "util/_simple.h"
-#include "util/mmCalcValidator.h"
 
 #include "model/_all.h"
 
 #include "manager/CategoryManager.h"
 #include "manager/PayeeManager.h"
-#include "TrxFilterDialog.h"
-
-#include "uicontrols/navigatortypes.h"
 
 static const wxString COLUMN_NAMES[] = {
     "ID", "Color", "Date", "Number", "Account", "Payee",
@@ -165,7 +166,7 @@ void TrxFilterDialog::mmDoInitVariables()
 
     m_account_name_a.clear();
     for (const auto& account_d : AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_NE, NavigatorTypes::instance().type_name(NavigatorTypes::TYPE_ID_INVESTMENT))
+        AccountCol::ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_INVESTMENT))
     )) {
         m_account_name_a.push_back(account_d.m_name);
     }
@@ -188,7 +189,7 @@ bool TrxFilterDialog::Create(
     mmDoCreateControls();
     wxCommandEvent evt(wxEVT_CHECKBOX, wxID_ANY);
     AddPendingEvent(evt);
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     Centre();
     return true;
@@ -261,8 +262,8 @@ void TrxFilterDialog::mmDoDataToControls(const wxString& json)
         w_range_cb->SetValue(is_begin_date_valid && is_end_date_valid);
         w_start_date->Enable(w_range_cb->IsChecked());
         w_end_date->Enable(w_range_cb->IsChecked());
-        w_start_date->SetValue(begin_date);
-        w_end_date->SetValue(end_date);
+        w_start_date->setValue(begin_date);
+        w_end_date->setValue(end_date);
 
         wxDateEvent date_event;
         date_event.SetId(wxID_FIRST);
@@ -601,8 +602,8 @@ void TrxFilterDialog::mmDoCreateControls()
         w_range_cb = new wxCheckBox(itemPanel, ID_DATE_RANGE_CB, _t("Date Range"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
         itemPanelSizer->Add(w_range_cb, g_flagsH);
 
-        w_start_date = new mmDatePickerCtrl(itemPanel, wxID_FIRST, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
-        w_end_date = new mmDatePickerCtrl(itemPanel, wxID_LAST, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
+        w_start_date = new mmDatePicker(itemPanel, wxID_FIRST, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
+        w_end_date = new mmDatePicker(itemPanel, wxID_LAST, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
 
         wxBoxSizer* dateSizer = new wxBoxSizer(wxHORIZONTAL);
         dateSizer->Add(w_start_date->mmGetLayoutWithTime(), g_flagsExpand);
@@ -795,12 +796,12 @@ void TrxFilterDialog::mmDoCreateControls()
     w_setting_choice->Connect(wxID_APPLY, wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler(TrxFilterDialog::OnSettingsSelected), nullptr, this);
 
     settings_box_sizer->AddSpacer(5);
-    w_save_btn = new wxBitmapButton(this, wxID_SAVEAS, mmBitmapBundle(png::SAVE, mmBitmapButtonSize));
+    w_save_btn = new wxBitmapButton(this, wxID_SAVEAS, mmImage::bitmapBundle(mmImage::png::SAVE, mmImage::bitmapButtonSize));
     settings_box_sizer->Add(w_save_btn, g_flagsH);
     mmToolTip(w_save_btn, _t("Save active values into current Preset selection"));
     w_save_btn->Connect(wxID_SAVEAS, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(TrxFilterDialog::OnSaveSettings), nullptr, this);
 
-    w_delete_btn = new wxBitmapButton(this, wxID_CLEAR, mmBitmapBundle(png::CLEAR, mmBitmapButtonSize));
+    w_delete_btn = new wxBitmapButton(this, wxID_CLEAR, mmImage::bitmapBundle(mmImage::png::CLEAR, mmImage::bitmapButtonSize));
     mmToolTip(w_delete_btn, _t("Delete current Preset selection"));
     settings_box_sizer->Add(w_delete_btn, g_flagsH);
 
@@ -820,7 +821,7 @@ void TrxFilterDialog::mmDoCreateControls()
     wxButton* button_cancel = new wxButton(button_panel, wxID_CANCEL, wxGetTranslation(g_CancelLabel));
     button_cancel->SetFocus();
 
-    wxBitmapButton* button_hide = new wxBitmapButton(button_panel, ID_BTN_CUSTOMFIELDS, mmBitmapBundle(png::RIGHTARROW, mmBitmapButtonSize));
+    wxBitmapButton* button_hide = new wxBitmapButton(button_panel, ID_BTN_CUSTOMFIELDS, mmImage::bitmapBundle(mmImage::png::RIGHTARROW, mmImage::bitmapButtonSize));
     mmToolTip(button_hide, _t("Show/Hide custom fields window"));
     if (m_custom_fields->GetCustomFieldsCount() == 0) {
         button_hide->Hide();
@@ -1215,7 +1216,7 @@ void TrxFilterDialog::OnShowColumnsButton(wxCommandEvent& /*event*/)
         }
     }
 
-    mmMultiChoiceDialog s_col(this, _t("Hide Report Columns"), "", column_names);
+    mmMultiChoice s_col(this, _t("Hide Report Columns"), "", column_names);
     s_col.SetSelections(hiddenCols);
 
     wxString baloon = "";
@@ -2277,7 +2278,7 @@ void TrxFilterDialog::OnSaveSettings(wxCommandEvent& WXUNUSED(event))
 
 void TrxFilterDialog::OnAccountsButton(wxCommandEvent& WXUNUSED(event))
 {
-    mmMultiChoiceDialog s_acc(this, _t("Choose Accounts"), "", m_account_name_a);
+    mmMultiChoice s_acc(this, _t("Choose Accounts"), "", m_account_name_a);
 
     wxString baloon = "";
     wxArrayInt selected_items;
@@ -2325,7 +2326,7 @@ void TrxFilterDialog::OnMoreFields(wxCommandEvent& WXUNUSED(event))
     wxBitmapButton* button = static_cast<wxBitmapButton*>(FindWindow(ID_BTN_CUSTOMFIELDS));
 
     if (button)
-        button->SetBitmap(mmBitmapBundle(m_custom_fields->IsCustomPanelShown() ? png::RIGHTARROW : png::LEFTARROW, mmBitmapButtonSize));
+        button->SetBitmap(mmImage::bitmapBundle(m_custom_fields->IsCustomPanelShown() ? mmImage::png::RIGHTARROW : mmImage::png::LEFTARROW, mmImage::bitmapButtonSize));
 
     m_custom_fields->ShowHideCustomPanel();
 
@@ -2351,8 +2352,8 @@ void TrxFilterDialog::OnChoice(wxCommandEvent& event)
             wxLogDebug("%s %s", m_start_date, m_end_date);
             m_startDay = dates->startDay();
             m_futureIgnored = dates->isFutureIgnored();
-            w_start_date->SetValue(dates->start_date());
-            w_end_date->SetValue(dates->end_date());
+            w_start_date->setValue(dates->start_date());
+            w_end_date->setValue(dates->end_date());
         }
         break;
     }

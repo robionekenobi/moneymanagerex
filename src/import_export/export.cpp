@@ -16,10 +16,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "util/_util.h"
 #include "export.h"
+
+#include "base/_constants.h"
+#include "base/mmPlatform.h"
+#include "util/mmPath.h"
+#include "util/mmNavigatorList.h"
+#include "util/_util.h"
 
 #include "model/AccountModel.h"
 #include "model/AttachmentModel.h"
@@ -31,7 +34,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "model/FieldValueModel.h"
 #include "model/FieldModel.h"
 #include "model/TagModel.h"
-#include "uicontrols/navigatortypes.h"
 
 mmExportTransaction::mmExportTransaction()
 {}
@@ -263,22 +265,22 @@ const wxString mmExportTransaction::getCategoriesQIF()
     return buffer_qif;
 }
 
-//map Quicken !Account type strings to NavigatorTypes::TYPE_ID
+//map Quicken !Account type strings to mmNavigatorItem::TYPE_ID
 // (not sure whether these need to be translated)
 const std::unordered_map<wxString, int> mmExportTransaction::m_QIFaccountTypes =
 {
-    std::make_pair(wxString("Cash"), NavigatorTypes::TYPE_ID_CASH), //Cash Flow: Cash Account
-    std::make_pair(wxString("Bank"), NavigatorTypes::TYPE_ID_CHECKING), //Cash Flow: Checking Account
-    std::make_pair(wxString("CCard"), NavigatorTypes::TYPE_ID_CREDIT_CARD), //Cash Flow: Credit Card Account
-    std::make_pair(wxString("Invst"), NavigatorTypes::TYPE_ID_INVESTMENT), //Investing: Investment Account
-    std::make_pair(wxString("Oth A"), NavigatorTypes::TYPE_ID_CHECKING), //Property & Debt: Asset
-    std::make_pair(wxString("Oth L"), NavigatorTypes::TYPE_ID_CHECKING), //Property & Debt: Liability
-    std::make_pair(wxString("Invoice"), NavigatorTypes::TYPE_ID_CHECKING), //Invoice (Quicken for Business only)
+    std::make_pair(wxString("Cash"), mmNavigatorItem::TYPE_ID_CASH), //Cash Flow: Cash Account
+    std::make_pair(wxString("Bank"), mmNavigatorItem::TYPE_ID_CHECKING), //Cash Flow: Checking Account
+    std::make_pair(wxString("CCard"), mmNavigatorItem::TYPE_ID_CREDIT_CARD), //Cash Flow: Credit Card Account
+    std::make_pair(wxString("Invst"), mmNavigatorItem::TYPE_ID_INVESTMENT), //Investing: Investment Account
+    std::make_pair(wxString("Oth A"), mmNavigatorItem::TYPE_ID_CHECKING), //Property & Debt: Asset
+    std::make_pair(wxString("Oth L"), mmNavigatorItem::TYPE_ID_CHECKING), //Property & Debt: Liability
+    std::make_pair(wxString("Invoice"), mmNavigatorItem::TYPE_ID_CHECKING), //Invoice (Quicken for Business only)
 };
 
 const wxString mmExportTransaction::qif_acc_type(const wxString& mmex_type)
 {
-    int mmex_typeId = NavigatorTypes::instance().getTypeIdFromDBName(mmex_type, -1);
+    int mmex_typeId = mmNavigatorList::instance().getTypeIdFromDBName(mmex_type, -1);
     wxString qif_acc_type = m_QIFaccountTypes.begin()->first;
     for (const auto &item : m_QIFaccountTypes) {
         if (item.second == mmex_typeId) {
@@ -291,12 +293,12 @@ const wxString mmExportTransaction::qif_acc_type(const wxString& mmex_type)
 
 const wxString mmExportTransaction::mm_acc_type(const wxString& qif_type)
 {
-    wxString mm_acc_type = NavigatorTypes::instance().getCashAccountStr();
+    wxString mm_acc_type = mmNavigatorList::instance().getCashAccountStr();
     for (const auto &item : m_QIFaccountTypes)
     {
         if (item.first == qif_type)
         {
-            mm_acc_type = NavigatorTypes::instance().type_name(item.second);
+            mm_acc_type = mmNavigatorList::instance().type_name(item.second);
             break;
         }
     }
@@ -452,7 +454,9 @@ void mmExportTransaction::getTransactionJSON(
     );
 
     if (!att_a.empty()) {
-        //const wxString folder = InfoModel::instance().getString("ATTACHMENTSFOLDER:" + mmPlatformType(), "");
+        //const wxString folder = InfoModel::instance().getString(
+        //    "ATTACHMENTSFOLDER:" + mmPlatform::platformType(), ""
+        //);
         json_writer.Key("ATTACHMENTS");
         json_writer.StartArray();
         for (const auto& att_d : att_a) {
@@ -494,8 +498,11 @@ void mmExportTransaction::getAttachmentsJSON(
         return;
 
     RefTypeN ref_type = RefTypeN(RefTypeN::e_trx);
-    const wxString folder = InfoModel::instance().getString("ATTACHMENTSFOLDER:" + mmPlatformType(), "");
-    const wxString AttachmentsFolder = mmex::getPathAttachment(folder);
+    const wxString folder = InfoModel::instance().getString(
+        "ATTACHMENTSFOLDER:" + mmPlatform::platformType(),
+        ""
+    );
+    const wxString AttachmentsFolder = mmPath::getPathAttachment(folder);
 
     json_writer.Key("ATTACHMENTS");
     json_writer.StartObject();

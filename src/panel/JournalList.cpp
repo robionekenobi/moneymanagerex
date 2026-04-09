@@ -19,22 +19,24 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "JournalList.h"
+#include "JournalPanel.h"
+
+#include "base/_defs.h"
 #include <wx/clipbrd.h>
 #include <algorithm>
 #include <wx/sound.h>
 
-#include "base/constants.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "base/mmUserColor.h"
+#include "util/mmImage.h"
+#include "util/mmSingleChoice.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
 #include "model/PrefModel.h"
 #include "model/SettingModel.h"
 #include "model/Journal.h"
-
-#include "JournalList.h"
-#include "JournalPanel.h"
 
 #include "dialog/AssetDialog.h"
 #include "dialog/AttachmentDialog.h"
@@ -43,7 +45,7 @@
 #include "dialog/TrxFilterDialog.h"
 #include "dialog/TrxShareDialog.h"
 #include "dialog/TrxUpdateDialog.h"
-#include "mmframe.h"
+#include "app/mmFrame.h"
 
 // -- static
 
@@ -127,121 +129,121 @@ JournalList::JournalList(
     ListBase(perent_win, win_id),
     w_panel(panel),
     w_attr1(new wxListItemAttr(
-        *bestFontColour(w_panel->isAllTrans() ?
-            mmThemeMetaColour(meta::COLOR_LISTALT0A) :
-            mmThemeMetaColour(meta::COLOR_LISTALT0)
+        *mmUserColor::bestFontColor(w_panel->isAllTrans() ?
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0A) :
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0)
         ),
         w_panel->isAllTrans() ?
-            mmThemeMetaColour(meta::COLOR_LISTALT0A) :
-            mmThemeMetaColour(meta::COLOR_LISTALT0),
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0A) :
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0),
         GetFont()
     )),
     w_attr2(new wxListItemAttr(
-        *bestFontColour(mmThemeMetaColour(meta::COLOR_LIST)),
-        mmThemeMetaColour(meta::COLOR_LIST),
+        *mmUserColor::bestFontColor(mmImage::themeMetaColour(mmImage::COLOR_LIST)),
+        mmImage::themeMetaColour(mmImage::COLOR_LIST),
         GetFont()
     )),
     w_attr3(new wxListItemAttr(
-        mmThemeMetaColour(meta::COLOR_LISTFUTURE),
+        mmImage::themeMetaColour(mmImage::COLOR_LISTFUTURE),
         w_panel->isAllTrans() ?
-            mmThemeMetaColour(meta::COLOR_LISTALT0A) :
-            mmThemeMetaColour(meta::COLOR_LISTALT0),
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0A) :
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0),
         GetFont()
     )),
     w_attr4(new wxListItemAttr(
-        mmThemeMetaColour(meta::COLOR_LISTFUTURE),
+        mmImage::themeMetaColour(mmImage::COLOR_LISTFUTURE),
         wxNullColour, GetFont()
     )),
     w_attr5(new wxListItemAttr(
-        *bestFontColour(w_panel->isAllTrans() ?
-            mmThemeMetaColour(meta::COLOR_LISTALT0A) :
-            mmThemeMetaColour(meta::COLOR_LISTALT0)
+        *mmUserColor::bestFontColor(w_panel->isAllTrans() ?
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0A) :
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0)
         ),
         w_panel->isAllTrans() ?
-            mmThemeMetaColour(meta::COLOR_LISTALT0A) :
-            mmThemeMetaColour(meta::COLOR_LISTALT0),
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0A) :
+            mmImage::themeMetaColour(mmImage::COLOR_LISTALT0),
         GetFont().Bold()
     )),
     w_attr6(new wxListItemAttr(
-        *bestFontColour(mmThemeMetaColour(meta::COLOR_LIST)),
-        mmThemeMetaColour(meta::COLOR_LIST),
+        *mmUserColor::bestFontColor(mmImage::themeMetaColour(mmImage::COLOR_LIST)),
+        mmImage::themeMetaColour(mmImage::COLOR_LIST),
         GetFont().Bold()
     )),
     w_attr11(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor1),
-        mmColors::userDefColor1,
+        *mmUserColor::bestFontColor(mmUserColor::s_color1),
+        mmUserColor::s_color1,
         GetFont()
     )),
     w_attr12(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor2),
-        mmColors::userDefColor2,
+        *mmUserColor::bestFontColor(mmUserColor::s_color2),
+        mmUserColor::s_color2,
         GetFont()
     )),
     w_attr13(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor3),
-        mmColors::userDefColor3,
+        *mmUserColor::bestFontColor(mmUserColor::s_color3),
+        mmUserColor::s_color3,
         GetFont()
     )),
     w_attr14(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor4),
-        mmColors::userDefColor4,
+        *mmUserColor::bestFontColor(mmUserColor::s_color4),
+        mmUserColor::s_color4,
         GetFont()
     )),
     w_attr15(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor5),
-        mmColors::userDefColor5,
+        *mmUserColor::bestFontColor(mmUserColor::s_color5),
+        mmUserColor::s_color5,
         GetFont()
     )),
     w_attr16(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor6),
-        mmColors::userDefColor6,
+        *mmUserColor::bestFontColor(mmUserColor::s_color6),
+        mmUserColor::s_color6,
         GetFont()
     )),
     w_attr17(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor7),
-        mmColors::userDefColor7,
+        *mmUserColor::bestFontColor(mmUserColor::s_color7),
+        mmUserColor::s_color7,
         GetFont()
     )),
     w_attr21(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor1),
-        mmColors::userDefColor1,
+        *mmUserColor::bestFontColor(mmUserColor::s_color1),
+        mmUserColor::s_color1,
         GetFont().Bold()
     )),
     w_attr22(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor2),
-        mmColors::userDefColor2,
+        *mmUserColor::bestFontColor(mmUserColor::s_color2),
+        mmUserColor::s_color2,
         GetFont().Bold()
     )),
     w_attr23(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor3),
-        mmColors::userDefColor3,
+        *mmUserColor::bestFontColor(mmUserColor::s_color3),
+        mmUserColor::s_color3,
         GetFont().Bold()
     )),
     w_attr24(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor4),
-        mmColors::userDefColor4,
+        *mmUserColor::bestFontColor(mmUserColor::s_color4),
+        mmUserColor::s_color4,
         GetFont().Bold()
     )),
     w_attr25(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor5),
-        mmColors::userDefColor5,
+        *mmUserColor::bestFontColor(mmUserColor::s_color5),
+        mmUserColor::s_color5,
         GetFont().Bold()
     )),
     w_attr26(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor6),
-        mmColors::userDefColor6,
+        *mmUserColor::bestFontColor(mmUserColor::s_color6),
+        mmUserColor::s_color6,
         GetFont().Bold()
     )),
     w_attr27(new wxListItemAttr(
-        *bestFontColour(mmColors::userDefColor7),
-        mmColors::userDefColor7,
+        *mmUserColor::bestFontColor(mmUserColor::s_color7),
+        mmUserColor::s_color7,
         GetFont().Bold()
     ))
 {
     wxASSERT(w_panel);
     m_select_key_a.clear();
     m_copy_key_a.clear();
-    mmThemeMetaColour(this, meta::COLOR_LISTPANEL);
+    mmImage::themeMetaColour(this, mmImage::COLOR_LISTPANEL);
 
     const wxAcceleratorEntry entries[] = {
         wxAcceleratorEntry(wxACCEL_CTRL, 'A', MENU_ON_SELECT_ALL),
@@ -2048,7 +2050,7 @@ void JournalList::onMoveTrx(wxCommandEvent& /*event*/)
             ? _tu("Moving transaction to…")
             : wxString::Format(_tu("Moving %i transactions to…"), sel);
 
-        mmSingleChoiceDialog scd(this,
+        mmSingleChoice scd(this,
             _t("Select the destination Account "),
             headerMsg,
             AccountModel::instance().find_all_name_a()

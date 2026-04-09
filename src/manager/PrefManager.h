@@ -21,10 +21,10 @@
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <vector>
 
-class mmGUIApp;
+class mmApp;
 class PrefBase;
 
 class PrefManager: public wxDialog
@@ -34,13 +34,13 @@ class PrefManager: public wxDialog
 
 public:
     PrefManager( );
-    PrefManager(wxWindow* parent, mmGUIApp* app);
+    PrefManager(wxWindow* parent, mmApp* app);
     ~PrefManager( );
 
 public:
     /// Saves the updated System Options to the appropriate databases.
     bool SaveNewSystemSettings();
-    mmGUIApp* m_app = nullptr;
+    mmApp* m_app = nullptr;
 
 private:
     /// Dialog Creation - Used by constructor

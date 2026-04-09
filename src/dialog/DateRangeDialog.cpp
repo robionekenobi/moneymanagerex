@@ -16,8 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "util/mmImage.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 
 #include "DateRangeDialog.h"
@@ -56,7 +57,7 @@ DateRangeDialog::DateRangeDialog(wxWindow* parent, wxString* name_ptr, wxString*
     m_range_ptr = range_ptr;
     CreateControls();
     mmThemeAutoColour(this);
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre();
 }
 

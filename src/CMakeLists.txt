@@ -64,15 +64,31 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     build.h
     resource.h
 
-    base/constants.cpp
-    base/constants.h
-    base/defs.h
-    base/images_list.cpp
-    base/images_list.h
-    base/paths.cpp
-    base/paths.h
-    base/platfdep.h
-    base/types.h
+    base/_constants.cpp
+    base/_constants.h
+    base/_defs.h
+    base/_types.h
+    base/mmCache.h
+    base/mmCache.tpp
+    base/mmChoice.cpp
+    base/mmChoice.h
+    base/mmDate.cpp
+    base/mmDate.h
+    base/mmDateTime.cpp
+    base/mmDateTime.h
+    base/mmHtmlWindow.cpp
+    base/mmHtmlWindow.h
+    base/mmListBoxItem.h
+    base/mmMath.cpp
+    base/mmMath.h
+    base/mmPlatform.cpp
+    base/mmPlatform.h
+    base/mmSingleton.h
+    base/mmStringBuilder.cpp
+    base/mmStringBuilder.h
+    base/mmTips.h
+    base/mmUserColor.cpp
+    base/mmUserColor.h
 
     util/_primitive.cpp
     util/_primitive.h
@@ -80,30 +96,49 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     util/_simple.h
     util/_util.cpp
     util/_util.h
-    util/mmCache.h
-    util/mmCache.tpp
-    util/mmChoice.cpp
-    util/mmChoice.h
-    util/mmDate.cpp
-    util/mmDate.h
+    util/mmCalcPopup.cpp
+    util/mmCalcPopup.h
+    util/mmCalcValidator.cpp
+    util/mmCalcValidator.h
+    util/mmColorButton.cpp
+    util/mmColorButton.h
+    util/mmComboBox.cpp
+    util/mmComboBox.h
+    util/mmDateParser.cpp
+    util/mmDateParser.h
+    util/mmDatePicker.cpp
+    util/mmDatePicker.h
     util/mmDateRange.cpp
     util/mmDateRange.h
     util/mmDateRange2.cpp
     util/mmDateRange2.h
-    util/mmDateTime.cpp
-    util/mmDateTime.h
+    util/mmDateShifter.cpp
+    util/mmDateShifter.h
     util/mmFileHistory.cpp
     util/mmFileHistory.h
+    util/mmImage.cpp
+    util/mmImage.h
     util/mmMiniEditor.cpp
     util/mmMiniEditor.h
+    util/mmMultiChoice.cpp
+    util/mmMultiChoice.h
+    util/mmNavigatorList.cpp
+    util/mmNavigatorList.h
+    util/mmPath.cpp
+    util/mmPath.h
     util/mmSQLite3Hook.h
-    util/mmSingleton.h
+    util/mmSepParser.cpp
+    util/mmSepParser.h
+    util/mmSingleChoice.cpp
+    util/mmSingleChoice.h
+    util/mmSplitterWindow.cpp
+    util/mmSplitterWindow.h
     util/mmTextCtrl.cpp
     util/mmTextCtrl.h
-    util/mmTips.h
+    util/mmToolbarList.cpp
+    util/mmToolbarList.h
     util/mmTreeItemData.cpp
     util/mmTreeItemData.h
-    util/mmCalcValidator.h
 
     table/AccountTable.cpp
     table/AccountTable.h
@@ -356,6 +391,12 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     dialog/MergePayeeDialog.h
     dialog/MergeTagDialog.cpp
     dialog/MergeTagDialog.h
+    dialog/NavigatorDialog.cpp
+    dialog/NavigatorDialog.h
+    dialog/NavigatorEditDialog.cpp
+    dialog/NavigatorEditDialog.h
+    dialog/ReconcileDialog.cpp
+    dialog/ReconcileDialog.h
     dialog/SchedDialog.cpp
     dialog/SchedDialog.h
     dialog/SplitDialog.cpp
@@ -364,6 +405,10 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     dialog/StartupDialog.h
     dialog/StockDialog.cpp
     dialog/StockDialog.h
+    dialog/ToolbarDialog.cpp
+    dialog/ToolbarDialog.h
+    dialog/TreeListDialog.cpp
+    dialog/TreeListDialog.h
     dialog/TrxDialog.cpp
     dialog/TrxDialog.h
     dialog/TrxFilterDialog.cpp
@@ -400,6 +445,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     report/FlowReport.h
     report/ForecastReport.cpp
     report/ForecastReport.h
+    report/GeneralGroupReport.cpp
+    report/GeneralGroupReport.h
     report/InExReport.cpp
     report/InExReport.h
     report/PayeeReport.cpp
@@ -422,19 +469,6 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     report/bugreport.h
     report/htmlbuilder.cpp
     report/htmlbuilder.h
-
-    uicontrols/reconciledialog.cpp
-    uicontrols/reconciledialog.h
-    uicontrols/navigatordialog.cpp
-    uicontrols/navigatordialog.h
-    uicontrols/navigatoreditdialog.cpp
-    uicontrols/navigatoreditdialog.h
-    uicontrols/navigatortypes.cpp
-    uicontrols/navigatortypes.h
-    uicontrols/toolbardialog.cpp
-    uicontrols/toolbardialog.h
-    uicontrols/toolbartypes.cpp
-    uicontrols/toolbartypes.h
 
     db/dbcheck.cpp
     db/dbcheck.h
@@ -464,9 +498,6 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     import_export/webappdialog.cpp
     import_export/webappdialog.h
 
-    generic/generictreelistdialog.cpp
-    generic/generictreelistdialog.h
-
     wizard/wizard_newaccount.cpp
     wizard/wizard_newaccount.h
     wizard/wizard_newdb.cpp
@@ -474,15 +505,13 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     wizard/wizard_update.cpp
     wizard/wizard_update.h
 
-    mmcombobox.h
-    mmex.cpp
-    mmex.h
-    mmframe.cpp
-    mmframe.h
-    mmframereport.cpp
+    app/mmApp.cpp
+    app/mmApp.h
+    app/mmFrame.cpp
+    app/mmFrame.h
 
     "${CMAKE_CURRENT_BINARY_DIR}/versions.h"
-    "base/platfdep_${MMEX_PLATFDEP}"
+    "base/mmPlatform_${MMEX_PLATFDEP}"
 
     "${MACOSX_APP_ICON_FILE}"
     "${MMEX_RC}")

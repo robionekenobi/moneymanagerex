@@ -21,9 +21,9 @@
 
 #pragma once
 
-#include "base/defs.h"
-#include "util/mmDate.h"
-#include "util/mmSingleton.h"
+#include "base/_defs.h"
+#include "base/mmDate.h"
+#include "base/mmSingleton.h"
 #include "util/_util.h"
 #include "table/_TableFactory.h"
 #include "data/InfoData.h"

@@ -21,53 +21,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "_PrefBase.h"
 
-class mmGUIApp;
-
 class GeneralPref : public PrefBase
 {
     wxDECLARE_EVENT_TABLE();
 
-public:
-    GeneralPref();
-
-    GeneralPref(wxWindow *parent, mmGUIApp* app
-        , wxWindowID id = wxID_ANY
-        , const wxPoint &pos = wxDefaultPosition
-        , const wxSize &size = wxDefaultSize
-        , long style = wxTAB_TRAVERSAL
-        , const wxString &name = wxPanelNameStr);
-
-    ~GeneralPref();
-
-public:
-    virtual bool SaveSettings();
+// -- static
 
 private:
-    void Create();
-
-    void OnDateFormatChanged(wxCommandEvent& event);
-    void OnLocaleChanged(wxCommandEvent& event);
-    void OnChangeGUILanguage(wxCommandEvent &event);
-    void OnMouseLeftDown(wxCommandEvent& event);
-
-    bool SaveFinancialYearStart();
-    bool doFormatDoubleValue(const wxString& locale, wxString& result);
-
-private:
-    mmGUIApp* m_app = nullptr;
-    wxStaticBoxSizer* m_currencyStaticBoxSizer = nullptr;
-    mmComboBoxCurrency* baseCurrencyComboBox_ = nullptr;
-
-    wxChoice* m_date_format_choice = nullptr;
-    wxChoice* m_month_selection = nullptr;
-    wxComboBox* m_itemListOfLocales = nullptr;
-    wxStaticText* m_sample_date_text = nullptr;
-    wxStaticText* m_sample_value_text = nullptr;
-
-    int64 m_currency_id = -1;
-    wxCheckBox* m_currency_history = nullptr;
-    wxString m_date_format;
-
     enum
     {
         ID_DIALOG_OPTIONS_BUTTON_CURRENCY = wxID_HIGHEST + 10,
@@ -78,4 +38,57 @@ private:
         ID_DIALOG_OPTIONS_FINANCIAL_YEAR_START_DAY,
         ID_DIALOG_OPTIONS_FINANCIAL_YEAR_START_MONTH
     };
+
+// -- state
+
+private:
+    int64 m_currency_id = -1;
+    wxString m_date_format;
+
+    mmApp*              w_app                = nullptr;
+    wxStaticBoxSizer*   w_currency_sizer     = nullptr;
+    mmComboBoxCurrency* w_base_currency_text = nullptr;
+    wxChoice*           w_date_format_choice = nullptr;
+    wxChoice*           w_month_choice       = nullptr;
+    wxComboBox*         w_locale_cb          = nullptr;
+    wxStaticText*       w_date_label         = nullptr;
+    wxStaticText*       w_amount_label       = nullptr;
+    wxCheckBox*         w_uh_cb              = nullptr;
+
+// -- constructor
+
+public:
+    GeneralPref();
+    GeneralPref(
+        wxWindow *parent,
+        mmApp* app,
+        wxWindowID id = wxID_ANY,
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxTAB_TRAVERSAL,
+        const wxString &name = wxPanelNameStr
+    );
+    ~GeneralPref();
+
+private:
+    void create();
+
+// -- virtual
+
+public:
+    virtual bool SaveSettings();
+
+// -- methods
+
+private:
+    bool SaveFinancialYearStart();
+    bool doFormatDoubleValue(const wxString& locale, wxString& result);
+
+// -- event handlers
+
+private:
+    void OnDateFormatChanged( wxCommandEvent& event);
+    void OnLocaleChanged(     wxCommandEvent& event);
+    void OnChangeGUILanguage( wxCommandEvent& event);
+    void OnMouseLeftDown(     wxCommandEvent& event);
 };

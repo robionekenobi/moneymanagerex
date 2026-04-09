@@ -18,9 +18,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/mmCalcValidator.h"
 
@@ -64,7 +64,7 @@ mmEditSplitOther::mmEditSplitOther(
     mmThemeAutoColour(this);
     mmSetSize(this);
     Centre();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     fillControls();
 }
@@ -202,7 +202,7 @@ bool SplitDialog::Create(wxWindow* parent
 
     mmSetSize(this);
     Centre();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     return TRUE;
 }
@@ -256,7 +256,7 @@ void SplitDialog::CreateControls()
 
     wxButton* bAdd = new wxButton(this, mmID_SPLIT, _t("&Add Split"));
     bAdd->Enable(!is_view_only_);
-    plusAmountSizer->AddSpacer(mmBitmapButtonSize + 10);
+    plusAmountSizer->AddSpacer(mmImage::bitmapButtonSize + 10);
     plusAmountSizer->Add(bAdd);
 
     wxButton* bRemove = new wxButton(this, mmID_REMOVE, _t("&Remove Split"));
@@ -324,7 +324,7 @@ void SplitDialog::FillControls(const int focusRow)
         {
             m_splits_widgets.at(row).category->ChangeValue("");
             m_splits_widgets.at(row).amount->SetValue("");
-            m_splits_widgets.at(row).other->SetBitmap(mmBitmapBundle(png::UNRECONCILED,mmBitmapButtonSize));
+            m_splits_widgets.at(row).other->SetBitmap(mmImage::bitmapBundle(mmImage::png::UNRECONCILED,mmImage::bitmapButtonSize));
             m_splits_widgets.at(row).category->Enable(false);
             m_splits_widgets.at(row).amount->Enable(false);
             m_splits_widgets.at(row).tags->Enable(false);
@@ -360,7 +360,7 @@ void SplitDialog::createNewRow(const bool enabled)
     wxPanel* btnPanel = new wxPanel(slider_);
     wxBoxSizer* btnSizer = new wxBoxSizer(wxHORIZONTAL);
     wxButton* nother = new wxButton(btnPanel, mmID_MAX + row, _t("Notes"));
-    nother->SetBitmap(mmBitmapBundle(png::UNRECONCILED,mmBitmapButtonSize));
+    nother->SetBitmap(mmImage::bitmapBundle(mmImage::png::UNRECONCILED,mmImage::bitmapButtonSize));
     nother->Connect(mmID_MAX + row, wxEVT_BUTTON
             , wxCommandEventHandler(SplitDialog::OnOtherButton), nullptr, this);
     nother->Enable(enabled);
@@ -568,9 +568,9 @@ void SplitDialog::UpdateSplitTotal()
 void SplitDialog::UpdateExtraInfo(int row)
 {
     if (m_splits.at(row).m_notes.IsEmpty())
-        m_splits_widgets.at(row).other->SetBitmap(mmBitmapBundle(png::UNRECONCILED,mmBitmapButtonSize));
+        m_splits_widgets.at(row).other->SetBitmap(mmImage::bitmapBundle(mmImage::png::UNRECONCILED,mmImage::bitmapButtonSize));
     else
-        m_splits_widgets.at(row).other->SetBitmap(mmBitmapBundle(png::RECONCILED,mmBitmapButtonSize));
+        m_splits_widgets.at(row).other->SetBitmap(mmImage::bitmapBundle(mmImage::png::RECONCILED,mmImage::bitmapButtonSize));
 
     m_splits_widgets.at(row).other->SetToolTip(m_splits.at(row).m_notes);
 }

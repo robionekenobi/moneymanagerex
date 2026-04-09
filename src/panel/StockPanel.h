@@ -22,9 +22,9 @@
 #pragma once
 
 #include "model/TrxShareModel.h"
-#include "mmframe.h"
 #include "_PanelBase.h"
 #include "StockList.h"
+#include "app/mmFrame.h"
 
 class wxListEvent;
 class TrxShareModel;
@@ -42,7 +42,7 @@ private:
     wxDateTime m_last_refresh;
     bool m_refresh_status;
 
-    mmGUIFrame*     w_frame;
+    mmFrame*        w_frame;
     StockList*      w_list           = nullptr;
     wxStaticText*   w_header_title   = nullptr;
     wxStaticText*   w_header_total   = nullptr;
@@ -55,7 +55,7 @@ private:
 public:
     StockPanel(
         int64 account_id,
-        mmGUIFrame* frame,
+        mmFrame* frame,
         wxWindow* parent_win,
         wxWindowID win_id = mmID_STOCKS
     );

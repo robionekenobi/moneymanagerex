@@ -18,21 +18,21 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "base/defs.h"
-#include "mmex.h"
-#include "util/_util.h"
-#include "htmlbuilder.h"
+#include "FlowReport.h"
 
+#include "base/_defs.h"
+#include "util/_util.h"
 #include "model/AccountModel.h"
 #include "model/SchedModel.h"
 #include "model/CurrencyHistoryModel.h"
-#include "mmframe.h"
-#include "FlowReport.h"
+#include "htmlbuilder.h"
+#include "app/mmFrame.h"
 
-// --------- CashFlow base class
+// -- CashFlow base class
 
-FlowReport::FlowReport(const wxString& name)
-    : ReportBase(name), m_today(wxDateTime::Now().ResetTime())
+FlowReport::FlowReport(const wxString& name) :
+    ReportBase(name),
+    m_today(wxDateTime::Now().ResetTime())
 {
     m_only_active = true;
 }
@@ -91,7 +91,7 @@ void FlowReport::getTransactions()
 
     // Get initial Balance as of today
     for (const auto& account : AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_NE, NavigatorTypes::instance().getInvestmentAccountStr()),
+        AccountCol::ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().getInvestmentAccountStr()),
         AccountModel::STATUS(OP_NE, AccountStatus(AccountStatus::e_closed))
     )) {
         if (m_account_a &&

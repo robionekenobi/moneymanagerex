@@ -18,9 +18,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
-#include "base/platfdep.h"
-#include "base/paths.h"
+#include "base/_constants.h"
+#include "base/mmPlatform.h"
+#include "util/mmPath.h"
 
 #include "ReportModel.h"
 #include "SettingModel.h"
@@ -44,11 +44,11 @@ const std::vector<ReportParam> ReportParam::get_param_a()
     const wxString def_time = wxDateTime::Now().FormatISOTime();
 
     const std::vector<ReportParam> param_a = {
-        { "&begin_date", "mmDatePickerCtrl", def_date,
+        { "&begin_date", "mmDatePicker", def_date,
             ReportPanel::ID_START_DATE_PICKER, _t("Begin date:") },
-        { "&end_date", "mmDatePickerCtrl", def_date,
+        { "&end_date", "mmDatePicker", def_date,
             ReportPanel::ID_END_DATE_PICKER, _t("End date:") },
-        { "&single_date", "mmDatePickerCtrl", def_date,
+        { "&single_date", "mmDatePicker", def_date,
             ReportPanel::ID_SINGLE_DATE_PICKER, _t("Date:") },
         { "&single_time", "wxTimePickerCtrl", def_time,
             ReportPanel::ID_TIME_PICKER, _t("Time:") },
@@ -95,8 +95,8 @@ bool ReportParam::prepare_sql(wxString& query, std::map<wxString, wxString>& lab
         wxString value = param.def_value;
         const auto w = wxWindow::FindWindowById(param.ID);
         //const auto name = w->GetClassInfo()->GetClassName();
-        if (w && param.type == "mmDatePickerCtrl") {
-            mmDatePickerCtrl* date = static_cast<mmDatePickerCtrl*>(w);
+        if (w && param.type == "mmDatePicker") {
+            mmDatePicker* date = static_cast<mmDatePicker*>(w);
             value = date->GetValue().FormatISODate();
         }
         else if (w && param.type == "wxTimePickerCtrl") {
@@ -368,7 +368,7 @@ int ReportModel::generate_html(const Data& report_d, wxString& out)
         for (const auto& label_value : label_value_m) {
             report_template(label_value.first.Upper().ToStdWstring()) = label_value.second;
         }
-        auto att_path = mmex::getPathAttachment(mmAttachmentManage::InfotablePathSetting());
+        auto att_path = mmPath::getPathAttachment(mmAttachmentManage::InfotablePathSetting());
         //javascript does not handle backslashs
         att_path.Replace("\\", "\\\\");
         report_template(L"ATTACHMENTSFOLDER") = att_path;

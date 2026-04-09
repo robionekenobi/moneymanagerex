@@ -10,7 +10,7 @@ Copyright: (c) 2026      George Ef (george.a.ef@gmail.com)
 #pragma once
 
 #include "_TableFactory.h"
-#include "util/mmCache.tpp"
+#include "base/mmCache.tpp"
 
 // Return the data records as a json array string
 template<typename T, typename D>

@@ -1,0 +1,79 @@
+/*******************************************************
+ Copyright (C) 2025 Klaus Wich
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ ********************************************************/
+
+#pragma once
+
+#include "base/_defs.h"
+#include "mmImage.h"
+#include "app/mmFrame.h"
+
+struct mmToolbarItem
+{
+public:
+    enum TYPE_ID
+    {
+        TOOLBAR_BTN,
+        TOOLBAR_SEPARATOR,
+        TOOLBAR_SPACER,
+        TOOLBAR_STRETCH
+    };
+
+public:
+    int toolId;
+    wxString label;
+    wxString helpstring;
+    int seq_no;
+    int imageListID;
+    int imageId;
+    bool active;
+    TYPE_ID type;
+};
+
+class mmToolbarList
+{
+// -- state
+
+private:
+    std::vector<mmToolbarItem*> m_toolbar_entries;
+    long unsigned int m_lastIdx;
+    mmToolbarItem* m_previous;
+    mmFrame* m_toolbarParent;
+
+// -- constructor
+
+public:
+    mmToolbarList();
+    ~mmToolbarList();
+
+    static mmToolbarList& instance();
+
+// -- methods
+
+public:
+    void SetToDefault();
+    wxImageList* getImageList();
+
+    mmToolbarItem* getFirstEntry();
+    mmToolbarItem* getNextEntry(mmToolbarItem* previous);
+    mmToolbarItem* newEntry(mmToolbarItem::TYPE_ID type, mmToolbarItem* previous);
+    bool DeleteEntry(mmToolbarItem* info);
+    void Save();
+    void Load();
+    void SetToolbarParent(mmFrame* parent);
+    void SortEntriesBySeq();
+};

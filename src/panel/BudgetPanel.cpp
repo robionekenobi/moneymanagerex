@@ -19,15 +19,13 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
-#include "base/images_list.h"
-#include "mmex.h"
-#include "util/mmDateRange.h"
+#include "BudgetPanel.h"
 
+#include "base/_constants.h"
+#include "util/mmImage.h"
+#include "util/mmDateRange.h"
 #include "model/_all.h"
 #include "model/PrefModel.h"
-
-#include "BudgetPanel.h"
 #include "dialog/BudgetEntryDialog.h"
 #include "report/budget.h"
 
@@ -219,7 +217,7 @@ void BudgetPanel::createControls()
     itemBoxSizerVHeader->Add(itemBoxSizerHHeader2, 0, wxALL, 1);
 
     w_filter_btn = new wxButton(itemPanel3, wxID_FILE2);
-    w_filter_btn->SetBitmap(mmBitmapBundle(png::TRANSFILTER, mmBitmapButtonSize));
+    w_filter_btn->SetBitmap(mmImage::bitmapBundle(mmImage::png::TRANSFILTER, mmImage::bitmapButtonSize));
     w_filter_btn->SetMinSize(wxSize(300, -1));
     itemBoxSizerHHeader2->Add(w_filter_btn, g_flagsBorder1H);
 
@@ -268,9 +266,9 @@ void BudgetPanel::createControls()
     /* ---------------------- */
 
     wxVector<wxBitmapBundle> images;
-    images.push_back(mmBitmapBundle(png::RECONCILED));
-    images.push_back(mmBitmapBundle(png::VOID_STAT));
-    images.push_back(mmBitmapBundle(png::FOLLOW_UP));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::RECONCILED));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::VOID_STAT));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::FOLLOW_UP));
 
     w_list = new BudgetList(this, this, wxID_ANY);
     w_list->SetSmallImages(images);

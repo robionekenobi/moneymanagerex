@@ -16,8 +16,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "base/constants.h"
-#include "base/paths.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmDatePicker.h"
+#include "util/mmMultiChoice.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -66,7 +68,7 @@ bool mmQIFExportDialog::Create(wxWindow* parent, const wxString& caption, wxWind
     mmThemeAutoColour(this);
     fillControls();
 
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     this->SetMinSize(wxSize(350, 450));
     this->Fit();
 
@@ -83,7 +85,7 @@ void mmQIFExportDialog::fillControls()
     accounts_id_.clear();
 
     AccountModel::DataA all_accounts = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_NE, NavigatorTypes::instance().getInvestmentAccountStr())
+        AccountCol::ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().getInvestmentAccountStr())
     );
 
     for (const auto& a : all_accounts)
@@ -165,7 +167,7 @@ void mmQIFExportDialog::CreateControls()
     // From Date --------------------------------------------
     dateFromCheckBox_ = new wxCheckBox(main_tab, wxID_ANY, _t("From Date")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE );
-    fromDateCtrl_ = new mmDatePickerCtrl(main_tab, wxID_STATIC, wxDefaultDateTime
+    fromDateCtrl_ = new mmDatePicker(main_tab, wxID_STATIC, wxDefaultDateTime
         , wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
     fromDateCtrl_->SetMinSize(min_size);
     fromDateCtrl_->Enable(false);
@@ -175,7 +177,7 @@ void mmQIFExportDialog::CreateControls()
     // To Date --------------------------------------------
     dateToCheckBox_ = new wxCheckBox(main_tab, wxID_ANY, _t("To Date")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE );
-    toDateCtrl_ = new mmDatePickerCtrl(main_tab, wxID_STATIC, wxDefaultDateTime
+    toDateCtrl_ = new mmDatePicker(main_tab, wxID_STATIC, wxDefaultDateTime
         , wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
     toDateCtrl_->SetMinSize(min_size);
     toDateCtrl_->Enable(false);
@@ -258,13 +260,13 @@ void mmQIFExportDialog::OnButtonClear(wxCommandEvent& WXUNUSED(event))
 void mmQIFExportDialog::OnAccountsButton(wxCommandEvent& WXUNUSED(event))
 {
     bSelectedAccounts_->UnsetToolTip();
-    mmMultiChoiceDialog s_acc(this, _t("Choose account to export from:")
+    mmMultiChoice s_acc(this, _t("Choose account to export from:")
         , _t("QIF Export"), m_accounts_name);
 
     int i = 0;
     wxArrayInt s;
     AccountModel::DataA all_accounts = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_NE, NavigatorTypes::instance().getInvestmentAccountStr())
+        AccountCol::ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().getInvestmentAccountStr())
     );
 
     for (const auto& a : all_accounts)

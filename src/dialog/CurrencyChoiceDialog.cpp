@@ -18,16 +18,16 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <vector>
 #include <wx/sstream.h>
 #include <wx/xml/xml.h>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
@@ -106,7 +106,7 @@ bool CurrencyChoiceDialog::Create(wxWindow* parent
     SetAcceleratorTable(accel);
 
     CreateControls();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     fillControls();
     Centre();
 
@@ -184,7 +184,7 @@ void CurrencyChoiceDialog::CreateControls()
     wxBoxSizer* itemBoxSizer22 = new wxBoxSizer(wxHORIZONTAL);
     itemBoxSizer2->Add(itemBoxSizer22, wxSizerFlags(g_flagsExpand).Proportion(0));
 
-    wxBitmapButton* update_button = new wxBitmapButton(this, wxID_EXECUTE, mmBitmapBundle(png::CURRATES, mmBitmapButtonSize));
+    wxBitmapButton* update_button = new wxBitmapButton(this, wxID_EXECUTE, mmImage::bitmapBundle(mmImage::png::CURRATES, mmImage::bitmapButtonSize));
     itemBoxSizer22->Add(update_button, g_flagsH);
     update_button->Connect(wxID_EXECUTE, wxEVT_COMMAND_BUTTON_CLICKED
         , wxCommandEventHandler(CurrencyChoiceDialog::OnOnlineUpdateCurRate), nullptr, this);
@@ -295,7 +295,7 @@ void CurrencyChoiceDialog::CreateControls()
     wxStaticText* datePickerLabel = new wxStaticText(this, wxID_STATIC, _t("Date"));
     itemBoxSizerD->Add(datePickerLabel, g_flagsH);
 
-    w_date_picker = new mmDatePickerCtrl(this, wxID_ANY, wxDefaultDateTime
+    w_date_picker = new mmDatePicker(this, wxID_ANY, wxDefaultDateTime
         , wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
     w_date_picker->SetMinSize(wxSize(120, -1));
     itemBoxSizerD->Add(w_date_picker, g_flagsExpand);
@@ -318,7 +318,7 @@ void CurrencyChoiceDialog::CreateControls()
     wxStdDialogButtonSizer*  buttons_sizer = new wxStdDialogButtonSizer;
     buttons_panel->SetSizer(buttons_sizer);
 
-    w_download_btn = new wxBitmapButton(buttons_panel, HISTORY_UPDATE, mmBitmapBundle(png::CURRATES, mmBitmapButtonSize));
+    w_download_btn = new wxBitmapButton(buttons_panel, HISTORY_UPDATE, mmImage::bitmapBundle(mmImage::png::CURRATES, mmImage::bitmapButtonSize));
     mmToolTip(w_download_btn, _t("Download Currency Values history"));
     w_download_btn->Disable();
 
@@ -330,7 +330,7 @@ void CurrencyChoiceDialog::CreateControls()
     mmToolTip(w_delete_btn, _t("Delete selected Currency Values"));
     w_delete_btn->Disable();
 
-    w_delete_unused_btn = new wxBitmapButton(buttons_panel, HISTORY_DELUNUSED, mmBitmapBundle(png::VOID_STAT, mmBitmapButtonSize));
+    w_delete_unused_btn = new wxBitmapButton(buttons_panel, HISTORY_DELUNUSED, mmImage::bitmapBundle(mmImage::png::VOID_STAT, mmImage::bitmapButtonSize));
     mmToolTip(w_delete_unused_btn, _t("Delete Historical Currency Values for unused currencies and days"));
     w_delete_unused_btn->Disable();
 
@@ -482,7 +482,7 @@ void CurrencyChoiceDialog::OnListItemSelected(wxDataViewEvent& event)
         }
     }
 
-    w_date_picker->SetValue(wxDateTime::Today());
+    w_date_picker->setValue(wxDateTime::Today());
     w_value_text->SetValue(wxEmptyString);
     ShowCurrencyHistory();
 }
@@ -828,14 +828,14 @@ void CurrencyChoiceDialog::OnHistorySelected(wxListEvent& event)
     );
 
     if (ch_n->m_id > 0) {
-        w_date_picker->SetValue(ch_n->m_date.dateTime());
+        w_date_picker->setValue(ch_n->m_date.dateTime());
         w_value_text->SetValue(wxString::Format("%f", ch_n->m_base_conv_rate));
     }
 }
 
 void CurrencyChoiceDialog::OnHistoryDeselected(wxListEvent& WXUNUSED(event))
 {
-    w_date_picker->SetValue(wxDateTime::Today());
+    w_date_picker->setValue(wxDateTime::Today());
     w_value_text->SetValue(wxEmptyString);
 }
 

@@ -16,12 +16,12 @@ Copyright (C) 2021 Mark Whalley (mark@ipx.co.uk)
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/display.h>
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 
 #include "model/AccountModel.h"
@@ -71,7 +71,7 @@ bool DiagnosticsDialog::createWindow(wxWindow* parent
 
     if (ok)
     {
-        SetIcon(mmex::getProgramIcon());
+        SetIcon(mmPath::getProgramIcon());
         CreateControls();
         RefreshView();
 

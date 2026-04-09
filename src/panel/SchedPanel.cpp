@@ -18,12 +18,14 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
-#include "base/images_list.h"
+#include "SchedPanel.h"
+
+#include "base/_constants.h"
+#include "util/mmImage.h"
+#include "util/mmSplitterWindow.h"
 #include "model/CategoryModel.h"
 #include "model/AttachmentModel.h"
 #include "model/UsageModel.h"
-#include "SchedPanel.h"
 #include "dialog/AttachmentDialog.h"
 #include "dialog/SchedDialog.h"
 
@@ -115,7 +117,7 @@ void SchedPanel::createControls()
         itemBoxSizerVHeader->Add(itemBoxSizerHHeader2);
 
         w_filter_btn = new wxButton(headerPanel, wxID_FILE2);
-        w_filter_btn->SetBitmap(mmBitmapBundle(png::TRANSFILTER, mmBitmapButtonSize));
+        w_filter_btn->SetBitmap(mmImage::bitmapBundle(mmImage::png::TRANSFILTER, mmImage::bitmapButtonSize));
         w_filter_btn->SetLabel(_t("Transaction Filter"));
         itemBoxSizerHHeader2->Add(w_filter_btn, g_flagsBorder1H);
     */
@@ -123,15 +125,15 @@ void SchedPanel::createControls()
     mmSplitterWindow* itemSplitterWindowBillsDeposit = new mmSplitterWindow(this,
         wxID_ANY, wxDefaultPosition, wxSize(200, 200),
         wxSP_3DBORDER | wxSP_3DSASH | wxNO_BORDER,
-        mmThemeMetaColour(meta::COLOR_LISTPANEL)
+        mmImage::themeMetaColour(mmImage::COLOR_LISTPANEL)
     );
 
     wxVector<wxBitmapBundle> images;
-    images.push_back(mmBitmapBundle(png::FOLLOW_UP));
-    images.push_back(mmBitmapBundle(png::RUN_AUTO));
-    images.push_back(mmBitmapBundle(png::RUN));
-    images.push_back(mmBitmapBundle(png::UPARROW));
-    images.push_back(mmBitmapBundle(png::DOWNARROW));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::FOLLOW_UP));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::RUN_AUTO));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::RUN));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::UPARROW));
+    images.push_back(mmImage::bitmapBundle(mmImage::png::DOWNARROW));
 
     w_list = new SchedList(this, itemSplitterWindowBillsDeposit);
     
@@ -183,7 +185,7 @@ void SchedPanel::createControls()
     buttonSkipTrans->Enable(false);
 
     wxBitmapButton* btnAttachment_ = new wxBitmapButton(bdPanel, wxID_FILE,
-        mmBitmapBundle(png::CLIP, mmBitmapButtonSize), wxDefaultPosition,
+        mmImage::bitmapBundle(mmImage::png::CLIP, mmImage::bitmapButtonSize), wxDefaultPosition,
         wxSize(30, itemButton8->GetSize().GetY())
     );
     mmToolTip(btnAttachment_, _t("Open attachments"));
@@ -481,11 +483,11 @@ void SchedPanel::onFilterTransactions(wxCommandEvent& WXUNUSED(event))
 
     if (w_filter_dlg->ShowModal() == wxID_OK && w_filter_dlg->mmIsSomethingChecked()) {
         m_filter_active = true;
-        w_filter_btn->SetBitmap(mmBitmapBundle(png::TRANSFILTER_ACTIVE, mmBitmapButtonSize));
+        w_filter_btn->SetBitmap(mmImage::bitmapBundle(mmImage::png::TRANSFILTER_ACTIVE, mmImage::bitmapButtonSize));
     }
     else {
         m_filter_active = false;
-        w_filter_btn->SetBitmap(mmBitmapBundle(png::TRANSFILTER, mmBitmapButtonSize));
+        w_filter_btn->SetBitmap(mmImage::bitmapBundle(mmImage::png::TRANSFILTER, mmImage::bitmapButtonSize));
     }
 
     initList();

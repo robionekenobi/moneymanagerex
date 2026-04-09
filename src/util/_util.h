@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <algorithm>
 #include <map>
 #include <curl/curl.h>
@@ -32,17 +32,47 @@
 #include "_primitive.h"
 #include "model/PrefModel.h"
 
-class mmGUIApp;
+class mmApp;
+
+// -- Platform
 
 bool isDark(wxColour c);
 void mmThemeAutoColour(wxWindow* object, bool recursive = true);
 void enableMSWDarkMode(wxWindow* object, bool darkMode);
+
+// -- encoding
+
+extern const std::map<int, std::pair<wxConvAuto, wxString>> g_encoding;
+
+// -- Json
+
 wxString JSON_PrettyFormated(rapidjson::Document& j_doc);
 wxString JSON_Formated(rapidjson::Document& j_doc);
-rapidjson::Value* JSON_GetValue(rapidjson::Document& j_doc, const rapidjson::MemoryStream::Ch* name);
-bool JSON_GetBoolValue(rapidjson::Document& j_doc, const rapidjson::MemoryStream::Ch* name, bool& value);
-bool JSON_GetIntValue(rapidjson::Document& j_doc, const rapidjson::MemoryStream::Ch* name, int& value);
-bool JSON_GetStringValue(rapidjson::Document& j_doc, const rapidjson::MemoryStream::Ch* name, wxString& value);
+
+rapidjson::Value* JSON_GetValue(
+    rapidjson::Document& j_doc,
+    const rapidjson::MemoryStream::Ch* name
+);
+
+bool JSON_GetBoolValue(
+    rapidjson::Document& j_doc,
+    const rapidjson::MemoryStream::Ch* name,
+    bool& value
+);
+
+bool JSON_GetIntValue(
+    rapidjson::Document& j_doc,
+    const rapidjson::MemoryStream::Ch* name,
+    int& value
+);
+
+bool JSON_GetStringValue(
+    rapidjson::Document& j_doc,
+    const rapidjson::MemoryStream::Ch* name,
+    wxString& value
+);
+
+// --
 
 struct ValuePair
 {
@@ -57,6 +87,8 @@ struct ValueTrio
     double amount;
 };
 
+// -- News
+
 struct WebsiteNews
 {
     mmDateN m_dateN;
@@ -65,27 +97,12 @@ struct WebsiteNews
     wxString m_descriptionN;
 };
 
-//----------------------------------------------------------------------------
+bool getNewsRSS(std::vector<WebsiteNews>& websiteNews_a);
 
-class mmListBoxItem: public wxClientData
-{
-public:
-    mmListBoxItem(int64 index, const wxString& name)
-        : index_(index), name_(name)
-    {}
+// --
 
-    int64 getIndex() const;
-    wxString getName() const;
-
-private:
-    int64 index_;
-    wxString name_;
-};
-
-inline int64 mmListBoxItem::getIndex() const { return index_; }
-inline wxString mmListBoxItem::getName() const { return name_; }
-
-//----------------------------------------------------------------------------
+// escape HTML characters
+wxString HTMLEncode(const wxString& input);
 
 const wxString inQuotes(const wxString& label, const wxString& delimiter);
 wxString removeQuotes(wxString s);
@@ -100,11 +117,12 @@ inline wxString getTranslation(bool translate, const wxString& text)
     return translate ? wxGetTranslation(text) : text;
 }
 
-//----------------------------------------------------------------------------
-
-bool getNewsRSS(std::vector<WebsiteNews>& websiteNews_a);
 enum yahoo_price_type { FIAT = 0, SHARES };
-bool getOnlineCurrencyRates(wxString& msg, const int64 curr_id = -1, const bool used_only = true);
+bool getOnlineCurrencyRates(
+    wxString& msg,
+    int64 curr_id = -1,
+    bool used_only = true
+);
 bool get_yahoo_prices(
     std::map<wxString, double>& symbols,
     std::map<wxString, double>& out,
@@ -112,15 +130,21 @@ bool get_yahoo_prices(
     wxString& output,
     int type
 );
-bool getCoincapInfoFromSymbol(const wxString& symbol, wxString& out_id, double& price_usd, wxString& output);
+bool getCoincapInfoFromSymbol(
+    const wxString& symbol,
+    wxString& out_id,
+    double& price_usd,
+    wxString& output
+);
 bool getCoincapAssetHistory(
-    const wxString& asset_id, mmDate begin_date,
-    std::map<mmDate, double>& date_rate_m, wxString& msg
+    const wxString& asset_id,
+    mmDate begin_date,
+    std::map<mmDate, double>& date_rate_m,
+    wxString& msg
 );
 
 wxString cleanseNumberString(const wxString& str, const bool decimal);
 double cleanseNumberStringToDouble(const wxString& str, const bool decimal);
-const wxString mmPlatformType();
 
 //All components version in TXT, HTML, ABOUT
 const wxString getProgramDescription(const int type = 0);
@@ -130,92 +154,48 @@ const wxString getVFname4print(const wxString& name, const wxString& data);
 void clearVFprintedFiles(const wxString& name);
 const wxRect GetDefaultMonitorRect();
 
-//* Date Functions----------------------------------------------------------*//
-
-const wxDateTime getUserDefinedFinancialYear(bool prevDayRequired = false);
-const std::map<wxString, wxString> &date_formats_regex();
-const wxString mmGetDateTimeForDisplay(const wxString &datetime_iso, const wxString& format = PrefModel::instance().getDateFormat());
-const wxString mmGetDateForDisplay(const wxString &datetime_iso, const wxString& format = PrefModel::instance().getDateFormat());
-const wxString mmGetTimeForDisplay(const wxString& datetime_iso);
-bool mmParseDisplayStringToDate(wxDateTime& date, const wxString& sDate, const wxString& sDateMask);
-extern const std::vector<std::pair<wxString, wxString> > g_date_formats_map();
-extern const std::map<int, std::pair<wxConvAuto, wxString> > g_encoding;
-
-//----------------------------------------------------------------------------
+// -- http
 
 CURLcode http_get_data(const wxString& site, wxString& output, const wxString& useragent = wxEmptyString);
 CURLcode http_post_data(const wxString& site, const wxString& data, const wxString& contentType, wxString& output);
 CURLcode http_download_file(const wxString& site, const wxString& path);
 CURLcode getYahooFinanceQuotes(const wxString& URL, wxString& json_data);
 
-//----------------------------------------------------------------------------
+// -- Date
 
-class mmDates
-{
-private:
-    std::vector<std::pair<wxString, wxString>> m_date_formats_temp;
-    // Numbers of successfully applied Format Specifier for every handled date string
-    std::map<wxString, int> m_date_parsing_stat;
-    wxDateTime m_today;
-    wxDateTime m_month_ago;
-    wxString m_date_mask;   // Human readable date format like DD/MM/YYYY
-    wxString m_date_format; // Date Format Specifier like %d/%m/%Y
-    int m_error_count = 0;
-    int MAX_ATTEMPTS = 3;
+extern const std::vector<std::pair<wxString, wxString>> g_date_formats_map();
 
-public:
-    mmDates();
-    ~mmDates();
+const std::map<wxString, wxString>& date_formats_regex();
 
-    auto getDateMask() const -> const wxString { return m_date_mask; }
-    auto getDateFormat() const -> const wxString { return m_date_format; }
-    int  getErrorCount() const { return m_error_count; }
-    bool isDateFormatFound() const {
-        return m_date_formats_temp.size() < g_date_formats_map().size();
-    }
-    void doHandleStatistics(const wxString& dateStr);
-    void doFinalizeStatistics();
-};
+const wxString mmGetDateForDisplay(
+    const wxString& datetime_iso,
+    const wxString& format = PrefModel::instance().getDateFormat()
+);
 
-class mmSeparator
-{
-private:
-    std::map<wxString, int> m_separators;
+const wxString mmGetTimeForDisplay(const wxString& datetime_iso);
 
-public:
-    mmSeparator();
-    ~mmSeparator();
+const wxString mmGetDateTimeForDisplay(
+    const wxString& datetime_iso,
+    const wxString& format = PrefModel::instance().getDateFormat()
+);
 
-    bool isStringHasSeparator(const wxString& string);
-    const wxString getSeparator() const;
-};
+bool mmParseDisplayStringToDate(
+    wxDateTime& date,
+    const wxString& sDate,
+    const wxString& sDateMask
+);
+
+const wxDateTime getUserDefinedFinancialYear(bool prevDayRequired = false);
+
+// --
 
 // used where differences occur between platforms
 wxImageList* createImageList(const int size = 0);
 
 void mmToolTip(wxWindow* widget,const wxString& tip);
 
-// escape HTML characters
-wxString HTMLEncode(const wxString& input);
-
 void mmSetSize(wxWindow* w);
 void mmFontSize(wxWindow* widget);
 
-class mmHtmlWindow : public wxHtmlWindow
-{
-public:
-    mmHtmlWindow(
-        wxWindow *parent,
-        wxWindowID id=wxID_ANY,
-        const wxPoint &pos=wxDefaultPosition,
-        const wxSize &size=wxDefaultSize,
-        long style=wxHW_DEFAULT_STYLE,
-        const wxString &name="htmlWindow"
-    );
-private:
-    void OnMouseRightClick(wxMouseEvent&);
-    void OnMenuSelected(wxCommandEvent& event);
-};
-
-// -------------------
 wxChar ExtractHotkeyChar(const wxString& input, wxChar defaultChar = '\0');
+

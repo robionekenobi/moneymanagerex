@@ -19,15 +19,16 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
-#include "base/images_list.h"
+#include "StockList.h"
+#include "StockPanel.h"
+
+#include "base/_constants.h"
+#include "util/mmImage.h"
+#include "util/mmSingleChoice.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
 #include "model/_all.h"
-
-#include "StockPanel.h"
-#include "StockList.h"
 
 #include "dialog/AttachmentDialog.h"
 #include "dialog/StockDialog.h"
@@ -92,24 +93,24 @@ StockList::StockList(
     ListBase(parent_win, win_id),
     w_panel(cp),
     w_loss_attr1(new wxListItemAttr(
-        mmThemeMetaColour(meta::COLOR_REPORT_DEBIT),
-        mmThemeMetaColour(meta::COLOR_LISTALT0),
+        mmImage::themeMetaColour(mmImage::COLOR_REPORT_DEBIT),
+        mmImage::themeMetaColour(mmImage::COLOR_LISTALT0),
         GetFont()
     )),
     w_loss_attr2(new wxListItemAttr(
-        mmThemeMetaColour(meta::COLOR_REPORT_DEBIT),
-        mmThemeMetaColour(meta::COLOR_LIST),
+        mmImage::themeMetaColour(mmImage::COLOR_REPORT_DEBIT),
+        mmImage::themeMetaColour(mmImage::COLOR_LIST),
         GetFont()
     ))
 {
     wxVector<wxBitmapBundle> image_a;
-    image_a.push_back(mmBitmapBundle(png::PROFIT));
-    image_a.push_back(mmBitmapBundle(png::LOSS));
-    image_a.push_back(mmBitmapBundle(png::DOWNARROW));
-    image_a.push_back(mmBitmapBundle(png::UPARROW));
+    image_a.push_back(mmImage::bitmapBundle(mmImage::png::PROFIT));
+    image_a.push_back(mmImage::bitmapBundle(mmImage::png::LOSS));
+    image_a.push_back(mmImage::bitmapBundle(mmImage::png::DOWNARROW));
+    image_a.push_back(mmImage::bitmapBundle(mmImage::png::UPARROW));
 
     SetSmallImages(image_a);
-    mmThemeMetaColour(this, meta::COLOR_LISTPANEL);
+    mmImage::themeMetaColour(this, mmImage::COLOR_LISTPANEL);
 
     m_setting_name = "STOCKS";
     o_col_order_prefix = "STOCKS";
@@ -359,7 +360,7 @@ void StockList::onMoveStocks(wxCommandEvent& /*event*/)
         return;
 
     const auto& account_a = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().getInvestmentAccountStr())
+        AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().getInvestmentAccountStr())
     );
     if (account_a.empty())
         return;
@@ -370,7 +371,7 @@ void StockList::onMoveStocks(wxCommandEvent& /*event*/)
     wxString headerMsg = wxString::Format(_t("Moving Transaction from %s to"),
         from_account_n->m_name
     );
-    mmSingleChoiceDialog scd(this, _t("Select the destination Account "),
+    mmSingleChoice scd(this, _t("Select the destination Account "),
         headerMsg, account_a
     );
 

@@ -16,15 +16,15 @@ Copyright (C) 2021 Mark Whalley (mark@ipx.co.uk)
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <memory>
 #include <wx/mstream.h>
 #include <wx/fs_mem.h>
 #include <wx/zipstrm.h>
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 
 #include "model/PrefModel.h"
@@ -153,7 +153,7 @@ void ThemeManager::Create(wxWindow* parent, const wxString &name)
 
     CreateControls();
 
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     ReadThemes();
     RefreshView();
@@ -210,8 +210,8 @@ void ThemeManager::CreateControls()
 void ThemeManager::ReadThemes()
 {
     m_themes.clear();
-    addThemes(mmex::getPathResource(mmex::THEMESDIR), true);
-    addThemes(mmex::getPathUser(mmex::USERTHEMEDIR), false);
+    addThemes(mmPath::getPathResource(mmPath::THEMESDIR), true);
+    addThemes(mmPath::getPathUser(mmPath::USERTHEMEDIR), false);
 
     m_themesListBox_->Clear();
     for (const auto &theme : m_themes)
@@ -257,16 +257,22 @@ void ThemeManager::RefreshView()
         wxMemoryFSHandler::RemoveFile(webImageName);
         wxMemoryFSHandler::RemoveFile(themeImageName);
     }
-    wxMemoryFSHandler::AddFile(webImageName, mmBitmapBundle(png::WEB).GetBitmap(wxDefaultSize), wxBITMAP_TYPE_PNG);
+    wxMemoryFSHandler::AddFile(
+        webImageName,
+        mmImage::bitmapBundle(mmImage::png::WEB).GetBitmap(wxDefaultSize),
+        wxBITMAP_TYPE_PNG
+    );
     imgUrl = "memory:" + webImageName;
     wxMemoryFSHandler::AddFile(themeImageName, thisTheme.bitMap, wxBITMAP_TYPE_PNG);
     themeImageUrl = "memory:" + themeImageName;
     vfsThemeImageLoaded = true;
 #else
-    mmBitmapBundle(png::WEB).GetBitmap(wxDefaultSize).SaveFile(mmex::getTempFolder() + webImageName, wxBITMAP_TYPE_PNG);
-    imgUrl = "file://" + mmex::getTempFolder() + webImageName;
-    thisTheme.bitMap.SaveFile(mmex::getTempFolder() + themeImageName, wxBITMAP_TYPE_PNG);
-    themeImageUrl = "file://" + mmex::getTempFolder() + themeImageName;
+    mmImage::bitmapBundle(mmImage::png::WEB).GetBitmap(wxDefaultSize).SaveFile(
+        mmPath::getTempFolder() + webImageName, wxBITMAP_TYPE_PNG
+    );
+    imgUrl = "file://" + mmPath::getTempFolder() + webImageName;
+    thisTheme.bitMap.SaveFile(mmPath::getTempFolder() + themeImageName, wxBITMAP_TYPE_PNG);
+    themeImageUrl = "file://" + mmPath::getTempFolder() + themeImageName;
 #endif
     mmHTMLBuilder hb;
     hb.init(true);
@@ -287,17 +293,18 @@ void ThemeManager::OnThemeView(wxCommandEvent&)
 
 void ThemeManager::OnImport(wxCommandEvent&)
 {
-    wxString fileName = wxFileSelector(_t("Choose theme file to import")
-        , wxEmptyString, wxEmptyString, wxEmptyString
-        , "MMX Theme (*.mmextheme)|*.mmextheme"
-        , wxFD_FILE_MUST_EXIST | wxFD_OPEN
-        , this
+    wxString fileName = wxFileSelector(
+        _t("Choose theme file to import"),
+        wxEmptyString, wxEmptyString, wxEmptyString,
+        "MMX Theme (*.mmextheme)|*.mmextheme",
+        wxFD_FILE_MUST_EXIST | wxFD_OPEN,
+        this
     );
 
     if (fileName.empty())
         return;
 
-    wxString themesDir = mmex::getPathUser(mmex::USERTHEMEDIR);
+    wxString themesDir = mmPath::getPathUser(mmPath::USERTHEMEDIR);
     // create the themes sub-directory if it doesn't yet exist
     if (!wxDirExists(themesDir))
         wxMkdir(themesDir);
@@ -305,8 +312,7 @@ void ThemeManager::OnImport(wxCommandEvent&)
     wxFileName sourceFile(fileName);
     wxFileName destFile(themesDir, sourceFile.GetFullName());
 
-    if (wxFileExists(destFile.GetFullPath()))
-    {
+    if (wxFileExists(destFile.GetFullPath())) {
         wxString existingThemeText = _t("The theme already exists. Do you want to import and overwrite the existing theme?");
         wxMessageDialog msgDlg(this, existingThemeText, destFile.GetName(),
             wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION);
@@ -315,8 +321,7 @@ void ThemeManager::OnImport(wxCommandEvent&)
     }
 
     wxLogDebug("Theme import: Copying\n%s\nto\n%s", fileName, destFile.GetFullPath());
-    if (!wxCopyFile(fileName, destFile.GetFullPath()))
-    {
+    if (!wxCopyFile(fileName, destFile.GetFullPath())) {
         wxString copyFailedText = _t("Something went wrong importing the theme");
         wxMessageBox(copyFailedText, _t("Error"), wxOK | wxICON_ERROR);
     }
@@ -328,14 +333,15 @@ void ThemeManager::OnImport(wxCommandEvent&)
 
 void ThemeManager::OnDelete(wxCommandEvent&)
 {
-    ThemeEntry thisTheme = getThemeEntry(m_themesListBox_->GetString(m_themesListBox_->GetSelection()));
+    ThemeEntry thisTheme = getThemeEntry(
+        m_themesListBox_->GetString(m_themesListBox_->GetSelection())
+    );
     wxString deletingThemeText = _t("Do you want to delete the theme? If you want to use it again you will need to re-import it.");
     wxMessageDialog msgDlg(this, deletingThemeText, thisTheme.name,
-        wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION);
-    if (msgDlg.ShowModal() == wxID_YES)
-    {
-        if (!wxRemoveFile(thisTheme.fullPath))
-        {
+        wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION
+    );
+    if (msgDlg.ShowModal() == wxID_YES) {
+        if (!wxRemoveFile(thisTheme.fullPath)) {
             wxString deleteFailedText = _t("Something went wrong when attempting to delete the theme");
             wxMessageBox(deleteFailedText, _t("Error"), wxOK | wxICON_ERROR);
         }
@@ -347,12 +353,13 @@ void ThemeManager::OnDelete(wxCommandEvent&)
 
 void ThemeManager::OnUse(wxCommandEvent&)
 {
-    ThemeEntry thisTheme = getThemeEntry(m_themesListBox_->GetString(m_themesListBox_->GetSelection()));
+    ThemeEntry thisTheme = getThemeEntry(
+        m_themesListBox_->GetString(m_themesListBox_->GetSelection())
+    );
     wxString changingThemeText = _t("Do you want to use the theme? Please note that this will only take effect when MMEX is re-started.");
     wxMessageDialog msgDlg(this, changingThemeText, thisTheme.name,
         wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION);
-    if (msgDlg.ShowModal() == wxID_YES)
-    {
+    if (msgDlg.ShowModal() == wxID_YES) {
         SettingModel::instance().saveTheme(thisTheme.name);
         for (auto it = begin(m_themes); it != end(m_themes); ++it)
             it->isChosen = (it->name == thisTheme.name);

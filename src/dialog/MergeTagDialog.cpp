@@ -19,8 +19,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
-#include "base/paths.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 
 #include "model/AttachmentModel.h"
@@ -71,7 +71,7 @@ bool MergeTagDialog::Create(wxWindow* parent
     mmThemeAutoColour(this);
     IsOkOk();
 
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Fit();
     wxSize sz = GetSize();
     SetSizeHints(sz.GetWidth(), sz.GetHeight(), -1, sz.GetHeight());

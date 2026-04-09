@@ -21,8 +21,8 @@ Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
 
 #include <map>
 #include <vector>
-#include "base/defs.h"
-#include "base/types.h"
+#include "base/_defs.h"
+#include "base/_types.h"
 #include "util/mmDateRange.h"
 
 class htmlWidgetStocks

@@ -1,0 +1,238 @@
+/*******************************************************
+ Copyright (C) 2025 Klaus Wich
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ ********************************************************/
+
+#include "mmToolbarList.h"
+
+#include "base/_constants.h"
+#include "model/SettingModel.h"
+#include "app/mmFrame.h"
+
+static const wxString TOOLBAR_INFO_KEY = "TOOLBAR_SETTINGS";
+
+mmToolbarList::mmToolbarList()
+{
+    m_lastIdx = 0;
+    m_previous = nullptr;
+    m_toolbarParent = nullptr;
+    Load();
+}
+
+mmToolbarList::~mmToolbarList()
+{
+    for (auto ref : m_toolbar_entries) {
+        delete ref;
+    }
+}
+
+
+mmToolbarList& mmToolbarList::instance()
+{
+    return Singleton<mmToolbarList>::instance();
+}
+
+void mmToolbarList::SetToDefault()
+{
+    // Delete old entries
+    for (auto ref : m_toolbar_entries) {
+        delete ref;
+    }
+    m_toolbar_entries.clear();
+
+    // init with default entries
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_NEW,                    "New",                    "New Database",                       0, -1, mmImage::png::NEW_DB,          true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_OPEN,                   "Open",                   "Open Database",                      1, -1, mmImage::png::OPEN,            true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                   2, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_NEWACCT,                "New Account",            "New Account",                        4, -1, mmImage::png::NEW_ACC,         true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_HOMEPAGE,               "Dashboard",              "Open Dashboard",                     5, -1, mmImage::png::HOME,            true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                   6, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
+    m_toolbar_entries.push_back(new  mmToolbarItem{wxID_NEW,                                "New",                    "New Transaction",                    7, -1, mmImage::png::NEW_TRX,         true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                   8, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_ORGPAYEE,               "Payee Manager",          "Payee Manager",                      9, -1, mmImage::png::PAYEE,           true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_ORGCATEGS,              "Category Manager",       "Category Manager",                  10, -1, mmImage::png::CATEGORY,        true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_ORGTAGS,                "Tag Manager",            "Tag Manager",                       11, -1, mmImage::png::TAG,             true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_CURRENCY,               "Currency Manager",       "Currency Manager",                  12, -1, mmImage::png::CURR,            true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                  13, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_TRANSACTIONREPORT,      "Transaction Report",     "Transaction Report",                14, -1, mmImage::png::FILTER,          true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                  15, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
+    m_toolbar_entries.push_back(new  mmToolbarItem{wxID_VIEW_LIST,                          "General Report Manager", "General Report Manager",            16, -1, mmImage::png::GRM,             true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_RATES,                  "Download Rates",         "Download currency and stock rates", 17, -1, mmImage::png::CURRATES,        true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                  18, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
+    m_toolbar_entries.push_back(new  mmToolbarItem{wxID_PRINT,                              "&Print",                 "Print",                             19, -1, mmImage::png::PRINT,           true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                  20, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
+    m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                  21, -1, -1,                   true,  mmToolbarItem::TOOLBAR_STRETCH});
+    m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                  22, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
+    m_toolbar_entries.push_back(new  mmToolbarItem{MENU_VIEW_TOGGLE_FULLSCREEN,             "Full Screen\tF11",       "Toggle full screen",                23, -1, mmImage::png::FULLSCREEN,      true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{wxID_PREFERENCES,                        "&Settings",              "Settings",                          24, -1, mmImage::png::OPTIONS,         true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{0,                                       "",                       "",                                  25, -1, -1,                   true,  mmToolbarItem::TOOLBAR_SEPARATOR});
+    m_toolbar_entries.push_back(new  mmToolbarItem{mmFrame::MENU_ANNOUNCEMENTMAILING,    "News",                   "News",                              26, -1, mmImage::png::NEW_NEWS,        true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{wxID_ABOUT,                              "&About",                 "About",                             27, -1, mmImage::png::ABOUT,           true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{wxID_HELP,                               "&Help\tF1",              "Help",                              28, -1, mmImage::png::HELP,            true,  mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{MENU_BILLSDEPOSITS,                      "Scheduled Transactions", "Scheduled Transactions",            29, -1, mmImage::png::RECURRING,       false, mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{MENU_BUDGETSETUPDIALOG,                  "Budget Planner",         "Budget Planner",                    30, -1, mmImage::png::BUDGET,          false, mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{MENU_TRANSACTIONS_ALL,                   "All Transactions",       "All Transactions",                  31, -1, mmImage::png::ALLTRANSACTIONS, false, mmToolbarItem::TOOLBAR_BTN});
+    m_toolbar_entries.push_back(new  mmToolbarItem{MENU_TRANSACTIONS_DEL,                   "Deleted Transactions",   "Deleted Transactions",              32, -1, mmImage::png::TRASH,           false, mmToolbarItem::TOOLBAR_BTN});
+}
+
+void mmToolbarList::SortEntriesBySeq()
+{
+    std::stable_sort(m_toolbar_entries.begin(), m_toolbar_entries.end(), [](mmToolbarItem* a, mmToolbarItem* b) {
+        return (a->seq_no < b->seq_no);
+    });
+}
+
+wxImageList* mmToolbarList::getImageList(){
+    const int toolbar_icon_size = PrefModel::instance().getToolbarIconSize();
+    wxImageList* imageList = new wxImageList(toolbar_icon_size, toolbar_icon_size);
+    int iidx = 0;
+    mmToolbarItem* ainfo = getFirstEntry();
+    while (ainfo != nullptr) {
+        if (ainfo->type == mmToolbarItem::TOOLBAR_BTN) {
+            wxBitmapBundle bundle = mmImage::bitmapBundle(ainfo->imageId, toolbar_icon_size);
+            imageList->Add(bundle.GetBitmap(wxSize(toolbar_icon_size, toolbar_icon_size)));
+            ainfo->imageListID = iidx++;
+        }
+        ainfo = mmToolbarList::instance().getNextEntry(ainfo);
+    }
+    return imageList;
+}
+
+mmToolbarItem* mmToolbarList::getFirstEntry()
+{
+    m_lastIdx = 0;
+    m_previous = m_toolbar_entries[0];
+    return m_previous;
+}
+
+mmToolbarItem* mmToolbarList::getNextEntry(mmToolbarItem* previous)
+{
+    if (previous == m_previous) {
+        m_lastIdx++;
+        m_previous = m_lastIdx < size(m_toolbar_entries) ? m_toolbar_entries[m_lastIdx] : nullptr;
+    }
+    else {
+        wxLogError("Invalid use of mmToolbarList::getNextEntry");
+        m_previous = nullptr;
+    }
+    return m_previous;
+}
+
+mmToolbarItem* mmToolbarList::newEntry(mmToolbarItem::TYPE_ID type, mmToolbarItem* previous)
+{
+    mmToolbarItem* entry = new mmToolbarItem;
+    entry->type = type;
+    entry->imageId = -1;
+    entry->active = true;
+    if (previous) {
+        int seqBase = previous->seq_no;
+        for (mmToolbarItem* tentry : m_toolbar_entries) {
+            if (tentry->seq_no >= seqBase) {
+                tentry->seq_no += 1;
+            }
+        }
+        entry->seq_no = seqBase;
+    }
+    else {
+        entry->seq_no = m_toolbar_entries.size();
+    }
+    m_toolbar_entries.push_back(entry);
+    SortEntriesBySeq();
+    return entry;
+}
+
+bool mmToolbarList::DeleteEntry(mmToolbarItem* info)
+{
+    bool result = false;
+    for (int i = 0; i < static_cast<int>(m_toolbar_entries.size()); i++) {
+        if (m_toolbar_entries[i] == info) {
+            m_toolbar_entries.erase(m_toolbar_entries.begin() + i);
+            result = true;
+            break;
+        }
+    }
+    return result;
+}
+
+void mmToolbarList::Save() {
+    Document j_doc = SettingModel::instance().getJdoc(TOOLBAR_INFO_KEY, "{}");
+    j_doc.SetObject();
+    rapidjson::Value array(rapidjson::kArrayType);
+
+    for (mmToolbarItem* entry : m_toolbar_entries) {
+        if (entry->seq_no > -1) {
+            rapidjson::Value label(entry->label.ToUTF8().data(), j_doc.GetAllocator());
+            rapidjson::Value helpstring(entry->helpstring.ToUTF8().data(), j_doc.GetAllocator());
+
+            rapidjson::Value obj(rapidjson::kObjectType);
+            obj.AddMember("toolid",      entry->toolId,      j_doc.GetAllocator());
+            obj.AddMember("label",       label,             j_doc.GetAllocator());
+            obj.AddMember("helpstring",  helpstring,        j_doc.GetAllocator());
+            obj.AddMember("seq_no",      entry->seq_no,      j_doc.GetAllocator());
+            obj.AddMember("imageId",     entry->imageId,     j_doc.GetAllocator());
+            obj.AddMember("active",      entry->active,      j_doc.GetAllocator());
+            obj.AddMember("type",        entry->type,        j_doc.GetAllocator());
+            array.PushBack(obj, j_doc.GetAllocator());
+        }
+    }
+    j_doc.AddMember("data", array, j_doc.GetAllocator());
+    SettingModel::instance().saveJdoc(TOOLBAR_INFO_KEY, j_doc);
+
+    if (m_toolbarParent) {  // update toolbar
+        m_toolbarParent->PopulateToolBar();
+    }
+}
+
+void mmToolbarList::Load() {
+    m_toolbar_entries.clear();
+    bool doReset = false;
+    Document doc = SettingModel::instance().getJdoc(TOOLBAR_INFO_KEY, "{}");
+    if (doc.HasMember("data") && doc["data"].IsArray()) {
+        try {
+            const rapidjson::Value& array = doc["data"];
+            for (rapidjson::SizeType i = 0; i < array.Size(); ++i) {
+                mmToolbarItem* entry = new mmToolbarItem;
+                const rapidjson::Value& obj = array[i];
+                entry->toolId = obj["toolid"].GetInt();
+                const char* chars = obj["label"].GetString();
+                entry->label = wxString::FromUTF8(chars);
+                chars = obj["helpstring"].GetString();
+                entry->helpstring = wxString::FromUTF8(chars);
+                entry->seq_no = obj["seq_no"].GetInt();
+                entry->imageId = obj["imageId"].GetInt();
+                entry->active = obj["active"].GetBool();
+                entry->type = static_cast<mmToolbarItem::TYPE_ID>(obj["type"].GetInt());
+                m_toolbar_entries.push_back(entry);
+            }
+        }
+        catch (...) {
+            doReset = true;
+        }
+    }
+    else {
+        doReset = true;
+    }
+    if (doReset) {
+        wxLogDebug("Could not read Toolbar configuration from Info Table => reset to default");
+        m_toolbar_entries.clear();
+        SetToDefault();
+    }
+}
+
+void mmToolbarList::SetToolbarParent(mmFrame* parent)
+{
+    m_toolbarParent = parent;
+}

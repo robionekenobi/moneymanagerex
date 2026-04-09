@@ -19,44 +19,43 @@
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/dialog.h>
 #include <wx/notebook.h>
 
+#include "base/mmHtmlWindow.h"
 #include "util/_util.h"
-
-class wxHtmlWindow;
 
 class AboutDialog : public wxDialog
 {
     wxDECLARE_DYNAMIC_CLASS(AboutDialog);
     wxDECLARE_EVENT_TABLE();
 
+private:
+    wxCheckBox*   m_send_data   = nullptr;
+    mmHtmlWindow* aboutText_    = nullptr;
+    mmHtmlWindow* authorsText_  = nullptr;
+    mmHtmlWindow* sponsorsText_ = nullptr;
+    mmHtmlWindow* licenseText_  = nullptr;
+    mmHtmlWindow* privacyText_  = nullptr;
+
 public:
     AboutDialog();
-    ~AboutDialog();
     AboutDialog(wxWindow* parent, int tabToOpenNo);
+    ~AboutDialog();
 
 private:
-    bool createWindow(wxWindow* parent
-        , const wxString& caption
-        , int tabToOpenNo
-        , wxWindowID id = wxID_ANY
-        , const wxPoint& pos = wxDefaultPosition
-        , const wxSize& size = wxDefaultSize
-        , long style = wxCAPTION | wxRESIZE_BORDER | wxCLOSE_BOX
-        , const wxString &name = "AboutDialog"
-        );
+    bool createWindow(
+        wxWindow* parent,
+        const wxString& caption,
+        int tabToOpenNo,
+        wxWindowID id = wxID_ANY,
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxCAPTION | wxRESIZE_BORDER | wxCLOSE_BOX,
+        const wxString& name = "AboutDialog"
+    );
     void createControls(int tabToOpenNo);
     void initControls();
     void handleLink(wxHtmlLinkEvent& event);
-
-    wxCheckBox* m_send_data = nullptr;
-    mmHtmlWindow* aboutText_ = nullptr;
-    mmHtmlWindow* authorsText_ = nullptr;
-    mmHtmlWindow* sponsorsText_ = nullptr;
-    mmHtmlWindow* licenseText_ = nullptr;
-    mmHtmlWindow* privacyText_ = nullptr;
-
 };
-

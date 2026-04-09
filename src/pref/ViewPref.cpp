@@ -18,17 +18,17 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/colordlg.h>
 
-#include "base/images_list.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 
 #include "ViewPref.h"
 
 #include "manager/ThemeManager.h"
-#include "uicontrols/navigatordialog.h"
-#include "uicontrols/toolbardialog.h"
+#include "dialog/NavigatorDialog.h"
+#include "dialog/ToolbarDialog.h"
 
 /*******************************************************/
 wxBEGIN_EVENT_TABLE(ViewPref, wxPanel)
@@ -296,13 +296,13 @@ void ViewPref::OnThemeManagerSelected(wxCommandEvent&)
 
 void ViewPref::OnNavigationConfigSelected(wxCommandEvent&)
 {
-    mmNavigatorDialog dlg(this);
+    NavigatorDialog dlg(this);
     dlg.ShowModal();
 }
 
 void ViewPref::OnToolbarConfigSelected(wxCommandEvent&)
 {
-    mmToolbarDialog dlg(this);
+    ToolbarDialog dlg(this);
     dlg.ShowModal();
 }
 

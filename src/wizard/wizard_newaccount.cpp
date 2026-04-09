@@ -18,9 +18,10 @@
  ********************************************************/
 
 #include "wizard_newaccount.h"
-#include "panel/DashboardPanel.h"
-#include "uicontrols/navigatortypes.h"
+
 #include "../resources/addacctwiz.xpm"
+#include "util/mmNavigatorList.h"
+#include "panel/DashboardPanel.h"
 
 wxBEGIN_EVENT_TABLE(mmAddAccountNamePage, wxWizardPageSimple)
     EVT_WIZARD_PAGE_CHANGING(wxID_ANY, mmAddAccountNamePage::processPage)
@@ -65,7 +66,7 @@ void mmAddAccountWizard::RunIt()
         // Success
         AccountData account_d = AccountData();
         account_d.m_name         = accountName_;
-        account_d.m_type_        = NavigatorTypes::instance().type_name(accountType_);
+        account_d.m_type_        = mmNavigatorList::instance().type_name(accountType_);
         account_d.m_currency_id  = currencyID_;
         account_d.m_open_date    = mmDate::today();
         account_d.m_open_balance = 0;
@@ -126,7 +127,7 @@ mmAddAccountTypePage::mmAddAccountTypePage(mmAddAccountWizard *parent)
     : wxWizardPageSimple(parent)
     , parent_(parent)
 {
-    itemChoiceType_ = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, NavigatorTypes::instance().getAccountSelectionNames());
+    itemChoiceType_ = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, mmNavigatorList::instance().getAccountSelectionNames());
     mmToolTip(itemChoiceType_, _t("Specify the account type to be created."));
     itemChoiceType_->SetSelection(0);
 
@@ -166,8 +167,7 @@ mmAddAccountTypePage::mmAddAccountTypePage(mmAddAccountWizard *parent)
 bool mmAddAccountTypePage::TransferDataFromWindow()
 {
     int64 currencyID = PrefModel::instance().getBaseCurrencyID();
-    if (currencyID == -1)
-    {
+    if (currencyID == -1) {
         wxString errorMsg;
         errorMsg << _t("Base Account Currency Not set.") << "\n"
                  << _tu("Set that first using Tools → Settings… menu and then add a new account.");
@@ -176,7 +176,9 @@ bool mmAddAccountTypePage::TransferDataFromWindow()
     }
 
     parent_->currencyID_ = currencyID;
-    parent_->accountType_ = NavigatorTypes::instance().getTypeIdFromChoice(itemChoiceType_->GetString(itemChoiceType_->GetSelection()));
+    parent_->accountType_ = mmNavigatorList::instance().getTypeIdFromChoice(
+        itemChoiceType_->GetString(itemChoiceType_->GetSelection())
+    );
 
     return true;
 }

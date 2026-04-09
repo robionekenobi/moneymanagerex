@@ -19,7 +19,7 @@
 #include "model/AssetModel.h"
 #include "model/AccountModel.h"
 #include "_ListBase.h"
-#include "mmframe.h"
+#include "app/mmFrame.h"
 
 class wxListEvent;
 class wxButton;

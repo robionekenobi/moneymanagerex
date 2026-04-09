@@ -23,12 +23,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #pragma interface "TrxFilterDialog.cpp"
 #endif
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/dialog.h>
 
-#include "util/_simple.h"
 #include "util/mmDateRange.h"
+#include "util/mmDatePicker.h"
 #include "util/mmTextCtrl.h"
+#include "util/mmColorButton.h"
+#include "util/_simple.h"
 
 #include "FieldValueDialog.h"
 #include "report/htmlbuilder.h"
@@ -108,8 +110,8 @@ private:
     wxCheckBox*         datesCheckBox_          = nullptr;
     wxChoice*           rangeChoice_            = nullptr;
     wxCheckBox*         w_range_cb              = nullptr;
-    mmDatePickerCtrl*   w_start_date            = nullptr;
-    mmDatePickerCtrl*   w_end_date              = nullptr;
+    mmDatePicker*       w_start_date            = nullptr;
+    mmDatePicker*       w_end_date              = nullptr;
     wxCheckBox*         w_payee_cb              = nullptr;
     mmComboBoxPayee*    cbPayee_                = nullptr;
     wxCheckBox*         w_cat_cb                = nullptr;

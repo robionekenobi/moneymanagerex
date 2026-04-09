@@ -18,13 +18,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 #include "dbcheck.h"
 
+#include "util/mmNavigatorList.h"
 #include "model/AccountModel.h"
 #include "model/AttachmentModel.h"
 #include "model/SchedModel.h"
 #include "model/CategoryModel.h"
 #include "model/PayeeModel.h"
 #include "model/StockModel.h"
-#include "uicontrols/navigatortypes.h"
 
 bool dbCheck::checkDB()
 {
@@ -63,7 +63,7 @@ bool dbCheck::checkAccounts()
     for (const auto& stock_d : stock_a) {
         const auto& account_n = AccountModel::instance().get_id_data_n(stock_d.m_account_id_n);
         if (!account_n ||
-            AccountModel::type_id(*account_n) != NavigatorTypes::TYPE_ID_INVESTMENT
+            AccountModel::type_id(*account_n) != mmNavigatorItem::TYPE_ID_INVESTMENT
         ) {
             result = false;
         }

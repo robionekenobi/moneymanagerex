@@ -10,7 +10,7 @@ Copyright: (c) 2026      George Ef (george.a.ef@gmail.com)
 #pragma once
 
 #include "_TableBase.h"
-#include "util/mmCache.h"
+#include "base/mmCache.h"
 
 template<typename TableType, typename DataType>
 class TableFactory : public TableType

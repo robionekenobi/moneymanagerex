@@ -18,18 +18,20 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <fmt/core.h>
 #include <fmt/format.h>
 #include <wx/combobox.h>
 #include <wx/valnum.h>
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "util/_util.h"
-#include "util/_simple.h"
+#include "base/_constants.h"
+#include "base/mmMath.h"
+#include "util/mmPath.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
+#include "util/mmSingleChoice.h"
+#include "util/_util.h"
+#include "util/_simple.h"
 
 #include "model/CurrencyModel.h"
 #include "model/CurrencyHistoryModel.h"
@@ -115,7 +117,7 @@ bool CurrencyManager::create(
     createControls();
 
     if (!m_currency_n) {
-        mmSingleChoiceDialog select_currency_name(this,
+        mmSingleChoice select_currency_name(this,
             _t("Currency name"),
             _t("Select Currency"),
             CurrencyModel::instance().find_all_name_a()
@@ -134,7 +136,7 @@ bool CurrencyManager::create(
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
     this->SetInitialSize();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     Fit();
     Centre();
@@ -385,7 +387,7 @@ void CurrencyManager::onDataChanged(wxCommandEvent& WXUNUSED(event))
     } 
     m_currency_n->m_decimal_point = decimal;
     m_currency_n->m_group_separator = grouping;
-    m_currency_n->m_scale = pow10(scale);
+    m_currency_n->m_scale = mmMath::pow10(scale);
     m_currency_n->m_symbol = w_code->GetValue().Trim();
     m_currency_n->m_name = w_name->GetValue();
 

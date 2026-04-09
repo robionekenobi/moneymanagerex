@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "base/types.h"
-#include "util/mmDate.h"
+#include "base/_types.h"
+#include "base/mmDate.h"
 #include "_DataEnum.h"
 
 struct Repeat

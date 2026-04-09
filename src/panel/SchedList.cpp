@@ -18,8 +18,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "base/mmUserColor.h"
+#include "util/mmImage.h"
 #include "model/_all.h"
 
 #include "SchedPanel.h"
@@ -91,7 +92,7 @@ SchedList::SchedList(
     ListBase(parent, winid),
     w_panel(bdp)
 {
-    mmThemeMetaColour(this, meta::COLOR_LISTPANEL);
+    mmImage::themeMetaColour(this, mmImage::COLOR_LISTPANEL);
 
     const wxAcceleratorEntry entries[] = {
         wxAcceleratorEntry(wxACCEL_CTRL, 'N', MENU_TREEPOPUP_NEW),
@@ -379,25 +380,25 @@ wxListItemAttr* SchedList::OnGetItemAttr(long item) const
         else {
             switch (color_id) {
             case 1: cache[color_id] = new wxListItemAttr(
-                *bestFontColour(mmColors::userDefColor1), mmColors::userDefColor1, wxNullFont
+                *mmUserColor::bestFontColor(mmUserColor::s_color1), mmUserColor::s_color1, wxNullFont
             ); break;
             case 2: cache[color_id] = new wxListItemAttr(
-                *bestFontColour(mmColors::userDefColor2), mmColors::userDefColor2, wxNullFont
+                *mmUserColor::bestFontColor(mmUserColor::s_color2), mmUserColor::s_color2, wxNullFont
             ); break;
             case 3: cache[color_id] = new wxListItemAttr(
-                *bestFontColour(mmColors::userDefColor3), mmColors::userDefColor3, wxNullFont
+                *mmUserColor::bestFontColor(mmUserColor::s_color3), mmUserColor::s_color3, wxNullFont
             ); break;
             case 4: cache[color_id] = new wxListItemAttr(
-                *bestFontColour(mmColors::userDefColor4), mmColors::userDefColor4, wxNullFont
+                *mmUserColor::bestFontColor(mmUserColor::s_color4), mmUserColor::s_color4, wxNullFont
             ); break;
             case 5: cache[color_id] = new wxListItemAttr(
-                *bestFontColour(mmColors::userDefColor5), mmColors::userDefColor5, wxNullFont
+                *mmUserColor::bestFontColor(mmUserColor::s_color5), mmUserColor::s_color5, wxNullFont
             ); break;
             case 6: cache[color_id] = new wxListItemAttr(
-                *bestFontColour(mmColors::userDefColor6), mmColors::userDefColor6, wxNullFont
+                *mmUserColor::bestFontColor(mmUserColor::s_color6), mmUserColor::s_color6, wxNullFont
             ); break;
             case 7: cache[color_id] = new wxListItemAttr(
-                *bestFontColour(mmColors::userDefColor7), mmColors::userDefColor7, wxNullFont
+                *mmUserColor::bestFontColor(mmUserColor::s_color7), mmUserColor::s_color7, wxNullFont
             ); break;
             }
             return cache[color_id].get();

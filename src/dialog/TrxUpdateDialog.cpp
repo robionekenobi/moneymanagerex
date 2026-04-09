@@ -17,15 +17,18 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "TrxUpdateDialog.h"
+
+#include "base/_defs.h"
 #include <wx/statline.h>
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "base/images_list.h"
-#include "util/_simple.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
+#include "util/mmColorButton.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
+#include "util/_simple.h"
 
 #include "model/AccountModel.h"
 #include "model/CurrencyHistoryModel.h"
@@ -35,7 +38,8 @@
 
 #include "manager/CategoryManager.h"
 #include "manager/PayeeManager.h"
-#include "TrxUpdateDialog.h"
+
+#include "import_export/webapp.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(TrxUpdateDialog, wxDialog);
 
@@ -111,7 +115,7 @@ bool TrxUpdateDialog::Create(
     GetSizer()->SetSizeHints(this);
     this->SetInitialSize();
     SetMinSize(wxSize(300, 400));
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre();
 
     SetEvtHandlerEnabled(true);
@@ -138,7 +142,7 @@ void TrxUpdateDialog::CreateControls()
     // Date --------------------------------------------
     w_date_cb = new wxCheckBox(this, wxID_ANY, _t("Date")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    w_date_picker = new mmDatePickerCtrl(this, wxID_ANY);
+    w_date_picker = new mmDatePicker(this, wxID_ANY);
     grid_sizer->Add(w_date_cb, g_flagsH);
     grid_sizer->Add(w_date_picker->mmGetLayout(false), wxSizerFlags(g_flagsH).Border(wxLEFT, 0));
     w_date_picker->Enable(false);
@@ -291,7 +295,7 @@ void TrxUpdateDialog::CreateControls()
     button_cancel->SetFocus();
 
     wxBitmapButton* button_hide = new wxBitmapButton(button_panel
-        , ID_BTN_CUSTOMFIELDS, mmBitmapBundle(png::RIGHTARROW, mmBitmapButtonSize));
+        , ID_BTN_CUSTOMFIELDS, mmImage::bitmapBundle(mmImage::png::RIGHTARROW, mmImage::bitmapButtonSize));
     mmToolTip(button_hide, _t("Show/Hide custom fields window"));
     if (m_custom_fields->GetCustomFieldsCount() == 0) {
         button_hide->Hide();
@@ -645,11 +649,11 @@ void TrxUpdateDialog::OnMoreFields(wxCommandEvent& WXUNUSED(event))
     wxBitmapButton* button = static_cast<wxBitmapButton*>(FindWindow(ID_BTN_CUSTOMFIELDS));
 
     if (button)
-        button->SetBitmap(mmBitmapBundle(
+        button->SetBitmap(mmImage::bitmapBundle(
             m_custom_fields->IsCustomPanelShown()
-                ? png::RIGHTARROW
-                : png::LEFTARROW,
-            mmBitmapButtonSize
+                ? mmImage::png::RIGHTARROW
+                : mmImage::png::LEFTARROW,
+            mmImage::bitmapButtonSize
         ));
 
     m_custom_fields->ShowHideCustomPanel();

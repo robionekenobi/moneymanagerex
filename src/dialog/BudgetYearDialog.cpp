@@ -16,9 +16,10 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
-#include "base/constants.h"
-#include "base/paths.h"
+#include "base/_defs.h"
+#include "base/_constants.h"
+#include "base/mmListBoxItem.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 #include "model/BudgetPeriodModel.h"
 #include "BudgetYearDialog.h"
@@ -60,7 +61,7 @@ bool BudgetYearDialog::Create(wxWindow* parent, wxWindowID id,
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
     this->SetInitialSize();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre();
     return true;
 }

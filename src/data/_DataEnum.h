@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "base/types.h"
-#include "util/mmChoice.h"
+#include "base/_types.h"
+#include "base/mmChoice.h"
 
 struct AccountStatus
 {

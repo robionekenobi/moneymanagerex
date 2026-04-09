@@ -1,3 +1,12 @@
+The source code is organized in the layers listed below.
+Files in one layer can include header files in the same or previous layer.
+Tentative layers:
+  . (this directory): build.h, resource.h, versions.h
+  base/
+  data/, table/
+  db/, model/, pref/, util/
+  dialog/, manager/, panel/, report/, import_export/, frame/, app/, wizard/
+
 Common prefix symbols (to avoid name collision with methods):
   prefix c_ : cache
   prefix e_ : enumeration case

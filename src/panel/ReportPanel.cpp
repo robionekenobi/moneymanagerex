@@ -18,19 +18,21 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "ReportPanel.h"
+
 #include <vector>
 #include <string>
 #include <iomanip>
 #include <wx/wrapsizer.h>
-#include "base/defs.h"
-#include "base/platfdep.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_defs.h"
+#include "base/mmPlatform.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
+#include "util/mmDateShifter.h"
+#include "util/mmNavigatorList.h"
 #include "util/_util.h"
-//#include "model/_all.h"
 #include "model/PrefModel.h"
 #include "model/TrxFilter.h"
-#include "ReportPanel.h"
 
 #include "manager/DateRangeManager.h"
 #include "dialog/AssetDialog.h"
@@ -39,9 +41,7 @@
 #include "dialog/TrxShareDialog.h"
 #include "dialog/BudgetEntryDialog.h"
 #include "report/htmlbuilder.h"
-#include "uicontrols/navigatortypes.h"
-#include "mmframe.h"
-#include "mmex.h"
+#include "app/mmFrame.h"
 
 // -- static
 
@@ -111,7 +111,7 @@ ReportPanel::ReportPanel(
     ReportBase* rb,
     bool cleanup,
     wxWindow* parent_win,
-    mmGUIFrame* frame,
+    mmFrame* frame,
     wxWindowID win_id,
     const wxPoint& pos,
     const wxSize& size,
@@ -199,14 +199,14 @@ void ReportPanel::createControls()
 
         if (rp & ReportBase::M_DATE_RANGE) {
             w_range_btn = new wxButton(itemPanel3, ID_DATE_RANGE_BUTTON, _tu("Period…"));
-            w_range_btn->SetBitmap(mmBitmapBundle(png::TRANSFILTER, mmBitmapButtonSize));
+            w_range_btn->SetBitmap(mmImage::bitmapBundle(mmImage::png::TRANSFILTER, mmImage::bitmapButtonSize));
             w_range_btn->SetMinSize(
                 wxSize(200 + PrefModel::instance().getIconSize() * 2, -1)
             );
             itemBoxSizerHeader->Add(w_range_btn, g_flagsH);
             itemBoxSizerHeader->AddSpacer(5);
 
-            w_start_date = new mmDatePickerCtrl(
+            w_start_date = new mmDatePicker(
                 itemPanel3, ID_START_DATE_PICKER,
                 wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
                 wxDP_DROPDOWN | wxDP_SHOWCENTURY
@@ -214,7 +214,7 @@ void ReportPanel::createControls()
             itemBoxSizerHeader->Add(w_start_date, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
             itemBoxSizerHeader->AddSpacer(5);
 
-            w_end_date = new mmDatePickerCtrl(
+            w_end_date = new mmDatePicker(
                 itemPanel3, ID_END_DATE_PICKER,
                 wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
                 wxDP_DROPDOWN | wxDP_SHOWCENTURY
@@ -230,12 +230,12 @@ void ReportPanel::createControls()
             itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
             itemBoxSizerHeader->AddSpacer(5);
             long date_style = wxDP_DROPDOWN | wxDP_SHOWCENTURY;
-            w_single_date = new mmDatePickerCtrl(
+            w_single_date = new mmDatePicker(
                 itemPanel3, ID_SINGLE_DATE_PICKER,
                 wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
                 date_style
             );
-            w_single_date->SetValue(wxDateTime::Today());
+            w_single_date->setValue(wxDateTime::Today());
             w_single_date->Enable(true);
 
             itemBoxSizerHeader->Add(w_single_date, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
@@ -249,10 +249,10 @@ void ReportPanel::createControls()
             itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
             itemBoxSizerHeader->AddSpacer(5);
 
-            mmDateYearMonth* up_down_month = new mmDateYearMonth(itemPanel3);
+            mmDateSfifter* up_down_month = new mmDateSfifter(itemPanel3);
             up_down_month->Connect(
                 wxEVT_BUTTON, wxEVT_COMMAND_BUTTON_CLICKED,
-                wxCommandEventHandler(mmDateYearMonth::OnButtonPress),
+                wxCommandEventHandler(mmDateSfifter::onButtonPress),
                 nullptr, this
             );
             m_rb->setDateSelection(m_shift);
@@ -352,7 +352,7 @@ void ReportPanel::createControls()
             w_account_choice = new wxChoice(itemPanel3, ID_ACCOUNT_CHOICE);
             w_account_choice->Append(_t("All Accounts"));
             w_account_choice->Append(_tu("Specific Accounts…"));
-            w_account_choice->Append(NavigatorTypes::instance().getUsedAccountTypeNames());
+            w_account_choice->Append(mmNavigatorList::instance().getUsedAccountTypeNames());
             w_account_choice->SetSelection(m_rb->getAccountSelection());
 
             itemBoxSizerHeader->Add(w_account_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
@@ -444,7 +444,7 @@ void ReportPanel::createControls()
             itemBoxSizerHeader->Add(w_filter, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
 
             w_filter_cancel = new wxBitmapButton(itemPanel3, wxID_ANY,
-                mmBitmapBundle(png::CLEAR, mmBitmapButtonSize)
+                mmImage::bitmapBundle(mmImage::png::CLEAR, mmImage::bitmapButtonSize)
             );
             mmToolTip(w_filter_cancel, _t("Reset filter"));
             w_filter_cancel->Bind(
@@ -567,8 +567,8 @@ void ReportPanel::loadFilterSettings()
                 end_dateTime.ParseFormat(date_str, "%Y-%m-%d", &end);
             }
             // initialize pickers (also when start/end dates are undefined)
-            w_start_date->SetValue(start_dateTime);
-            w_end_date->SetValue(end_dateTime);
+            w_start_date->setValue(start_dateTime);
+            w_end_date->setValue(end_dateTime);
         }
         else {
             wxLogDebug("ReportPanel warning: Date Pickers are not available");
@@ -665,30 +665,30 @@ void ReportPanel::updateFilter()
     wxLogDebug("ReportPanel::updateFilter(): m_filter_id=%d", int(m_filter_id));
     if (m_filter_id == JournalPanel::FILTER_ID_DATE_RANGE) {
         w_range_btn->SetLabel(m_date_range.rangeName());
-        w_range_btn->SetBitmap(mmBitmapBundle(
+        w_range_btn->SetBitmap(mmImage::bitmapBundle(
             // FIXME: refine the condition below
             (m_date_range.rangeName() != m_date_range_a[0].getName()
-                ? png::TRANSFILTER_ACTIVE
-                : png::TRANSFILTER
+                ? mmImage::png::TRANSFILTER_ACTIVE
+                : mmImage::png::TRANSFILTER
             ),
-            mmBitmapButtonSize
+            mmImage::bitmapButtonSize
         ));
         // TODO: calculate default start/end dates from model
         m_date_range.setDefStartDateN(mmDate::min());
         m_date_range.setDefEndDateN(mmDate::max());
         // copy from date range to start/end pickers
-        w_start_date->SetValue(
+        w_start_date->setValue(
             m_date_range.rangeStartN().value().dateTime()
         );
-        w_end_date->SetValue(
+        w_end_date->setValue(
             m_date_range.rangeEndN().value().dateTime()
         );
     }
     else if (m_filter_id == JournalPanel::FILTER_ID_DATE_PICKER) {
         w_range_btn->SetLabel(_t("Date range"));
-        w_range_btn->SetBitmap(mmBitmapBundle(
-            png::TRANSFILTER_ACTIVE,
-            mmBitmapButtonSize
+        w_range_btn->SetBitmap(mmImage::bitmapBundle(
+            mmImage::png::TRANSFILTER_ACTIVE,
+            mmImage::bitmapButtonSize
         ));
         // set date range to default ('All') and copy default start/end dates from pickers.
         m_date_range = mmDateRange2();
@@ -963,7 +963,7 @@ void ReportPanel::onAccountChanged(wxCommandEvent& WXUNUSED(event))
     if (m_rb) {
         int sel = w_account_choice->GetSelection();
         if ((sel == 1) || (sel != m_rb->getAccountSelection())) {
-            m_rb->setAccounts(sel, NavigatorTypes::instance().getAccountDbTypeFromName(w_account_choice->GetString(sel)));
+            m_rb->setAccounts(sel, mmNavigatorList::instance().getAccountDbTypeFromName(w_account_choice->GetString(sel)));
             saveReportText();
             m_rb->saveReportSettings();
         }
@@ -1157,13 +1157,13 @@ void ReportPanel::onStartEndDateChanged(wxDateEvent& event)
         if (w_start_date->isItMyDateControl(eo)) {
             //wxLogDebug("Start date changed to %s", start_dateTime.FormatISODate());
             if (start_dateTime > end_dateTime) {
-                w_end_date->SetValue(start_dateTime);
+                w_end_date->setValue(start_dateTime);
                 wxLogDebug("End date changed to %s", start_dateTime.FormatISODate());
             }
         }
         else if (w_end_date->isItMyDateControl(eo)) {
             if (start_dateTime > end_dateTime) {
-                w_start_date->SetValue(end_dateTime);
+                w_start_date->setValue(end_dateTime);
                 wxLogDebug("Start date changed to %s", end_dateTime.FormatISODate());
             }
         }

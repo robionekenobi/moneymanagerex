@@ -18,13 +18,12 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *************************************************************************/
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "mmex.h"
-
-#include "model/UsageModel.h"
-#include "mmframe.h"
 #include "HelpPanel.h"
+
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "model/UsageModel.h"
+#include "app/mmFrame.h"
 
 BEGIN_EVENT_TABLE(HelpPanel, wxPanel)
     EVT_BUTTON(wxID_BACKWARD, HelpPanel::onHelpPageBack)
@@ -33,7 +32,7 @@ END_EVENT_TABLE()
 
 HelpPanel::HelpPanel(
     wxWindow* parent_win,
-    mmGUIFrame* frame,
+    mmFrame* frame,
     wxWindowID win_id,
     const wxPoint& pos,
     const wxSize& size,
@@ -93,13 +92,13 @@ void HelpPanel::createControls()
     Allows help files for a specific language.
 
     Main default help file name: ./help/index.html
-    Default filename names can be found in mmex::getPathDoc(fileIndex)
+    Default filename names can be found in mmPath::getPathDoc(fileIndex)
 
     Default help files will be used when the language help file are not found.
     **************************************************************************/
 
     int helpFileIndex = w_frame->getHelpFileIndex();
-    const wxString help_file = mmex::getPathDoc(static_cast<mmex::EDocFile>(helpFileIndex));
+    const wxString help_file = mmPath::getPathDoc(static_cast<mmPath::EDocFile>(helpFileIndex));
     w_frame->setHelpFileIndex();
     //wxLogDebug("%s", help_file);
     w_browser = wxWebView::New(this, wxID_ANY, help_file);

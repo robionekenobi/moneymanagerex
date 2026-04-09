@@ -18,15 +18,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "base/defs.h"
-#include <wx/timectrl.h>
+#include "base/_defs.h"
 #include <wx/collpane.h>
-#include <wx/spinctrl.h>
 
-#include "base/constants.h"
+#include "base/_constants.h"
+#include "util/mmDatePicker.h"
+#include "util/mmCalcValidator.h"
 #include "util/_util.h"
 #include "util/_simple.h"
-#include "util/mmCalcValidator.h"
 
 #include "model/CurrencyModel.h"
 #include "model/FieldValueModel.h"
@@ -225,7 +224,7 @@ bool FieldValueDialog::FillCustomFields(wxBoxSizer* box_sizer)
                 SetWidgetChanged(controlID, date_n.value().isoDate());
             }
 
-            mmDatePickerCtrl* CustomDate = new mmDatePickerCtrl(
+            mmDatePicker* CustomDate = new mmDatePicker(
                 scrolled_window, controlID,
                 date_n.value_or(mmDate::today()).dateTime()
             );
@@ -416,17 +415,15 @@ void FieldValueDialog::SetWidgetData(wxWindowID controlID, const wxString& value
 
     const wxString class_name = w->GetEventHandler()->GetClassInfo()->GetClassName();
 
-    if (class_name == "wxDatePickerCtrl")
-    {
-        mmDatePickerCtrl* d = static_cast<mmDatePickerCtrl*>(w);
+    if (class_name == "wxDatePickerCtrl") {
+        mmDatePicker* d = static_cast<mmDatePicker*>(w);
         wxDateTime date;
         date.ParseDate(value);
-        d->SetValue(date);
+        d->setValue(date);
         wxDateEvent evt(d, date, wxEVT_DATE_CHANGED);
         d->GetEventHandler()->AddPendingEvent(evt);
     }
-    else if (class_name == "wxTimePickerCtrl")
-    {
+    else if (class_name == "wxTimePickerCtrl") {
         wxTimePickerCtrl* d = static_cast<wxTimePickerCtrl*>(w);
         wxDateTime time;
         time.ParseTime(value);
@@ -434,16 +431,14 @@ void FieldValueDialog::SetWidgetData(wxWindowID controlID, const wxString& value
         wxDateEvent evt(d, time, wxEVT_TIME_CHANGED);
         d->GetEventHandler()->AddPendingEvent(evt);
     }  
-    else if (class_name == "wxChoice")
-    {
+    else if (class_name == "wxChoice") {
         wxChoice* d = static_cast<wxChoice*>(w);
         d->SetStringSelection(value);
         wxCommandEvent evt(wxEVT_CHOICE, controlID);
         evt.SetString(value);
         d->GetEventHandler()->AddPendingEvent(evt);
     }
-    else if (class_name == "wxButton")
-    {
+    else if (class_name == "wxButton") {
         wxButton* d = static_cast<wxButton*>(w);
         d->SetLabel(value);
 
@@ -452,18 +447,18 @@ void FieldValueDialog::SetWidgetData(wxWindowID controlID, const wxString& value
         d->GetEventHandler()->AddPendingEvent(evt);
 
     }
-    else if (class_name == "wxTextCtrl")
-    {
+    else if (class_name == "wxTextCtrl") {
         wxTextCtrl* d = static_cast<wxTextCtrl*>(w);
         d->SetValue(value);
     }
-    else if (class_name == "wxRadioButton")
-    {
+    else if (class_name == "wxRadioButton") {
         wxRadioButton* dF = static_cast<wxRadioButton*>(w);
         wxWindow* w2 = m_dialog->FindWindowById(controlID + 1, m_dialog);
         wxRadioButton* dT = static_cast<wxRadioButton*>(w2);
-        bool v = wxString("TRUE|true|1").Contains(value);
-        v ? dT->SetValue(true) : dF->SetValue(true);
+        if (wxString("TRUE|true|1").Contains(value))
+            dT->SetValue(true);
+        else
+            dF->SetValue(true);
         wxCommandEvent evt(wxEVT_RADIOBUTTON, controlID);
         dF->GetEventHandler()->AddPendingEvent(evt);
     }
@@ -487,7 +482,7 @@ const wxString FieldValueDialog::GetWidgetData(wxWindowID controlID) const
             }
 
             if (class_name == "wxDatePickerCtrl") {
-                mmDatePickerCtrl* d = static_cast<mmDatePickerCtrl*>(w);
+                mmDatePicker* d = static_cast<mmDatePicker*>(w);
                 data = d->GetValue().FormatISODate();
             }
             else if (class_name == "wxTimePickerCtrl") {

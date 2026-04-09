@@ -19,13 +19,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/dialog.h>
 
+#include "util/mmColorButton.h"
 #include "util/_simple.h"
 #include "model/TrxModel.h"
 
-class mmDatePickerCtrl;
+class mmDatePicker;
 class wxDataViewListCtrl;
 class mmQIFImport;
 class wxButton;
@@ -113,32 +114,32 @@ private:
     const wxDateTime m_today;
     const wxDateTime m_fresh;
 
-    wxDataViewListCtrl* dataListBox_ = nullptr;
-    wxDataViewListCtrl* accListBox_ = nullptr;
-    wxDataViewListCtrl* payeeListBox_ = nullptr;
-    wxDataViewListCtrl* categoryListBox_ = nullptr;
-    wxButton* button_search_ = nullptr;
-    wxComboBox* file_name_ctrl_ = nullptr;
-    wxChoice* m_choiceEncoding = nullptr;
-    wxTextCtrl* log_field_ = nullptr;
-    wxCheckBox* dateFromCheckBox_ = nullptr;
-    wxCheckBox* dateToCheckBox_ = nullptr;
-    mmDatePickerCtrl* fromDateCtrl_ = nullptr;
-    mmDatePickerCtrl* toDateCtrl_ = nullptr;
-    wxComboBox* choiceDateFormat_ = nullptr;
-    wxCheckBox* accountCheckBox_ = nullptr;
-    wxChoice* accountDropDown_ = nullptr;
-    wxCheckBox* accountNumberCheckBox_ = nullptr;
-    wxCheckBox* payeeIsNotesCheckBox_ = nullptr;
-    wxCheckBox* payeeMatchCheckBox_ = nullptr;
-    wxCheckBox* payeeMatchAddNotes_ = nullptr;
-    wxButton* btnOK_ = nullptr;
+    wxDataViewListCtrl* dataListBox_             = nullptr;
+    wxDataViewListCtrl* accListBox_              = nullptr;
+    wxDataViewListCtrl* payeeListBox_            = nullptr;
+    wxDataViewListCtrl* categoryListBox_         = nullptr;
+    wxButton*           button_search_           = nullptr;
+    wxComboBox*         file_name_ctrl_          = nullptr;
+    wxChoice*           m_choiceEncoding         = nullptr;
+    wxTextCtrl*         log_field_               = nullptr;
+    wxCheckBox*         dateFromCheckBox_        = nullptr;
+    wxCheckBox*         dateToCheckBox_          = nullptr;
+    mmDatePicker*       fromDateCtrl_            = nullptr;
+    mmDatePicker*       toDateCtrl_              = nullptr;
+    wxComboBox*         choiceDateFormat_        = nullptr;
+    wxCheckBox*         accountCheckBox_         = nullptr;
+    wxChoice*           accountDropDown_         = nullptr;
+    wxCheckBox*         accountNumberCheckBox_   = nullptr;
+    wxCheckBox*         payeeIsNotesCheckBox_    = nullptr;
+    wxCheckBox*         payeeMatchCheckBox_      = nullptr;
+    wxCheckBox*         payeeMatchAddNotes_      = nullptr;
+    wxButton*           btnOK_                   = nullptr;
     mmChoiceAmountMask* m_choiceDecimalSeparator = nullptr;
-    wxCheckBox* colorCheckBox_ = nullptr;
-    mmColorButton* mmColorBtn_ = nullptr;
-    wxChoice* dupTransMethod_ = nullptr;
-    wxChoice* dupTransAction_ = nullptr;
-    wxCheckBox* dupTransCheckBox_ = nullptr;
+    wxCheckBox*         colorCheckBox_           = nullptr;
+    mmColorButton*      mmColorBtn_              = nullptr;
+    wxChoice*           dupTransMethod_          = nullptr;
+    wxChoice*           dupTransAction_          = nullptr;
+    wxCheckBox*         dupTransCheckBox_        = nullptr;
 
     bool payeeIsNotes_ = false; //Include payee field in notes
     std::map<std::pair <int64, wxString>, std::map<int, std::pair<wxString, wxRegEx>> > payeeMatchPatterns_;

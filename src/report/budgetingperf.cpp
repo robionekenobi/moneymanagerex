@@ -18,18 +18,15 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
+#include "budgetingperf.h"
+
 #include <string>
-
-#include "base/defs.h"
-#include "mmex.h"
+#include "base/_defs.h"
 #include "util/mmDateRange.h"
-#include "htmlbuilder.h"
-
 #include "model/BudgetPeriodModel.h"
 #include "model/BudgetModel.h"
 #include "model/CategoryModel.h"
-#include "mmframe.h"
-#include "budgetingperf.h"
+#include "htmlbuilder.h"
 
 mmReportBudgetingPerformance::mmReportBudgetingPerformance()
 {
@@ -42,7 +39,6 @@ mmReportBudgetingPerformance::~mmReportBudgetingPerformance()
 
 wxString mmReportBudgetingPerformance::getHTMLText()
 {
-
     int startDay;
     wxDateTime::Month startMonth;
     if (PrefModel::instance().getBudgetFinancialYears()) {

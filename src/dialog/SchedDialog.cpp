@@ -20,16 +20,18 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "SchedDialog.h"
+
+#include "base/_defs.h"
 #include <wx/calctrl.h>
 #include <wx/valnum.h>
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
-#include "util/mmDate.h"
+#include "base/mmDate.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
 
@@ -40,7 +42,6 @@
 #include "manager/CategoryManager.h"
 #include "manager/PayeeManager.h"
 #include "AttachmentDialog.h"
-#include "SchedDialog.h"
 #include "SplitDialog.h"
 #include "import_export/webapp.h"
 
@@ -205,7 +206,7 @@ bool SchedDialog::Create(
     );
     if (sz.GetWidth() > GetSize().GetWidth())
         SetSize(sz);
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre(wxCENTER_ON_SCREEN);
 
     return true;
@@ -246,8 +247,8 @@ void SchedDialog::dataToControls()
     }
 
     w_status_choice->SetSelection(m_sched_d.m_status.id());
-    w_pay_date->SetValue(m_sched_d.m_datetime.dateTime());
-    w_due_date->SetValue(m_sched_d.m_due_date.dateTime());
+    w_pay_date->setValue(m_sched_d.m_datetime.dateTime());
+    w_due_date->setValue(m_sched_d.m_due_date.dateTime());
     w_freq_choice->SetSelection(m_sched_d.m_repeat.m_freq.id());
 
     if (m_sched_d.m_repeat.m_freq.has_num() && m_sched_d.m_repeat.m_num > 0) {
@@ -409,7 +410,7 @@ void SchedDialog::CreateControls()
 
     // Date Due --------------------------------------------
 
-    w_due_date = new mmDatePickerCtrl(this, ID_DIALOG_BD_DUE_DATE);
+    w_due_date = new mmDatePicker(this, ID_DIALOG_BD_DUE_DATE);
     mmToolTip(w_due_date, _t("Specify the date when this bill or deposit is due"));
     itemFlexGridSizer5->Add(new wxStaticText(this, wxID_STATIC, _t("Date Due")), g_flagsH);
     itemFlexGridSizer5->Add(w_due_date->mmGetLayout(false));
@@ -422,7 +423,7 @@ void SchedDialog::CreateControls()
 
     w_repeat_prev_btn = new wxBitmapButton(this,
         ID_DIALOG_TRANS_BUTTONTRANSNUMPREV,
-        mmBitmapBundle(png::LEFTARROW, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::LEFTARROW, mmImage::bitmapButtonSize)
     );
     mmToolTip(w_repeat_prev_btn,
         _t("Back to the last occurring date with the specified values")
@@ -433,7 +434,7 @@ void SchedDialog::CreateControls()
     wxBoxSizer* repeatBoxSizer = new wxBoxSizer(wxHORIZONTAL);
     w_repeat_next_btn = new wxBitmapButton(this,
         ID_DIALOG_TRANS_BUTTONTRANSNUM,
-        mmBitmapBundle(png::RIGHTARROW, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::RIGHTARROW, mmImage::bitmapButtonSize)
     );
     mmToolTip(w_repeat_next_btn,
         _t("Advance the next occurring date with the specified values")
@@ -502,7 +503,7 @@ void SchedDialog::CreateControls()
     mainBoxSizerInner->Add(transDetailsStaticBoxSizer, g_flagsExpand);
 
     // Trans Date --------------------------------------------
-    w_pay_date = new mmDatePickerCtrl(this, ID_DIALOG_TRANS_BUTTON_PAYDATE);
+    w_pay_date = new mmDatePicker(this, ID_DIALOG_TRANS_BUTTON_PAYDATE);
     mmToolTip(w_pay_date,
         _t("Specify the date the user is requested to enter this transaction")
     );
@@ -575,7 +576,7 @@ void SchedDialog::CreateControls()
     transPanelSizer->Add(amountSizer, wxSizerFlags(g_flagsExpand).Border(0));
 
     w_calc_btn = new wxBitmapButton(this, wxID_ANY,
-        mmBitmapBundle(png::CALCULATOR, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::CALCULATOR, mmImage::bitmapButtonSize)
     );
     w_calc_btn->Connect(wxID_ANY,
         wxEVT_COMMAND_BUTTON_CLICKED,
@@ -584,7 +585,7 @@ void SchedDialog::CreateControls()
     mmToolTip(w_calc_btn, _t("Open Calculator"));
     transPanelSizer->Add(w_calc_btn, g_flagsH);
     w_calculator_text = w_amount_text;
-    w_calc = new mmCalculatorPopup(w_calc_btn, w_calculator_text);
+    w_calc = new mmCalcPopup(w_calc_btn, w_calculator_text);
 
     // Account ------------------------------------------------
     wxStaticText* acc_label = new wxStaticText(this,
@@ -647,7 +648,7 @@ void SchedDialog::CreateControls()
         m_sched_d.m_category_id_n, true
     );
     w_cat_text->SetMinSize(w_cat_text->GetSize());
-    w_split_btn = new wxBitmapButton(this, ID_DIALOG_TRANS_BUTTONSPLIT, mmBitmapBundle(png::NEW_TRX, mmBitmapButtonSize));
+    w_split_btn = new wxBitmapButton(this, ID_DIALOG_TRANS_BUTTONSPLIT, mmImage::bitmapBundle(mmImage::png::NEW_TRX, mmImage::bitmapButtonSize));
     mmToolTip(w_split_btn, _t("Use split Categories"));
 
     transPanelSizer->Add(categ_label2, g_flagsH);
@@ -696,7 +697,7 @@ void SchedDialog::CreateControls()
 
     // Attachments
     w_attachment_btn = new wxBitmapButton(this, wxID_FILE,
-        mmBitmapBundle(png::CLIP, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::CLIP, mmImage::bitmapButtonSize)
     );
     mmToolTip(w_attachment_btn,
         _t("Organize attachments of this scheduled transaction")
@@ -744,7 +745,7 @@ void SchedDialog::CreateControls()
     mainBoxSizerOuter->Add(buttonsPanel, wxSizerFlags(g_flagsV).Center().Border(wxALL, 0));
     wxBitmapButton* button_hide = new wxBitmapButton(buttonsPanel,
         ID_BTN_CUSTOMFIELDS,
-        mmBitmapBundle(png::RIGHTARROW, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::RIGHTARROW, mmImage::bitmapButtonSize)
     );
     mmToolTip(button_hide, _t("Show/Hide custom fields window"));
     if (m_custom_fields->GetCustomFieldsCount() == 0) {
@@ -1444,8 +1445,8 @@ void SchedDialog::OnsetPrevOrNextRepeatDate(wxCommandEvent& event)
 
     mmDate date_paid = mmDate(w_pay_date->GetValue());
     mmDate date_due  = mmDate(w_due_date->GetValue());
-    w_pay_date->SetValue(repeat.next_date(date_paid, goPrev).dateTime());
-    w_due_date->SetValue( repeat.next_date(date_due,  goPrev).dateTime());
+    w_pay_date->setValue(repeat.next_date(date_paid, goPrev).dateTime());
+    w_due_date->setValue( repeat.next_date(date_due,  goPrev).dateTime());
 }
 
 void SchedDialog::activateSplitTransactionsDlg()
@@ -1542,7 +1543,7 @@ void SchedDialog::OnMoreFields(wxCommandEvent& WXUNUSED(event))
     wxBitmapButton* button = static_cast<wxBitmapButton*>(FindWindow(ID_BTN_CUSTOMFIELDS));
 
     if (button)
-        button->SetBitmap(mmBitmapBundle(m_custom_fields->IsCustomPanelShown() ? png::RIGHTARROW : png::LEFTARROW, mmBitmapButtonSize));
+        button->SetBitmap(mmImage::bitmapBundle(m_custom_fields->IsCustomPanelShown() ? mmImage::png::RIGHTARROW : mmImage::png::LEFTARROW, mmImage::bitmapButtonSize));
 
     m_custom_fields->ShowHideCustomPanel();
 
@@ -1632,6 +1633,6 @@ void SchedDialog::OnFocusChange(wxChildFocusEvent& event)
 
 void SchedDialog::OnCalculator(wxCommandEvent& WXUNUSED(event))
 {
-    w_calc->SetTarget(w_calculator_text);
+    w_calc->setTarget(w_calculator_text);
     w_calc->Popup();
 }

@@ -1,0 +1,42 @@
+/*******************************************************
+ Copyright (C) 2006 Madhan Kanagavel
+ Copyright (C) 2013-2022 Nikolay Akimov
+ Copyright (C) 2021-2024 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2025 George Ef (george.a.ef@gmail.com)
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ ********************************************************/
+
+#include "mmMath.h"
+
+// fast alternative for pow(10, y)
+int mmMath::pow10(const int y)
+{
+    switch (y)
+    {
+    case 0: return 1;
+    case 1: return 10;
+    case 2: return 100;
+    case 3: return 1000;
+    case 4: return 10000;
+    case 5: return 100000;
+    case 6: return 1000000;
+    case 7: return 10000000;
+    case 8: return 100000000;
+    case 9: return 1000000000;
+    default: return 10;
+    }
+}
+

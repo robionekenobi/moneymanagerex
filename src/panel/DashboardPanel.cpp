@@ -23,19 +23,18 @@ Copyright (C) 2026 Klaus Wich
 #include <cmath>
 #include <html_template.h>
 
-#include "base/constants.h"
-#include "base/images_list.h"
-#include "mmex.h"
-#include "base/paths.h"
+#include "base/_constants.h"
+#include "util/mmImage.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 
 #include "model/_all.h"
 #include "model/PrefModel.h"
 
-#include "mmframe.h"
 #include "DashboardPanel.h"
 #include "DashboardWidget.h"
 #include "SchedPanel.h"
+#include "app/mmFrame.h"
 
 wxBEGIN_EVENT_TABLE(DashboardPanel, wxPanel)
     EVT_WEBVIEW_NAVIGATING(wxID_ANY, DashboardPanel::onLinkClicked)
@@ -43,7 +42,7 @@ wxEND_EVENT_TABLE()
 
 DashboardPanel::DashboardPanel(
     wxWindow* parent_win,
-    mmGUIFrame* frame,
+    mmFrame* frame,
     wxWindowID win_id,
     const wxPoint& pos,
     const wxSize& size,
@@ -93,7 +92,7 @@ void DashboardPanel::createHtml()
 {
     // Read template from file
     m_templateText.clear();
-    const wxString template_path = mmex::getPathResource(mmex::HOME_PAGE_TEMPLATE);
+    const wxString template_path = mmPath::getPathResource(mmPath::HOME_PAGE_TEMPLATE);
     wxFileInputStream input(template_path);
     wxTextInputStream text(input, "\x09", wxConvUTF8);
     while (input.IsOk() && !input.Eof()) {
@@ -159,9 +158,9 @@ void DashboardPanel::insertDataIntoTemplate()
     wxString AccountsInfo;
     bool isAccount = false;
 
-    NavigatorTypesInfo* navinfo = NavigatorTypes::instance().getFirstActiveEntry();
+    mmNavigatorItem* navinfo = mmNavigatorList::instance().getFirstActiveEntry();
     while (navinfo) {
-        if (navinfo->navTyp == NavigatorTypes::NAV_TYP_ACCOUNT) {
+        if (navinfo->navTyp == mmNavigatorItem::NAV_TYP_ACCOUNT) {
             if (!isAccount) {
                 isAccount = true;
                 accountCount++;
@@ -171,7 +170,7 @@ void DashboardPanel::insertDataIntoTemplate()
             m_htmlText_mLabel[AccountsInfo] +=
                 account_stats.displayAccounts(tAccountBalance, tReconciled, navinfo->type);
         }
-        else if (navinfo->type == NavigatorTypes::TYPE_ID_INVESTMENT) {
+        else if (navinfo->type == mmNavigatorItem::TYPE_ID_INVESTMENT) {
             if (isAccount) {
                m_htmlText_mLabel[AccountsInfo] += "</div>";
             }
@@ -182,10 +181,10 @@ void DashboardPanel::insertDataIntoTemplate()
             m_htmlText_mLabel[AccountsInfo]= stocks_widget.getHTMLText();
             tBalance += stocks_widget.get_total();
 
-            account_stats.displayAccounts(tBalance, tReconciled, NavigatorTypes::TYPE_ID_SHARES);
+            account_stats.displayAccounts(tBalance, tReconciled, mmNavigatorItem::TYPE_ID_SHARES);
 
         }
-        else if (navinfo->type == NavigatorTypes::TYPE_ID_ASSET) {
+        else if (navinfo->type == mmNavigatorItem::TYPE_ID_ASSET) {
             if (isAccount) {
                m_htmlText_mLabel[AccountsInfo] += "</div>";
             }
@@ -196,9 +195,9 @@ void DashboardPanel::insertDataIntoTemplate()
             htmlWidgetAssets assets;
             m_htmlText_mLabel[AccountsInfo] = assets.getHTMLText();
             tBalance += AssetModel::instance().find_all_balance();
-            account_stats.displayAccounts(tBalance, tReconciled, NavigatorTypes::TYPE_ID_ASSET);
+            account_stats.displayAccounts(tBalance, tReconciled, mmNavigatorItem::TYPE_ID_ASSET);
         }
-        navinfo = NavigatorTypes::instance().getNextActiveEntry(navinfo);
+        navinfo = mmNavigatorList::instance().getNextActiveEntry(navinfo);
     }
     if (isAccount) {
         m_htmlText_mLabel[AccountsInfo] +="</div>";
@@ -216,11 +215,11 @@ void DashboardPanel::insertDataIntoTemplate()
     htmlWidgetIncomeVsExpenses income_vs_expenses;
     m_htmlText_mLabel["INCOME_VS_EXPENSES"] = income_vs_expenses.getHTMLText();
     m_htmlText_mLabel["INCOME_VS_EXPENSES_FORECOLOR"] =
-        mmThemeMetaString(meta::COLOR_REPORT_FORECOLOR);
+        mmImage::themeMetaString(mmImage::COLOR_REPORT_FORECOLOR);
     m_htmlText_mLabel["INCOME_VS_EXPENSES_COLORS"] =
         wxString::Format("'%s', '%s'",
-            mmThemeMetaString(meta::COLOR_REPORT_CREDIT),
-            mmThemeMetaString(meta::COLOR_REPORT_DEBIT)
+            mmImage::themeMetaString(mmImage::COLOR_REPORT_CREDIT),
+            mmImage::themeMetaString(mmImage::COLOR_REPORT_DEBIT)
         );
     m_htmlText_mLabel["INCOME_VS_EXPENSES_CURR_PFX_SYMBOL"] = base_currency_n
         ? base_currency_n->m_prefix_symbol
@@ -284,16 +283,16 @@ void DashboardPanel::onNewWindow(wxWebViewEvent& evt)
         evt.Veto();
     }
     else if (uri.StartsWith("assets:", &sData)) {
-        cmdInt = NavigatorTypes::TYPE_ID_ASSET;
+        cmdInt = mmNavigatorItem::TYPE_ID_ASSET;
     }
     else if (uri.StartsWith("billsdeposits:", &sData)) {
-        cmdInt = NavigatorTypes::NAV_ENTRY_SCHEDULED_TRANSACTIONS;
+        cmdInt = mmNavigatorItem::NAV_ENTRY_SCHEDULED_TRANSACTIONS;
     }
     else if (uri.StartsWith("acct:", &sData)) {
-        cmdInt = NavigatorTypes::TYPE_ID_CHECKING;
+        cmdInt = mmNavigatorItem::TYPE_ID_CHECKING;
     }
     else if (uri.StartsWith("stock:", &sData)) {
-        cmdInt = NavigatorTypes::TYPE_ID_INVESTMENT;
+        cmdInt = mmNavigatorItem::TYPE_ID_INVESTMENT;
     }
 
     if (cmdInt > -1) {

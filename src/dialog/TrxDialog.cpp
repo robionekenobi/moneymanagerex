@@ -20,15 +20,17 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "TrxDialog.h"
+
+#include "base/_defs.h"
 #include <wx/numformatter.h>
 #include <wx/timectrl.h>
 #include <wx/collpane.h>
 #include <wx/display.h>
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
@@ -49,7 +51,6 @@
 #include "AttachmentDialog.h"
 #include "FieldValueDialog.h"
 #include "SplitDialog.h"
-#include "TrxDialog.h"
 
 #include "pref/ViewPref.h"
 
@@ -99,7 +100,7 @@ void TrxDialog::SetEventHandlers()
     );
 
 #ifdef __WXGTK__ // Workaround for bug http://trac.wxwidgets.org/ticket/11630
-    dpc_->Connect(
+    w_date_picker->Connect(
         ID_DIALOG_TRANS_BUTTONDATE, wxEVT_KILL_FOCUS,
         wxFocusEventHandler(TrxDialog::OnDpcKillFocus),
         nullptr, this
@@ -218,7 +219,7 @@ bool TrxDialog::Create(
         "";  //_t("View Deleted Transaction");
     SetDialogTitle(header);
 
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     SetEventHandlers();
     SetEvtHandlerEnabled(true);
@@ -251,8 +252,8 @@ void TrxDialog::dataToControls()
                 PrefModel::instance().getUseTransDateTime()
             );
         }
-        dpc_->SetValue(trx_date);
-        dpc_->SetFocus();
+        w_date_picker->setValue(trx_date);
+        w_date_picker->SetFocus();
         skip_date_init_ = true;
     }
 
@@ -436,7 +437,7 @@ void TrxDialog::dataToControls()
         SetTooltips();
 
     if (m_journal_d.is_deleted()) {
-        dpc_->Enable(false);
+        w_date_picker->Enable(false);
         transaction_type_->Enable(false);
         cbAccount_->Enable(false);
         choiceStatus_->Enable(false);
@@ -481,10 +482,10 @@ void TrxDialog::CreateControls()
     flex_sizer->Add(name_label, g_flagsH);
     name_label->SetFont(bold);
 
-    dpc_ = new mmDatePickerCtrl(static_box, ID_DIALOG_TRANS_BUTTONDATE);
-    flex_sizer->Add(dpc_->mmGetLayout());
+    w_date_picker = new mmDatePicker(static_box, ID_DIALOG_TRANS_BUTTONDATE);
+    flex_sizer->Add(w_date_picker->mmGetLayout());
 
-    wxBitmapBundle bundle = mmBitmapBundle(png::ACC_CLOCK, mmBitmapButtonSize);
+    wxBitmapBundle bundle = mmImage::bitmapBundle(mmImage::png::ACC_CLOCK, mmImage::bitmapButtonSize);
     wxBitmapButton* today = new wxBitmapButton(static_box, ID_DIALOG_TRANS_TODAY, bundle);
     today->Connect(wxID_ANY, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(TrxDialog::OnToday), nullptr, this);
 
@@ -533,12 +534,12 @@ void TrxDialog::CreateControls()
     flex_sizer->Add(amount_label, g_flagsH);
     flex_sizer->Add(amountSizer, wxSizerFlags(g_flagsExpand).Border(0));
 
-    bCalc_ = new wxBitmapButton(static_box, wxID_ANY, mmBitmapBundle(png::CALCULATOR, mmBitmapButtonSize));
+    bCalc_ = new wxBitmapButton(static_box, wxID_ANY, mmImage::bitmapBundle(mmImage::png::CALCULATOR, mmImage::bitmapButtonSize));
     bCalc_->Connect(wxID_ANY, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(TrxDialog::OnCalculator), nullptr, this);
     mmToolTip(bCalc_, _t("Open Calculator"));
     flex_sizer->Add(bCalc_, g_flagsH);
     calcTarget_ = m_textAmount;
-    calcPopup_ = new mmCalculatorPopup(bCalc_, calcTarget_);
+    calcPopup_ = new mmCalcPopup(bCalc_, calcTarget_);
 
     // Account ---------------------------------------------
     account_label_ = new wxStaticText(static_box, wxID_STATIC, _t("Account"));
@@ -549,7 +550,7 @@ void TrxDialog::CreateControls()
     flex_sizer->Add(account_label_, g_flagsH);
     flex_sizer->Add(cbAccount_, g_flagsExpand);
 
-    bSwitch_ = new wxBitmapButton(static_box, wxID_ANY, mmBitmapBundle(png::UPDATE, mmBitmapButtonSize));
+    bSwitch_ = new wxBitmapButton(static_box, wxID_ANY, mmImage::bitmapBundle(mmImage::png::UPDATE, mmImage::bitmapButtonSize));
     bSwitch_->Connect(wxID_ANY, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(TrxDialog::OnSwitch), nullptr, this);
     mmToolTip(bSwitch_, _t("Exchange to and from accounts"));
     flex_sizer->Add(bSwitch_, g_flagsH);
@@ -579,7 +580,7 @@ void TrxDialog::CreateControls()
     cbCategory_ = new mmComboBoxCategory(static_box, mmID_CATEGORY, wxDefaultSize
         , m_journal_d.m_category_id_n, true);
     cbCategory_->SetMinSize(cbCategory_->GetSize());
-    bSplit_ = new wxBitmapButton(static_box, mmID_CATEGORY_SPLIT, mmBitmapBundle(png::NEW_TRX, mmBitmapButtonSize));
+    bSplit_ = new wxBitmapButton(static_box, mmID_CATEGORY_SPLIT, mmImage::bitmapBundle(mmImage::png::NEW_TRX, mmImage::bitmapButtonSize));
     mmToolTip(bSplit_, _t("Use split Categories"));
 
     flex_sizer->Add(categ_label_, g_flagsH);
@@ -608,7 +609,7 @@ void TrxDialog::CreateControls()
     // Number  ---------------------------------------------
     textNumber_ = new wxTextCtrl(static_box, ID_DIALOG_TRANS_TEXTNUMBER, "", wxDefaultPosition, wxDefaultSize);
 
-    bAuto = new wxBitmapButton(static_box, ID_DIALOG_TRANS_BUTTONTRANSNUM, mmBitmapBundle(png::TRXNUM, mmBitmapButtonSize));
+    bAuto = new wxBitmapButton(static_box, ID_DIALOG_TRANS_BUTTONTRANSNUM, mmImage::bitmapBundle(mmImage::png::TRXNUM, mmImage::bitmapButtonSize));
     bAuto->Connect(ID_DIALOG_TRANS_BUTTONTRANSNUM, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(TrxDialog::OnAutoTransNum), nullptr, this);
     mmToolTip(bAuto, _t("Populate Transaction #"));
 
@@ -630,7 +631,7 @@ void TrxDialog::CreateControls()
     bColours_->SetColor(m_journal_d.m_color.GetValue());
 
     // Attachments
-    bAttachments_ = new wxBitmapButton(static_box, wxID_FILE, mmBitmapBundle(png::CLIP, mmBitmapButtonSize));
+    bAttachments_ = new wxBitmapButton(static_box, wxID_FILE, mmImage::bitmapBundle(mmImage::png::CLIP, mmImage::bitmapButtonSize));
     mmToolTip(bAttachments_, _t("Manage transaction attachments"));
 
     // Now display the Frequently Used Notes, Colour, Attachment buttons
@@ -647,7 +648,7 @@ void TrxDialog::CreateControls()
 
     // Notes
     textNotes_ = new wxTextCtrl(static_box, ID_DIALOG_TRANS_TEXTNOTES, ""
-        , wxDefaultPosition, wxSize(-1, dpc_->GetSize().GetHeight() * 5), wxTE_MULTILINE);
+        , wxDefaultPosition, wxSize(-1, w_date_picker->GetSize().GetHeight() * 5), wxTE_MULTILINE);
     mmToolTip(textNotes_, _t("Specify any text notes you want to add to this transaction."));
     box_sizer_left->Add(textNotes_, wxSizerFlags(g_flagsExpand).Border(wxLEFT | wxRIGHT | wxBOTTOM, 10));
 
@@ -660,7 +661,7 @@ void TrxDialog::CreateControls()
     wxStdDialogButtonSizer*  buttons_sizer = new wxStdDialogButtonSizer;
     buttons_panel->SetSizer(buttons_sizer);
 
-    wxBitmapButton* button_hide = new wxBitmapButton(buttons_panel, ID_DIALOG_TRANS_CUSTOMFIELDS, mmBitmapBundle(png::RIGHTARROW, mmBitmapButtonSize));
+    wxBitmapButton* button_hide = new wxBitmapButton(buttons_panel, ID_DIALOG_TRANS_CUSTOMFIELDS, mmImage::bitmapBundle(mmImage::png::RIGHTARROW, mmImage::bitmapButtonSize));
     mmToolTip(button_hide, _t("Show/Hide custom fields window"));
     if (m_custom_fields->GetCustomFieldsCount() == 0) {
         button_hide->Hide();
@@ -802,7 +803,7 @@ bool TrxDialog::ValidateData()
     }
 
     /* Check if transaction is to proceed.*/
-    if (account_n->is_locked_for(mmDate(dpc_->GetValue()))) {
+    if (account_n->is_locked_for(mmDate(w_date_picker->GetValue()))) {
         if (wxMessageBox(wxString::Format(
             _t("Lock transaction to date: %s") + "\n\n" + _t("Do you want to continue?"),
             mmGetDateTimeForDisplay(account_n->m_stmt_date_n.isoDateN())),
@@ -1087,7 +1088,7 @@ void TrxDialog::SetCategoryForPayee(const PayeeData *payee_n)
 
 void TrxDialog::OnCalculator(wxCommandEvent& WXUNUSED(event))
 {
-    calcPopup_->SetTarget(calcTarget_);
+    calcPopup_->setTarget(calcTarget_);
     calcPopup_->Popup();
 }
 
@@ -1100,7 +1101,7 @@ void TrxDialog::OnSwitch(wxCommandEvent& WXUNUSED(event))
 
 void TrxDialog::OnToday(wxCommandEvent& WXUNUSED(event))
 {
-    dpc_->SetValue(wxDateTime::Today());
+    w_date_picker->setValue(wxDateTime::Today());
 }
 
 void TrxDialog::OnAutoTransNum(wxCommandEvent& WXUNUSED(event))
@@ -1235,7 +1236,7 @@ void TrxDialog::OnOk(wxCommandEvent& event)
 {
     m_journal_d.m_notes = textNotes_->GetValue();
     m_journal_d.m_number = textNumber_->GetValue();
-    m_journal_d.m_datetime = mmDateTime(dpc_->GetValue());
+    m_journal_d.m_datetime = mmDateTime(w_date_picker->GetValue());
     wxStringClientData* status_obj = static_cast<wxStringClientData*>(
         choiceStatus_->GetClientObject(choiceStatus_->GetSelection())
     );
@@ -1333,7 +1334,7 @@ void TrxDialog::OnOk(wxCommandEvent& event)
     //wxLogDebug("%s", trx.to_json());
 
     if (event.GetId() == ID_BTN_OK_NEW) {
-        m_previousDate = dpc_->GetValue();  // store date for next invocation
+        m_previousDate = w_date_picker->GetValue();  // store date for next invocation
     }
     else {
         m_previousDate = wxDateTime();
@@ -1404,7 +1405,7 @@ void TrxDialog::SetTooltips()
     }
 
     // Not dynamically changed tooltips
-    mmToolTip(dpc_, _t("Specify the date of the transaction"));
+    mmToolTip(w_date_picker, _t("Specify the date of the transaction"));
     mmToolTip(choiceStatus_, _t("Specify the status for the transaction"));
     mmToolTip(transaction_type_, _t("Specify the type of transactions to be created."));
     mmToolTip(textNumber_, _t("Specify any associated check number or transaction number"));
@@ -1427,7 +1428,7 @@ void TrxDialog::OnMoreFields(wxCommandEvent& WXUNUSED(event))
     wxBitmapButton* button = static_cast<wxBitmapButton*>(FindWindow(ID_DIALOG_TRANS_CUSTOMFIELDS));
 
     if (button)
-        button->SetBitmap(mmBitmapBundle(m_custom_fields->IsCustomPanelShown() ? png::RIGHTARROW : png::LEFTARROW, mmBitmapButtonSize));
+        button->SetBitmap(mmImage::bitmapBundle(m_custom_fields->IsCustomPanelShown() ? mmImage::png::RIGHTARROW : mmImage::png::LEFTARROW, mmImage::bitmapButtonSize));
 
     m_custom_fields->ShowHideCustomPanel();
     if (m_custom_fields->IsCustomPanelShown()) {

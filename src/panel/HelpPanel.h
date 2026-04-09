@@ -23,20 +23,20 @@
 #include "_PanelBase.h"
 
 class wxWebView;
-class mmGUIFrame;
+class mmFrame;
 
 class HelpPanel : public PanelBase
 {
     wxDECLARE_EVENT_TABLE();
 
 private:
-    mmGUIFrame* w_frame;
+    mmFrame* w_frame;
     wxWebView*  w_browser;
 
 public:
     HelpPanel(
         wxWindow* parent_win,
-        mmGUIFrame* frame,
+        mmFrame* frame,
         wxWindowID win_id = wxID_ANY,
         const wxPoint& pos = wxDefaultPosition,
         const wxSize& size = wxDefaultSize,

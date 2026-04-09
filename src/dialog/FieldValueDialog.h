@@ -20,12 +20,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
+#include "util/mmTextCtrl.h"
 #include "model/FieldModel.h"
 #include "model/TrxModel.h"
 
-class mmDatePickerCtrl;
-class mmTextCtrl;
 class wxDialog;
 
 class FieldValueDialog : public wxDialog
@@ -39,9 +38,9 @@ private:
     FieldModel::DataA m_field_a;
     std::map<wxWindowID, wxString> m_data_changed;
 
-    wxDialog* m_dialog = nullptr;
-    wxStaticBox* m_static_box = nullptr;
-    wxWindowID m_init_control_id = wxID_ANY;
+    wxDialog*    m_dialog          = nullptr;
+    wxStaticBox* m_static_box      = nullptr;
+    wxWindowID   m_init_control_id = wxID_ANY;
 
 public:
     FieldValueDialog();

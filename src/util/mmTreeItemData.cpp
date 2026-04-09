@@ -26,40 +26,39 @@
 
 #include "mmTreeItemData.h"
 
-mmTreeItemData::mmTreeItemData(int type, int64 id)
-    : type_(type)
-    , id_(id)
-    , stringData_(wxString::Format("%lld", id))
-    , report_(nullptr)
+mmTreeItemData::mmTreeItemData(int type, int64 id) :
+    type_(type),
+    id_(id),
+    stringData_(wxString::Format("%lld", id)),
+    report_(nullptr)
 {
 }
 
-mmTreeItemData::mmTreeItemData(int type, const wxString& data)
-    : type_(type)
-    , stringData_(data)
-    , report_(nullptr)
+mmTreeItemData::mmTreeItemData(int type, const wxString& data) :
+    type_(type),
+    stringData_(data),
+    report_(nullptr)
 {}
 
-mmTreeItemData::mmTreeItemData(int type, int64 id, const wxString& data)
-    : type_(type)
-    , id_(id)
-    , stringData_(data)
-    , report_(nullptr)
+mmTreeItemData::mmTreeItemData(int type, int64 id, const wxString& data) :
+    type_(type),
+    id_(id),
+    stringData_(data),
+    report_(nullptr)
 {}
 
-mmTreeItemData::mmTreeItemData(const wxString& data, ReportBase* report)
-    : type_(mmTreeItemData::REPORT)
-    , stringData_(data)
-    , report_(report)
+mmTreeItemData::mmTreeItemData(const wxString& data, ReportBase* report) :
+    type_(mmTreeItemData::REPORT),
+    stringData_(data),
+    report_(report)
 {
     const wxString& n = wxString::Format("REPORT_%d", report_->getReportId());
     const wxString& settings = InfoModel::instance().getString(n, "");
     report_->setReportSettings(settings);
 }
 
-mmTreeItemData::mmTreeItemData(ReportBase* report, const wxString& data)
-    : type_(mmTreeItemData::GRM)
-    , stringData_(data)
-    , report_(report)
+mmTreeItemData::mmTreeItemData(ReportBase* report, const wxString& data) :
+    type_(mmTreeItemData::GRM),
+    stringData_(data),
+    report_(report)
 {}
-

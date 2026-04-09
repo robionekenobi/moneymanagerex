@@ -20,9 +20,9 @@
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/sharedptr.h>
-#include "util/mmSingleton.h"
+#include "base/mmSingleton.h"
 #include "table/_TableFactory.h"
 #include "data/CategoryData.h"
 
