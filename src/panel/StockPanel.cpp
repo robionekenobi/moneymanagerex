@@ -89,6 +89,7 @@ bool StockPanel::create(
 
 StockPanel::~StockPanel()
 {
+    InfoModel::instance().saveBool("STOCKPANEL_SHOW_NON_ZERO", w_filter_choice->GetSelection() > 0);
 }
 
 void StockPanel::createControls()
@@ -108,7 +109,7 @@ void StockPanel::createControls()
     w_filter_choice->Append(_t("All"));
     w_filter_choice->Append(_t("Non-Zero Shares"));
     w_filter_choice->SetMinSize(wxSize(150, -1));
-    w_filter_choice->SetSelection(0);
+    w_filter_choice->SetSelection(InfoModel::instance().getBool("STOCKPANEL_SHOW_NON_ZERO", false) ? 1 : 0);
 
     w_filter_choice->Bind(wxEVT_CHOICE, [this](wxCommandEvent&)
     {
