@@ -93,16 +93,13 @@ StockPanel::~StockPanel()
 
 void StockPanel::createControls()
 {
-    wxBoxSizer* itemBoxSizer9 = new wxBoxSizer(wxVERTICAL);
-    this->SetSizer(itemBoxSizer9);
+    wxBoxSizer* sizerVHeader = new wxBoxSizer(wxVERTICAL);
+    this->SetSizer(sizerVHeader);
 
     /* ---------------------- */
     wxPanel* headerPanel = new wxPanel(this, wxID_ANY
         , wxDefaultPosition , wxDefaultSize, wxNO_BORDER | wxTAB_TRAVERSAL);
-    itemBoxSizer9->Add(headerPanel, 0, wxALIGN_LEFT);
-
-    wxBoxSizer* itemBoxSizerVHeader = new wxBoxSizer(wxVERTICAL);
-    headerPanel->SetSizer(itemBoxSizerVHeader);
+    sizerVHeader->Add(headerPanel, 0, wxALIGN_LEFT);
 
     w_header_title = new wxStaticText(headerPanel, wxID_STATIC, "");
     w_header_title->SetFont(this->GetFont().Larger().Bold());
@@ -119,13 +116,37 @@ void StockPanel::createControls()
     });
 
     w_header_total = new wxStaticText(headerPanel, wxID_STATIC, "");
+    wxStaticText* sfilter = new wxStaticText(headerPanel, wxID_STATIC, "Name:", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+    w_nameFilter = new wxTextCtrl(headerPanel, wxID_INDEX, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+    w_nameFilter->Bind(wxEVT_TEXT, &StockPanel::onFilterTextChanged, this);
+    w_filter_cancel = new wxBitmapButton(headerPanel, wxID_ANY, mmBitmapBundle(png::CLEAR, mmBitmapButtonSize));
+    w_filter_cancel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &StockPanel::onFilterCancel, this);
+    mmToolTip(w_filter_cancel, _t("Reset filter"));
+
+    wxBoxSizer* itemBoxSizerVHeader1 = new wxBoxSizer(wxVERTICAL);
+    itemBoxSizerVHeader1->Add(w_header_title, 1, wxALL, 1);
+    itemBoxSizerVHeader1->AddSpacer(5);
+    itemBoxSizerVHeader1->Add(w_header_total, 1, wxALL, 1);
 
     wxBoxSizer* itemBoxSizerHHeader = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizerHHeader->Add(w_header_title, 1, wxALIGN_CENTER_VERTICAL | wxALL, 1);
+    itemBoxSizerHHeader->AddSpacer(15);
+    itemBoxSizerHHeader->Add(itemBoxSizerVHeader1, 1, wxEXPAND, 1);
 
-    itemBoxSizerVHeader->Add(itemBoxSizerHHeader, 1, wxEXPAND, 1);
-    itemBoxSizerVHeader->Add(w_filter_choice, g_flagsBorder1V);
-    itemBoxSizerVHeader->Add(w_header_total, 1, wxALL, 1);
+    wxBoxSizer* itemBoxSizerHHeader2 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizerHHeader2->AddSpacer(15);
+    itemBoxSizerHHeader2->Add(w_filter_choice, 0, wxALIGN_CENTER_VERTICAL, 1);
+    itemBoxSizerHHeader2->AddSpacer(30);
+    itemBoxSizerHHeader2->Add(sfilter, 0, wxALIGN_CENTER_VERTICAL, 1);
+    itemBoxSizerHHeader2->AddSpacer(10);
+    itemBoxSizerHHeader2->Add(w_nameFilter, 0, wxALIGN_CENTER_VERTICAL, 1);
+    itemBoxSizerHHeader2->Add(w_filter_cancel, 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL, 2);
+
+    wxBoxSizer* itemBoxSizerVHeader = new wxBoxSizer(wxVERTICAL);
+    headerPanel->SetSizer(itemBoxSizerVHeader);
+    itemBoxSizerVHeader->Add(itemBoxSizerHHeader, 1, wxALL, 1);
+    itemBoxSizerVHeader->AddSpacer(5);
+    itemBoxSizerVHeader->Add(itemBoxSizerHHeader2, 1, wxEXPAND, 1);
+
 
     /* ---------------------- */
     mmSplitterWindow* itemSplitterWindow10 = new mmSplitterWindow(
@@ -147,7 +168,7 @@ void StockPanel::createControls()
     itemSplitterWindow10->SplitHorizontally(w_list, BottomPanel);
     itemSplitterWindow10->SetMinimumPaneSize(100);
     itemSplitterWindow10->SetSashGravity(1.0);
-    itemBoxSizer9->Add(itemSplitterWindow10, g_flagsExpandBorder1);
+    sizerVHeader->Add(itemSplitterWindow10, g_flagsExpandBorder1);
 
     wxBoxSizer* BoxSizerVBottom = new wxBoxSizer(wxVERTICAL);
     BottomPanel->SetSizer(BoxSizerVBottom);
@@ -513,7 +534,27 @@ void StockPanel::onRefreshQuotes(wxCommandEvent& WXUNUSED(event))
     }
 }
 
-// Trigger a quote download
+void StockPanel::onFilterTextChanged(wxCommandEvent& WXUNUSED(event))
+{
+    w_filter_cancel->Enable(!w_nameFilter->GetValue().IsEmpty());
+    m_name_filter_value = w_nameFilter->GetValue();
+    if (!m_name_filter_value.IsEmpty()) {
+        m_name_filter_value = m_name_filter_value + "%";
+    }
+    refreshList();
+}
+
+void StockPanel::onFilterCancel(wxCommandEvent& WXUNUSED(event))
+{
+    w_nameFilter->SetValue("");
+    m_name_filter_value = w_nameFilter->GetValue();
+    if (!m_name_filter_value.IsEmpty()) {
+        m_name_filter_value = m_name_filter_value + "%";
+    }
+    refreshList();
+}
+
+/*** Trigger a quote download ***/
 bool StockPanel::onlineQuoteRefresh(wxString& msg)
 {
     wxString base_currency_symbol;

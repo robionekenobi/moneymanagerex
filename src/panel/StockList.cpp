@@ -511,21 +511,38 @@ int StockList::initVirtualListControl(int64 trx_id)
 {
     /* Clear all the records */
     DeleteAllItems();
-
-    // TODO
-    if (w_panel->m_account_id > -1 ) {
-        m_stock_a = StockModel::instance().find(
-            StockCol::HELDAT(w_panel->m_account_id),
-            StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
-        );
+    if (w_panel->m_name_filter_value.IsEmpty()) {
+        // TODO
+        if (w_panel->m_account_id > -1 ) {
+            m_stock_a = StockModel::instance().find(
+                StockCol::HELDAT(w_panel->m_account_id),
+                StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
+            );
+        }
+        else { // create summary
+            m_stock_a = StockModel::instance().find(
+                StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
+            );
+            if (!m_stock_a.empty())
+                createSummary();
+        }
     }
-    // create summary
     else {
-        m_stock_a = StockModel::instance().find(
-            StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
-        );
-        if (!m_stock_a.empty())
-            createSummary();
+        if (w_panel->m_account_id > -1 ) {
+            m_stock_a = StockModel::instance().find(
+                StockCol::HELDAT(w_panel->m_account_id),
+                StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0),
+                StockCol::STOCKNAME(OP_LK, w_panel->m_name_filter_value)
+            );
+        }
+        else { // create summary
+            m_stock_a = StockModel::instance().find(
+                StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0),
+                StockCol::STOCKNAME(OP_LK, w_panel->m_name_filter_value)
+            );
+            if (!m_stock_a.empty())
+                createSummary();
+        }
     }
 
     w_panel->updateHeader();
