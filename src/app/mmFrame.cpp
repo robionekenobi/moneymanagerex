@@ -4106,13 +4106,17 @@ void mmFrame::RefreshNavigationTree()
     mmTreeItemData* iData = nullptr;
     wxString sectionName;
     wxTreeItemId selection = m_nav_tree_ctrl->GetSelection();
-    if (selection.IsOk() && selectedItemData_) {
-        iData = new mmTreeItemData(*selectedItemData_);
-        // also save current section
-        wxTreeItemId parentID = m_nav_tree_ctrl->GetItemParent(selection);
-        if (parentID.IsOk() && parentID != m_nav_tree_ctrl->GetRootItem())
-            sectionName = m_nav_tree_ctrl->GetItemText(parentID);
+    if (selection.IsOk()) {
+        selectedItemData_ = dynamic_cast<mmTreeItemData*>(m_nav_tree_ctrl->GetItemData(selection));
+        if (selectedItemData_) {
+            iData = new mmTreeItemData(*selectedItemData_);
+            // also save current section
+            wxTreeItemId parentID = m_nav_tree_ctrl->GetItemParent(selection);
+            if (parentID.IsOk() && parentID != m_nav_tree_ctrl->GetRootItem())
+                sectionName = m_nav_tree_ctrl->GetItemText(parentID);
+        }
     }
+
     DoRecreateNavTreeControl();
     // Find and reselect the previously selected item
     if (iData) {

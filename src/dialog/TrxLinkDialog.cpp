@@ -177,12 +177,16 @@ bool TrxLinkDialog::Create(
     transPanelSizer->Add(entered_amount_sizer, wxSizerFlags(g_flagsExpand).Border(0));
 
     // Status --------------------------------------------
-    w_status_choice = new wxChoice(this, ID_TRANS_STATUS_SELECTOR
-        , wxDefaultPosition, std_half_size);
+    w_status_choice = new wxChoice(this, ID_TRANS_STATUS_SELECTOR,
+        wxDefaultPosition, std_half_size
+    );
 
     for (int i = 0; i < TrxStatus::size; ++i) {
-        wxString name = TrxStatus(i).name();
-        w_status_choice->Append(wxGetTranslation(name), new wxStringClientData(name));
+        wxString status_name = TrxStatus(i).name();
+        w_status_choice->Append(
+            wxGetTranslation(status_name),
+            new wxStringClientData(status_name)
+        );
     }
 
     w_status_choice->SetSelection(TrxStatus::e_reconciled);
