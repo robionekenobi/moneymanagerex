@@ -100,7 +100,7 @@ TableClauseD TableClause::eval(const TableClauseV<int64>& clause)
 }
 
 // The clause value is formatted to a string and then copied to each placeholder.
-// Depending on rounding errors and the wanted accouracy, this may create 
+// Depending on rounding errors and the wanted accouracy, this may create
 // inconsistencies with floating-point comparisons in SQLite engine.
 // Use this function only if precision in not critical, or if it is known
 // that the clause value is a round number (e.g., 0.0).
@@ -182,7 +182,7 @@ TableClause TableClause::merge(const std::vector<const TableClause*>& clause_na)
     // close PAREN
     if (op_a.size() > 1) {
         wxLogWarning("TableClause::merge: missing END");
-        for (int op_i = 1; op_i < op_a.size(); ++op_i)
+        for (std::size_t op_i = 1; op_i < op_a.size(); ++op_i)
             text += ")";
     }
 

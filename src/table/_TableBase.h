@@ -131,7 +131,7 @@ void TableBase::bind_stmt(
         "Arg1 must derive from TableClause"
     );
 
-    for (int p = 0; p < index_a.size(); ++p) {
+    for (std::size_t p = 0; p < index_a.size(); ++p) {
         if (index_a[p] == index)
             stmt.Bind(p+1, arg1.m_value);
     }

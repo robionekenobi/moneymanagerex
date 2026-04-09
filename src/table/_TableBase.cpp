@@ -64,7 +64,7 @@ int64 TableBase::newId()
 // Build a select query from the input clauses args and append it into query.
 // The placeholder indexes, to be used with wxSQLite3Statement::Bind(),
 // are appended into index_a. If index_a is initially empty and i=index_a[p],
-// the value of the 0-based p-th placeholder in the constructed query 
+// the value of the 0-based p-th placeholder in the constructed query
 // shall be bound to the value of the 0-based i-th argument in args.
 // Notice that wxSQLite3Statement::Bind() uses 1-based indexes.
 // All variadic arguments args are of type TableClauseD or TableClauseV<V>.
@@ -133,6 +133,9 @@ void TableBase::select_query(
             state.query = clause.m_text;
             state.is_empty = false;
             break;
+
+        default:
+            break;
         }
 
         for (int p = 0; p < clause.m_mult; ++p)
@@ -145,7 +148,7 @@ void TableBase::select_query(
     if (op_a.size() > 1) {
         wxLogWarning("TableBase::select_query: missing END");
         int id = TableClause::CLAUSE_ID_WHERE;
-        for (int op_i = 1; op_i < op_a.size(); ++op_i)
+        for (std::size_t op_i = 1; op_i < op_a.size(); ++op_i)
             state_a[id].query += ")";
         state_a[id].is_empty = false;
     }

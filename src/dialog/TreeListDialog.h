@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-// Contains generic base classes, which are used for common defintions,
-// but not directly instantiantiated.
+// Contains generic base classes, which are used for common definitions,
+// but not directly instantiated.
 
 #pragma once
 
@@ -62,12 +62,12 @@ public:
 public:
     virtual void createColumns() {}
     virtual void closeAction() {}
-    virtual void createMiddleElements(wxBoxSizer* itemBox) {}
-    virtual void createBottomElements(wxBoxSizer* itemBox) {}
-    virtual void fillControls(wxTreeListItem root) {}
-    virtual void updateControlState(int selIdx, wxClientData* selData) {}
+    virtual void createMiddleElements([[maybe_unused]] wxBoxSizer* itemBox) {}
+    virtual void createBottomElements([[maybe_unused]] wxBoxSizer* itemBox) {}
+    virtual void fillControls([[maybe_unused]] wxTreeListItem root) {}
+    virtual void updateControlState([[maybe_unused]] int selIdx, [[maybe_unused]] wxClientData* selData) {}
     virtual void setDefault() {}
-    virtual void copyTreeItemData(wxTreeListItem src, wxTreeListItem dst) {}
+    virtual void copyTreeItemData([[maybe_unused]] wxTreeListItem src, [[maybe_unused]] wxTreeListItem dst) {}
 
 // -- methods
 
