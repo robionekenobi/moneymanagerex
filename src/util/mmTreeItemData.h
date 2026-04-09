@@ -67,7 +67,6 @@ public:
     int64 getId() const { return id_; }
     const wxString getString() const { return stringData_; }
     ReportBase* getReport() const { return report_.get(); }
-    //bool isReadOnly() const;
 };
 
 inline bool operator==(const mmTreeItemData& lhs, const mmTreeItemData& rhs)
