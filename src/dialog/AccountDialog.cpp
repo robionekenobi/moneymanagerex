@@ -145,8 +145,11 @@ void AccountDialog::CreateControls()
 
     wxChoice* itemChoice6 = new wxChoice(this, ID_DIALOG_NEWACCT_COMBO_ACCTSTATUS);
     for (int i = 0; i < AccountStatus::size; ++i) {
-        wxString name = AccountStatus(i).name();
-        itemChoice6->Append(wxGetTranslation(name), new wxStringClientData(name));
+        wxString status_name = AccountStatus(i).name();
+        itemChoice6->Append(
+            wxGetTranslation(status_name),
+            new wxStringClientData(status_name)
+        );
     }
     mmToolTip(itemChoice6, _t("Specify if this account has been closed. Closed accounts are inactive in most calculations, reporting etc."));
     grid_sizer->Add(itemChoice6, g_flagsExpand);

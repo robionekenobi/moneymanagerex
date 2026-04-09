@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -38,16 +38,63 @@ struct PayeeCol
         COL_ID_size
     };
 
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
 
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+
+    // convenience variables
+
+    static const wxString NAME_PAYEEID;
+    static const wxString NAME_PAYEENAME;
+    static const wxString NAME_CATEGID;
+    static const wxString NAME_NUMBER;
+    static const wxString NAME_WEBSITE;
+    static const wxString NAME_NOTES;
+    static const wxString NAME_ACTIVE;
+    static const wxString NAME_PATTERN;
+
+    // convenience methods
+
+    static TableClauseV<int64> WHERE_PAYEEID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_PAYEEID, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_PAYEENAME(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_PAYEENAME, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_CATEGID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_CATEGID, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_NUMBER(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_NUMBER, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_WEBSITE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_WEBSITE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_NOTES(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_NOTES, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_ACTIVE(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_ACTIVE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_PATTERN(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_PATTERN, op, value);
+    }
+
+    // deprecated
 
     struct PAYEEID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_PAYEEID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_PAYEEID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_PAYEEID]; }
         explicit PAYEEID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit PAYEEID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -55,7 +102,7 @@ struct PayeeCol
     struct PAYEENAME : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_PAYEENAME; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_PAYEENAME]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_PAYEENAME]; }
         explicit PAYEENAME(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit PAYEENAME(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -63,7 +110,7 @@ struct PayeeCol
     struct CATEGID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_CATEGID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CATEGID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CATEGID]; }
         explicit CATEGID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit CATEGID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -71,7 +118,7 @@ struct PayeeCol
     struct NUMBER : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_NUMBER; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_NUMBER]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_NUMBER]; }
         explicit NUMBER(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit NUMBER(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -79,7 +126,7 @@ struct PayeeCol
     struct WEBSITE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_WEBSITE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_WEBSITE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_WEBSITE]; }
         explicit WEBSITE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit WEBSITE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -87,7 +134,7 @@ struct PayeeCol
     struct NOTES : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_NOTES; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_NOTES]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_NOTES]; }
         explicit NOTES(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit NOTES(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -95,7 +142,7 @@ struct PayeeCol
     struct ACTIVE : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_ACTIVE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_ACTIVE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_ACTIVE]; }
         explicit ACTIVE(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit ACTIVE(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -103,7 +150,7 @@ struct PayeeCol
     struct PATTERN : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_PATTERN; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_PATTERN]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_PATTERN]; }
         explicit PATTERN(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit PATTERN(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };

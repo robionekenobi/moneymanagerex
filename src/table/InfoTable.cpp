@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,14 +27,19 @@ template class mmCache<int64, InfoData>;
 
 // List of column names in database table INFOTABLE_V1,
 // in the order of InfoCol::COL_ID.
-const wxArrayString InfoCol::COL_NAME_A = {
+const wxArrayString InfoCol::s_col_name_a = {
     "INFOID",
     "INFONAME",
     "INFOVALUE"
 };
 
-const InfoCol::COL_ID InfoCol::PRIMARY_ID = COL_ID_INFOID;
-const wxString InfoCol::PRIMARY_NAME = COL_NAME_A[COL_ID_INFOID];
+const InfoCol::COL_ID InfoCol::s_primary_id = COL_ID_INFOID;
+const wxString InfoCol::s_primary_name = s_col_name_a[COL_ID_INFOID];
+
+// convenience variables
+const wxString InfoCol::NAME_INFOID = s_col_name_a[COL_ID_INFOID];
+const wxString InfoCol::NAME_INFONAME = s_col_name_a[COL_ID_INFONAME];
+const wxString InfoCol::NAME_INFOVALUE = s_col_name_a[COL_ID_INFOVALUE];
 
 InfoRow::InfoRow()
 {

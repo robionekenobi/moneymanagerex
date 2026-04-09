@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -37,16 +37,58 @@ struct BudgetCol
         COL_ID_size
     };
 
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
 
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+
+    // convenience variables
+
+    static const wxString NAME_BUDGETENTRYID;
+    static const wxString NAME_BUDGETYEARID;
+    static const wxString NAME_CATEGID;
+    static const wxString NAME_PERIOD;
+    static const wxString NAME_AMOUNT;
+    static const wxString NAME_NOTES;
+    static const wxString NAME_ACTIVE;
+
+    // convenience methods
+
+    static TableClauseV<int64> WHERE_BUDGETENTRYID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_BUDGETENTRYID, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_BUDGETYEARID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_BUDGETYEARID, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_CATEGID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_CATEGID, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_PERIOD(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_PERIOD, op, value);
+    }
+
+    static TableClauseV<double> WHERE_AMOUNT(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_AMOUNT, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_NOTES(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_NOTES, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_ACTIVE(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_ACTIVE, op, value);
+    }
+
+    // deprecated
 
     struct BUDGETENTRYID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_BUDGETENTRYID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_BUDGETENTRYID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_BUDGETENTRYID]; }
         explicit BUDGETENTRYID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit BUDGETENTRYID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -54,7 +96,7 @@ struct BudgetCol
     struct BUDGETYEARID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_BUDGETYEARID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_BUDGETYEARID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_BUDGETYEARID]; }
         explicit BUDGETYEARID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit BUDGETYEARID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -62,7 +104,7 @@ struct BudgetCol
     struct CATEGID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_CATEGID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CATEGID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CATEGID]; }
         explicit CATEGID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit CATEGID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -70,7 +112,7 @@ struct BudgetCol
     struct PERIOD : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_PERIOD; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_PERIOD]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_PERIOD]; }
         explicit PERIOD(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit PERIOD(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -78,7 +120,7 @@ struct BudgetCol
     struct AMOUNT : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_AMOUNT; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_AMOUNT]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_AMOUNT]; }
         explicit AMOUNT(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit AMOUNT(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -86,7 +128,7 @@ struct BudgetCol
     struct NOTES : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_NOTES; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_NOTES]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_NOTES]; }
         explicit NOTES(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit NOTES(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -94,7 +136,7 @@ struct BudgetCol
     struct ACTIVE : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_ACTIVE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_ACTIVE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_ACTIVE]; }
         explicit ACTIVE(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit ACTIVE(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };

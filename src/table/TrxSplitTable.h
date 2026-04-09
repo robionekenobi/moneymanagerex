@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -35,16 +35,48 @@ struct TrxSplitCol
         COL_ID_size
     };
 
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
 
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+
+    // convenience variables
+
+    static const wxString NAME_SPLITTRANSID;
+    static const wxString NAME_TRANSID;
+    static const wxString NAME_CATEGID;
+    static const wxString NAME_SPLITTRANSAMOUNT;
+    static const wxString NAME_NOTES;
+
+    // convenience methods
+
+    static TableClauseV<int64> WHERE_SPLITTRANSID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_SPLITTRANSID, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_TRANSID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_TRANSID, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_CATEGID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_CATEGID, op, value);
+    }
+
+    static TableClauseV<double> WHERE_SPLITTRANSAMOUNT(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_SPLITTRANSAMOUNT, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_NOTES(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_NOTES, op, value);
+    }
+
+    // deprecated
 
     struct SPLITTRANSID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_SPLITTRANSID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_SPLITTRANSID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_SPLITTRANSID]; }
         explicit SPLITTRANSID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit SPLITTRANSID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -52,7 +84,7 @@ struct TrxSplitCol
     struct TRANSID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_TRANSID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_TRANSID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_TRANSID]; }
         explicit TRANSID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit TRANSID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -60,7 +92,7 @@ struct TrxSplitCol
     struct CATEGID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_CATEGID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CATEGID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CATEGID]; }
         explicit CATEGID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit CATEGID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -68,7 +100,7 @@ struct TrxSplitCol
     struct SPLITTRANSAMOUNT : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_SPLITTRANSAMOUNT; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_SPLITTRANSAMOUNT]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_SPLITTRANSAMOUNT]; }
         explicit SPLITTRANSAMOUNT(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit SPLITTRANSAMOUNT(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -76,7 +108,7 @@ struct TrxSplitCol
     struct NOTES : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_NOTES; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_NOTES]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_NOTES]; }
         explicit NOTES(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit NOTES(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };

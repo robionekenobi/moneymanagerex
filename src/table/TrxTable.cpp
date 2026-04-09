@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, TrxData>;
 
 // List of column names in database table CHECKINGACCOUNT_V1,
 // in the order of TrxCol::COL_ID.
-const wxArrayString TrxCol::COL_NAME_A = {
+const wxArrayString TrxCol::s_col_name_a = {
     "TRANSID",
     "ACCOUNTID",
     "TOACCOUNTID",
@@ -46,8 +46,26 @@ const wxArrayString TrxCol::COL_NAME_A = {
     "COLOR"
 };
 
-const TrxCol::COL_ID TrxCol::PRIMARY_ID = COL_ID_TRANSID;
-const wxString TrxCol::PRIMARY_NAME = COL_NAME_A[COL_ID_TRANSID];
+const TrxCol::COL_ID TrxCol::s_primary_id = COL_ID_TRANSID;
+const wxString TrxCol::s_primary_name = s_col_name_a[COL_ID_TRANSID];
+
+// convenience variables
+const wxString TrxCol::NAME_TRANSID = s_col_name_a[COL_ID_TRANSID];
+const wxString TrxCol::NAME_ACCOUNTID = s_col_name_a[COL_ID_ACCOUNTID];
+const wxString TrxCol::NAME_TOACCOUNTID = s_col_name_a[COL_ID_TOACCOUNTID];
+const wxString TrxCol::NAME_PAYEEID = s_col_name_a[COL_ID_PAYEEID];
+const wxString TrxCol::NAME_TRANSCODE = s_col_name_a[COL_ID_TRANSCODE];
+const wxString TrxCol::NAME_TRANSAMOUNT = s_col_name_a[COL_ID_TRANSAMOUNT];
+const wxString TrxCol::NAME_STATUS = s_col_name_a[COL_ID_STATUS];
+const wxString TrxCol::NAME_TRANSACTIONNUMBER = s_col_name_a[COL_ID_TRANSACTIONNUMBER];
+const wxString TrxCol::NAME_NOTES = s_col_name_a[COL_ID_NOTES];
+const wxString TrxCol::NAME_CATEGID = s_col_name_a[COL_ID_CATEGID];
+const wxString TrxCol::NAME_TRANSDATE = s_col_name_a[COL_ID_TRANSDATE];
+const wxString TrxCol::NAME_LASTUPDATEDTIME = s_col_name_a[COL_ID_LASTUPDATEDTIME];
+const wxString TrxCol::NAME_DELETEDTIME = s_col_name_a[COL_ID_DELETEDTIME];
+const wxString TrxCol::NAME_FOLLOWUPID = s_col_name_a[COL_ID_FOLLOWUPID];
+const wxString TrxCol::NAME_TOTRANSAMOUNT = s_col_name_a[COL_ID_TOTRANSAMOUNT];
+const wxString TrxCol::NAME_COLOR = s_col_name_a[COL_ID_COLOR];
 
 TrxRow::TrxRow()
 {

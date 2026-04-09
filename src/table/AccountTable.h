@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -51,16 +51,128 @@ struct AccountCol
         COL_ID_size
     };
 
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
 
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+
+    // convenience variables
+
+    static const wxString NAME_ACCOUNTID;
+    static const wxString NAME_ACCOUNTNAME;
+    static const wxString NAME_ACCOUNTTYPE;
+    static const wxString NAME_ACCOUNTNUM;
+    static const wxString NAME_STATUS;
+    static const wxString NAME_NOTES;
+    static const wxString NAME_HELDAT;
+    static const wxString NAME_WEBSITE;
+    static const wxString NAME_CONTACTINFO;
+    static const wxString NAME_ACCESSINFO;
+    static const wxString NAME_INITIALBAL;
+    static const wxString NAME_INITIALDATE;
+    static const wxString NAME_FAVORITEACCT;
+    static const wxString NAME_CURRENCYID;
+    static const wxString NAME_STATEMENTLOCKED;
+    static const wxString NAME_STATEMENTDATE;
+    static const wxString NAME_MINIMUMBALANCE;
+    static const wxString NAME_CREDITLIMIT;
+    static const wxString NAME_INTERESTRATE;
+    static const wxString NAME_PAYMENTDUEDATE;
+    static const wxString NAME_MINIMUMPAYMENT;
+
+    // convenience methods
+
+    static TableClauseV<int64> WHERE_ACCOUNTID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_ACCOUNTID, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_ACCOUNTNAME(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_ACCOUNTNAME, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_ACCOUNTTYPE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_ACCOUNTTYPE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_ACCOUNTNUM(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_ACCOUNTNUM, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_STATUS(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_STATUS, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_NOTES(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_NOTES, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_HELDAT(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_HELDAT, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_WEBSITE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_WEBSITE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_CONTACTINFO(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_CONTACTINFO, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_ACCESSINFO(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_ACCESSINFO, op, value);
+    }
+
+    static TableClauseV<double> WHERE_INITIALBAL(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_INITIALBAL, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_INITIALDATE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_INITIALDATE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_FAVORITEACCT(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_FAVORITEACCT, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_CURRENCYID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_CURRENCYID, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_STATEMENTLOCKED(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_STATEMENTLOCKED, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_STATEMENTDATE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_STATEMENTDATE, op, value);
+    }
+
+    static TableClauseV<double> WHERE_MINIMUMBALANCE(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_MINIMUMBALANCE, op, value);
+    }
+
+    static TableClauseV<double> WHERE_CREDITLIMIT(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_CREDITLIMIT, op, value);
+    }
+
+    static TableClauseV<double> WHERE_INTERESTRATE(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_INTERESTRATE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_PAYMENTDUEDATE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_PAYMENTDUEDATE, op, value);
+    }
+
+    static TableClauseV<double> WHERE_MINIMUMPAYMENT(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_MINIMUMPAYMENT, op, value);
+    }
+
+    // deprecated
 
     struct ACCOUNTID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_ACCOUNTID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_ACCOUNTID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_ACCOUNTID]; }
         explicit ACCOUNTID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit ACCOUNTID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -68,7 +180,7 @@ struct AccountCol
     struct ACCOUNTNAME : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_ACCOUNTNAME; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_ACCOUNTNAME]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_ACCOUNTNAME]; }
         explicit ACCOUNTNAME(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit ACCOUNTNAME(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -76,7 +188,7 @@ struct AccountCol
     struct ACCOUNTTYPE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_ACCOUNTTYPE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_ACCOUNTTYPE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_ACCOUNTTYPE]; }
         explicit ACCOUNTTYPE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit ACCOUNTTYPE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -84,7 +196,7 @@ struct AccountCol
     struct ACCOUNTNUM : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_ACCOUNTNUM; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_ACCOUNTNUM]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_ACCOUNTNUM]; }
         explicit ACCOUNTNUM(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit ACCOUNTNUM(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -92,7 +204,7 @@ struct AccountCol
     struct STATUS : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_STATUS; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_STATUS]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_STATUS]; }
         explicit STATUS(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit STATUS(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -100,7 +212,7 @@ struct AccountCol
     struct NOTES : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_NOTES; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_NOTES]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_NOTES]; }
         explicit NOTES(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit NOTES(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -108,7 +220,7 @@ struct AccountCol
     struct HELDAT : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_HELDAT; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_HELDAT]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_HELDAT]; }
         explicit HELDAT(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit HELDAT(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -116,7 +228,7 @@ struct AccountCol
     struct WEBSITE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_WEBSITE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_WEBSITE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_WEBSITE]; }
         explicit WEBSITE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit WEBSITE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -124,7 +236,7 @@ struct AccountCol
     struct CONTACTINFO : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_CONTACTINFO; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CONTACTINFO]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CONTACTINFO]; }
         explicit CONTACTINFO(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit CONTACTINFO(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -132,7 +244,7 @@ struct AccountCol
     struct ACCESSINFO : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_ACCESSINFO; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_ACCESSINFO]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_ACCESSINFO]; }
         explicit ACCESSINFO(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit ACCESSINFO(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -140,7 +252,7 @@ struct AccountCol
     struct INITIALBAL : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_INITIALBAL; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_INITIALBAL]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_INITIALBAL]; }
         explicit INITIALBAL(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit INITIALBAL(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -148,7 +260,7 @@ struct AccountCol
     struct INITIALDATE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_INITIALDATE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_INITIALDATE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_INITIALDATE]; }
         explicit INITIALDATE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit INITIALDATE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -156,7 +268,7 @@ struct AccountCol
     struct FAVORITEACCT : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_FAVORITEACCT; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_FAVORITEACCT]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_FAVORITEACCT]; }
         explicit FAVORITEACCT(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit FAVORITEACCT(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -164,7 +276,7 @@ struct AccountCol
     struct CURRENCYID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_CURRENCYID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CURRENCYID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CURRENCYID]; }
         explicit CURRENCYID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit CURRENCYID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -172,7 +284,7 @@ struct AccountCol
     struct STATEMENTLOCKED : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_STATEMENTLOCKED; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_STATEMENTLOCKED]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_STATEMENTLOCKED]; }
         explicit STATEMENTLOCKED(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit STATEMENTLOCKED(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -180,7 +292,7 @@ struct AccountCol
     struct STATEMENTDATE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_STATEMENTDATE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_STATEMENTDATE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_STATEMENTDATE]; }
         explicit STATEMENTDATE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit STATEMENTDATE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -188,7 +300,7 @@ struct AccountCol
     struct MINIMUMBALANCE : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_MINIMUMBALANCE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_MINIMUMBALANCE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_MINIMUMBALANCE]; }
         explicit MINIMUMBALANCE(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit MINIMUMBALANCE(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -196,7 +308,7 @@ struct AccountCol
     struct CREDITLIMIT : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_CREDITLIMIT; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CREDITLIMIT]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CREDITLIMIT]; }
         explicit CREDITLIMIT(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit CREDITLIMIT(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -204,7 +316,7 @@ struct AccountCol
     struct INTERESTRATE : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_INTERESTRATE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_INTERESTRATE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_INTERESTRATE]; }
         explicit INTERESTRATE(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit INTERESTRATE(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -212,7 +324,7 @@ struct AccountCol
     struct PAYMENTDUEDATE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_PAYMENTDUEDATE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_PAYMENTDUEDATE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_PAYMENTDUEDATE]; }
         explicit PAYMENTDUEDATE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit PAYMENTDUEDATE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -220,7 +332,7 @@ struct AccountCol
     struct MINIMUMPAYMENT : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_MINIMUMPAYMENT; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_MINIMUMPAYMENT]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_MINIMUMPAYMENT]; }
         explicit MINIMUMPAYMENT(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit MINIMUMPAYMENT(OP op, const double &v): TableOpV<double>(op, v) {}
     };

@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, BudgetData>;
 
 // List of column names in database table BUDGETTABLE_V1,
 // in the order of BudgetCol::COL_ID.
-const wxArrayString BudgetCol::COL_NAME_A = {
+const wxArrayString BudgetCol::s_col_name_a = {
     "BUDGETENTRYID",
     "BUDGETYEARID",
     "CATEGID",
@@ -37,8 +37,17 @@ const wxArrayString BudgetCol::COL_NAME_A = {
     "ACTIVE"
 };
 
-const BudgetCol::COL_ID BudgetCol::PRIMARY_ID = COL_ID_BUDGETENTRYID;
-const wxString BudgetCol::PRIMARY_NAME = COL_NAME_A[COL_ID_BUDGETENTRYID];
+const BudgetCol::COL_ID BudgetCol::s_primary_id = COL_ID_BUDGETENTRYID;
+const wxString BudgetCol::s_primary_name = s_col_name_a[COL_ID_BUDGETENTRYID];
+
+// convenience variables
+const wxString BudgetCol::NAME_BUDGETENTRYID = s_col_name_a[COL_ID_BUDGETENTRYID];
+const wxString BudgetCol::NAME_BUDGETYEARID = s_col_name_a[COL_ID_BUDGETYEARID];
+const wxString BudgetCol::NAME_CATEGID = s_col_name_a[COL_ID_CATEGID];
+const wxString BudgetCol::NAME_PERIOD = s_col_name_a[COL_ID_PERIOD];
+const wxString BudgetCol::NAME_AMOUNT = s_col_name_a[COL_ID_AMOUNT];
+const wxString BudgetCol::NAME_NOTES = s_col_name_a[COL_ID_NOTES];
+const wxString BudgetCol::NAME_ACTIVE = s_col_name_a[COL_ID_ACTIVE];
 
 BudgetRow::BudgetRow()
 {

@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, StockData>;
 
 // List of column names in database table STOCK_V1,
 // in the order of StockCol::COL_ID.
-const wxArrayString StockCol::COL_NAME_A = {
+const wxArrayString StockCol::s_col_name_a = {
     "STOCKID",
     "HELDAT",
     "PURCHASEDATE",
@@ -41,8 +41,21 @@ const wxArrayString StockCol::COL_NAME_A = {
     "COMMISSION"
 };
 
-const StockCol::COL_ID StockCol::PRIMARY_ID = COL_ID_STOCKID;
-const wxString StockCol::PRIMARY_NAME = COL_NAME_A[COL_ID_STOCKID];
+const StockCol::COL_ID StockCol::s_primary_id = COL_ID_STOCKID;
+const wxString StockCol::s_primary_name = s_col_name_a[COL_ID_STOCKID];
+
+// convenience variables
+const wxString StockCol::NAME_STOCKID = s_col_name_a[COL_ID_STOCKID];
+const wxString StockCol::NAME_HELDAT = s_col_name_a[COL_ID_HELDAT];
+const wxString StockCol::NAME_PURCHASEDATE = s_col_name_a[COL_ID_PURCHASEDATE];
+const wxString StockCol::NAME_STOCKNAME = s_col_name_a[COL_ID_STOCKNAME];
+const wxString StockCol::NAME_SYMBOL = s_col_name_a[COL_ID_SYMBOL];
+const wxString StockCol::NAME_NUMSHARES = s_col_name_a[COL_ID_NUMSHARES];
+const wxString StockCol::NAME_PURCHASEPRICE = s_col_name_a[COL_ID_PURCHASEPRICE];
+const wxString StockCol::NAME_NOTES = s_col_name_a[COL_ID_NOTES];
+const wxString StockCol::NAME_CURRENTPRICE = s_col_name_a[COL_ID_CURRENTPRICE];
+const wxString StockCol::NAME_VALUE = s_col_name_a[COL_ID_VALUE];
+const wxString StockCol::NAME_COMMISSION = s_col_name_a[COL_ID_COMMISSION];
 
 StockRow::StockRow()
 {

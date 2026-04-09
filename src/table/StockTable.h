@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -41,16 +41,78 @@ struct StockCol
         COL_ID_size
     };
 
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
 
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+
+    // convenience variables
+
+    static const wxString NAME_STOCKID;
+    static const wxString NAME_HELDAT;
+    static const wxString NAME_PURCHASEDATE;
+    static const wxString NAME_STOCKNAME;
+    static const wxString NAME_SYMBOL;
+    static const wxString NAME_NUMSHARES;
+    static const wxString NAME_PURCHASEPRICE;
+    static const wxString NAME_NOTES;
+    static const wxString NAME_CURRENTPRICE;
+    static const wxString NAME_VALUE;
+    static const wxString NAME_COMMISSION;
+
+    // convenience methods
+
+    static TableClauseV<int64> WHERE_STOCKID(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_STOCKID, op, value);
+    }
+
+    static TableClauseV<int64> WHERE_HELDAT(OP op, const int64& value) {
+        return TableClause::WHERE<int64>(NAME_HELDAT, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_PURCHASEDATE(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_PURCHASEDATE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_STOCKNAME(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_STOCKNAME, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_SYMBOL(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_SYMBOL, op, value);
+    }
+
+    static TableClauseV<double> WHERE_NUMSHARES(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_NUMSHARES, op, value);
+    }
+
+    static TableClauseV<double> WHERE_PURCHASEPRICE(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_PURCHASEPRICE, op, value);
+    }
+
+    static TableClauseV<wxString> WHERE_NOTES(OP op, const wxString& value) {
+        return TableClause::WHERE<wxString>(NAME_NOTES, op, value);
+    }
+
+    static TableClauseV<double> WHERE_CURRENTPRICE(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_CURRENTPRICE, op, value);
+    }
+
+    static TableClauseV<double> WHERE_VALUE(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_VALUE, op, value);
+    }
+
+    static TableClauseV<double> WHERE_COMMISSION(OP op, const double& value) {
+        return TableClause::WHERE<double>(NAME_COMMISSION, op, value);
+    }
+
+    // deprecated
 
     struct STOCKID : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_STOCKID; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_STOCKID]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_STOCKID]; }
         explicit STOCKID(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit STOCKID(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -58,7 +120,7 @@ struct StockCol
     struct HELDAT : public TableOpV<int64>
     {
         static COL_ID col_id() { return COL_ID_HELDAT; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_HELDAT]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_HELDAT]; }
         explicit HELDAT(const int64 &v): TableOpV<int64>(OP_EQ, v) {}
         explicit HELDAT(OP op, const int64 &v): TableOpV<int64>(op, v) {}
     };
@@ -66,7 +128,7 @@ struct StockCol
     struct PURCHASEDATE : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_PURCHASEDATE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_PURCHASEDATE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_PURCHASEDATE]; }
         explicit PURCHASEDATE(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit PURCHASEDATE(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -74,7 +136,7 @@ struct StockCol
     struct STOCKNAME : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_STOCKNAME; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_STOCKNAME]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_STOCKNAME]; }
         explicit STOCKNAME(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit STOCKNAME(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -82,7 +144,7 @@ struct StockCol
     struct SYMBOL : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_SYMBOL; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_SYMBOL]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_SYMBOL]; }
         explicit SYMBOL(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit SYMBOL(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -90,7 +152,7 @@ struct StockCol
     struct NUMSHARES : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_NUMSHARES; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_NUMSHARES]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_NUMSHARES]; }
         explicit NUMSHARES(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit NUMSHARES(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -98,7 +160,7 @@ struct StockCol
     struct PURCHASEPRICE : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_PURCHASEPRICE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_PURCHASEPRICE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_PURCHASEPRICE]; }
         explicit PURCHASEPRICE(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit PURCHASEPRICE(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -106,7 +168,7 @@ struct StockCol
     struct NOTES : public TableOpV<wxString>
     {
         static COL_ID col_id() { return COL_ID_NOTES; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_NOTES]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_NOTES]; }
         explicit NOTES(const wxString &v): TableOpV<wxString>(OP_EQ, v) {}
         explicit NOTES(OP op, const wxString &v): TableOpV<wxString>(op, v) {}
     };
@@ -114,7 +176,7 @@ struct StockCol
     struct CURRENTPRICE : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_CURRENTPRICE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_CURRENTPRICE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_CURRENTPRICE]; }
         explicit CURRENTPRICE(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit CURRENTPRICE(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -122,7 +184,7 @@ struct StockCol
     struct VALUE : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_VALUE; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_VALUE]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_VALUE]; }
         explicit VALUE(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit VALUE(OP op, const double &v): TableOpV<double>(op, v) {}
     };
@@ -130,7 +192,7 @@ struct StockCol
     struct COMMISSION : public TableOpV<double>
     {
         static COL_ID col_id() { return COL_ID_COMMISSION; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_COMMISSION]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_COMMISSION]; }
         explicit COMMISSION(const double &v): TableOpV<double>(OP_EQ, v) {}
         explicit COMMISSION(OP op, const double &v): TableOpV<double>(op, v) {}
     };

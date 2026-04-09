@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, PayeeData>;
 
 // List of column names in database table PAYEE_V1,
 // in the order of PayeeCol::COL_ID.
-const wxArrayString PayeeCol::COL_NAME_A = {
+const wxArrayString PayeeCol::s_col_name_a = {
     "PAYEEID",
     "PAYEENAME",
     "CATEGID",
@@ -38,8 +38,18 @@ const wxArrayString PayeeCol::COL_NAME_A = {
     "PATTERN"
 };
 
-const PayeeCol::COL_ID PayeeCol::PRIMARY_ID = COL_ID_PAYEEID;
-const wxString PayeeCol::PRIMARY_NAME = COL_NAME_A[COL_ID_PAYEEID];
+const PayeeCol::COL_ID PayeeCol::s_primary_id = COL_ID_PAYEEID;
+const wxString PayeeCol::s_primary_name = s_col_name_a[COL_ID_PAYEEID];
+
+// convenience variables
+const wxString PayeeCol::NAME_PAYEEID = s_col_name_a[COL_ID_PAYEEID];
+const wxString PayeeCol::NAME_PAYEENAME = s_col_name_a[COL_ID_PAYEENAME];
+const wxString PayeeCol::NAME_CATEGID = s_col_name_a[COL_ID_CATEGID];
+const wxString PayeeCol::NAME_NUMBER = s_col_name_a[COL_ID_NUMBER];
+const wxString PayeeCol::NAME_WEBSITE = s_col_name_a[COL_ID_WEBSITE];
+const wxString PayeeCol::NAME_NOTES = s_col_name_a[COL_ID_NOTES];
+const wxString PayeeCol::NAME_ACTIVE = s_col_name_a[COL_ID_ACTIVE];
+const wxString PayeeCol::NAME_PATTERN = s_col_name_a[COL_ID_PATTERN];
 
 PayeeRow::PayeeRow()
 {
