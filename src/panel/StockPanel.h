@@ -47,6 +47,8 @@ private:
     StockList*      w_list           = nullptr;
     wxStaticText*   w_header_title   = nullptr;
     wxStaticText*   w_header_total   = nullptr;
+    wxStaticText*   w_header_info    = nullptr;
+    wxStaticText*   w_header_win     = nullptr;
     wxStaticText*   w_details        = nullptr;
     wxStaticText*   w_details_short  = nullptr;
     wxChoice*       w_filter_choice  = nullptr;

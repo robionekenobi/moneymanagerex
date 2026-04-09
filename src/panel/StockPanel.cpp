@@ -117,17 +117,27 @@ void StockPanel::createControls()
     });
 
     w_header_total = new wxStaticText(headerPanel, wxID_STATIC, "");
+    w_header_info = new wxStaticText(headerPanel, wxID_STATIC, "");
+    w_header_win = new wxStaticText(headerPanel, wxID_STATIC, "");
+    wxBoxSizer* itemBoxSizerHHeader1 = new wxBoxSizer(wxHORIZONTAL);
+    //itemBoxSizerHHeader1->AddSpacer(15);
+    itemBoxSizerHHeader1->Add(w_header_total, 0, wxALIGN_BOTTOM, 1);
+    itemBoxSizerHHeader1->AddSpacer(20);
+    itemBoxSizerHHeader1->Add(w_header_info, 0, wxALIGN_BOTTOM, 1);
+    itemBoxSizerHHeader1->AddSpacer(20);
+    itemBoxSizerHHeader1->Add(w_header_win, 0, wxALIGN_BOTTOM, 1);
+
     wxStaticText* sfilter = new wxStaticText(headerPanel, wxID_STATIC, "Name:", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
     w_nameFilter = new wxTextCtrl(headerPanel, wxID_INDEX, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
     w_nameFilter->Bind(wxEVT_TEXT, &StockPanel::onFilterTextChanged, this);
-    w_filter_cancel = new wxBitmapButton(headerPanel, wxID_ANY, mmBitmapBundle(png::CLEAR, mmBitmapButtonSize));
+    w_filter_cancel = new wxBitmapButton(headerPanel, wxID_ANY, mmImage::bitmapBundle(mmImage::png::CLEAR, mmImage::bitmapButtonSize));
     w_filter_cancel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &StockPanel::onFilterCancel, this);
     mmToolTip(w_filter_cancel, _t("Reset filter"));
 
     wxBoxSizer* itemBoxSizerVHeader1 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizerVHeader1->Add(w_header_title, 1, wxALL, 1);
     itemBoxSizerVHeader1->AddSpacer(5);
-    itemBoxSizerVHeader1->Add(w_header_total, 1, wxALL, 1);
+    itemBoxSizerVHeader1->Add(itemBoxSizerHHeader1, 1, wxEXPAND, 1);
 
     wxBoxSizer* itemBoxSizerHHeader = new wxBoxSizer(wxHORIZONTAL);
     itemBoxSizerHHeader->AddSpacer(15);
@@ -503,15 +513,30 @@ void StockPanel::updateHeader()
     double diffPercents = InvestedVal != 0.0
         ? (marketValue > InvestedVal ? marketValue / InvestedVal*100.0 - 100.0 : -(marketValue / InvestedVal*100.0 - 100.0))
         : 0.0;
-    lbl = wxString::Format("%s     %s     %s     %s     %s (%s %%)"
-        , wxString::Format(_t("Total: %s"), CurrencyModel::instance().toCurrency(marketValue + cashBalance, m_currency_n))
-        , wxString::Format(_t("Cash Balance: %s"), CurrencyModel::instance().toCurrency(cashBalance, m_currency_n))
-        , wxString::Format(_t("Market Value: %s"), CurrencyModel::instance().toCurrency(marketValue, m_currency_n))
-        , wxString::Format(_t("Invested: %s"), CurrencyModel::instance().toCurrency(InvestedVal, m_currency_n))
-        , wxString::Format(marketValue > InvestedVal ? _t("Gain: %s") : _t("Loss: %s"), diffStr)
-        , CurrencyModel::instance().toString(diffPercents, m_currency_n, 2));
 
-    w_header_total->SetLabelText(lbl);
+    w_header_total->SetLabelText(cashBalance != 0 ? wxString::Format(_t("Total: %s"), CurrencyModel::instance().toCurrency(marketValue + cashBalance, m_currency_n))
+                                                 : wxString::Format(_t("Market Value: %s"), CurrencyModel::instance().toCurrency(marketValue, m_currency_n))
+    );
+
+    if (cashBalance != 0) {
+        lbl << wxString::Format(_t("Cash Balance: %s"), CurrencyModel::instance().toCurrency(cashBalance, m_currency_n))
+            << "    "
+            << wxString::Format(_t("Market Value: %s"), CurrencyModel::instance().toCurrency(marketValue, m_currency_n))
+            << "    ";
+    }
+    lbl << wxString::Format(_t("Invested: %s"), CurrencyModel::instance().toCurrency(InvestedVal, m_currency_n));
+    w_header_info->SetLabelText(lbl);
+
+    if (InvestedVal > 0) {
+        lbl =  wxString::Format(marketValue > InvestedVal ? _t("Gain: %s") : _t("Loss: %s"), diffStr)
+            << " (" << CurrencyModel::instance().toString(diffPercents, m_currency_n, 2) << "%)";
+    }
+    else {
+        lbl = "";
+    }
+
+    w_header_win->SetLabelText(lbl);
+    w_header_win->SetForegroundColour(*mmImage::themeMetaColour(marketValue > InvestedVal || InvestedVal == 0 ? mmImage::COLOR_TEXTCONTROL_FONT : mmImage::COLOR_REPORT_DEBIT));
     this->Layout();
 }
 
