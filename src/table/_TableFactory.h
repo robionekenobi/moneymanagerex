@@ -362,10 +362,10 @@ auto TableFactory<T, D>::find_count_mGroup(
         wxSQLite3ResultSet q = stmt.ExecuteQuery();
 
         while (q.NextRow()) {
-            G group;
-            TableBase::get_select_result(q, 0, group);
+            G group1;
+            TableBase::get_select_result(q, 0, group1);
             std::size_t count = static_cast<std::size_t>(q.GetInt64(1).GetValue());
-            result.insert({group, count});
+            result.insert({group1, count});
         }
 
         q.Finalize();
@@ -427,11 +427,11 @@ auto TableFactory<T, D>::find_value_mGroup(
         wxSQLite3ResultSet q = stmt.ExecuteQuery();
 
         while (q.NextRow()) {
-            G group;
+            G group1;
             V value;
-            TableBase::get_select_result(q, 0, group);
+            TableBase::get_select_result(q, 0, group1);
             TableBase::get_select_result(q, 1, value);
-            result.insert({group, value});
+            result.insert({group1, value});
         }
 
         q.Finalize();
