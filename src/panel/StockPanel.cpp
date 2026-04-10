@@ -536,7 +536,8 @@ void StockPanel::updateHeader()
     }
 
     w_header_win->SetLabelText(lbl);
-    w_header_win->SetForegroundColour(*mmImage::themeMetaColour(marketValue > InvestedVal || InvestedVal == 0 ? mmImage::COLOR_TEXTCONTROL_FONT : mmImage::COLOR_REPORT_DEBIT));
+    const wxString c = mmImage::themeMetaString(marketValue > InvestedVal || InvestedVal == 0 ? mmImage::COLOR_TEXTCONTROL_FONT : mmImage::COLOR_REPORT_DEBIT);
+    w_header_win->SetForegroundColour(wxColor(c));
     this->Layout();
 }
 
