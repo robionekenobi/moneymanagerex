@@ -200,7 +200,7 @@ const std::map<int, std::tuple<wxString, wxString, bool>> mmImage::metaDataTrans
     md[COLOR_HTMLPANEL_FORE]   = std::make_tuple("/colors/htmlPanel/foreColor",  "",       false);
     md[COLOR_REPORT_ALTROW]    = std::make_tuple("/colors/reports/altRow",      "#F5F5F5", false);
     md[COLOR_REPORT_CREDIT]    = std::make_tuple("/colors/reports/credit",      "#50B381", false);
-    md[COLOR_REPORT_DEBIT]     = std::make_tuple("/colors/reports/debit",       "#F75E51", false);
+    md[COLOR_REPORT_DEBIT]     = std::make_tuple("/colors/reports/debit",       "#f12121", false);
     md[COLOR_REPORT_DELTA]     = std::make_tuple("/colors/reports/delta",       "#008FFB", false);
     md[COLOR_REPORT_PERF]      = std::make_tuple("/colors/reports/perf",        "#FF6307", false);
     md[COLOR_REPORT_FORECOLOR] = std::make_tuple("/colors/reports/foreColor",   "#373D3F", false);
@@ -223,7 +223,7 @@ const std::map<int, std::tuple<wxString, wxString, bool>> mmImage::metaDataTrans
     md[COLOR_GRM_SPECIAL]      = std::make_tuple("/colors/grm/special",          "#e70870ff", false);
     md[COLOR_TEXTCONTROL]      = std::make_tuple("/colors/textControl",         wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX).GetAsString(wxC2S_HTML_SYNTAX), false);
     md[COLOR_TEXTCONTROL_FONT] = std::make_tuple("/colors/textControlFont",     wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT).GetAsString(wxC2S_HTML_SYNTAX), false);
-    
+
     return md;
 };
 
