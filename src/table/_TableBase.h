@@ -35,6 +35,18 @@ class wxString;
 
 struct TableBase
 {
+// -- static
+
+    void get_select_result(wxSQLite3ResultSet& q, int i, wxString& v) {
+        v = q.GetString(i);
+    }
+    void get_select_result(wxSQLite3ResultSet& q, int i, int64& v) {
+        v = q.GetInt64(i);
+    }
+    void get_select_result(wxSQLite3ResultSet& q, int i, double& v) {
+        v = q.GetDouble(i);
+    }
+
 // -- state
 
 protected:
@@ -103,7 +115,7 @@ public:
     virtual void debug_stat() const = 0;
 };
 
-// -- template
+// -- template methods
 
 template<typename... Args>
 void TableBase::select_query(wxString& query, std::vector<int>& index_a, const Args&... args)
