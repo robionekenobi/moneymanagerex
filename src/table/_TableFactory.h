@@ -206,7 +206,7 @@ auto TableFactory<T, D>::search_cache_n(const Args& ... args) -> const Data*
 //   find_where(true, AssetCol::ASSETID(2), AssetCol::ASSETTYPE("Jewellery"))
 //   produces the SQLite WHERE clause (ASSETID = 2 AND ASSETTYPE = "Jewellery").
 // Return an empty array if no records are found.
-// 
+//
 // TODO: do not store all results in a vactor; return an iterator instead.
 template<typename T, typename D>
 template<typename... Args>
@@ -250,6 +250,7 @@ void TableFactory<T, D>::write_condition(wxString& out, bool /*op_and*/, const A
         case OP_LE:  out += " " + col + " <= ?"; break;
         case OP_EQN: out += " IFNULL(" + col + ", ?)" +  " = ?"; break;
         case OP_NEN: out += " IFNULL(" + col + ", ?)" + " != ?"; break;
+        case OP_LK:  out += " " + col + " LIKE ? "; break;
     }
 }
 
@@ -275,6 +276,7 @@ void TableFactory<T, D>::bind_at(wxSQLite3Statement& stmt, int& index, const Arg
         case OP_LT:
         case OP_GE:
         case OP_LE:
+        case OP_LK:
             stmt.Bind(++index, arg1.m_value);
             break;
         case OP_EQN:
