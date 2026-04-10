@@ -13,6 +13,7 @@ GNU GENERAL PUBLIC LICENSE
 Copyright © 2020-2026 Mark Whalley [whalley]
 Copyright © 2022-2026 Nick [n-stein]
 Copyright © 2025-2026 George Ef [george.a.ef]
+Copyright © 2025-2026 Klaus Wich [kwich]
 Copyright © 2009-2024 Nikolay [Nikolay]
 Copyright © 2011-2020 LiSheng [guanlisheng]
 Copyright © 2013-2017 James [siena123]
@@ -36,23 +37,23 @@ Privacy Policy
 
 We can collect information when the Money Manager Ex (MMEX) application is installed or used.
 People have different privacy concerns: our goal is to be clear about what information we collect, so that you can make meaningful choices about how it is used.
- 
+
 1. Using the MMEX application
 When starting and using the MMEX application, we might collect ANONYMOUS usage statistics like version, geo-location, language, platform and most used functions. No private or financial information is collected.
- 
+
 2. What is the collected information used for?
 Any of the information we collect may be used in one of the following ways: make statistics about software usage and distribution; personalize user experiences (information collected helps to better respond to individual needs); improve the application (MMEX is improved based on the information and feedback received)
- 
+
 3. Is information disclosed to third-parties?
 Google Analytics is used to collect anonymous data. Other than for the above mentioned usage statistics collection, information is not sold, traded, or otherwise transferred to third-parties.
 https://support.google.com/analytics/answer/7318509
- 
+
 4. Can the sending of usage statistics be disabled?
 Yes, by unselecting “Send anonymous statistics usage data” found using Menu Bar → Tools… → Options → Network.
- 
+
 5. Your consent
 By installing or using MMEX, you consent to this Privacy policy.
-  
+
 6. Changes to our Privacy policy
 Any changes to this Privacy policy will correspond to an update to the date below.
 
