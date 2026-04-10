@@ -67,7 +67,25 @@ public:
     void debug_stat() const;
 
     template<typename... Args>
-    auto find_data_a(const Args&... args) -> DataA;
+    auto find_data_a(const Args&... clause_args) -> DataA;
+    template<typename... Args>
+    auto find_id_a(const Args&... clause_args) -> std::vector<int64>;
+    template<typename... Args>
+    auto find_count(const Args&... clause_args) -> std::size_t;
+    template<typename V, typename ArgV, typename... Args>
+    auto find_value(const ArgV& clause_value, const Args&... clause_args) -> V;
+
+    template<typename G, typename... Args>
+    auto find_count_mGroup(
+        const wxString& group,
+        const Args&... clause_args
+    ) -> std::map<G, std::size_t>;
+    template<typename G, typename V, typename ArgV, typename... Args>
+    auto find_value_mGroup(
+        const wxString& group,
+        const ArgV& clause_value,
+        const Args&... clause_args
+    ) -> std::map<G, V>;
 
     template<typename... Args>
     auto unsafe_search_cache_n(const Args& ... args) -> Data*;
@@ -119,39 +137,43 @@ public:
     }
 };
 
-// -- methods
+// -- template methods
 
-// Return the result of a SELECT query as a vector of Data records.
-// args may contain:
-// * zero or more WHERE clauses of the form
+// Return the results of the following query:
+//   SELECT * FROM ${TABLE} ${clause_args}
+// clause_args may contain:
+// * zero or more _WHERE clauses of the form
 //   ${Table}Col::WHERE_${COLUMN}(op, value)
 //   op can be omitted if it is equal to OP_EQ (the "equal" operator).
-//   By default, WHERE clauses are combined with an AND logical operator.
-// * zero or more ORDER BY clauses of the form
+//   By default, _WHERE clauses are combined with an AND logical operator.
+//   Composite conditions can be specified using nested _PAREN clauses:
+//   TableClause::BEGIN_AND() .. TableClause::END() : combined with AND
+//   TableClause::BEGIN_OR()  .. TableClause::END() : combined with OR
+// * zero or more _ORDER clauses of the form
 //   ${Table}Model::ORDERBY_${COLUMN}(${desc})
 //   The order is descending if ${desc} is true.
 //   The default value of ${desc} is false.
-// * an optional LIMIT clause or the form
+// * an optional _LIMIT clause or the form
 //   TableClause::LIMIT(${limit}, ${offset})
 //   The default value of ${offset} is 0.
-// Composite WHERE conditions can be specified by nesting WHERE clauses inside
-//   TableClause::BEGIN_AND() .. TableClause::END() : combined with AND
-//   TableClause::BEGIN_OR()  .. TableClause::END() : combined with OR
-// If no args are specified, the select query is equivalent to
-//   SELECT * FROM ${TABLE}
 template<typename T, typename D>
 template<typename... Args>
-auto TableFactory<T, D>::find_data_a(const Args&... args) -> DataA
+auto TableFactory<T, D>::find_data_a(const Args&... clause_args) -> DataA
 {
+    static_assert(
+        (std::is_base_of<TableClause, Args>::value && ...),
+        "Args must derive from TableClause"
+    );
+
     DataA result;
     try {
         wxString query;
         std::vector<int> index_a;
-        this->select_query(query, index_a, args...);
+        this->select_query(query, index_a, clause_args...);
         wxLogDebug("TableFactory::find_data_a: query: [%s]", query);
 
         wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
-        this->bind_stmt(stmt, index_a, 0, args...);
+        this->bind_stmt(stmt, index_a, 0, clause_args...);
         wxSQLite3ResultSet q = stmt.ExecuteQuery();
 
         while (q.NextRow()) {
@@ -163,6 +185,259 @@ auto TableFactory<T, D>::find_data_a(const Args&... args) -> DataA
     }
     catch(const wxSQLite3Exception &e) {
         wxLogError("TableFactory::find_data_a: Table %s: Exception %s",
+            this->m_table_name, e.GetMessage().utf8_str()
+        );
+    }
+
+    return result;
+}
+
+// Return the results of the following query:
+//   SELECT ${PRIMARY} FROM ${TABLE} ${clause_args}
+// clause_args may contain _WHERE, _PAREN, _ORDER, _LIMIT clauses, as in find_data_a().
+template<typename T, typename D>
+template<typename... Args>
+auto TableFactory<T, D>::find_id_a(const Args&... clause_args) -> std::vector<int64>
+{
+    static_assert(
+        (std::is_base_of<TableClause, Args>::value && ...),
+        "Args must derive from TableClause"
+    );
+
+    std::vector<int64> result;
+    try {
+        wxString query;
+        std::vector<int> index_a;
+        TableClauseD clause_id = TableClause::RESULT(Col::s_primary_name);
+        this->select_query(query, index_a, clause_id, clause_args...);
+        wxLogDebug("TableFactory::find_id_a: query: [%s]", query);
+
+        wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
+        this->bind_stmt(stmt, index_a, 0, clause_id, clause_args...);
+        wxSQLite3ResultSet q = stmt.ExecuteQuery();
+
+        while (q.NextRow()) {
+            int64 id = q.GetInt64(0);
+            result.push_back(id);
+        }
+
+        q.Finalize();
+    }
+    catch(const wxSQLite3Exception &e) {
+        wxLogError("TableFactory::find_id_a: Table %s: Exception %s",
+            this->m_table_name, e.GetMessage().utf8_str()
+        );
+    }
+
+    return result;
+}
+
+// Return the results of the following query:
+//   SELECT COUNT(*) FROM ${TABLE} ${clause_args}
+// clause_args may contain _WHERE or _PAREN clauses.
+template<typename T, typename D>
+template<typename... Args>
+auto TableFactory<T, D>::find_count(const Args&... clause_args) -> std::size_t
+{
+    static_assert(
+        (std::is_base_of<TableClause, Args>::value && ...),
+        "Args must derive from TableClause"
+    );
+
+    std::size_t result = 0;
+    try {
+        wxString query;
+        std::vector<int> index_a;
+        TableClauseD clause_count = TableClause::RESULT("COUNT(*)");
+        this->select_query(query, index_a, clause_count, clause_args...);
+        wxLogDebug("TableFactory::find_count: query: [%s]", query);
+
+        wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
+        this->bind_stmt(stmt, index_a, 0, clause_count, clause_args...);
+        wxSQLite3ResultSet q = stmt.ExecuteQuery();
+
+        if (q.NextRow()) {
+            result = static_cast<std::size_t>(q.GetInt64(0).GetValue());
+        }
+
+        q.Finalize();
+    }
+    catch(const wxSQLite3Exception &e) {
+        wxLogError("TableFactory::find_count: Table %s: Exception %s",
+            this->m_table_name, e.GetMessage().utf8_str()
+        );
+    }
+
+    return result;
+}
+
+// Return the results of the following query:
+//   SELECT ${AGGREGATE}(${COLUMN_V) FROM ${TABLE} ${clause_args}
+// clause_value is an aggregate _RESULT clause of the form
+//   ${Table}Model::${AGGREGATE}_${COLUMN_V}
+// where ${AGGREGATE} is one of SUM, MIN, MAX.
+// clause_args may contain _WHERE or _PAREN clauses.
+template<typename T, typename D>
+template<typename V, typename ArgV, typename... Args>
+auto TableFactory<T, D>::find_value(
+    const ArgV& clause_value,
+    const Args&... clause_args
+) -> V
+{
+    static_assert(
+        std::is_base_of<TableClause, ArgV>::value,
+        "ArgV must derive from TableClause"
+    );
+    static_assert(
+        (std::is_base_of<TableClause, Args>::value && ...),
+        "Args must derive from TableClause"
+    );
+
+    V result;
+    if (clause_value.m_id != TableClause::CLAUSE_ID_RESULT) {
+        wxLogError("TableFactory::find_value: the first argument must be _RESULT");
+        return result;
+    }
+
+    try {
+        wxString query;
+        std::vector<int> index_a;
+        this->select_query(query, index_a, clause_value, clause_args...);
+        wxLogDebug("TableFactory::find_value: query: [%s]", query);
+
+        wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
+        this->bind_stmt(stmt, index_a, 0, clause_value, clause_args...);
+        wxSQLite3ResultSet q = stmt.ExecuteQuery();
+
+        if (q.NextRow()) {
+            TableBase::get_select_result(q, 0, result);
+        }
+
+        q.Finalize();
+    }
+    catch(const wxSQLite3Exception &e) {
+        wxLogError("TableFactory::find_value: Table %s: Exception %s",
+            this->m_table_name, e.GetMessage().utf8_str()
+        );
+    }
+
+    return result;
+}
+
+// Return the results of the following query:
+//   SELECT ${group}, COUNT(*) FROM ${TABLE}
+//   ${clause_args}
+//   GROUP BY ${group} ORDER BY ${group}
+// as a map from ${group} to a count.
+// group is the name of a column.
+// clause_args may contain _WHERE or _PAREN clauses.
+template<typename T, typename D>
+template<typename G, typename... Args>
+auto TableFactory<T, D>::find_count_mGroup(
+    const wxString& group,
+    const Args&... clause_args
+) -> std::map<G, std::size_t>
+{
+    static_assert(
+        (std::is_base_of<TableClause, Args>::value && ...),
+        "Args must derive from TableClause"
+    );
+
+    std::map<G, std::size_t> result;
+    try {
+        wxString query;
+        std::vector<int> index_a;
+        TableClauseD clause_group = TableClause::RESULT(group);
+        TableClauseD clause_count = TableClause::RESULT("COUNT(*)");
+        this->select_query(query, index_a,
+            clause_group, clause_count,
+            clause_args...,
+            TableClause::GROUPBY(group),
+            TableClause::ORDERBY(group)
+        );
+        wxLogDebug("TableFactory::find_count_mGroup: query: [%s]", query);
+
+        wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
+        this->bind_stmt(stmt, index_a, 0, clause_group, clause_count, clause_args...);
+        wxSQLite3ResultSet q = stmt.ExecuteQuery();
+
+        while (q.NextRow()) {
+            G group;
+            TableBase::get_select_result(q, 0, group);
+            std::size_t count = static_cast<std::size_t>(q.GetInt64(1).GetValue());
+            result.insert({group, count});
+        }
+
+        q.Finalize();
+    }
+    catch(const wxSQLite3Exception &e) {
+        wxLogError("TableFactory::find_count_mGroup: Table %s: Exception %s",
+            this->m_table_name, e.GetMessage().utf8_str()
+        );
+    }
+
+    return result;
+}
+
+// Return the results of the following query:
+//   SELECT ${group}, ${AGGREGATE}(${COLUMN_V) FROM ${TABLE}
+//   ${clause_args}
+//   GROUP BY ${group} ORDER BY ${group}
+// as a map from ${group} to an aggreagate value.
+// group is the name of a column.
+// clause_value is an aggregate _RESULT clause, as in find_value().
+// clause_args may contain _WHERE or _PAREN clauses.
+template<typename T, typename D>
+template<typename G, typename V, typename ArgV, typename... Args>
+auto TableFactory<T, D>::find_value_mGroup(
+    const wxString& group,
+    const ArgV& clause_value,
+    const Args&... clause_args
+) -> std::map<G, V>
+{
+    static_assert(
+        std::is_base_of<TableClause, ArgV>::value,
+        "ArgV must derive from TableClause"
+    );
+    static_assert(
+        (std::is_base_of<TableClause, Args>::value && ...),
+        "Args must derive from TableClause"
+    );
+
+    std::map<G, V> result;
+    if (clause_value.m_id != TableClause::CLAUSE_ID_RESULT) {
+        wxLogError("TableFactory::find_value_mGroup: the first argument must be _RESULT");
+        return result;
+    }
+
+    try {
+        wxString query;
+        std::vector<int> index_a;
+        TableClauseD clause_group = TableClause::RESULT(group);
+        this->select_query(query, index_a,
+            clause_group, clause_value,
+            clause_args...,
+            TableClause::GROUPBY(group),
+            TableClause::ORDERBY(group)
+        );
+        wxLogDebug("TableFactory::find_value_mGroup: query: [%s]", query);
+
+        wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
+        this->bind_stmt(stmt, index_a, 0, clause_group, clause_value, clause_args...);
+        wxSQLite3ResultSet q = stmt.ExecuteQuery();
+
+        while (q.NextRow()) {
+            G group;
+            V value;
+            TableBase::get_select_result(q, 0, group);
+            TableBase::get_select_result(q, 1, value);
+            result.insert({group, value});
+        }
+
+        q.Finalize();
+    }
+    catch(const wxSQLite3Exception &e) {
+        wxLogError("TableFactory::find_value_mGroup: Table %s: Exception %s",
             this->m_table_name, e.GetMessage().utf8_str()
         );
     }
