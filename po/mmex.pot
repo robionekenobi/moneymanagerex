@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MMEX\n"
 "Report-Msgid-Bugs-To: developer@moneymanagerex.org\n"
-"POT-Creation-Date: 2026-04-09 07:12+0000\n"
+"POT-Creation-Date: 2026-04-10 09:38+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1148,7 +1148,7 @@ msgstr ""
 msgid "Please wait…"
 msgstr ""
 
-#: app/mmFrame.cpp:3962 panel/StockPanel.cpp:588
+#: app/mmFrame.cpp:3962 panel/StockPanel.cpp:656
 #, c-format
 msgid "%1$s on %2$s"
 msgstr ""
@@ -1239,7 +1239,7 @@ msgstr ""
 #: import_export/ofx_import_gui.cpp:1175 import_export/univcsvdialog.cpp:1714
 #: import_export/webappdialog.cpp:189 import_export/webappdialog.cpp:193
 #: manager/ThemeManager.cpp:326 manager/ThemeManager.cpp:346
-#: panel/StockPanel.cpp:511 panel/StockPanel.cpp:512 util/mmImage.cpp:594
+#: panel/StockPanel.cpp:559 panel/StockPanel.cpp:560 util/mmImage.cpp:594
 msgid "Error"
 msgstr ""
 
@@ -1704,7 +1704,7 @@ msgstr ""
 #: import_export/qif_import_gui.cpp:108 import_export/univcsvdialog.cpp:107
 #: import_export/webapp.cpp:599 import_export/webappdialog.cpp:143
 #: model/TrxFilter.cpp:196 panel/AssetList.cpp:59 panel/AssetPanel.cpp:551
-#: panel/JournalList.cpp:99 panel/StockPanel.cpp:293
+#: panel/JournalList.cpp:99 panel/StockPanel.cpp:325
 #: report/BalanceReport.cpp:272 report/FlowReport.cpp:286
 #: report/FlowReport.cpp:415 report/InExReport.cpp:255 report/TrxReport.cpp:220
 #: wizard/wizard_update.cpp:141
@@ -2476,7 +2476,7 @@ msgstr ""
 #: manager/CategoryManager.cpp:334 manager/FieldManager.cpp:279
 #: manager/PayeeManager.cpp:952 manager/TagManager.cpp:155
 #: panel/AssetPanel.cpp:182 panel/JournalPanel.cpp:367 panel/SchedPanel.cpp:162
-#: panel/StockPanel.cpp:172
+#: panel/StockPanel.cpp:204
 msgid "&Edit "
 msgstr ""
 
@@ -2617,7 +2617,7 @@ msgstr ""
 #: dialog/BudgetYearDialog.cpp:107 dialog/CurrencyChoiceDialog.cpp:329
 #: dialog/StockDialog.cpp:360 manager/CategoryManager.cpp:338
 #: manager/TagManager.cpp:160 panel/AssetPanel.cpp:187
-#: panel/JournalPanel.cpp:359 panel/SchedPanel.cpp:172 panel/StockPanel.cpp:177
+#: panel/JournalPanel.cpp:359 panel/SchedPanel.cpp:172 panel/StockPanel.cpp:209
 msgid "&Delete "
 msgstr ""
 
@@ -2713,7 +2713,7 @@ msgstr ""
 
 #: dialog/CurrencyChoiceDialog.cpp:283 dialog/StockDialog.cpp:322
 #: dialog/StockDialog.cpp:345 dialog/StockDialog.cpp:656
-#: panel/StockPanel.cpp:297
+#: panel/StockPanel.cpp:329
 msgid "Price"
 msgstr ""
 
@@ -2855,7 +2855,7 @@ msgstr ""
 msgid "Unable to download history for base symbol %s. Historical rates unavailable!"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:939 panel/StockPanel.cpp:521
+#: dialog/CurrencyChoiceDialog.cpp:939 panel/StockPanel.cpp:589
 #: util/_util.cpp:779
 msgid "Unable to find base currency symbol!"
 msgstr ""
@@ -2874,7 +2874,7 @@ msgstr ""
 #: import_export/qif_export.cpp:81 import_export/qif_export.cpp:159
 #: manager/DateRangeManager.cpp:305 model/PrefModel.cpp:57
 #: model/PrefModel.cpp:91 panel/AssetPanel.cpp:117 panel/AssetPanel.cpp:402
-#: panel/AssetPanel.cpp:419 panel/StockPanel.cpp:111
+#: panel/AssetPanel.cpp:419 panel/StockPanel.cpp:109
 msgid "All"
 msgstr ""
 
@@ -3686,11 +3686,11 @@ msgstr ""
 msgid "User Interface Language"
 msgstr ""
 
-#: dialog/StockDialog.cpp:138 panel/StockPanel.cpp:173
+#: dialog/StockDialog.cpp:138 panel/StockPanel.cpp:205
 msgid "Edit Stock Investment"
 msgstr ""
 
-#: dialog/StockDialog.cpp:138 panel/StockPanel.cpp:159
+#: dialog/StockDialog.cpp:138 panel/StockPanel.cpp:191
 msgid "New Stock Investment"
 msgstr ""
 
@@ -4943,7 +4943,7 @@ msgstr ""
 
 #: import_export/qif_import_gui.cpp:826 import_export/qif_import_gui.cpp:854
 #: import_export/univcsvdialog.cpp:2456 import_export/univcsvdialog.cpp:2468
-#: panel/StockPanel.cpp:578
+#: panel/StockPanel.cpp:646
 msgid "Missing"
 msgstr ""
 
@@ -5108,7 +5108,7 @@ msgid "Current Total Value"
 msgstr ""
 
 #: import_export/univcsvdialog.cpp:133 panel/StockList.cpp:84
-#: panel/StockPanel.cpp:298 report/StocksReport.cpp:126
+#: panel/StockPanel.cpp:330 report/StocksReport.cpp:126
 msgid "Commission"
 msgstr ""
 
@@ -5622,7 +5622,7 @@ msgid "Remove hidden setting from all categories"
 msgstr ""
 
 #: manager/CategoryManager.cpp:330 panel/AssetPanel.cpp:163
-#: panel/JournalPanel.cpp:363 panel/SchedPanel.cpp:158 panel/StockPanel.cpp:158
+#: panel/JournalPanel.cpp:363 panel/SchedPanel.cpp:158 panel/StockPanel.cpp:190
 msgid "&New "
 msgstr ""
 
@@ -6693,7 +6693,7 @@ msgid "&Delete Asset…"
 msgstr ""
 
 #: panel/AssetList.cpp:118 panel/JournalList.cpp:1375 panel/SchedList.cpp:197
-#: panel/StockList.cpp:166
+#: panel/StockList.cpp:168
 msgid "&Organize Attachments…"
 msgstr ""
 
@@ -6713,7 +6713,7 @@ msgstr ""
 msgid "&Add Trans "
 msgstr ""
 
-#: panel/AssetPanel.cpp:176 panel/StockPanel.cpp:167
+#: panel/AssetPanel.cpp:176 panel/StockPanel.cpp:199
 msgid "&View Trans "
 msgstr ""
 
@@ -6726,7 +6726,7 @@ msgid "Delete Asset"
 msgstr ""
 
 #: panel/AssetPanel.cpp:196 panel/JournalPanel.cpp:395 panel/SchedPanel.cpp:191
-#: panel/StockPanel.cpp:191
+#: panel/StockPanel.cpp:223
 msgid "Open attachments"
 msgstr ""
 
@@ -6742,7 +6742,7 @@ msgstr ""
 msgid "The asterisk (*) is used to match any number of characters, for example \"s*d\" finds both \"sad\" and \"started\"."
 msgstr ""
 
-#: panel/AssetPanel.cpp:307 panel/StockList.cpp:750 panel/StockPanel.cpp:485
+#: panel/AssetPanel.cpp:307 panel/StockList.cpp:769 panel/StockPanel.cpp:517
 #, c-format
 msgid "Total: %s"
 msgstr ""
@@ -6768,7 +6768,7 @@ msgstr ""
 msgid "Asset Management"
 msgstr ""
 
-#: panel/AssetPanel.cpp:552 panel/StockPanel.cpp:296
+#: panel/AssetPanel.cpp:552 panel/StockPanel.cpp:328
 msgid "Trade Type"
 msgstr ""
 
@@ -6894,7 +6894,7 @@ msgid "Cash Balance"
 msgstr ""
 
 #: panel/DashboardWidget.cpp:99 panel/DashboardWidget.cpp:616
-#: panel/StockPanel.cpp:299 report/CategoryReport.cpp:254
+#: panel/StockPanel.cpp:331 report/CategoryReport.cpp:254
 #: report/CategoryReport.cpp:540 report/FlowReport.cpp:287
 #: report/budgetingperf.cpp:136
 msgid "Total"
@@ -7234,7 +7234,7 @@ msgstr ""
 msgid "Moving %i transactions to…"
 msgstr ""
 
-#: panel/JournalList.cpp:2054 panel/StockList.cpp:374
+#: panel/JournalList.cpp:2054 panel/StockList.cpp:376
 msgid "Select the destination Account "
 msgstr ""
 
@@ -7290,6 +7290,7 @@ msgid "Filter…"
 msgstr ""
 
 #: panel/JournalPanel.cpp:276 panel/ReportPanel.cpp:449
+#: panel/StockPanel.cpp:135
 msgid "Reset filter"
 msgstr ""
 
@@ -7509,140 +7510,140 @@ msgstr ""
 msgid "Curr. Total Value"
 msgstr ""
 
-#: panel/StockList.cpp:157
+#: panel/StockList.cpp:159
 msgid "&New Stock Investment…"
 msgstr ""
 
-#: panel/StockList.cpp:159
+#: panel/StockList.cpp:161
 msgid "&Adjust Trade"
 msgstr ""
 
-#: panel/StockList.cpp:160
+#: panel/StockList.cpp:162
 msgid "&View Stock Transactions"
 msgstr ""
 
-#: panel/StockList.cpp:162
+#: panel/StockList.cpp:164
 msgid "&Edit Stock Investment…"
 msgstr ""
 
-#: panel/StockList.cpp:164
+#: panel/StockList.cpp:166
 msgid "&Delete Stock Investment…"
 msgstr ""
 
-#: panel/StockList.cpp:167
+#: panel/StockList.cpp:169
 msgid "Stock &Web Page"
 msgstr ""
 
-#: panel/StockList.cpp:339
+#: panel/StockList.cpp:341
 msgid "Do you want to delete the stock investment?"
 msgstr ""
 
-#: panel/StockList.cpp:340
+#: panel/StockList.cpp:342
 msgid "Confirm Stock Investment Deletion"
 msgstr ""
 
-#: panel/StockList.cpp:371
+#: panel/StockList.cpp:373
 #, c-format
 msgid "Moving Transaction from %s to"
 msgstr ""
 
-#: panel/StockList.cpp:749
+#: panel/StockList.cpp:768
 #, c-format
 msgid "Symbol: %s"
 msgstr ""
 
-#: panel/StockPanel.cpp:112
+#: panel/StockPanel.cpp:110
 msgid "Non-Zero Shares"
 msgstr ""
 
-#: panel/StockPanel.cpp:162
+#: panel/StockPanel.cpp:194
 msgid "&Adjust Trade "
 msgstr ""
 
-#: panel/StockPanel.cpp:163
+#: panel/StockPanel.cpp:195
 msgid "Add Stock Transactions"
 msgstr ""
 
-#: panel/StockPanel.cpp:168 panel/StockPanel.cpp:242
+#: panel/StockPanel.cpp:200 panel/StockPanel.cpp:274
 msgid "View Stock Transactions"
 msgstr ""
 
-#: panel/StockPanel.cpp:178
+#: panel/StockPanel.cpp:210
 msgid "Delete Stock Investment"
 msgstr ""
 
-#: panel/StockPanel.cpp:182
+#: panel/StockPanel.cpp:214
 msgid "&Move"
 msgstr ""
 
-#: panel/StockPanel.cpp:183
+#: panel/StockPanel.cpp:215
 msgid "Move selected transaction to another account"
 msgstr ""
 
-#: panel/StockPanel.cpp:199
+#: panel/StockPanel.cpp:231
 msgid "Refresh"
 msgstr ""
 
-#: panel/StockPanel.cpp:200
+#: panel/StockPanel.cpp:232
 msgid "Refresh Stock Prices from Yahoo"
 msgstr ""
 
-#: panel/StockPanel.cpp:294
+#: panel/StockPanel.cpp:326
 msgid "Lot"
 msgstr ""
 
-#: panel/StockPanel.cpp:295 util/mmNavigatorList.cpp:65
+#: panel/StockPanel.cpp:327 util/mmNavigatorList.cpp:65
 msgid "Shares"
 msgstr ""
 
-#: panel/StockPanel.cpp:426
+#: panel/StockPanel.cpp:458
 #, c-format
 msgid "Stock Portfolio: %s"
 msgstr ""
 
-#: panel/StockPanel.cpp:474
+#: panel/StockPanel.cpp:506
 msgid "Stock Portfolios Overview"
 msgstr ""
 
-#: panel/StockPanel.cpp:486
-#, c-format
-msgid "Cash Balance: %s"
-msgstr ""
-
-#: panel/StockPanel.cpp:487
+#: panel/StockPanel.cpp:518 panel/StockPanel.cpp:524
 #, c-format
 msgid "Market Value: %s"
 msgstr ""
 
-#: panel/StockPanel.cpp:488
+#: panel/StockPanel.cpp:522
+#, c-format
+msgid "Cash Balance: %s"
+msgstr ""
+
+#: panel/StockPanel.cpp:527
 #, c-format
 msgid "Invested: %s"
 msgstr ""
 
-#: panel/StockPanel.cpp:489
+#: panel/StockPanel.cpp:531
 #, c-format
 msgid "Gain: %s"
 msgstr ""
 
-#: panel/StockPanel.cpp:489
+#: panel/StockPanel.cpp:531
 #, c-format
 msgid "Loss: %s"
 msgstr ""
 
-#: panel/StockPanel.cpp:501
+#: panel/StockPanel.cpp:549
 msgid "Stock prices updated successfully"
 msgstr ""
 
-#: panel/StockPanel.cpp:503 panel/StockPanel.cpp:632
+#: panel/StockPanel.cpp:551 panel/StockPanel.cpp:700
 #, c-format
 msgid "Last updated %s"
 msgstr ""
 
-#: panel/StockPanel.cpp:526 util/_util.cpp:805 util/_util.cpp:983
+#: panel/StockPanel.cpp:594 util/_util.cpp:805 util/_util.cpp:983
 msgid "Nothing to update"
 msgstr ""
 
-#: panel/StockPanel.cpp:539
+#: panel/StockPanel.cpp:607
 msgid "Connecting…"
 msgstr ""
 
