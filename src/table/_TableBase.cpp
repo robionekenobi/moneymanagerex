@@ -133,7 +133,6 @@ void TableBase::select_query(
             state.query = clause.m_text;
             state.is_empty = false;
             break;
-
         default:
             break;
         }
