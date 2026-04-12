@@ -81,7 +81,9 @@ CurrencyChoiceDialog::CurrencyChoiceDialog(
     m_col_name_m[BASE_RATE]   = m_history_en ? _t("Last Rate") : _t("Fixed Rate");
 
     m_currency_id = currencyID == -1 ? PrefModel::instance().getBaseCurrencyID() : currencyID;
-    this->SetFont(parent->GetFont());
+    if (parent) {
+        this->SetFont(parent->GetFont());
+    }
     Create(parent);
     m_select_en ? SetMinSize(wxSize(200, 350)) : SetMinSize(wxSize(500, 350));
     mmSetSize(this);
@@ -414,7 +416,7 @@ bool CurrencyChoiceDialog::Execute(wxWindow* parent, int64& currencyID)
 
 bool CurrencyChoiceDialog::Execute(int64& currencyID)
 {
-    CurrencyChoiceDialog dlg(nullptr, currencyID);
+    CurrencyChoiceDialog dlg(NULL, currencyID);
     dlg.m_static_dialog = true;
     dlg.SetTitle(_t("Base Currency Selection"));
     dlg.w_history_list->Enable(false);
