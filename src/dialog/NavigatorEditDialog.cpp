@@ -1,5 +1,5 @@
 /*******************************************************
- Copyright (C) 2025 Klaus Wich
+ Copyright (C) 2025, 2026 Klaus Wich
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -104,22 +104,28 @@ void NavigatorEditDialog::CreateControls()
 
     wxStaticText* iconLabel = new wxStaticText(uiBox, wxID_ANY, _t("Symbol") + ":");
 
-    wxVector<wxBitmapBundle> images = mmImage::navtree_bitmapBundle_a();
-    const auto navIconSize = PrefModel::instance().getNavigationIconSize();
-    wxImageList* imageList = new wxImageList(navIconSize, navIconSize);
-    for (const auto& bundle : mmImage::navtree_bitmapBundle_a(navIconSize)) {
+   /* wxImageList* imageList = new wxImageList(navIconSize, navIconSize);
+    for (const auto& bundle : navtree_images_list(navIconSize)) {
         wxBitmap bitmap = bundle.GetBitmap(wxSize(navIconSize, navIconSize));
         imageList->Add(bitmap);
     }
+    wxImageList* imageList = NavTreeIconImages::instance().getImageList();*/
+
+    const auto navIconSize = PrefModel::instance().getNavigationIconSize();
     m_cbIcon = new wxBitmapComboBox(uiBox, wxID_ANY, "",
             wxPoint(navIconSize, navIconSize), wxDefaultSize,
             0, nullptr, wxCB_READONLY | wxCB_DROPDOWN);
     m_cbIcon->SetMinSize(wxSize(3 * navIconSize, -1));
 
-    const int imageCount = imageList->GetImageCount();
+    wxVector<wxBitmapBundle> bitmaps = NavTreeIconImages::instance().getList(navIconSize);
+    for (const auto& bitmap : bitmaps) {
+        m_cbIcon->Append("", bitmap);
+    }
+
+    /*const int imageCount = imageList->GetImageCount();
     for (int i = 0; i < imageCount; ++i) {
         m_cbIcon->Append("", imageList->GetBitmap(i));
-    }
+    }*/
 
     uiStyleSizer->Add(iconLabel, g_flagsH);
     uiStyleSizer->Add(m_cbIcon, g_flagsH);

@@ -1,5 +1,6 @@
 /*******************************************************
 Copyright (C) 2009 VaDiM
+Copyright (C) 2026 Klaus Wich
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -154,7 +155,8 @@ const wxString mmPath::getPathResource(EResFile f)
         { HOME_PAGE_TEMPLATE, "home_page.htt" },
         { MMEX_LOGO,          "mmex.svg" },
         { THEMESDIR,          "themes" },
-        { REPORTS,            "reports" }
+        { REPORTS,            "reports" },
+        { ICONDIR,            "icons" }
     };
 
     for (const auto& item : files) {
@@ -187,24 +189,41 @@ const wxString mmPath::getPathShared(ESharedFile f)
 
 const wxString mmPath::getPathUser(EUserFile f)
 {
+    wxFileName fname = mmPath::getPathUserRaw(f, false);
+    return fname.GetFullPath();
+}
+
+const wxFileName mmPath::getPathUserRaw(EUserFile f, bool create)
+{
     static const wxString files[USER_FILES_MAX] = {
       mmPath::getSettingsFileName(),
       mmPath::getDirectory(),
-      mmPath::getUserTheme()
+      mmPath::getUserTheme(),
+      mmPath::getIconDir()
     };
 
     wxASSERT(f >= 0 && f < USER_FILES_MAX);
 
     wxFileName fname = mmPath::getUserDir(true);
-    if (mmPath::USERTHEMEDIR == f)
+    if (f > DIRECTORY) {
         fname.AppendDir(files[f]);
-    else
+        if (!fname.DirExists()) {
+            if (create && !fname.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL)) {
+                wxLogError("Directory %s does not exist and could not be created!", fname.GetFullPath());
+            }
+            else {
+                wxLogDebug("Directory %s does not exist!", fname.GetFullPath());
+            }
+        }
+    }
+    else {
         fname.SetFullName(files[f]);
+    }
 
-    return fname.GetFullPath();
+    return fname;
 }
 
-// This function transforms mnemonic pathes to real one
+// This function transforms mnemonic paths to real one
 // For example %USERPROFILE%\MyBudget will be transformed to C:\Users\James\MyBudget
 const wxString mmPath::getPathAttachment(const wxString& folder)
 {

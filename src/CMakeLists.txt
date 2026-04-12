@@ -387,6 +387,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     dialog/FieldDialog.h
     dialog/FieldValueDialog.cpp
     dialog/FieldValueDialog.h
+    dialog/IconManagerDialog.cpp
+    dialog/IconManagerDialog.h
     dialog/MergeCategoryDialog.cpp
     dialog/MergeCategoryDialog.h
     dialog/MergePayeeDialog.cpp

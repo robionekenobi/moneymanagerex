@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2006 Madhan Kanagavel
- Copyright (C) 2022  Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (c) 2026 Klaus Wich
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -30,6 +31,8 @@
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
 
+#include "dialog/IconManagerDialog.h"
+
 #include "model/CurrencyModel.h"
 #include "model/InfoModel.h"
 #include "model/PrefModel.h"
@@ -38,6 +41,7 @@
 #include "AttachmentDialog.h"
 #include "CurrencyChoiceDialog.h"
 #include "import_export/webapp.h"
+
 
 enum {
     ID_DIALOG_NEWACCT_BUTTON_CURRENCY = wxID_HIGHEST + 1000,
@@ -61,10 +65,6 @@ wxBEGIN_EVENT_TABLE(AccountDialog, wxDialog)
     EVT_BUTTON(wxID_CANCEL,                        AccountDialog::OnCancel)
     EVT_BUTTON(ID_DIALOG_NEWACCT_BUTTON_CURRENCY,  AccountDialog::OnCurrency)
     EVT_BUTTON(wxID_FILE,                          AccountDialog::OnAttachments)
-    EVT_MENU_RANGE(
-        wxID_HIGHEST,
-        wxID_HIGHEST + static_cast<int>(mmImage::acc_img::MAX_ACC_ICON),
-                                                   AccountDialog::OnCustonImage)
     EVT_CHOICE(ID_DIALOG_NEWACCT_COMBO_ACCTSTATUS, AccountDialog::OnAccountStatus)
 wxEND_EVENT_TABLE()
 
@@ -75,7 +75,7 @@ AccountDialog::AccountDialog()
 AccountDialog::AccountDialog(AccountData* account, wxWindow* parent) :
     m_account_n(account)
 {
-    m_images = mmImage::navtree_bitmapBundle_a();
+    m_images = NavTreeIconImages::instance().getList();
     m_currencyID = m_account_n->m_currency_id;
     [[maybe_unused]] const CurrencyData* currency = CurrencyModel::instance().get_id_data_n(m_currencyID);
     wxASSERT(currency);
@@ -436,16 +436,15 @@ void AccountDialog::OnAttachments(wxCommandEvent& /*event*/)
     dlg.ShowModal();
 }
 
-
 void AccountDialog::OnImageButton(wxCommandEvent& /*event*/)
 {
     wxMenu mainMenu;
-    wxMenuItem* menuItem = new wxMenuItem(&mainMenu, wxID_HIGHEST + static_cast<int>(mmImage::acc_img::ACC_ICON_MONEY) - 1, _t("Default Image"));
-
-    menuItem->SetBitmap(m_images.at(
-        PrefModel::instance().AccountImageId(m_account_n->m_id, true)
-    ));
+    int idx = wxID_HIGHEST + static_cast<int>(mmImage::img::LAST_NAVTREE_PNG) - 1;
+    wxMenuItem* menuItem = new wxMenuItem(&mainMenu, idx, _t("Default Image"));
+    menuItem->SetBitmap(m_images.at(PrefModel::instance().AccountImageId(m_account_n->m_id, true)));
     mainMenu.Append(menuItem);
+    Bind(wxEVT_MENU, &AccountDialog::OnDefaultImage, this, idx);
+    mainMenu.AppendSeparator();
 
     for (int i = mmImage::img::LAST_NAVTREE_PNG; i < mmImage::acc_img::MAX_ACC_ICON; ++i)
     {
@@ -453,24 +452,78 @@ void AccountDialog::OnImageButton(wxCommandEvent& /*event*/)
             , wxString::Format(_t("Image #%i"), i - mmImage::img::LAST_NAVTREE_PNG + 1));
         menuItem->SetBitmap(m_images.at(i));
         mainMenu.Append(menuItem);
+        Bind(wxEVT_MENU, &AccountDialog::OnCustomImage, this, wxID_HIGHEST + i);
+    }
+
+    int max = static_cast<int>(m_images.size());
+    std::map<int, wxString> indexMap = NavTreeIconImages::instance().getIndexMap();
+    if (max > mmImage::acc_img::MAX_ACC_ICON) {
+        mainMenu.AppendSeparator();
+    }
+    for (int i = mmImage::acc_img::MAX_ACC_ICON; i < max; ++i)
+    {
+        menuItem = new wxMenuItem(&mainMenu, wxID_HIGHEST + i, indexMap[i]);
+        menuItem->SetBitmap(m_images.at(i));
+        mainMenu.Append(menuItem);
+        Bind(wxEVT_MENU, &AccountDialog::OnFavIconImage, this, wxID_HIGHEST + i);
+    }
+
+    wxTextCtrl* website_ctrl = static_cast<wxTextCtrl*>(FindWindow(ID_DIALOG_NEWACCT_TEXTCTRL_WEBSITE));
+    if (!website_ctrl->GetValue().empty()) {
+        mainMenu.AppendSeparator();
+        mainMenu.Append(new wxMenuItem(&mainMenu, wxID_HIGHEST + max, _t("Load icon from webpage")));
+        Bind(wxEVT_MENU, &AccountDialog::OnLoadFavIconImage, this, wxID_HIGHEST + max);
     }
 
     PopupMenu(&mainMenu);
 }
 
-void AccountDialog::OnCustonImage(wxCommandEvent& event)
+void AccountDialog::OnDefaultImage(wxCommandEvent& WXUNUSED(event))
 {
-    int selectedImage = (event.GetId() - wxID_HIGHEST) - mmImage::img::LAST_NAVTREE_PNG + 1;
-    int image_id = PrefModel::instance().AccountImageId(m_account_n->m_id, true);
+    auto& data = InfoModel::instance().find(InfoCol::INFONAME(wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id)));
+    for (const auto& rec : data) {
+        InfoModel::instance().unsafe_remove_id(rec.id());
+    }
+    m_bitmapButtons->SetBitmap(m_images.at(PrefModel::instance().AccountImageId(m_account_n->m_id, true)));
+}
 
-    InfoModel::instance().saveInt(
-        wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id),
-        selectedImage
-    );
-    if (selectedImage != 0)
-        image_id = selectedImage + mmImage::img::LAST_NAVTREE_PNG - 1;
+void AccountDialog::OnCustomImage(wxCommandEvent& event)
+{
+    int image_id = event.GetId() - wxID_HIGHEST;
+    InfoModel::instance().saveInt(wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id), image_id);
 
     m_bitmapButtons->SetBitmap(m_images.at(image_id));
+}
+
+void AccountDialog::OnFavIconImage(wxCommandEvent& event)
+{
+    int image_id = event.GetId() - wxID_HIGHEST;
+    std::map<int, wxString> indexMap = NavTreeIconImages::instance().getIndexMap();
+    InfoModel::instance().saveString(wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id), "CI:" + indexMap[image_id]);
+
+    m_bitmapButtons->SetBitmap(m_images.at(image_id));
+}
+
+void AccountDialog::OnLoadFavIconImage(wxCommandEvent& WXUNUSED(event))
+{
+    wxTextCtrl* website_ctrl = static_cast<wxTextCtrl*>(FindWindow(ID_DIALOG_NEWACCT_TEXTCTRL_WEBSITE));
+    wxString url = website_ctrl->GetValue();
+    wxString serverName = iconExtractServerName(url);
+    wxFileName resDir = mmPath::getPathUserRaw(mmPath::USERICONS, true);
+    if (resDir.IsOk()) {
+        wxFileName path(resDir.GetPathWithSep(), serverName);
+        std::string iconFileName = path.GetFullPath().utf8_string();
+        std::string ext;
+        if (iconDownloadFavicon(website_ctrl->GetValue(), iconFileName, ext)) {
+            iconSetButtonIconFromFile(m_bitmapButtons, iconFileName);
+            InfoModel::instance().saveString(wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id), "CI:" + serverName + ext);
+            m_images = NavTreeIconImages::instance().getList();
+            NavTreeIconImages::instance().setChanged();
+        }
+        else {
+            wxMessageBox( wxString::Format(_t("Fav icon could not be loaded from '%s'"), website_ctrl->GetValue()), _t("Favorite icon download"), wxICON_INFORMATION);
+        }
+    }
 }
 
 void AccountDialog::OnChangeFocus(wxChildFocusEvent& event)

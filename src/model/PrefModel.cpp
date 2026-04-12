@@ -3,6 +3,7 @@
  Copyright (C) 2016 - 2021 Nikolay Akimov
  Copyright (C) 2021-2025 Mark Whalley (mark@ipx.co.uk)
  Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
+ Copyright (C) 2026 Klaus Wich
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -823,7 +824,6 @@ int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool
 {
     AccountStatus acctStatus = AccountStatus(AccountStatus::e_open);
     mmNavigatorItem::TYPE_ID acctType = mmNavigatorItem::TYPE_ID_CHECKING;
-    int selectedImage = mmImage::img::SAVINGS_ACC_NORMAL_PNG; //Default value
 
     const AccountData* account_n = AccountModel::instance().get_id_data_n(account_id);
     if (account_n) {
@@ -831,24 +831,30 @@ int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool
         acctStatus = account_n->m_status;
     }
 
-    if (!def && !ignoreClosure && acctStatus.id() == AccountStatus::e_closed)
+    if (!def && !ignoreClosure && acctStatus.id() == AccountStatus::e_closed) {
         return mmImage::img::ACCOUNT_CLOSED_PNG;
+    }
 
-    int max = mmImage::acc_img::MAX_ACC_ICON - static_cast<int>(mmImage::img::LAST_NAVTREE_PNG);
-    int min = 1;
-    int custom_img_id = InfoModel::instance().getInt(
-        wxString::Format("ACC_IMAGE_ID_%lld", account_id),
-        0
-    );
-    if (custom_img_id > max) custom_img_id = custom_img_id - 20; //Bug #963 fix
-    if (!def && (custom_img_id >= min && custom_img_id <= max))
-        return custom_img_id + mmImage::img::LAST_NAVTREE_PNG - 1;
+    // check for custom id if default is not requested:
+    if (!def) {
+        int custom_img_id;
+        wxString fileid;
+        wxString timg = InfoModel::instance().getString(wxString::Format("ACC_IMAGE_ID_%lld", account_id), "0");
+        if (timg.StartsWith("CI:", &fileid)) {
+            custom_img_id = NavTreeIconImages::instance().getImgIndex(fileid);
+        }
+        else {
+            custom_img_id = wxAtoi(timg);
+        }
+
+        int bmListSize = std::max (NavTreeIconImages::instance().getListSize(), static_cast<int>(mmImage::acc_img::MAX_ACC_ICON));
+        if (custom_img_id > 0 && custom_img_id < bmListSize) {
+            return custom_img_id;
+        }
+    }
 
     mmNavigatorItem* info = mmNavigatorList::instance().FindEntry(acctType);
-    if (info) {
-        selectedImage = info->imageId;
-    }
-    return selectedImage;
+    return info ? info->imageId : mmImage::img::SAVINGS_ACC_NORMAL_PNG;
 }
 
 const wxString PrefModel::getLanguageCode(const bool get_db)
