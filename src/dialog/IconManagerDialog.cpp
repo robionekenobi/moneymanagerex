@@ -16,25 +16,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include <curl/curl.h>
-#include <iostream>
-#include <fstream>
-#include <regex>
-#include <filesystem>
-
-#include <wx/string.h>
-#include <wx/filename.h>
-#include <wx/filedlg.h>
-#include <wx/stdpaths.h>
-#include <wx/dir.h>
-#include <wx/textdlg.h>
-
+#include "dialog/IconManagerDialog.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
-
-#include "dialog/IconManagerDialog.h"
 #include "model/InfoModel.h"
 
+#include <regex>
+#include <filesystem>
 
 // Download Fav ICON:
 struct MemoryBuffer {

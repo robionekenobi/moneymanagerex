@@ -262,7 +262,6 @@ private:
     static void reverttoDefaultTheme();
 
 public:
-    //static auto navtree_bitmapBundle_a(const int size = 0) -> wxVector<wxBitmapBundle>;
     static void loadTheme();
     static void closeTheme();
     static auto themeMetaString(int ref) -> const wxString;
@@ -293,7 +292,6 @@ public:
     void setChanged();
 
 private:
-    int navtree_images_size;
     std::map<int, wxString> m_indexMap;
     std::map<wxString, int> m_indexReverseMap;
     bool m_changed;

@@ -1,7 +1,7 @@
 /*******************************************************
 Copyright (C) 2014, 2015, 2021 Nikolay Akimov
 Copyright (C) 2021 Mark Whalley (mark@ipx.co.uk)
-Copyright (C) 2025 Klaus Wich
+Copyright (C) 2025, 2026 Klaus Wich
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -666,27 +666,6 @@ const std::vector<wxColour> mmImage::themeMetaColour_a(int ref)
         colours.push_back(wxColour(input.GetNextToken()));
     return colours;
 }
-
-/*const wxBitmap mmImage::mmBitMap(int ref, int size)
-{
-    int idx = mmImage::getIconSizeIdx(size);
-
-    if (idx >= 0)
-        return *programIcons[idx][ref].get();
-
-    // Look for a better size match
-    int bestAvailSize = size;
-    while (idx) {
-        bestAvailSize /= 2;
-        idx = mmImage::getIconSizeIdx(bestAvailSize);
-        if( idx >= 0 )
-            break;
-    }
-
-    wxSize bmpSize(size, size);
-    auto& bundle = mmImage::programIconBundles[idx][ref];
-    return bundle.get()->GetBitmap(bmpSize);
-}*/
 
 const wxBitmapBundle mmImage::bitmapBundle(const int ref, const int defSize)
 {
