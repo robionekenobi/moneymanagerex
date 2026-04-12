@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MMEX\n"
 "Report-Msgid-Bugs-To: developer@moneymanagerex.org\n"
-"POT-Creation-Date: 2026-04-10 18:25+0000\n"
+"POT-Creation-Date: 2026-04-12 14:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -494,9 +494,9 @@ msgstr ""
 msgid "Curre&ncy Manager…"
 msgstr ""
 
-#: app/mmFrame.cpp:2081 dialog/CurrencyChoiceDialog.cpp:391
-#: dialog/CurrencyChoiceDialog.cpp:465 dialog/CurrencyChoiceDialog.cpp:715
-#: dialog/CurrencyChoiceDialog.cpp:850 dialog/CurrencyChoiceDialog.cpp:874
+#: app/mmFrame.cpp:2081 dialog/CurrencyChoiceDialog.cpp:393
+#: dialog/CurrencyChoiceDialog.cpp:467 dialog/CurrencyChoiceDialog.cpp:717
+#: dialog/CurrencyChoiceDialog.cpp:852 dialog/CurrencyChoiceDialog.cpp:876
 #: dialog/CurrencyChoiceDialog.h:102 manager/CurrencyManager.h:71
 #: pref/GeneralPref.cpp:346
 msgid "Currency Manager"
@@ -1230,7 +1230,7 @@ msgstr ""
 msgid "File %s not found."
 msgstr ""
 
-#: app/mmFrame.cpp:4323 dialog/CurrencyChoiceDialog.cpp:516
+#: app/mmFrame.cpp:4323 dialog/CurrencyChoiceDialog.cpp:518
 #: dialog/SchedDialog.cpp:1446 dialog/SplitDialog.cpp:422
 #: import_export/ofx_import_gui.cpp:298 import_export/ofx_import_gui.cpp:338
 #: import_export/ofx_import_gui.cpp:350 import_export/ofx_import_gui.cpp:391
@@ -1695,7 +1695,7 @@ msgid "Boolean"
 msgstr ""
 
 #: data/_DataEnum.cpp:82 dialog/AssetDialog.cpp:205
-#: dialog/CurrencyChoiceDialog.cpp:278 dialog/CurrencyChoiceDialog.cpp:295
+#: dialog/CurrencyChoiceDialog.cpp:280 dialog/CurrencyChoiceDialog.cpp:297
 #: dialog/ReconcileDialog.cpp:180 dialog/StockDialog.cpp:315
 #: dialog/StockDialog.cpp:656 dialog/TrxDialog.cpp:481
 #: dialog/TrxFilterDialog.cpp:982 dialog/TrxFilterDialog.cpp:993
@@ -2461,7 +2461,7 @@ msgstr ""
 msgid "Confirm Attachment Deletion"
 msgstr ""
 
-#: dialog/AttachmentDialog.cpp:379 dialog/CurrencyChoiceDialog.cpp:573
+#: dialog/AttachmentDialog.cpp:379 dialog/CurrencyChoiceDialog.cpp:575
 #: dialog/StockDialog.cpp:362 import_export/univcsvdialog.cpp:378
 #: manager/FieldManager.cpp:277 manager/PayeeManager.cpp:959
 #: manager/TagManager.cpp:151
@@ -2472,7 +2472,7 @@ msgstr ""
 msgid "&Open "
 msgstr ""
 
-#: dialog/AttachmentDialog.cpp:382 dialog/CurrencyChoiceDialog.cpp:574
+#: dialog/AttachmentDialog.cpp:382 dialog/CurrencyChoiceDialog.cpp:576
 #: manager/CategoryManager.cpp:334 manager/FieldManager.cpp:279
 #: manager/PayeeManager.cpp:952 manager/TagManager.cpp:155
 #: panel/AssetPanel.cpp:182 panel/JournalPanel.cpp:367 panel/SchedPanel.cpp:162
@@ -2480,7 +2480,7 @@ msgstr ""
 msgid "&Edit "
 msgstr ""
 
-#: dialog/AttachmentDialog.cpp:385 dialog/CurrencyChoiceDialog.cpp:575
+#: dialog/AttachmentDialog.cpp:385 dialog/CurrencyChoiceDialog.cpp:577
 #: import_export/univcsvdialog.cpp:382 manager/FieldManager.cpp:280
 #: manager/PayeeManager.cpp:957
 msgid "&Remove "
@@ -2614,7 +2614,7 @@ msgstr ""
 msgid "Add a new budget month"
 msgstr ""
 
-#: dialog/BudgetYearDialog.cpp:107 dialog/CurrencyChoiceDialog.cpp:329
+#: dialog/BudgetYearDialog.cpp:107 dialog/CurrencyChoiceDialog.cpp:331
 #: dialog/StockDialog.cpp:360 manager/CategoryManager.cpp:338
 #: manager/TagManager.cpp:160 panel/AssetPanel.cpp:187
 #: panel/JournalPanel.cpp:359 panel/SchedPanel.cpp:172 panel/StockPanel.cpp:209
@@ -2677,47 +2677,47 @@ msgstr ""
 msgid "Last Rate"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:147
+#: dialog/CurrencyChoiceDialog.cpp:149
 msgid "N/A"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:191 dialog/CurrencyChoiceDialog.cpp:508
+#: dialog/CurrencyChoiceDialog.cpp:193 dialog/CurrencyChoiceDialog.cpp:510
 msgid "Online update currency rate"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:194
+#: dialog/CurrencyChoiceDialog.cpp:196
 msgid "Online Update"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:197 manager/CategoryManager.cpp:284
+#: dialog/CurrencyChoiceDialog.cpp:199 manager/CategoryManager.cpp:284
 msgid "&Show All"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:198
+#: dialog/CurrencyChoiceDialog.cpp:200
 msgid "Show all even the unused currencies"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:233 manager/CategoryManager.cpp:319
+#: dialog/CurrencyChoiceDialog.cpp:235 manager/CategoryManager.cpp:319
 #: manager/TagManager.cpp:140 panel/AssetPanel.cpp:203 panel/AssetPanel.cpp:205
 #: panel/JournalPanel.cpp:426
 msgid "Search"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:249 manager/CategoryManager.cpp:345
+#: dialog/CurrencyChoiceDialog.cpp:251 manager/CategoryManager.cpp:345
 msgid "&Select"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:265
+#: dialog/CurrencyChoiceDialog.cpp:267
 msgid "Historical Currency Options"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:283 dialog/StockDialog.cpp:322
+#: dialog/CurrencyChoiceDialog.cpp:285 dialog/StockDialog.cpp:322
 #: dialog/StockDialog.cpp:345 dialog/StockDialog.cpp:656
 #: panel/StockPanel.cpp:329
 msgid "Price"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:288 dialog/SchedDialog.cpp:551
+#: dialog/CurrencyChoiceDialog.cpp:290 dialog/SchedDialog.cpp:551
 #: dialog/TrxDialog.cpp:518 dialog/TrxFilterDialog.cpp:68
 #: dialog/TrxFilterDialog.cpp:660 dialog/TrxFilterDialog.cpp:1058
 #: dialog/TrxFilterDialog.cpp:1928 dialog/TrxLinkDialog.cpp:151
@@ -2730,77 +2730,77 @@ msgstr ""
 msgid "Type"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:302
+#: dialog/CurrencyChoiceDialog.cpp:304
 msgid "Specify the date of currency value"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:305 import_export/qif_import_gui.cpp:114
+#: dialog/CurrencyChoiceDialog.cpp:307 import_export/qif_import_gui.cpp:114
 #: panel/AssetPanel.cpp:553
 msgid "Value"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:312
+#: dialog/CurrencyChoiceDialog.cpp:314
 msgid "Enter the currency value"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:322
+#: dialog/CurrencyChoiceDialog.cpp:324
 msgid "Download Currency Values history"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:325
+#: dialog/CurrencyChoiceDialog.cpp:327
 msgid "Add/&Update "
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:326
+#: dialog/CurrencyChoiceDialog.cpp:328
 msgid "Add Currency Values to history"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:330
+#: dialog/CurrencyChoiceDialog.cpp:332
 msgid "Delete selected Currency Values"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:334
+#: dialog/CurrencyChoiceDialog.cpp:336
 msgid "Delete Historical Currency Values for unused currencies and days"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:390
+#: dialog/CurrencyChoiceDialog.cpp:392
 msgid "Do you want to delete the selected currency?"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:419
+#: dialog/CurrencyChoiceDialog.cpp:421
 msgid "Base Currency Selection"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:459
+#: dialog/CurrencyChoiceDialog.cpp:461
 #, c-format
 msgid ""
 "Historical rates for %1$s found, but “Use historical currency” in options is disabled:\n"
 "click No and enable it or click Yes to remove all historical rates for %2$s"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:479
+#: dialog/CurrencyChoiceDialog.cpp:481
 #, c-format
 msgid "Currency History Options: %s"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:537
+#: dialog/CurrencyChoiceDialog.cpp:539
 msgid "Unable to update historical currency rates. Please update them manually!"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:538 dialog/CurrencyChoiceDialog.cpp:749
-#: dialog/CurrencyChoiceDialog.cpp:758
+#: dialog/CurrencyChoiceDialog.cpp:540 dialog/CurrencyChoiceDialog.cpp:751
+#: dialog/CurrencyChoiceDialog.cpp:760
 msgid "Historical currency error"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:570
+#: dialog/CurrencyChoiceDialog.cpp:572
 msgid "Set as Base Currency"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:571
+#: dialog/CurrencyChoiceDialog.cpp:573
 msgid "Online Update Currency Rate"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:664 dialog/ReconcileDialog.cpp:183
+#: dialog/CurrencyChoiceDialog.cpp:666 dialog/ReconcileDialog.cpp:183
 #: dialog/SchedDialog.cpp:556 dialog/SplitDialog.cpp:95
 #: dialog/SplitDialog.cpp:228 dialog/TrxDialog.cpp:535
 #: dialog/TrxFilterDialog.cpp:1090 dialog/TrxFilterDialog.cpp:1101
@@ -2814,48 +2814,48 @@ msgstr ""
 msgid "Amount"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:664 import_export/univcsvdialog.cpp:3119
+#: dialog/CurrencyChoiceDialog.cpp:666 import_export/univcsvdialog.cpp:3119
 #: manager/CurrencyManager.cpp:349 manager/CurrencyManager.cpp:359
 #: manager/CurrencyManager.cpp:385 util/_simple.cpp:217
 msgid "Invalid Entry"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:702
+#: dialog/CurrencyChoiceDialog.cpp:704
 msgid "No currency selected!"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:703 dialog/CurrencyChoiceDialog.cpp:896
+#: dialog/CurrencyChoiceDialog.cpp:705 dialog/CurrencyChoiceDialog.cpp:898
 msgid "Currency history error"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:714
+#: dialog/CurrencyChoiceDialog.cpp:716
 msgid "Do you want to add dates without any details?"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:746
+#: dialog/CurrencyChoiceDialog.cpp:748
 #, c-format
 msgid "Unable to download %s currency rates"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:755
+#: dialog/CurrencyChoiceDialog.cpp:757
 #, c-format
 msgid "Unable to download history for symbol %s. Historical rates unavailable!"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:849 pref/GeneralPref.cpp:345
+#: dialog/CurrencyChoiceDialog.cpp:851 pref/GeneralPref.cpp:345
 msgid "Changing base currency will delete all historical rates, proceed?"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:873
+#: dialog/CurrencyChoiceDialog.cpp:875
 msgid "Do you want to update the currency rates?"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:895
+#: dialog/CurrencyChoiceDialog.cpp:897
 #, c-format
 msgid "Unable to download history for base symbol %s. Historical rates unavailable!"
 msgstr ""
 
-#: dialog/CurrencyChoiceDialog.cpp:939 panel/StockPanel.cpp:589
+#: dialog/CurrencyChoiceDialog.cpp:941 panel/StockPanel.cpp:589
 #: util/_util.cpp:779
 msgid "Unable to find base currency symbol!"
 msgstr ""
@@ -8866,635 +8866,635 @@ msgstr ""
 msgid "Merger"
 msgstr ""
 
-#: table/CurrencyTable.cpp:235
+#: table/CurrencyTable.cpp:236
 msgid "US dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:236
+#: table/CurrencyTable.cpp:237
 msgid "Euro"
 msgstr ""
 
-#: table/CurrencyTable.cpp:237
+#: table/CurrencyTable.cpp:238
 msgid "British pound"
 msgstr ""
 
-#: table/CurrencyTable.cpp:238
+#: table/CurrencyTable.cpp:239
 msgid "Russian ruble"
 msgstr ""
 
-#: table/CurrencyTable.cpp:239
+#: table/CurrencyTable.cpp:240
 msgid "Ukrainian hryvnia"
 msgstr ""
 
-#: table/CurrencyTable.cpp:240
+#: table/CurrencyTable.cpp:241
 msgid "Afghan afghani"
 msgstr ""
 
-#: table/CurrencyTable.cpp:241
+#: table/CurrencyTable.cpp:242
 msgid "Albanian lek"
 msgstr ""
 
-#: table/CurrencyTable.cpp:242
+#: table/CurrencyTable.cpp:243
 msgid "Algerian dinar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:243
+#: table/CurrencyTable.cpp:244
 msgid "Angolan kwanza"
 msgstr ""
 
-#: table/CurrencyTable.cpp:244
+#: table/CurrencyTable.cpp:245
 msgid "East Caribbean dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:245
+#: table/CurrencyTable.cpp:246
 msgid "Argentine peso"
 msgstr ""
 
-#: table/CurrencyTable.cpp:246
+#: table/CurrencyTable.cpp:247
 msgid "Armenian dram"
 msgstr ""
 
-#: table/CurrencyTable.cpp:247
+#: table/CurrencyTable.cpp:248
 msgid "Aruban florin"
 msgstr ""
 
-#: table/CurrencyTable.cpp:248
+#: table/CurrencyTable.cpp:249
 msgid "Australian dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:249
+#: table/CurrencyTable.cpp:250
 msgid "Azerbaijani manat"
 msgstr ""
 
-#: table/CurrencyTable.cpp:250
+#: table/CurrencyTable.cpp:251
 msgid "Bahamian dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:251
+#: table/CurrencyTable.cpp:252
 msgid "Bahraini dinar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:252
+#: table/CurrencyTable.cpp:253
 msgid "Bangladeshi taka"
 msgstr ""
 
-#: table/CurrencyTable.cpp:253
+#: table/CurrencyTable.cpp:254
 msgid "Barbadian dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:254
+#: table/CurrencyTable.cpp:255
 msgid "Belarusian ruble (2000-2016)"
 msgstr ""
 
-#: table/CurrencyTable.cpp:255
+#: table/CurrencyTable.cpp:256
 msgid "Belize dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:256
+#: table/CurrencyTable.cpp:257
 msgid "West African CFA franc"
 msgstr ""
 
-#: table/CurrencyTable.cpp:257
+#: table/CurrencyTable.cpp:258
 msgid "Bermudan dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:258
+#: table/CurrencyTable.cpp:259
 msgid "Bhutanese ngultrum"
 msgstr ""
 
-#: table/CurrencyTable.cpp:259
+#: table/CurrencyTable.cpp:260
 msgid "Bolivian boliviano"
 msgstr ""
 
-#: table/CurrencyTable.cpp:260
+#: table/CurrencyTable.cpp:261
 msgid "Bosnia-Herzegovina convertible mark"
 msgstr ""
 
-#: table/CurrencyTable.cpp:261
+#: table/CurrencyTable.cpp:262
 msgid "Botswanan pula"
 msgstr ""
 
-#: table/CurrencyTable.cpp:262
+#: table/CurrencyTable.cpp:263
 msgid "Brazilian real"
 msgstr ""
 
-#: table/CurrencyTable.cpp:263
+#: table/CurrencyTable.cpp:264
 msgid "Brunei dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:264
+#: table/CurrencyTable.cpp:265
 msgid "Bulgarian lev"
 msgstr ""
 
-#: table/CurrencyTable.cpp:265
+#: table/CurrencyTable.cpp:266
 msgid "Burundian franc"
 msgstr ""
 
-#: table/CurrencyTable.cpp:266
+#: table/CurrencyTable.cpp:267
 msgid "Cambodian riel"
 msgstr ""
 
-#: table/CurrencyTable.cpp:267
+#: table/CurrencyTable.cpp:268
 msgid "Central African CFA franc"
 msgstr ""
 
-#: table/CurrencyTable.cpp:268
+#: table/CurrencyTable.cpp:269
 msgid "Canadian dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:269
+#: table/CurrencyTable.cpp:270
 msgid "Cape Verdean escudo"
 msgstr ""
 
-#: table/CurrencyTable.cpp:270
+#: table/CurrencyTable.cpp:271
 msgid "Cayman Islands dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:271
+#: table/CurrencyTable.cpp:272
 msgid "Chilean peso"
 msgstr ""
 
-#: table/CurrencyTable.cpp:272
+#: table/CurrencyTable.cpp:273
 msgid "Chinese yuan"
 msgstr ""
 
-#: table/CurrencyTable.cpp:273
+#: table/CurrencyTable.cpp:274
 msgid "Colombian peso"
 msgstr ""
 
-#: table/CurrencyTable.cpp:274
+#: table/CurrencyTable.cpp:275
 msgid "Comorian franc"
 msgstr ""
 
-#: table/CurrencyTable.cpp:275
+#: table/CurrencyTable.cpp:276
 msgid "Congolese franc"
 msgstr ""
 
-#: table/CurrencyTable.cpp:277
+#: table/CurrencyTable.cpp:278
 msgid "Croatian kuna"
 msgstr ""
 
-#: table/CurrencyTable.cpp:278
+#: table/CurrencyTable.cpp:279
 msgid "Czech koruna"
 msgstr ""
 
-#: table/CurrencyTable.cpp:279
+#: table/CurrencyTable.cpp:280
 msgid "Danish krone"
 msgstr ""
 
-#: table/CurrencyTable.cpp:280
+#: table/CurrencyTable.cpp:281
 msgid "Djiboutian franc"
 msgstr ""
 
-#: table/CurrencyTable.cpp:281
+#: table/CurrencyTable.cpp:282
 msgid "Dominican peso"
 msgstr ""
 
-#: table/CurrencyTable.cpp:282
+#: table/CurrencyTable.cpp:283
 msgid "Egyptian pound"
 msgstr ""
 
-#: table/CurrencyTable.cpp:283
+#: table/CurrencyTable.cpp:284
 msgid "Eritrean nakfa"
 msgstr ""
 
-#: table/CurrencyTable.cpp:284
+#: table/CurrencyTable.cpp:285
 msgid "Ethiopian birr"
 msgstr ""
 
-#: table/CurrencyTable.cpp:285
+#: table/CurrencyTable.cpp:286
 msgid "Falkland Islands pound"
 msgstr ""
 
-#: table/CurrencyTable.cpp:286
+#: table/CurrencyTable.cpp:287
 msgid "Fijian dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:287
+#: table/CurrencyTable.cpp:288
 msgid "CFP franc"
 msgstr ""
 
-#: table/CurrencyTable.cpp:288
+#: table/CurrencyTable.cpp:289
 msgid "Gambian dalasi"
 msgstr ""
 
-#: table/CurrencyTable.cpp:289
+#: table/CurrencyTable.cpp:290
 msgid "Georgian lari"
 msgstr ""
 
-#: table/CurrencyTable.cpp:290
+#: table/CurrencyTable.cpp:291
 msgid "Ghanaian cedi"
 msgstr ""
 
-#: table/CurrencyTable.cpp:291
+#: table/CurrencyTable.cpp:292
 msgid "Gibraltar pound"
 msgstr ""
 
-#: table/CurrencyTable.cpp:292
+#: table/CurrencyTable.cpp:293
 msgid "Guatemalan quetzal"
 msgstr ""
 
-#: table/CurrencyTable.cpp:293
+#: table/CurrencyTable.cpp:294
 msgid "Guinean franc"
 msgstr ""
 
-#: table/CurrencyTable.cpp:294
+#: table/CurrencyTable.cpp:295
 msgid "Guyanaese dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:295
+#: table/CurrencyTable.cpp:296
 msgid "Haitian gourde"
 msgstr ""
 
-#: table/CurrencyTable.cpp:296
+#: table/CurrencyTable.cpp:297
 msgid "Honduran lempira"
 msgstr ""
 
-#: table/CurrencyTable.cpp:297
+#: table/CurrencyTable.cpp:298
 msgid "Hong Kong dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:298
+#: table/CurrencyTable.cpp:299
 msgid "Hungarian forint"
 msgstr ""
 
-#: table/CurrencyTable.cpp:300
+#: table/CurrencyTable.cpp:301
 msgid "Indian rupee"
 msgstr ""
 
-#: table/CurrencyTable.cpp:301
+#: table/CurrencyTable.cpp:302
 msgid "Indonesian rupiah"
 msgstr ""
 
-#: table/CurrencyTable.cpp:302
+#: table/CurrencyTable.cpp:303
 msgid "Special drawing rights"
 msgstr ""
 
-#: table/CurrencyTable.cpp:303
+#: table/CurrencyTable.cpp:304
 msgid "Iranian rial"
 msgstr ""
 
-#: table/CurrencyTable.cpp:304
+#: table/CurrencyTable.cpp:305
 msgid "Iraqi dinar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:305
+#: table/CurrencyTable.cpp:306
 msgid "Israeli new shekel"
 msgstr ""
 
-#: table/CurrencyTable.cpp:306
+#: table/CurrencyTable.cpp:307
 msgid "Jamaican dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:307
+#: table/CurrencyTable.cpp:308
 msgid "Japanese yen"
 msgstr ""
 
-#: table/CurrencyTable.cpp:308
+#: table/CurrencyTable.cpp:309
 msgid "Jordanian dinar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:309
+#: table/CurrencyTable.cpp:310
 msgid "Kazakhstani tenge"
 msgstr ""
 
-#: table/CurrencyTable.cpp:310
+#: table/CurrencyTable.cpp:311
 msgid "Kenyan shilling"
 msgstr ""
 
-#: table/CurrencyTable.cpp:311
+#: table/CurrencyTable.cpp:312
 msgid "North Korean won"
 msgstr ""
 
-#: table/CurrencyTable.cpp:312
+#: table/CurrencyTable.cpp:313
 msgid "South Korean won"
 msgstr ""
 
-#: table/CurrencyTable.cpp:313
+#: table/CurrencyTable.cpp:314
 msgid "Kuwaiti dinar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:314
+#: table/CurrencyTable.cpp:315
 msgid "Kyrgystani som"
 msgstr ""
 
-#: table/CurrencyTable.cpp:315
+#: table/CurrencyTable.cpp:316
 msgid "Laotian kip"
 msgstr ""
 
-#: table/CurrencyTable.cpp:316
+#: table/CurrencyTable.cpp:317
 msgid "Latvian lats"
 msgstr ""
 
-#: table/CurrencyTable.cpp:317
+#: table/CurrencyTable.cpp:318
 msgid "Lebanese pound"
 msgstr ""
 
-#: table/CurrencyTable.cpp:318
+#: table/CurrencyTable.cpp:319
 msgid "Lesotho loti"
 msgstr ""
 
-#: table/CurrencyTable.cpp:319
+#: table/CurrencyTable.cpp:320
 msgid "Liberian dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:320
+#: table/CurrencyTable.cpp:321
 msgid "Libyan dinar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:321
+#: table/CurrencyTable.cpp:322
 msgid "Lithuanian litas"
 msgstr ""
 
-#: table/CurrencyTable.cpp:322
+#: table/CurrencyTable.cpp:323
 msgid "Macanese pataca"
 msgstr ""
 
-#: table/CurrencyTable.cpp:323
+#: table/CurrencyTable.cpp:324
 msgid "Macedonian denar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:324
+#: table/CurrencyTable.cpp:325
 msgid "Malagasy ariary"
 msgstr ""
 
-#: table/CurrencyTable.cpp:325
+#: table/CurrencyTable.cpp:326
 msgid "Malawian kwacha"
 msgstr ""
 
-#: table/CurrencyTable.cpp:326
+#: table/CurrencyTable.cpp:327
 msgid "Malaysian ringgit"
 msgstr ""
 
-#: table/CurrencyTable.cpp:327
+#: table/CurrencyTable.cpp:328
 msgid "Maldivian rufiyaa"
 msgstr ""
 
-#: table/CurrencyTable.cpp:328
+#: table/CurrencyTable.cpp:329
 msgid "Mauritanian ouguiya (1973-2017)"
 msgstr ""
 
-#: table/CurrencyTable.cpp:329
+#: table/CurrencyTable.cpp:330
 msgid "Mauritian rupee"
 msgstr ""
 
-#: table/CurrencyTable.cpp:330
+#: table/CurrencyTable.cpp:331
 msgid "Mexican peso"
 msgstr ""
 
-#: table/CurrencyTable.cpp:331
+#: table/CurrencyTable.cpp:332
 msgid "Moldovan leu"
 msgstr ""
 
-#: table/CurrencyTable.cpp:332
+#: table/CurrencyTable.cpp:333
 msgid "Mongolian tugrik"
 msgstr ""
 
-#: table/CurrencyTable.cpp:333
+#: table/CurrencyTable.cpp:334
 msgid "Moroccan dirham"
 msgstr ""
 
-#: table/CurrencyTable.cpp:334
+#: table/CurrencyTable.cpp:335
 msgid "Myanmar kyat"
 msgstr ""
 
-#: table/CurrencyTable.cpp:335
+#: table/CurrencyTable.cpp:336
 msgid "Namibian dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:336
+#: table/CurrencyTable.cpp:337
 msgid "Nepalese rupee"
 msgstr ""
 
-#: table/CurrencyTable.cpp:337
+#: table/CurrencyTable.cpp:338
 msgid "Netherlands Antillean guilder"
 msgstr ""
 
-#: table/CurrencyTable.cpp:338
+#: table/CurrencyTable.cpp:339
 msgid "New Zealand dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:340
+#: table/CurrencyTable.cpp:341
 msgid "Nigerian naira"
 msgstr ""
 
-#: table/CurrencyTable.cpp:341
+#: table/CurrencyTable.cpp:342
 msgid "Norwegian krone"
 msgstr ""
 
-#: table/CurrencyTable.cpp:342
+#: table/CurrencyTable.cpp:343
 msgid "Omani rial"
 msgstr ""
 
-#: table/CurrencyTable.cpp:343
+#: table/CurrencyTable.cpp:344
 msgid "Pakistani rupee"
 msgstr ""
 
-#: table/CurrencyTable.cpp:344
+#: table/CurrencyTable.cpp:345
 msgid "Panamanian balboa"
 msgstr ""
 
-#: table/CurrencyTable.cpp:345
+#: table/CurrencyTable.cpp:346
 msgid "Papua New Guinean kina"
 msgstr ""
 
-#: table/CurrencyTable.cpp:346
+#: table/CurrencyTable.cpp:347
 msgid "Paraguayan guarani"
 msgstr ""
 
-#: table/CurrencyTable.cpp:347
+#: table/CurrencyTable.cpp:348
 msgid "Peruvian sol"
 msgstr ""
 
-#: table/CurrencyTable.cpp:348
+#: table/CurrencyTable.cpp:349
 msgid "Philippine peso"
 msgstr ""
 
-#: table/CurrencyTable.cpp:349
+#: table/CurrencyTable.cpp:350
 msgid "Polish zloty"
 msgstr ""
 
-#: table/CurrencyTable.cpp:350
+#: table/CurrencyTable.cpp:351
 msgid "Qatari riyal"
 msgstr ""
 
-#: table/CurrencyTable.cpp:351
+#: table/CurrencyTable.cpp:352
 msgid "Romanian leu"
 msgstr ""
 
-#: table/CurrencyTable.cpp:352
+#: table/CurrencyTable.cpp:353
 msgid "Rwandan franc"
 msgstr ""
 
-#: table/CurrencyTable.cpp:354
+#: table/CurrencyTable.cpp:355
 msgid "Saudi riyal"
 msgstr ""
 
-#: table/CurrencyTable.cpp:355
+#: table/CurrencyTable.cpp:356
 msgid "Serbian dinar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:356
+#: table/CurrencyTable.cpp:357
 msgid "Seychellois rupee"
 msgstr ""
 
-#: table/CurrencyTable.cpp:357
+#: table/CurrencyTable.cpp:358
 msgid "Sierra Leonean leone (1964-2022)"
 msgstr ""
 
-#: table/CurrencyTable.cpp:358
+#: table/CurrencyTable.cpp:359
 msgid "Singapore dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:359
+#: table/CurrencyTable.cpp:360
 msgid "Solomon Islands dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:360
+#: table/CurrencyTable.cpp:361
 msgid "Somali shilling"
 msgstr ""
 
-#: table/CurrencyTable.cpp:361
+#: table/CurrencyTable.cpp:362
 msgid "South African rand"
 msgstr ""
 
-#: table/CurrencyTable.cpp:362
+#: table/CurrencyTable.cpp:363
 msgid "Sri Lankan rupee"
 msgstr ""
 
-#: table/CurrencyTable.cpp:363
+#: table/CurrencyTable.cpp:364
 msgid "St. Helena pound"
 msgstr ""
 
-#: table/CurrencyTable.cpp:364
+#: table/CurrencyTable.cpp:365
 msgid "Sudanese pound"
 msgstr ""
 
-#: table/CurrencyTable.cpp:365
+#: table/CurrencyTable.cpp:366
 msgid "Surinamese dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:366
+#: table/CurrencyTable.cpp:367
 msgid "Swazi lilangeni"
 msgstr ""
 
-#: table/CurrencyTable.cpp:367
+#: table/CurrencyTable.cpp:368
 msgid "Swedish krona"
 msgstr ""
 
-#: table/CurrencyTable.cpp:368
+#: table/CurrencyTable.cpp:369
 msgid "Swiss franc"
 msgstr ""
 
-#: table/CurrencyTable.cpp:369
+#: table/CurrencyTable.cpp:370
 msgid "Syrian pound"
 msgstr ""
 
-#: table/CurrencyTable.cpp:370
+#: table/CurrencyTable.cpp:371
 msgid "New Taiwan dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:371
+#: table/CurrencyTable.cpp:372
 msgid "Tajikistani somoni"
 msgstr ""
 
-#: table/CurrencyTable.cpp:372
+#: table/CurrencyTable.cpp:373
 msgid "Tanzanian shilling"
 msgstr ""
 
-#: table/CurrencyTable.cpp:373
+#: table/CurrencyTable.cpp:374
 msgid "Thai baht"
 msgstr ""
 
-#: table/CurrencyTable.cpp:374
+#: table/CurrencyTable.cpp:375
 msgid "Trinidad & Tobago dollar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:375
+#: table/CurrencyTable.cpp:376
 msgid "Tunisian dinar"
 msgstr ""
 
-#: table/CurrencyTable.cpp:376
+#: table/CurrencyTable.cpp:377
 msgid "Turkish lira"
 msgstr ""
 
-#: table/CurrencyTable.cpp:377
+#: table/CurrencyTable.cpp:378
 msgid "Turkmenistani manat"
 msgstr ""
 
-#: table/CurrencyTable.cpp:378
+#: table/CurrencyTable.cpp:379
 msgid "Ugandan shilling"
 msgstr ""
 
-#: table/CurrencyTable.cpp:379
+#: table/CurrencyTable.cpp:380
 msgid "UAE dirham"
 msgstr ""
 
-#: table/CurrencyTable.cpp:380
+#: table/CurrencyTable.cpp:381
 msgid "Uruguayan peso"
 msgstr ""
 
-#: table/CurrencyTable.cpp:381
+#: table/CurrencyTable.cpp:382
 msgid "Uzbekistani som"
 msgstr ""
 
-#: table/CurrencyTable.cpp:382
+#: table/CurrencyTable.cpp:383
 msgid "Vanuatu vatu"
 msgstr ""
 
-#: table/CurrencyTable.cpp:383
+#: table/CurrencyTable.cpp:384
 msgid "Vietnamese dong"
 msgstr ""
 
-#: table/CurrencyTable.cpp:384
+#: table/CurrencyTable.cpp:385
 msgid "Samoan tala"
 msgstr ""
 
-#: table/CurrencyTable.cpp:385
+#: table/CurrencyTable.cpp:386
 msgid "Yemeni rial"
 msgstr ""
 
-#: table/CurrencyTable.cpp:387
+#: table/CurrencyTable.cpp:388
 msgid "Bitcoin"
 msgstr ""
 
-#: table/CurrencyTable.cpp:388
+#: table/CurrencyTable.cpp:389
 msgid "Belarusian ruble"
 msgstr ""
 
-#: table/CurrencyTable.cpp:389
+#: table/CurrencyTable.cpp:390
 msgid "Cuban convertible peso"
 msgstr ""
 
-#: table/CurrencyTable.cpp:390
+#: table/CurrencyTable.cpp:391
 msgid "Cuban peso"
 msgstr ""
 
-#: table/CurrencyTable.cpp:391
+#: table/CurrencyTable.cpp:392
 msgid "Mauritanian ouguiya"
 msgstr ""
 
-#: table/CurrencyTable.cpp:392
+#: table/CurrencyTable.cpp:393
 msgid "Mozambican metical"
 msgstr ""
 
-#: table/CurrencyTable.cpp:393
+#: table/CurrencyTable.cpp:394
 msgid "Sierra Leonean leone"
 msgstr ""
 
-#: table/CurrencyTable.cpp:394
+#: table/CurrencyTable.cpp:395
 msgid "South Sudanese pound"
 msgstr ""
 
-#: table/CurrencyTable.cpp:398
+#: table/CurrencyTable.cpp:399
 msgid "Uruguayan nominal wage index unit"
 msgstr ""
 
-#: table/CurrencyTable.cpp:401
+#: table/CurrencyTable.cpp:402
 msgid "Zambian kwacha"
 msgstr ""
 
-#: table/CurrencyTable.cpp:402
+#: table/CurrencyTable.cpp:403
 msgid "Zimbabwean dollar (2009)"
 msgstr ""
 
