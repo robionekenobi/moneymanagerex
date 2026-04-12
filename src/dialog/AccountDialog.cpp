@@ -29,9 +29,10 @@
 #include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
-#include "util/_icon.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
+
+#include "dialog/IconManagerDialog.h"
 
 #include "model/CurrencyModel.h"
 #include "model/InfoModel.h"

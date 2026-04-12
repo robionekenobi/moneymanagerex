@@ -43,7 +43,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "model/SettingModel.h"
 #include "model/PrefModel.h"
 
-// -- constants
+#include "dialog/IconManagerDialog.h"
 
 const int mmImage::bitmapButtonSize = 16;
 const std::vector<std::pair<int, int>> mmImage::sizes = {

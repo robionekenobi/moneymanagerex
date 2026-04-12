@@ -1240,6 +1240,7 @@ msgstr ""
 #: import_export/webappdialog.cpp:189 import_export/webappdialog.cpp:193
 #: manager/ThemeManager.cpp:326 manager/ThemeManager.cpp:346
 #: panel/StockPanel.cpp:559 panel/StockPanel.cpp:560 util/mmImage.cpp:594
+#: dialog/IconManagerDialog.cpp:545 dialog/IconManagerDialog.cpp:564
 msgid "Error"
 msgstr ""
 
@@ -2233,10 +2234,12 @@ msgid "Currency"
 msgstr ""
 
 #: dialog/AccountDialog.cpp:541 manager/PayeeManager.cpp:200
+#: dialog/IconManagerDialog.cpp:528
 msgid "Please enter a valid URL"
 msgstr ""
 
 #: dialog/AccountDialog.cpp:542 manager/PayeeManager.cpp:200
+#: dialog/IconManagerDialog.cpp:544
 msgid "Invalid URL"
 msgstr ""
 
@@ -3094,6 +3097,42 @@ msgstr ""
 
 #: dialog/FieldValueDialog.cpp:831
 msgid "CustomField validation error"
+msgstr ""
+
+#: dialog/IconManagerDialog.cpp:307
+msgid "Custom icons"
+msgstr ""
+
+#: dialog/IconManagerDialog.cpp:338
+msgid "&Rename"
+msgstr ""
+
+#: dialog/IconManagerDialog.cpp:344
+msgid "&Add Icon"
+msgstr ""
+
+#: dialog/IconManagerDialog.cpp:345
+msgid "Add &Favicon"
+msgstr ""
+
+#: dialog/IconManagerDialog.cpp:528
+msgid "URL entry"
+msgstr ""
+
+#: dialog/IconManagerDialog.cpp:544
+msgid "Please enter URL again"
+msgstr ""
+
+#: dialog/IconManagerDialog.cpp:544
+msgid "Could not download Favicon!"
+msgstr ""
+
+#: dialog/IconManagerDialog.cpp:590
+msgid "Icon can not be added!"
+msgstr ""
+
+#: dialog/IconManagerDialog.cpp:544
+msgid "Invalid icon file format"
 msgstr ""
 
 #: dialog/MergeCategoryDialog.cpp:92 dialog/MergeCategoryDialog.h:45
@@ -5599,6 +5638,13 @@ msgstr ""
 
 #: import_export/webappdialog.cpp:413
 msgid "Im&port and open"
+msgstr ""
+
+#: import_export/webappdialog.cpp:414 manager/DateRangeManager.cpp:157
+#: manager/ThemeManager.cpp:196 uicontrols/navigatordialog.cpp:87
+#: uicontrols/toolbardialog.cpp:103
+#: dialog/IconManagerDialog.cpp:339
+msgid "&Delete"
 msgstr ""
 
 #: manager/CategoryManager.cpp:276

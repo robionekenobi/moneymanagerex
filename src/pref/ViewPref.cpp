@@ -1,7 +1,7 @@
 /*******************************************************
 Copyright (C) 2014 Stefano Giorgio
 Copyright (C) 2021-2022 Mark Whalley (mark@ipx.co.uk)
-Copyright (C) 2025 Klaus Wich
+Copyright (C) 2025, 2026 Klaus Wich
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "util/mmImage.h"
 #include "util/_util.h"
+#include "dialog/IconManagerDialog.h"
 
 #include "ViewPref.h"
 
@@ -198,6 +199,10 @@ void ViewPref::Create()
     m_font_size_chooser->SetSelection(PrefModel::instance().getFontSize());
     uiStyleSizer->Add(m_font_size_chooser, g_flagsH);
 
+    uiStyleSizer->Add(new wxStaticText(uiBox, wxID_STATIC, _t("Custom Icons")), g_flagsH);
+    m_icon_manager = new wxButton(uiBox, ID_DIALOG_ICONMANAGER, _t("Open Icon Manager"));
+    uiStyleSizer->Add(m_icon_manager, g_flagsH);
+
     // Icons
     wxFlexGridSizer* uiIconSizer = new wxFlexGridSizer(0, 3, 0, 5);
     uiSizer->Add(uiIconSizer);
@@ -239,23 +244,9 @@ void ViewPref::Create()
     uiIconSizer->Add(m_navigation_icon_size, g_flagsH);
     uiIconSizer->Add(m_others_icon_size, g_flagsH);
 
-    // Navigator Appearance
-    /*
-    wxStaticBox* navBox = new wxStaticBox(panelWindow, wxID_STATIC, _t("Navigator display / Account types"));
-
-    wxStaticBoxSizer* navSizer = new wxStaticBoxSizer(navBox, wxVERTICAL);
-    panelSizer->Add(navSizer, wxSizerFlags(g_flagsExpand).Proportion(0));
-
-    m_navigator_cfg = new wxButton(navBox, ID_DIALOG_NAVIGATOR_CONFIG, _t("Edit navigator entries and account types"));
-    navSizer->Add(m_navigator_cfg, g_flagsV);
-
-    m_navShowCashLedger = new wxCheckBox(navBox, wxID_STATIC, _t("Show cash ledger for portfolios"));
-    m_navShowCashLedger->SetValue(PrefModel::instance().getShowNavigatorCashLedger());
-    navSizer->Add(m_navShowCashLedger, g_flagsV);*/
 
     SetBoldFontToStaticBoxHeader(viewBox);
     SetBoldFontToStaticBoxHeader(uiBox);
-    //SetBoldFontToStaticBoxHeader(navBox);
 
     // -------------------
     Fit();
@@ -265,6 +256,11 @@ void ViewPref::Create()
     this->Connect(
         ID_DIALOG_THEMEMANAGER, wxEVT_COMMAND_BUTTON_CLICKED,
         wxCommandEventHandler(ViewPref::OnThemeManagerSelected),
+        nullptr, this
+    );
+    this->Connect(
+        ID_DIALOG_ICONMANAGER, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(ViewPref::OnIconManagerSelected),
         nullptr, this
     );
     this->Connect(
@@ -291,6 +287,12 @@ void ViewPref::OnHTMLScaleSpin(wxSpinEvent& event)
 void ViewPref::OnThemeManagerSelected(wxCommandEvent&)
 {
     ThemeManager dlg(this);
+    dlg.ShowModal();
+}
+
+void ViewPref::OnIconManagerSelected(wxCommandEvent&)
+{
+    IconManagerDialog dlg(this, mmex::getPathUser(mmex::USERICONS));
     dlg.ShowModal();
 }
 
