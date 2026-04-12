@@ -1224,10 +1224,10 @@
     </p>
 
     <h4>Reconcile dialog</h4>
-    <p>For a convinient reconcile, a reconcile dialog is provided.</p>
+    <p>For a convenient reconcile, a reconcile dialog is provided.</p>
 
     <h5>Opening the dialog</h5>
-    <p>It can be either openend from the navigator right-click contextual menu of the account:</p>
+    <p>It can be either opened from the navigator right-click contextual menu of the account:</p>
     <p><img class="shadow" alt='Navigator account context menu' src='../en_US/transactions/reconcilecontextmenu.png'></p>
     <br>
     <p>Or directly in the account view with the provided button:</p>
@@ -1235,7 +1235,7 @@
     <br>
 
     <h5>Dialog window</h5>
-    <p>The dialog displays all pending transactions up to the current date sorted in two columns: one for withdrawels (payments and including transfers) and one for deposits including incoming transfers:</p>
+    <p>The dialog displays all pending transactions up to the current date sorted in two columns: one for withdrawals (payments and including transfers) and one for deposits including incoming transfers:</p>
     <p><img class="shadow" alt='Reconcile dialog' src='../en_US/transactions/reconciledialog.png'></p>
 
     <aside class="sticky tips">
@@ -1246,7 +1246,7 @@
     <ul>
         <li>In the field <kbd>Statement ending</kbd> the final amount of the last statement can be entered.</li>
         <li>The field <kbd>difference</kbd> shows the difference between the cleared balance and the <kbd>Statement ending</kbd> value.</li>
-        <li>Incoming transfers are prefixed with <kbd>'&lt;'</kbd>, outging transfers with <kbd>'&gt;'</kbd>.</li>
+        <li>Incoming transfers are prefixed with <kbd>'&lt;'</kbd>, outgoing transfers with <kbd>'&gt;'</kbd>.</li>
         <br>
         <li>An unchecked transaction is selected with a left mouse click and included in the reconcile. A mouse click on a checked transaction will deselect the transaction from the reconcile.</li>
         <li>With <kbd><samp>Toggle all</samp></kbd> all not marked transactions are checked, or if all are checked, all transactions are unchecked.</li>
@@ -1262,7 +1262,7 @@
     <h5>Dialog settings</h5>
     With the settings button in top right corner, the display of the reconcile dialog can be configured:
     <p><img class="shadow" alt='Reconcile dialog settings' src='../en_US/transactions/reconcilesettings.png'></p>
-    <p>These options are stored and reapplied with the next invokement.</p>
+    <p>These options are stored and reapplied with the next invoke.</p>
     <p>Per default "void" transactions are not shown in the dialog.</p>
 
 
@@ -1783,7 +1783,7 @@
 
     <ul>
         <li>
-            Searching for <kbd>Cit?</kbd> will match <samp>Citi</samp> but not
+            Searching for <kbd>Cit?</kbd> will match <samp>City</samp> but not
             <samp>Citizens</samp>
         </li>
         <li>
@@ -2881,7 +2881,9 @@ PBank Of Mortgage Payee
 
 
     <h3>View Panel</h3>
-    These settings control the appearance of the MMEX. It is subdivided in several sections:
+    These settings control the appearance of the MMEX.
+    <p><i><p><i><img src="../en_US/settings/view-panel.png" alt="Settings view panel" class="shadow" height="600"/></i></p>
+    The panel is subdivided in:
 
     <h4>View</h4>
     <dl>
@@ -2922,11 +2924,15 @@ PBank Of Mortgage Payee
         <dt>Theme</dt>
         <dd>Allows to change between light and dark themes.</dd>
 
-        <dt>HTML scale factor</dt>
+        <dt>HTML Scale Factor</dt>
         <dd>This will set the font scaling used in the dashboard and reports.</dd>
 
-        <dt>Font size</dt>
+        <dt>Font Size</dt>
         <dd>This will set the font size used in the dashboard and reports.</dd>
+
+        <dt>Custom Icons</dt>
+        <dd>The button <kbd><samp>Open Icon Manager</samp></kbd> displays a dialog, which allows to add additional icons for the navigator customization.
+            <br>See <a href="../icon.html?lang=en_US">Custom account and navigator icons</a> for details.</dd>
 
         <dt>Toolbar/Navigator/Others Icon Size</dt>
         <dd>Fine tuning of the icon sizes used.</dd>
@@ -2952,7 +2958,7 @@ PBank Of Mortgage Payee
         </dd>
 
         <dt>Show reconciled values</dt>
-        <dd>If enabled (default) for all acccounts the current balance and the reconciled balance is displayed in the dashboard. If disabled only the current balance is shown.</dd>
+        <dd>If enabled (default) for all accounts the current balance and the reconciled balance is displayed in the dashboard. If disabled only the current balance is shown.</dd>
     </dl>
 
 
@@ -3043,28 +3049,34 @@ PBank Of Mortgage Payee
     <h4>Filter</h4>
         <dt>Enable date range filter per account or report</dt>
         <dd>If deactivated (default), all accounts and reports use the same date range. If the date range is changed in one
-            account or report the new range is also applied to all other accounts or reports. This allows a quick comparision of time periods between
+            account or report the new range is also applied to all other accounts or reports. This allows a quick comparison of time periods between
             accounts and reports.
         </dd>
-        <dd>If activated, the selected date range for each account or report will be stored seperately
+        <dd>If activated, the selected date range for each account or report will be stored separately
             for an individual view of the accounts or reports</dd>
 
 
-
+    <!--Other customizations-->
+    <!-- ====================== Section 22 ====================== -->
+    <!--              Other customizations                        -->
+    <!-- ======================================================== -->
     <h2>Other customizations</h2>
 
     <h3>Toolbar configuration</h3>
-    <p>See <a href="../toolbar.html?lang=en_US">Toolbar configuration</a> how to change the appearence of the toolbar</p>
+    <p>See <a href="../toolbar.html?lang=en_US">Toolbar configuration</a> how to change the appearance of the toolbar</p>
 
     <h3>Navigator configuration and custom account types</h3>
-    <p>See <a href="../navigator.html?lang=en_US">Navigator configuration and custom account types</a> how to change the appearence of the navigator and to create custom account types</p>
+    <p>See <a href="../navigator.html?lang=en_US">Navigator configuration and custom account types</a> how to change the appearance of the navigator and to create custom account types</p>
+
+    <h3>Custom account and navigator icons</h3>
+    <p>See <a href="../icon.html?lang=en_US">Custom account and navigator icons</a> how to add custom icons to MMEX</p>
 
 
 
     <!--Frequently Asked Questions-->
-    <!-- ====================== Section 22 ====================== -->
-    <!--              Frequently Asked Questions                -->
-    <!-- ======================================================= -->
+    <!-- ====================== Section 23 ====================== -->
+    <!--              Frequently Asked Questions                  -->
+    <!-- ======================================================== -->
     <h2 id="faq">Frequently Asked Questions</h2>
 
     <h3>How can I contribute?</h3>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Navigator-Konfiguration und benutzerdefinierte Kontotypen</title>
+    <link href="../../css/manual.css" rel="stylesheet" type="text/css">
+    <script src="../../js/toc.js"></script>
+    <script src='../../js/jquery.min.js'></script>
+    <script src="../../js/back_to_top.js"></script>
+</head>
+<body onload="generateTOC(document.getElementById('toc'));">
+    <header>
+        <nav><small><a id="go_home" href="../../index.html?lang=de_DE">Zur Haupt-Hilfeseite</a></small></nav>
+
+        <a href="#" id="back-to-top"><img src="../../img/backtotop.png" alt="Nach oben" /></a>
+
+        <h1>Navigator-Konfiguration und benutzerdefinierte Kontotypen</h1>
+    </header>
+
+    <nav id="toc"></nav>
+
+    <h2>Einführung</h2>
+    <p>
+        MMEX ermöglicht die Konfiguration des Navigators durch:
+        <ul>
+            <li>Ändern der Reihenfolge der Navigationselemente</li>
+            <li>Bearbeiten des Namens und/oder Auswählen eines neuen Symbols</li>
+            <li>Ausblenden nicht verwendeter Navigationselemente</li>
+            <li>Hinzufügen eigener Kontotypen</li>
+        </ul>
+    </p>
+
+    <div class="container">
+        <div>
+            <b>Beispiel: Standard-Navigatoransicht:</b><p>
+            <img class="shadow" alt='Standard Navigationspanel' src='../../en_US/navigator/navigator_panel_default.png'>
+        </div>
+        <div><b>vs.</b></div>
+        <div>
+            <b>Angepasste Navigatoransicht:</b><p>
+            <img class="shadow" alt='Angepasstes Navigationspanel' src='../../en_US/navigator/navigator_panel_customized.png'>
+        </div>
+    </div>
+
+    <h2>Der Konfigurationsdialog</h2>
+
+    <h3>Öffnen</h3>
+    <p>
+        Der Konfigurationsdialog kann entweder im Einstellungsmenü geöffnet werden <kbd><samp>Extras</samp> → <samp>Einstellungen…</samp></kbd>:<p>
+        <img class="shadow" alt='Navigations-Einstellungen' src='../../en_US/navigator/navigator_settings.png'><p></p>
+        oder mit einem Rechtsklick auf den Punkt „Dashboard“ oder einen leeren Bereich im Navigator.
+    </p>
+
+    <h3>Dialogfenster</h3>
+    <p>Das Dialogfenster ermöglicht es, Navigationseinträge neu anzuordnen und zu bearbeiten: </p>
+
+    <div class="container">
+        <div>
+            <h5>Navigator-Bearbeitungsansicht:</h5><p>
+             <img class="shadow" alt='Navigationsdialog' src='../../en_US/navigator/navigator_edit_dialog.png'>
+        </div>
+        <div><h5>vs.</h5></div>
+        <div>
+            <h5>Ansicht nach Anpassung:</h5><p>
+            <img class="shadow" alt='Angepasster Navigationsdialog' src='../../en_US/navigator/navigator_edit_dialog_custom.png'>
+        </div>
+    </div>
+
+    <h3>Reihenfolge ändern</h3>
+    <p>Um die Reihenfolge der Navigationselemente zu ändern, wählen Sie ein Element aus und verschieben Sie es mithilfe der Schaltflächen <kbd><samp>Oben</samp></kbd>/<kbd><samp>&#8593;</samp></kbd>/<kbd><samp>&#8595;</samp></kbd>/<kbd><samp>Unten</samp></kbd> an die gewünschte Position.</p>
+
+    <p>
+        Die Reihenfolge der Kontoelemente im Navigator bestimmt auch die Reihenfolge der Optionen in den Kontenauswahldialogen sowie die Reihenfolge der Kontotypen auf der Startseite.
+    </p>
+
+    <h3>Navigationseintrag bearbeiten</h3>
+    <p>
+        Mit der Schaltfläche <kbd><samp>Bearbeiten</samp></kbd> wird der Bearbeitungsdialog für das ausgewählte Element geöffnet.
+    </p>
+
+    <img class="shadow" alt='Bearbeitungsdialog Navigationseintrag' src='../../en_US/navigator/navigator_entry_edit_dialog.png'>
+
+    <p>
+        Im Dialog können Name und Symbol geändert werden.
+    </p>
+
+    <p>
+        Für (Bank-)Konten, Wertpapierdepots und Vermögenswerte kann der Auswahlname, der in Dialogen wie „Neues Konto erstellen“ verwendet wird, angepasst werden.
+    </p>
+
+    <p>
+        Für Navigationselemente kann der Sichtbarkeitsstatus geändert werden.
+    </p>
+
+    <h3>Navigationseintrag ausblenden</h3>
+    <p>Nicht kontobezogene Navigationseinträge können im Navigator ausgeblendet werden, indem sie deaktiviert werden. Z. B. eine nicht benötigte Hilfefunktion.</p>
+
+    <aside class="sticky note">
+        Gemeinschaftskonten und gelöschte Transaktionen können auch über die Optionen im Hauptmenü <kbd><samp>Ansicht</samp></kbd> (de)aktiviert werden.
+    </aside>
+
+    <p>Kontotypen können nicht aktiviert oder deaktiviert werden. Sie werden im Navigator angezeigt, wenn entsprechende Konten im gewünschten Status (offen oder geschlossen) vorhanden sind.</p>
+
+    <h3>Neuen Kontotyp hinzufügen</h3>
+    <p>
+        Um einen neuen Kontotyp hinzuzufügen, wird die Schaltfläche <kbd><samp>Neu</samp></kbd> verwendet, die einen Bearbeitungsdialog für neue Elemente öffnet:
+    </p>
+
+    <aside class="sticky note">
+        Die Datenbank verwendet den bei der Erstellung eingegebenen „Auswahlnamen“ als Kennung. Dieser wird nicht aktualisiert, wenn er später geändert wird.
+    </aside>
+
+    <img class="shadow" alt='Neuer Navigationseintrag' src='../../en_US/navigator/navigator_entry_new_dialog.png'>
+
+    <p>
+        Für einen neuen Kontotyp muss ein Name angegeben werden. Optional kann ein „Auswahlname“ festgelegt werden, der in den Kontenauswahldialogen verwendet wird. Wird dieser nicht angegeben, wird der eingegebene Name verwendet.
+    </p>
+
+    <h3>Anpassungen rückgängig machen</h3>
+
+    <h4>Kontonamen zurücksetzen</h4>
+    <p>Mit der Schaltfläche <kbd><samp>Namen zurücksetzen</samp></kbd> werden Name und Symbol der Standard-Navigationseinträge auf die Standardkonfiguration zurückgesetzt. Dies beeinflusst weder die Reihenfolge noch benutzerdefinierte Konten.</p>
+
+    <p>Dies kann wichtig sein, wenn die Sprache der Benutzeroberfläche geändert wird, da die Übersetzungen der Standard-Navigationseinträge nicht automatisch aktualisiert werden.</p>
+
+    <h4>Anpassung zurücksetzen</h4>
+    <p>Mit der Schaltfläche <kbd><samp>Standard wiederherstellen</samp></kbd> wird die Standardkonfiguration des Navigators wiederhergestellt. Alle Anpassungen an Namen, Symbolen und Reihenfolge werden zurückgesetzt und benutzerdefinierte Kontotypen gelöscht.</p>
+
+    <p>Konten mit einem benutzerdefinierten Kontotyp werden wieder in Bankkonten (Girokonten) umgewandelt.</p>
+
+    <h2>Kontoreihenfolgen</h2>
+
+    <p>
+        Die Navigator-Anpassung bestimmt auch die Reihenfolge der Konten an anderen Stellen in MMEX:
+    </p>
+
+    <h3>Startseite</h3>
+    <div class="container">
+        <div>
+            <b>Standard-Kontoreihenfolge:</b><p>
+             <img class="shadow" alt='Standard Startseite' src='../../en_US/navigator/navigator_home_ page_default.png'>
+        </div>
+         <div><b>vs.</b></div>
+        <div>
+            <b>Reihenfolge nach Anpassung:</b><p>
+            <img class="shadow" alt='Angepasste Startseite' src='../../en_US/navigator/navigator_home_ page_customized.png'>
+        </div>
+    </div>
+
+    <h3>Bericht</h3>
+    <div class="">
+        <div>
+            <b>Standard-Kontoreihenfolge:</b><p>
+             <img class="shadow" alt='Standard Bericht' src='../../en_US/navigator/navigator_report_default.png'>
+        </div>
+        <div>
+            <b>vs. Kontoreihenfolge nach Anpassung:</b><p>
+            <img class="shadow" alt='Angepasster Bericht' src='../../en_US/navigator/navigator_report_customized.png'>
+        </div>
+    </div>
+
+    <h2>Hinweise</h2>
+    Die Navigator-Konfiguration wird in der MMEX-Datenbankdatei gespeichert und ist spezifisch für eine Datenbankinstanz.
+    <br><br>
+    <hr>
+
+    <footer><p><small>
+        Copyright &copy; 2025 Klaus Wich<br>
+    </small></p></footer>
+
+    <script>
+        var LANG = document.getElementsByTagName('html')[0].getAttribute('lang');
+        var tr = document.getElementById("translator");
+        if (LANG == 'en')
+            tr.parentNode.removeChild(tr);
+    </script>
+</body>
+</html>
