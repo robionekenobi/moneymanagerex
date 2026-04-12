@@ -24,16 +24,16 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <map>
 #include <array>
 
-#include "base/_defs.h"
+//#include "base/_defs.h"
 #include <wx/image.h>
 #include <wx/bitmap.h>
 #include <wx/sharedptr.h>
-#include <wx/dir.h>
+//#include <wx/dir.h>
 #include <wx/zipstrm.h>
 #include <wx/rawbmp.h>
 #include <wx/fs_mem.h>
 #include <wx/mstream.h>
-#include <wx/tokenzr.h>
+//#include <wx/tokenzr.h>
 
 #include "base/mmPlatform.h"
 #include "base/mmUserColor.h"
@@ -518,21 +518,6 @@ void mmImage::reverttoDefaultTheme()
     );
 }
 
-/*wxVector<wxBitmapBundle> mmImage::navtree_bitmapBundle_a(const int size)
-{
-    int x = (size > 0)
-        ? size
-        : PrefModel::instance().getIconSize();
-
-    wxVector<wxBitmapBundle> images;
-    for (const auto& img : mmImage::navtree_images(x))
-        images.push_back(img.second);
-    for (const auto& img : mmImage::acc_images(x))
-         images.push_back(img.second);
-
-    return images;
-}*/
-
 void mmImage::loadTheme()
 {
     mmImage::darkMode = (
@@ -678,6 +663,7 @@ const wxBitmapBundle mmImage::bitmapBundle(const int ref, const int defSize)
 NavTreeIconImages::NavTreeIconImages()
 {
     m_changed = false;
+    m_size = 0;
 }
 
 NavTreeIconImages& NavTreeIconImages::instance()

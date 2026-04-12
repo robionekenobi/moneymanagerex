@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "base/_defs.h"
 #include <wx/bmpbndl.h>
 #include <wx/window.h>
-#include <wx/imaglist.h>
+//#include <wx/imaglist.h>
 #include <wx/arrstr.h>
 
 struct mmImage

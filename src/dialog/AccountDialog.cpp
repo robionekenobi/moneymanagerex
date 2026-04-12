@@ -22,7 +22,6 @@
 
 #include "base/_defs.h"
 #include <wx/valnum.h>
-#include <wx/url.h>
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
