@@ -1,7 +1,7 @@
 /*******************************************************
 Copyright (C) 2014, 2015 Nikolay Akimov
 Copyright (C) 2021 Mark Whalley (mark@ipx.co.uk)
-Copyright (C) 2025 Klaus Wich
+Copyright (C) 2025, 2026 Klaus Wich
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -264,7 +264,7 @@ private:
     static void reverttoDefaultTheme();
 
 public:
-    static auto navtree_bitmapBundle_a(const int size = 0) -> wxVector<wxBitmapBundle>;
+    //static auto navtree_bitmapBundle_a(const int size = 0) -> wxVector<wxBitmapBundle>;
     static void loadTheme();
     static void closeTheme();
     static auto themeMetaString(int ref) -> const wxString;
@@ -275,3 +275,29 @@ public:
     static auto themeMetaColour_a(int ref) -> const std::vector<wxColour>;
     static auto bitmapBundle(const int ref, const int defSize = -1) -> const wxBitmapBundle;
 };
+
+class NavTreeIconImages
+{
+public:
+    NavTreeIconImages();
+    static NavTreeIconImages& instance();
+    wxVector<wxBitmapBundle> getList(const int size = 0);
+    wxImageList* getImageList(const int size = 0);
+    int getListSize();
+
+    std::map<int, wxString>& getIndexMap();
+    void initIndexMap();
+    int getImgIndex(wxString imgName);
+    bool isListChanged();
+    void setChanged();
+
+private:
+    int navtree_images_size;
+    std::map<int, wxString> m_indexMap;
+    std::map<wxString, int> m_indexReverseMap;
+    bool m_changed;
+    int m_size;
+};
+
+inline std::map<int, wxString>& NavTreeIconImages::getIndexMap() { return m_indexMap; };
+inline int NavTreeIconImages::getListSize(){ return m_size; };

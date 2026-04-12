@@ -487,6 +487,12 @@ void mmFrame::resetNavTreeControl()
     wxTreeItemId root = m_nav_tree_ctrl->GetRootItem();
     cleanupNavTreeControl(root);
     m_nav_tree_ctrl->DeleteAllItems();
+    // -Check if image list was changed and update if necessary:
+    if (NavTreeIconImages::instance().isListChanged()) {
+        NavigatorTypes::instance().LoadFromDB();  // reinit index
+        const auto navIconSize = PrefModel::instance().getNavigationIconSize();
+        m_nav_tree_ctrl->SetImages(NavTreeIconImages::instance().getList(navIconSize));
+    }
 }
 
 void mmFrame::cleanupNavTreeControl(wxTreeItemId& item)
@@ -852,7 +858,8 @@ void mmFrame::createControls()
     mmImage::themeMetaColour(m_nav_tree_ctrl, mmImage::COLOR_NAVPANEL_FONT, true);
 
     const auto navIconSize = PrefModel::instance().getNavigationIconSize();
-    m_nav_tree_ctrl->SetImages(mmImage::navtree_bitmapBundle_a(navIconSize));
+    //m_nav_tree_ctrl->SetImages(mmImage::navtree_bitmapBundle_a(navIconSize));
+    m_nav_tree_ctrl->SetImages(NavTreeIconImages::instance().getList(navIconSize));
     m_nav_tree_ctrl->SetIndent(10);
 
     m_nav_tree_ctrl->Connect(
@@ -4658,4 +4665,3 @@ void mmFrame::mmDoHideReportsDialog()
     }
     DoRecreateNavTreeControl();
 }
-

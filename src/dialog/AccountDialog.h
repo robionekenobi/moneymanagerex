@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2006 Madhan Kanagavel
- Copyright (C) 2022  Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (c) 2026 Klaus Wich
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -74,11 +75,13 @@ private:
     void OnCancel(wxCommandEvent& event);
     void OnCurrency(wxCommandEvent& event);
     void fillControls(void);
-    void OnCustonImage(wxCommandEvent& event);
+    void OnDefaultImage(wxCommandEvent& event);
+    void OnCustomImage(wxCommandEvent& event);
+    void OnFavIconImage(wxCommandEvent& event);
+    void OnLoadFavIconImage(wxCommandEvent& event);
     void OnAttachments(wxCommandEvent& event);
     void OnAccountStatus(void);
     void OnAccountStatus(wxCommandEvent& event);
     void OnImageButton(wxCommandEvent& event);
     void OnChangeFocus(wxChildFocusEvent& event);
 };
-

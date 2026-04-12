@@ -1,5 +1,5 @@
 /*******************************************************
- Copyright (C) 2025 Klaus Wich
+ Copyright (C) 2025,2026 Klaus Wich
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -161,13 +161,21 @@ void mmNavigatorList::SaveSequenceAndState()
         rapidjson::Value value(entry->name.ToUTF8().data(), j_doc.GetAllocator());
         rapidjson::Value cvalue(entry->choice.ToUTF8().data(), j_doc.GetAllocator());
         rapidjson::Value dbaccid(entry->dbaccid.ToUTF8().data(), j_doc.GetAllocator());
+        wxString imageValue;
+        if (entry->imageId < acc_img::MAX_ACC_ICON) {
+            imageValue = wxString::Format(wxT("%i"), entry->imageId);
+        }
+        else {
+            imageValue = "CI:" + NavTreeIconImages::instance().getIndexMap()[entry->imageId];
+        }
+        rapidjson::Value dbImageValue(imageValue.ToUTF8().data(), j_doc.GetAllocator());
         rapidjson::Value obj(rapidjson::kObjectType);
         obj.AddMember("id",      entry->type,    j_doc.GetAllocator());
         obj.AddMember("name",    value,          j_doc.GetAllocator());
         obj.AddMember("choice",  cvalue,         j_doc.GetAllocator());
         obj.AddMember("dbaccid", dbaccid,        j_doc.GetAllocator());
         obj.AddMember("seq_no",  entry->seq_no,  j_doc.GetAllocator());
-        obj.AddMember("imageId", entry->imageId, j_doc.GetAllocator());
+        obj.AddMember("imageIds", dbImageValue,  j_doc.GetAllocator());
         obj.AddMember("navTyp",  entry->navTyp,  j_doc.GetAllocator());
         obj.AddMember("active",  entry->active,  j_doc.GetAllocator());
         array.PushBack(obj, j_doc.GetAllocator());
@@ -218,6 +226,7 @@ mmNavigatorItem* mmNavigatorList::FindOrCreateEntry(int searchId)
 
 void mmNavigatorList::LoadFromDB(bool keepnames)
 {
+    NavTreeIconImages::instance().initIndexMap();  // tmp enable maps, needed for reading.
     wxString key = "NAVIGATOR_SETTINGS";
     Document doc = InfoModel::instance().getJdoc(key, "{}");
     if (!doc.HasMember("data") || !doc["data"].IsArray()) {
@@ -254,8 +263,24 @@ void mmNavigatorList::LoadFromDB(bool keepnames)
         if (obj.HasMember("active") && obj["active"].IsBool()) {
             info->active = obj["active"].GetBool();
         }
-        if (obj.HasMember("imageId") && obj["imageId"].IsInt()) {
+        if (obj.HasMember("imageId") && obj["imageId"].IsInt()) {  //old for compatibility
             info->imageId = obj["imageId"].GetInt();
+            if (info->imageId >= NavTreeIconImages::instance().getListSize()) {
+                info->imageId = GetDefaultImage(id);
+            }
+        }
+        if (obj.HasMember("imageIds") && obj["imageIds"].IsString()) {
+            wxString timg = wxString::FromUTF8(obj["imageIds"].GetString());
+            wxString fileid;
+            if (timg.StartsWith("CI:", &fileid)) {
+                info->imageId = NavTreeIconImages::instance().getImgIndex(fileid);
+            }
+            else {
+                info->imageId = wxAtoi(timg);
+            }
+            if (info->imageId >= NavTreeIconImages::instance().getListSize() || info->imageId < 0) {
+                info->imageId = GetDefaultImage(id);
+            }
         }
         if (obj.HasMember("navTyp") && obj["navTyp"].IsInt()) {
             info->navTyp = obj["navTyp"].GetInt();
@@ -453,4 +478,30 @@ int mmNavigatorList::getMaxId()
         }
     }
     return max;
+}
+
+int NavigatorTypes::GetDefaultImage(int navTyp)
+{
+    static std::map<int, int> defaultTyp = {
+        { TYPE_ID_CASH,                     img::CASH_ACC_NORMAL_PNG },
+        { TYPE_ID_CHECKING,                 img::SAVINGS_ACC_NORMAL_PNG },
+        { TYPE_ID_CREDIT_CARD,              img::CARD_ACC_NORMAL_PNG },
+        { TYPE_ID_LOAN,                     img::LOAN_ACC_NORMAL_PNG },
+        { TYPE_ID_TERM,                     img::TERMACCOUNT_NORMAL_PNG },
+        { TYPE_ID_INVESTMENT,               img::STOCK_ACC_NORMAL_PNG },
+        { TYPE_ID_ASSET,                    img::ASSET_NORMAL_PNG },
+        { TYPE_ID_SHARES,                   img::STOCK_ACC_NORMAL_PNG },
+        { NAV_ENTRY_DASHBOARD,              img::HOUSE_PNG },
+        { NAV_ENTRY_ALL_TRANSACTIONS,       img::ALLTRANSACTIONS_PNG },
+        { NAV_ENTRY_SCHEDULED_TRANSACTIONS, img::SCHEDULE_PNG },
+        { NAV_ENTRY_FAVORITES,              img::FAVOURITE_PNG },
+        { NAV_ENTRY_BUDGET_PLANNER,         img::CALENDAR_PNG },
+        { NAV_ENTRY_TRANSACTION_REPORT,     img::FILTER_PNG },
+        { NAV_ENTRY_REPORTS,                img::PIECHART_PNG },
+        { NAV_ENTRY_GRM,                    img::CUSTOMSQL_GRP_PNG },
+        { NAV_ENTRY_DELETED_TRANSACTIONS,   img::TRASH_PNG },
+        { NAV_ENTRY_HELP,                   img::HELP_PNG }
+    };
+
+    return navTyp < NAV_ENTRY_size ? defaultTyp[navTyp] : img::SAVINGS_ACC_NORMAL_PNG;
 }

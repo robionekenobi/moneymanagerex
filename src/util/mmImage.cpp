@@ -518,7 +518,7 @@ void mmImage::reverttoDefaultTheme()
     );
 }
 
-wxVector<wxBitmapBundle> mmImage::navtree_bitmapBundle_a(const int size)
+/*wxVector<wxBitmapBundle> mmImage::navtree_bitmapBundle_a(const int size)
 {
     int x = (size > 0)
         ? size
@@ -531,7 +531,7 @@ wxVector<wxBitmapBundle> mmImage::navtree_bitmapBundle_a(const int size)
          images.push_back(img.second);
 
     return images;
-}
+}*/
 
 void mmImage::loadTheme()
 {
@@ -693,3 +693,170 @@ const wxBitmapBundle mmImage::bitmapBundle(const int ref, const int defSize)
     const int idx = mmImage::getIconSizeIdx(defSize);
     return *mmImage::programIconBundles[idx][ref];
 }
+
+//----------------------------------------------------------------------------
+// (Nav Tree) Icon  handling
+NavTreeIconImages::NavTreeIconImages()
+{
+    m_changed = false;
+}
+
+NavTreeIconImages& NavTreeIconImages::instance()
+{
+    return Singleton<NavTreeIconImages>::instance();
+}
+
+wxVector<wxBitmapBundle> NavTreeIconImages::getList(const int size)
+{
+    int x = (size > 0) ? size : PrefModel::instance().getIconSize();
+    wxVector<wxBitmapBundle> bitmaps;
+    for (const auto& img : navtree_images(x))
+        bitmaps.push_back(img.second);
+    for (const auto& img : acc_images(x))
+         bitmaps.push_back(img.second);
+
+    // Reset maps:
+    m_indexMap = {};
+    m_indexReverseMap = {};
+    wxSize bSize = wxSize(x,x);
+    // Get downloaded icon images:
+    wxFileName resPath = mmex::getPathUserRaw(mmex::USERICONS);
+    if (resPath.IsOk()) {
+        wxDir dir(resPath.GetPath());
+        if (dir.IsOpened()) {
+            wxString filename;
+            int bidx = acc_img::MAX_ACC_ICON;
+            bool cont = dir.GetFirst(&filename);
+            while (cont) {
+                wxFileName fullPath(resPath.GetPath(), filename);
+                if (fullPath.FileExists()) {
+                    if (fullPath.GetExt().Lower() == "svg") {
+                        wxBitmapBundle bundle = wxBitmapBundle::FromSVGFile(fullPath.GetFullPath(), bSize);
+                        bitmaps.emplace_back(bundle);
+                        m_indexMap[bidx] = filename;
+                        m_indexReverseMap[filename] = bidx++;
+                    }
+                    else {
+                        wxImage image;
+                        if (image.LoadFile(fullPath.GetFullPath())) {
+                            wxImage img = image.Scale(x, x, wxIMAGE_QUALITY_HIGH);
+                            bitmaps.emplace_back(wxBitmap(img));
+                            m_indexMap[bidx] = filename;
+                            m_indexReverseMap[filename] = bidx++;
+                        }
+                    }
+                }
+                cont = dir.GetNext(&filename);
+            }
+        }
+        else {
+            wxLogDebug("Icon directory could not be opened: %s", resPath.GetPath());
+        }
+    }
+
+    m_size = static_cast<int>(bitmaps.size());
+    return (bitmaps);
+}
+
+// Use with care!!, only creates the maps for init
+void NavTreeIconImages::initIndexMap()
+{
+    m_indexMap = {};
+    m_indexReverseMap = {};
+    // Map downloaded icon images:
+    wxFileName resPath = mmex::getPathUserRaw(mmex::USERICONS);
+    int bidx = acc_img::MAX_ACC_ICON;
+    if (resPath.IsOk()) {
+        wxDir dir(resPath.GetPath());
+        if (dir.IsOpened()) {
+            wxString filename;
+            bool cont = dir.GetFirst(&filename);
+            while (cont) {
+                wxFileName fullPath(resPath.GetPath(), filename);
+                if (fullPath.FileExists()) {
+                    if (fullPath.GetExt().Lower() == "svg") {
+                        m_indexMap[bidx] = filename;
+                        m_indexReverseMap[filename] = bidx++;
+                    }
+                    else {
+                        wxImage image;
+                        if (image.LoadFile(fullPath.GetFullPath())) {
+                            m_indexMap[bidx] = filename;
+                            m_indexReverseMap[filename] = bidx++;
+                        }
+                    }
+                }
+                cont = dir.GetNext(&filename);
+            }
+        }
+        else {
+            wxLogDebug("Icon directory could not be opened: %s", resPath.GetPath());
+        }
+    }
+    m_size = bidx;
+}
+
+wxImageList* NavTreeIconImages::getImageList(const int rsize)
+{
+    int x = (rsize > 0) ? rsize : PrefModel::instance().getNavigationIconSize();
+    wxImageList* imageList = new wxImageList(x, x);
+    wxSize size = (wxSize(x, x));
+
+    for (const auto& img : navtree_images(x)) {
+        imageList->Add(img.second.GetBitmap(size));
+    }
+    for (const auto& img : acc_images(x)) {
+        imageList->Add(img.second.GetBitmap(size));
+    }
+
+    // Get downloaded icon images:
+    wxFileName resPath = mmex::getPathUserRaw(mmex::USERICONS);
+    if (resPath.IsOk()) {
+        wxDir dir(resPath.GetPath());
+        if (dir.IsOpened()) {
+            wxString filename;
+            bool cont = dir.GetFirst(&filename);
+            while (cont) {
+                wxFileName fullPath(resPath.GetPath(), filename);
+                if (fullPath.FileExists()) {
+                    if (fullPath.GetExt().Lower() == "svg") {
+                        wxBitmapBundle bundle = wxBitmapBundle::FromSVGFile(fullPath.GetFullPath(), size);
+                        wxBitmap bmp = bundle.GetBitmap(size);
+                        imageList->Add(bmp.ConvertToImage());
+                    }
+                    else {
+                        wxImage image;
+                        if (image.LoadFile(fullPath.GetFullPath())) {
+                            wxImage img = image.Scale(x, x, wxIMAGE_QUALITY_HIGH);
+                            imageList->Add(img);
+                        }
+                    }
+                }
+                cont = dir.GetNext(&filename);
+            }
+        }
+        else {
+            wxLogDebug("Icon directory could not be opened: %s", resPath.GetPath());
+        }
+    }
+    return imageList;
+}
+
+int NavTreeIconImages::getImgIndex(wxString imgName)
+{
+    return m_indexReverseMap.count(imgName) > 0 ? m_indexReverseMap[imgName] : -1;
+}
+
+void NavTreeIconImages::setChanged()
+{
+    m_changed = true;
+}
+
+bool NavTreeIconImages::isListChanged()
+{
+    bool result = m_changed;
+    m_changed = false;
+    return result;
+}
+
+//----------------------------------------------------------------------------

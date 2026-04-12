@@ -90,6 +90,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     base/mmUserColor.cpp
     base/mmUserColor.h
 
+    util/_icon.cpp
+    util/_icon.h
     util/_primitive.cpp
     util/_primitive.h
     util/_simple.cpp
