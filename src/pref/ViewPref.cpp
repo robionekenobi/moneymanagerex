@@ -292,7 +292,7 @@ void ViewPref::OnThemeManagerSelected(wxCommandEvent&)
 
 void ViewPref::OnIconManagerSelected(wxCommandEvent&)
 {
-    IconManagerDialog dlg(this, mmex::getPathUser(mmex::USERICONS));
+    IconManagerDialog dlg(this, mmPath::getPathUser(mmPath::USERICONS));
     dlg.ShowModal();
 }
 

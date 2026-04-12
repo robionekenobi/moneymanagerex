@@ -489,7 +489,7 @@ void mmFrame::resetNavTreeControl()
     m_nav_tree_ctrl->DeleteAllItems();
     // -Check if image list was changed and update if necessary:
     if (NavTreeIconImages::instance().isListChanged()) {
-        NavigatorTypes::instance().LoadFromDB();  // reinit index
+        mmNavigatorList::instance().LoadFromDB();  // reinit index
         const auto navIconSize = PrefModel::instance().getNavigationIconSize();
         m_nav_tree_ctrl->SetImages(NavTreeIconImages::instance().getList(navIconSize));
     }

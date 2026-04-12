@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <wx/scrolwin.h>
 #include <functional>
 #include <string>
-#include "base/defs.h"
+#include "base/_defs.h"
 
 bool iconDownloadFavicon(const wxString& websiteUrl, std::string& outputName, std::string& ext);
 

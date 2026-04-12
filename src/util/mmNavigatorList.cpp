@@ -19,7 +19,7 @@
 #include "mmNavigatorList.h"
 
 #include "base/mmSingleton.h"
-#include "mmImage.h"
+#include "util/mmImage.h"
 #include "model/AccountModel.h"
 
 mmNavigatorList::mmNavigatorList()
@@ -83,6 +83,8 @@ bool mmNavigatorList::DeleteEntry(mmNavigatorItem* info)
             // in many parts of the application (e.g., reports).
             // Changing the type of an account can break functionality.
             // Not all account types are immediately convertible to Checking.
+            //
+            // No need to fix, all accounts addressed here are based on Checking account (KW)
             AccountModel::instance().dangerous_reset_type(info->dbaccid);
             m_navigator_entries.erase(m_navigator_entries.begin() + i);
             result = true;
@@ -162,7 +164,7 @@ void mmNavigatorList::SaveSequenceAndState()
         rapidjson::Value cvalue(entry->choice.ToUTF8().data(), j_doc.GetAllocator());
         rapidjson::Value dbaccid(entry->dbaccid.ToUTF8().data(), j_doc.GetAllocator());
         wxString imageValue;
-        if (entry->imageId < acc_img::MAX_ACC_ICON) {
+        if (entry->imageId < mmImage::acc_img::MAX_ACC_ICON) {
             imageValue = wxString::Format(wxT("%i"), entry->imageId);
         }
         else {
@@ -480,28 +482,28 @@ int mmNavigatorList::getMaxId()
     return max;
 }
 
-int NavigatorTypes::GetDefaultImage(int navTyp)
+int mmNavigatorList::GetDefaultImage(int navTyp)
 {
     static std::map<int, int> defaultTyp = {
-        { TYPE_ID_CASH,                     img::CASH_ACC_NORMAL_PNG },
-        { TYPE_ID_CHECKING,                 img::SAVINGS_ACC_NORMAL_PNG },
-        { TYPE_ID_CREDIT_CARD,              img::CARD_ACC_NORMAL_PNG },
-        { TYPE_ID_LOAN,                     img::LOAN_ACC_NORMAL_PNG },
-        { TYPE_ID_TERM,                     img::TERMACCOUNT_NORMAL_PNG },
-        { TYPE_ID_INVESTMENT,               img::STOCK_ACC_NORMAL_PNG },
-        { TYPE_ID_ASSET,                    img::ASSET_NORMAL_PNG },
-        { TYPE_ID_SHARES,                   img::STOCK_ACC_NORMAL_PNG },
-        { NAV_ENTRY_DASHBOARD,              img::HOUSE_PNG },
-        { NAV_ENTRY_ALL_TRANSACTIONS,       img::ALLTRANSACTIONS_PNG },
-        { NAV_ENTRY_SCHEDULED_TRANSACTIONS, img::SCHEDULE_PNG },
-        { NAV_ENTRY_FAVORITES,              img::FAVOURITE_PNG },
-        { NAV_ENTRY_BUDGET_PLANNER,         img::CALENDAR_PNG },
-        { NAV_ENTRY_TRANSACTION_REPORT,     img::FILTER_PNG },
-        { NAV_ENTRY_REPORTS,                img::PIECHART_PNG },
-        { NAV_ENTRY_GRM,                    img::CUSTOMSQL_GRP_PNG },
-        { NAV_ENTRY_DELETED_TRANSACTIONS,   img::TRASH_PNG },
-        { NAV_ENTRY_HELP,                   img::HELP_PNG }
+        { mmNavigatorItem::TYPE_ID_CASH,                     mmImage::img::CASH_ACC_NORMAL_PNG },
+        { mmNavigatorItem::TYPE_ID_CHECKING,                 mmImage::img::SAVINGS_ACC_NORMAL_PNG },
+        { mmNavigatorItem::TYPE_ID_CREDIT_CARD,              mmImage::img::CARD_ACC_NORMAL_PNG },
+        { mmNavigatorItem::TYPE_ID_LOAN,                     mmImage::img::LOAN_ACC_NORMAL_PNG },
+        { mmNavigatorItem::TYPE_ID_TERM,                     mmImage::img::TERMACCOUNT_NORMAL_PNG },
+        { mmNavigatorItem::TYPE_ID_INVESTMENT,               mmImage::img::STOCK_ACC_NORMAL_PNG },
+        { mmNavigatorItem::TYPE_ID_ASSET,                    mmImage::img::ASSET_NORMAL_PNG },
+        { mmNavigatorItem::TYPE_ID_SHARES,                   mmImage::img::STOCK_ACC_NORMAL_PNG },
+        { mmNavigatorItem::NAV_ENTRY_DASHBOARD,              mmImage::img::HOUSE_PNG },
+        { mmNavigatorItem::NAV_ENTRY_ALL_TRANSACTIONS,       mmImage::img::ALLTRANSACTIONS_PNG },
+        { mmNavigatorItem::NAV_ENTRY_SCHEDULED_TRANSACTIONS, mmImage::img::SCHEDULE_PNG },
+        { mmNavigatorItem::NAV_ENTRY_FAVORITES,              mmImage::img::FAVOURITE_PNG },
+        { mmNavigatorItem::NAV_ENTRY_BUDGET_PLANNER,         mmImage::img::CALENDAR_PNG },
+        { mmNavigatorItem::NAV_ENTRY_TRANSACTION_REPORT,     mmImage::img::FILTER_PNG },
+        { mmNavigatorItem::NAV_ENTRY_REPORTS,                mmImage::img::PIECHART_PNG },
+        { mmNavigatorItem::NAV_ENTRY_GRM,                    mmImage::img::CUSTOMSQL_GRP_PNG },
+        { mmNavigatorItem::NAV_ENTRY_DELETED_TRANSACTIONS,   mmImage::img::TRASH_PNG },
+        { mmNavigatorItem::NAV_ENTRY_HELP,                   mmImage::img::HELP_PNG }
     };
 
-    return navTyp < NAV_ENTRY_size ? defaultTyp[navTyp] : img::SAVINGS_ACC_NORMAL_PNG;
+    return navTyp < mmNavigatorItem::NAV_ENTRY_size ? defaultTyp[navTyp] : mmImage::img::SAVINGS_ACC_NORMAL_PNG;
 }

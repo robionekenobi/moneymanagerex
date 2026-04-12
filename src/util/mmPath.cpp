@@ -189,11 +189,11 @@ const wxString mmPath::getPathShared(ESharedFile f)
 
 const wxString mmPath::getPathUser(EUserFile f)
 {
-    wxFileName fname = getPathUserRaw(f, false);
+    wxFileName fname = mmPath::getPathUserRaw(f, false);
     return fname.GetFullPath();
 }
 
-const wxFileName mmex::getPathUserRaw(EUserFile f, bool create)
+const wxFileName mmPath::getPathUserRaw(EUserFile f, bool create)
 {
     static const wxString files[USER_FILES_MAX] = {
       mmPath::getSettingsFileName(),
@@ -205,7 +205,7 @@ const wxFileName mmex::getPathUserRaw(EUserFile f, bool create)
     wxASSERT(f >= 0 && f < USER_FILES_MAX);
 
     wxFileName fname = mmPath::getUserDir(true);
-    if (f > DIRECTORY)
+    if (f > DIRECTORY) {
         fname.AppendDir(files[f]);
         if (!fname.DirExists()) {
             if (create && !fname.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL)) {
@@ -215,8 +215,10 @@ const wxFileName mmex::getPathUserRaw(EUserFile f, bool create)
                 wxLogDebug("Directory %s does not exist!", fname.GetFullPath());
             }
         }
-    else
+    }
+    else {
         fname.SetFullName(files[f]);
+    }
 
     return fname;
 }

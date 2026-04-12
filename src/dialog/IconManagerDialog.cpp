@@ -29,9 +29,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <wx/dir.h>
 #include <wx/textdlg.h>
 
-#include "base/paths.h"
-#include "base/platfdep.h"
-#include "base/images_list.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
 
 #include "dialog/IconManagerDialog.h"
 #include "model/InfoModel.h"
@@ -558,7 +557,7 @@ void IconManagerDialog::OnAddFavIcon(wxCommandEvent&)
 
     if (success && !outUrl.IsEmpty()) {
         std::string ext = "";
-        wxFileName resDir = mmex::getPathUserRaw(mmex::USERICONS, true);
+        wxFileName resDir = mmPath::getPathUserRaw(mmPath::USERICONS, true);
         if (resDir.IsOk()) {
             wxFileName path(resDir.GetPathWithSep(), iconExtractServerName(outUrl));
             std::string iconFileName = path.GetFullPath().utf8_string();

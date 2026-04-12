@@ -831,7 +831,7 @@ int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool
         acctStatus = account_n->m_status;
     }
 
-    if (!def && !ignoreClosure && acctStatus.id() == AccountStatus::e_closed)
+    if (!def && !ignoreClosure && acctStatus.id() == AccountStatus::e_closed) {
         return mmImage::img::ACCOUNT_CLOSED_PNG;
     }
 
@@ -847,13 +847,13 @@ int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool
             custom_img_id = wxAtoi(timg);
         }
 
-        int bmListSize = std::max (NavTreeIconImages::instance().getListSize(), static_cast<int>(acc_img::MAX_ACC_ICON));
+        int bmListSize = std::max (NavTreeIconImages::instance().getListSize(), static_cast<int>(mmImage::acc_img::MAX_ACC_ICON));
         if (custom_img_id > 0 && custom_img_id < bmListSize) {
             return custom_img_id;
         }
     }
 
-    NavigatorTypesInfo* info = NavigatorTypes::instance().FindEntry(acctType);
+    mmNavigatorItem* info = mmNavigatorList::instance().FindEntry(acctType);
     return info ? info->imageId : mmImage::img::SAVINGS_ACC_NORMAL_PNG;
 }
 

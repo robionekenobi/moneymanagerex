@@ -256,8 +256,6 @@ private:
 
 private:
     static auto metaDataTrans() -> const std::map<int, std::tuple<wxString, wxString, bool>>;
-    static auto navtree_images(const int size) -> const std::map<int, wxBitmapBundle>;
-    static auto acc_images(int size) -> const std::map<int, wxBitmapBundle>;
     static int  getIconSizeIdx(const int iconSize);
     static bool processThemes(wxString themeDir, wxString myTheme, bool metaPhase);
     static bool checkThemeContents(wxArrayString* filesinTheme);
@@ -274,7 +272,10 @@ public:
     static void themeMetaColour(wxWindow* object, wxColour c, bool foreground = false);
     static auto themeMetaColour_a(int ref) -> const std::vector<wxColour>;
     static auto bitmapBundle(const int ref, const int defSize = -1) -> const wxBitmapBundle;
+    static auto navtree_images(const int size) -> const std::map<int, wxBitmapBundle>;
+    static auto acc_images(int size) -> const std::map<int, wxBitmapBundle>;
 };
+
 
 class NavTreeIconImages
 {

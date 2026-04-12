@@ -79,7 +79,7 @@ struct mmPath
     static auto getProgramIcon() -> const wxIcon&;
     static auto getPathShared(ESharedFile f) -> const wxString;
     static auto getPathUser(EUserFile f) -> const wxString;
-    static wxFileName getPathUserRaw(EUserFile f, bool create = false);
+    static const wxFileName getPathUserRaw(EUserFile f, bool create = false);
 
     static auto getPathAttachment(const wxString& folder) -> const wxString;
     static bool isPortableMode();

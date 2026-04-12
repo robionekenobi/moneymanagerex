@@ -710,9 +710,9 @@ wxVector<wxBitmapBundle> NavTreeIconImages::getList(const int size)
 {
     int x = (size > 0) ? size : PrefModel::instance().getIconSize();
     wxVector<wxBitmapBundle> bitmaps;
-    for (const auto& img : navtree_images(x))
+    for (const auto& img : mmImage::navtree_images(x))
         bitmaps.push_back(img.second);
-    for (const auto& img : acc_images(x))
+    for (const auto& img : mmImage::acc_images(x))
          bitmaps.push_back(img.second);
 
     // Reset maps:
@@ -720,12 +720,12 @@ wxVector<wxBitmapBundle> NavTreeIconImages::getList(const int size)
     m_indexReverseMap = {};
     wxSize bSize = wxSize(x,x);
     // Get downloaded icon images:
-    wxFileName resPath = mmex::getPathUserRaw(mmex::USERICONS);
+    wxFileName resPath = mmPath::getPathUserRaw(mmPath::USERICONS);
     if (resPath.IsOk()) {
         wxDir dir(resPath.GetPath());
         if (dir.IsOpened()) {
             wxString filename;
-            int bidx = acc_img::MAX_ACC_ICON;
+            int bidx = mmImage::acc_img::MAX_ACC_ICON;
             bool cont = dir.GetFirst(&filename);
             while (cont) {
                 wxFileName fullPath(resPath.GetPath(), filename);
@@ -764,8 +764,8 @@ void NavTreeIconImages::initIndexMap()
     m_indexMap = {};
     m_indexReverseMap = {};
     // Map downloaded icon images:
-    wxFileName resPath = mmex::getPathUserRaw(mmex::USERICONS);
-    int bidx = acc_img::MAX_ACC_ICON;
+    wxFileName resPath = mmPath::getPathUserRaw(mmPath::USERICONS);
+    int bidx = mmImage::acc_img::MAX_ACC_ICON;
     if (resPath.IsOk()) {
         wxDir dir(resPath.GetPath());
         if (dir.IsOpened()) {
@@ -802,15 +802,15 @@ wxImageList* NavTreeIconImages::getImageList(const int rsize)
     wxImageList* imageList = new wxImageList(x, x);
     wxSize size = (wxSize(x, x));
 
-    for (const auto& img : navtree_images(x)) {
+    for (const auto& img : mmImage::navtree_images(x)) {
         imageList->Add(img.second.GetBitmap(size));
     }
-    for (const auto& img : acc_images(x)) {
+    for (const auto& img : mmImage::acc_images(x)) {
         imageList->Add(img.second.GetBitmap(size));
     }
 
     // Get downloaded icon images:
-    wxFileName resPath = mmex::getPathUserRaw(mmex::USERICONS);
+    wxFileName resPath = mmPath::getPathUserRaw(mmPath::USERICONS);
     if (resPath.IsOk()) {
         wxDir dir(resPath.GetPath());
         if (dir.IsOpened()) {

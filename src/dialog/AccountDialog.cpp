@@ -458,10 +458,10 @@ void AccountDialog::OnImageButton(wxCommandEvent& /*event*/)
 
     int max = static_cast<int>(m_images.size());
     std::map<int, wxString> indexMap = NavTreeIconImages::instance().getIndexMap();
-    if (max > acc_img::MAX_ACC_ICON) {
+    if (max > mmImage::acc_img::MAX_ACC_ICON) {
         mainMenu.AppendSeparator();
     }
-    for (int i = acc_img::MAX_ACC_ICON; i < max; ++i)
+    for (int i = mmImage::acc_img::MAX_ACC_ICON; i < max; ++i)
     {
         menuItem = new wxMenuItem(&mainMenu, wxID_HIGHEST + i, indexMap[i]);
         menuItem->SetBitmap(m_images.at(i));
@@ -510,7 +510,7 @@ void AccountDialog::OnLoadFavIconImage(wxCommandEvent& WXUNUSED(event))
     wxTextCtrl* website_ctrl = static_cast<wxTextCtrl*>(FindWindow(ID_DIALOG_NEWACCT_TEXTCTRL_WEBSITE));
     wxString url = website_ctrl->GetValue();
     wxString serverName = iconExtractServerName(url);
-    wxFileName resDir = mmex::getPathUserRaw(mmex::USERICONS, true);
+    wxFileName resDir = mmPath::getPathUserRaw(mmPath::USERICONS, true);
     if (resDir.IsOk()) {
         wxFileName path(resDir.GetPathWithSep(), serverName);
         std::string iconFileName = path.GetFullPath().utf8_string();
