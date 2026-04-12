@@ -129,6 +129,9 @@ wxString BalanceReport::getHTMLText()
     mmDate start_date = mmDate::today();
     // Calculate the report date
     for (const auto& account_d : AccountModel::instance().find_all()) {
+        if (m_account_a && wxNOT_FOUND == m_account_a->Index(account_d.m_name))
+            continue;
+
         if (account_d.m_open_date < start_date)
             start_date = account_d.m_open_date;
         m_account_balance_mDate_mId[account_d.m_id] = loadAccountBalance_mDate(account_d);
@@ -182,6 +185,9 @@ wxString BalanceReport::getHTMLText()
         std::fill(balance_a.begin(), balance_a.end(), 0.0);
         int idx;
         for (const auto& account_d : AccountModel::instance().find_all()) {
+            if (m_account_a && wxNOT_FOUND == m_account_a->Index(account_d.m_name))
+                continue;
+
             idx = mmNavigatorList::instance().getAccountTypeIdx(account_d.m_type_);
             if (idx == -1) {
                 idx = mmNavigatorList::instance().getAccountTypeIdx(mmNavigatorItem::TYPE_ID_CHECKING);
@@ -300,6 +306,7 @@ wxString BalanceReport::getHTMLText()
         hb.endTable();
     }
     hb.endDiv();
+    hb.displayFooter(getAccountNames());
 
     hb.end();
 
