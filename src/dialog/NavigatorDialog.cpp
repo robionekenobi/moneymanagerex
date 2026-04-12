@@ -55,7 +55,8 @@ NavigatorDialog::NavigatorDialog(wxWindow* parent):TreeListDialog(parent, _t("Na
 void NavigatorDialog::createColumns() {
     m_treeList->AppendColumn(_t("Name"), 250);
     m_treeList->AppendColumn(_t("Selection name"));
-    m_treeList->SetImageList(NavTreeIconImages::instance().getImageList());
+    wxImageList* imageList = NavTreeIconImages::instance().getImageList();
+    m_treeList->SetImageList(imageList);
 
 #ifdef __WXMAC__
     int iconWidth = imageList->GetSize().GetWidth();
