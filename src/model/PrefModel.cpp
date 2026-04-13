@@ -123,7 +123,8 @@ const std::vector<std::pair<wxString, wxString> > PrefModel::REPORTING_RANGE_DEF
 // -- constructor
 
 PrefModel::PrefModel() :
-    m_date_format(mmex::DEFDATEFORMAT)
+    m_date_format(mmex::DEFDATEFORMAT),
+    m_financial_first_day(1)
 {
 }
 
@@ -837,16 +838,8 @@ int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool
 
     // check for custom id if default is not requested:
     if (!def) {
-        int custom_img_id;
-        wxString fileid;
         wxString timg = InfoModel::instance().getString(wxString::Format("ACC_IMAGE_ID_%lld", account_id), "0");
-        if (timg.StartsWith("CI:", &fileid)) {
-            custom_img_id = NavTreeIconImages::instance().getImgIndex(fileid);
-        }
-        else {
-            custom_img_id = wxAtoi(timg);
-        }
-
+        int custom_img_id = NavTreeIconImages::instance().getImgIndexFromStorageString(timg);
         int bmListSize = std::max (NavTreeIconImages::instance().getListSize(), static_cast<int>(mmImage::acc_img::MAX_ACC_ICON));
         if (custom_img_id > 0 && custom_img_id < bmListSize) {
             return custom_img_id;

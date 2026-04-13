@@ -4686,16 +4686,8 @@ void mmFrame::loadGrmIconMapping()
     for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
         std::string p = it->name.GetString();
         wxString path(p.substr(prefix_len).c_str(), wxConvUTF8);
-        int imageIndex;
-        wxString fileid;
         wxString timg = wxString::FromUTF8(it->value.GetString());
-        if (timg.StartsWith("CI:", &fileid)) {
-            imageIndex = NavTreeIconImages::instance().getImgIndex(fileid);
-        }
-        else {
-            imageIndex = wxAtoi(timg);
-        }
-        m_grm_icons_map[path] = imageIndex;
+        m_grm_icons_map[path] = NavTreeIconImages::instance().getImgIndexFromStorageString(timg);
     }
 }
 

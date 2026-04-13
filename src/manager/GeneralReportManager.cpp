@@ -1583,19 +1583,7 @@ void GeneralReportManager::loadTreeIconState()
         return;
 
     for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
-        std::string path = it->name.GetString();
-        wxString timg = wxString::FromUTF8(it->value.GetString());
-        int imageIndex;
-        wxString fileid;
-        if (timg.StartsWith("CI:", &fileid)) {
-            imageIndex = NavTreeIconImages::instance().getImgIndex(fileid);
-        }
-        else {
-            imageIndex = wxAtoi(timg);
-        }
-
-        std::vector<std::string> parts = splitPath(path);
-
+        std::vector<std::string> parts = splitPath(it->name.GetString());
         wxTreeItemId current = root;
         if (!parts.empty()) {
             if (std::string(m_treeCtrl->GetItemText(root).ToUTF8()) != parts[0]) {
@@ -1613,6 +1601,8 @@ void GeneralReportManager::loadTreeIconState()
         }
 
         if (current.IsOk()) {
+            wxString timg = wxString::FromUTF8(it->value.GetString());
+            int imageIndex = NavTreeIconImages::instance().getImgIndexFromStorageString(timg);
             m_treeCtrl->SetItemImage(current, imageIndex, wxTreeItemIcon_Normal);
         }
     }

@@ -24,16 +24,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <map>
 #include <array>
 
-//#include "base/_defs.h"
 #include <wx/image.h>
 #include <wx/bitmap.h>
 #include <wx/sharedptr.h>
-//#include <wx/dir.h>
 #include <wx/zipstrm.h>
 #include <wx/rawbmp.h>
 #include <wx/fs_mem.h>
 #include <wx/mstream.h>
-//#include <wx/tokenzr.h>
 
 #include "base/mmPlatform.h"
 #include "base/mmUserColor.h"
@@ -810,6 +807,19 @@ wxImageList* NavTreeIconImages::getImageList(const int rsize)
 int NavTreeIconImages::getImgIndex(wxString imgName)
 {
     return m_indexReverseMap.count(imgName) > 0 ? m_indexReverseMap[imgName] : -1;
+}
+
+int NavTreeIconImages::getImgIndexFromStorageString(wxString strString)
+{
+    int imageIndex;
+    wxString fileid;
+    if (strString.StartsWith("CI:", &fileid)) {
+        imageIndex = NavTreeIconImages::instance().getImgIndex(fileid);
+    }
+    else {
+        imageIndex = wxAtoi(strString);
+    }
+    return imageIndex;
 }
 
 void NavTreeIconImages::setChanged()

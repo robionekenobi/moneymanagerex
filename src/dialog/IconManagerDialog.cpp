@@ -643,16 +643,12 @@ void IconManagerDialog::OnRightClick(wxMouseEvent& WXUNUSED(event), const wxStri
 
 
 // =============== Icon Selection Dialog =============================
-
-
-
 IconSelectionDialog::IconSelectionDialog(wxWindow* parent,  wxVector<wxBitmapBundle>& images, int iconSize)
     : wxDialog(parent, wxID_ANY, _t("Select icon"),
                wxDefaultPosition, wxDefaultSize,
-               wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+               wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+     m_icons(images)
 {
-    m_icons = images;
-
     wxBoxSizer* dialogSizer = new wxBoxSizer(wxVERTICAL);
 
     m_scrollWin = new wxScrolledWindow(this, wxID_ANY,
@@ -744,11 +740,11 @@ void IconSelectionDialog::OnIconClicked(wxMouseEvent& event)
 
     for (auto* icon : m_iconWidgets)
     {
-        icon->SetBackgroundColour(*wxWHITE);
+        icon->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
         icon->Refresh();
     }
 
-    clicked->SetBackgroundColour(wxColour(0, 120, 215)); // Windows-Highlight
+    clicked->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT));
     clicked->Refresh();
 
     event.Skip();
