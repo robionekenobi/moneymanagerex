@@ -4681,7 +4681,7 @@ void mmFrame::loadGrmIconMapping()
     if (!doc.IsObject())
         return;
 
-    const int prefix_len = static_cast<int>(wxString(_t("Reports")).Len()) + 1;
+    const int prefix_len = static_cast<int>(_t("Reports").Len()) + 1;
 
     for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
         std::string p = it->name.GetString();
