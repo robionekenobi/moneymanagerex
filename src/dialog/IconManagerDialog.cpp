@@ -640,3 +640,121 @@ void IconManagerDialog::OnRightClick(wxMouseEvent& WXUNUSED(event), const wxStri
 
     PopupMenu(&menu);
 }
+
+
+// =============== Icon Selection Dialog =============================
+
+
+
+IconSelectionDialog::IconSelectionDialog(wxWindow* parent,  wxVector<wxBitmapBundle>& images, int iconSize)
+    : wxDialog(parent, wxID_ANY, _t("Select icon"),
+               wxDefaultPosition, wxDefaultSize,
+               wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+{
+    m_icons = images;
+
+    wxBoxSizer* dialogSizer = new wxBoxSizer(wxVERTICAL);
+
+    m_scrollWin = new wxScrolledWindow(this, wxID_ANY,
+                                       wxDefaultPosition, wxDefaultSize,
+                                       wxVSCROLL);
+    m_scrollWin->SetScrollRate(5, 5);
+    m_scrollWin->SetMinSize(wxSize(300, 200));
+
+    int cols = 6;
+    m_gridSizer = new wxGridSizer(cols, 5, 5);
+
+    for (size_t i = 0; i < m_icons.size(); ++i) {
+        wxBitmap bmp = m_icons[i].GetBitmap(wxSize(iconSize, iconSize));
+
+        wxStaticBitmap* iconCtrl = new wxStaticBitmap(
+            m_scrollWin, wxID_ANY, bmp,
+            wxDefaultPosition,
+            wxSize(iconSize + 10, iconSize + 10),
+            wxBORDER_SIMPLE
+        );
+
+        iconCtrl->SetBackgroundColour(*wxWHITE);
+        iconCtrl->SetClientData(reinterpret_cast<void*>(i));
+
+        iconCtrl->Bind(wxEVT_LEFT_DOWN, &IconSelectionDialog::OnIconClicked, this);
+        iconCtrl->Bind(wxEVT_LEFT_DCLICK, [this, i](wxMouseEvent&) {
+            m_selectedIndex = i;
+            EndModal(wxID_OK);
+        });
+        iconCtrl->Bind(wxEVT_ENTER_WINDOW, [](wxMouseEvent& e) {
+            auto w = static_cast<wxWindow*>(e.GetEventObject());
+            w->SetBackgroundColour(wxColour(220,220,220));
+            w->Refresh();
+        });
+
+        iconCtrl->Bind(wxEVT_LEAVE_WINDOW, [this](wxMouseEvent& e) {
+            auto w = static_cast<wxWindow*>(e.GetEventObject());
+            if (reinterpret_cast<intptr_t>(w->GetClientData()) != m_selectedIndex)
+                w->SetBackgroundColour(*wxWHITE);
+            w->Refresh();
+        });
+
+        m_gridSizer->Add(iconCtrl, 0, wxALIGN_CENTER | wxALL, 2);
+        m_iconWidgets.push_back(iconCtrl);
+    }
+
+    m_scrollWin->SetSizer(m_gridSizer);
+    m_gridSizer->FitInside(m_scrollWin);
+
+    dialogSizer->Add(m_scrollWin, 1, wxEXPAND | wxALL, 5);
+
+    // bottom area
+    wxStaticLine* panelSeparatorLine = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+    dialogSizer->Add(panelSeparatorLine, 0, wxGROW | wxLEFT | wxRIGHT, 10);
+
+    // Buttons
+    wxBoxSizer* btnSizer = new wxBoxSizer(wxHORIZONTAL);
+    btnSizer->AddStretchSpacer(1);
+    btnSizer->Add(new wxButton(this, wxID_CANCEL), 0, wxALL | wxALIGN_CENTER, 10);
+
+    wxButton* rstBtn = new wxButton(this, wxID_RESET, "&Default");
+    rstBtn->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+        m_selectedIndex = -1;
+        EndModal(wxID_OK);
+    });
+    btnSizer->Add(rstBtn, 0, wxALL | wxALIGN_CENTER, 10);
+
+    btnSizer->Add(new wxButton(this, wxID_OK), 0, wxALL | wxALIGN_CENTER, 10);
+    btnSizer->AddStretchSpacer(1);
+
+    dialogSizer->Add(btnSizer, 0, wxEXPAND | wxALL, 5);
+
+    SetSizer(dialogSizer);
+
+    // Dialog window
+    SetMinSize(wxSize(400, 300));
+    SetSize(wxSize(400, 600));
+    Layout();
+    Centre();
+}
+
+void IconSelectionDialog::OnIconClicked(wxMouseEvent& event)
+{
+    wxStaticBitmap* clicked = dynamic_cast<wxStaticBitmap*>(event.GetEventObject());
+    if (!clicked) return;
+
+    int index = reinterpret_cast<intptr_t>(clicked->GetClientData());
+    m_selectedIndex = index;
+
+    for (auto* icon : m_iconWidgets)
+    {
+        icon->SetBackgroundColour(*wxWHITE);
+        icon->Refresh();
+    }
+
+    clicked->SetBackgroundColour(wxColour(0, 120, 215)); // Windows-Highlight
+    clicked->Refresh();
+
+    event.Skip();
+}
+
+int IconSelectionDialog::GetSelectedIndex() const
+{
+    return m_selectedIndex;
+}

@@ -25,6 +25,11 @@
 #include <wx/webviewfshandler.h>
 #include <vector>
 #include <wx/dataview.h>
+
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
+
 #include "panel/_ListBase.h"
 #include "panel/_PanelBase.h"
 
@@ -63,6 +68,9 @@ public:
 #ifdef MMEX_USE_REPORT_SYNC
     bool syncReport(int64 id);
 #endif
+
+    static std::vector<std::string> splitPath(const std::string& path);
+    static wxTreeItemId findChild(wxTreeCtrl* tree, const wxTreeItemId& parent, const std::string& name);
 
 private:
     bool Create(wxWindow* parent
@@ -111,6 +119,11 @@ private:
     const wxString getTemplate(wxString& sql);
     void OnNewWindow(wxWebViewEvent& evt);
     void CheckAndSaveChanges();
+    void setTreeIcon();
+    void saveTreeIconState();
+    void loadTreeIconState();
+    void traverseTree(const wxTreeItemId& item, const std::string& path, rapidjson::Document& doc,
+                             rapidjson::Document::AllocatorType& alloc);
 
 #ifdef MMEX_USE_REPORT_SYNC
     void OnSyncReportComplete(wxCommandEvent&);
@@ -119,6 +132,7 @@ private:
 #endif
 
     std::vector <std::vector <wxString> > m_sqlQueryData;
+    wxVector<wxBitmapBundle> m_images;
 
     wxSQLite3Database* m_db = nullptr;
     wxWebView* browser_ = nullptr;
@@ -155,6 +169,7 @@ private:
         ID_DELETE,
         ID_SYNC,
         ID_RENAME,
+        ID_ICON,
         ID_DUPLICATE,
         ID_GROUP,
         ID_UNGROUP,
