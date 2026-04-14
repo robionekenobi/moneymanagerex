@@ -54,7 +54,11 @@ std::map<mmDate, double> BalanceReport::loadAccountBalance_mDate(const AccountDa
 
 double BalanceReport::getCheckingBalance(const AccountData* account_n, const mmDate& date)
 {
-    std::map<mmDate, double> date_balance_m = m_account_balance_mDate_mId[account_n->m_id];
+    const auto account_it = m_account_balance_mDate_mId.find(account_n->m_id);
+    if (account_it == m_account_balance_mDate_mId.end())
+        return account_n->m_open_balance;
+
+    const auto& date_balance_m = account_it->second;
     auto const& it = std::upper_bound(date_balance_m.rbegin(), date_balance_m.rend(),
         std::pair<mmDate, double>(date, 0),
         [](const std::pair<mmDate, double> x, std::pair<mmDate, double> y) {
@@ -121,16 +125,39 @@ wxString BalanceReport::getHTMLText()
         _t("Accounts Balance - %s"),
         m_period_id == PERIOD_ID::MONTH ? _t("Monthly Report") : _t("Yearly Report")
     );
-    hb.addReportHeader(name);
+    hb.addReportHeader(name,
+        m_date_range ? m_date_range->startDay() : 0,
+        m_date_range ? m_date_range->isFutureIgnored() : false
+    );
+    if (m_date_range)
+        hb.displayDateHeading(m_date_range);
 
     m_currencyDateRateCache.clear();
     m_stock_xa.clear();
 
-    mmDate start_date = mmDate::today();
+    mmDate selected_start_date = m_date_range
+        ? mmDate(m_date_range->start_date())
+        : mmDate::today();
+    mmDate selected_end_date = m_date_range
+        ? mmDate(m_date_range->end_date())
+        : mmDate::today();
+
+    if (selected_end_date > mmDate::today())
+        selected_end_date = mmDate::today();
+
+    mmDate start_date = selected_start_date;
+    bool has_included_accounts = false;
+    mmDate earliest_open_date = selected_end_date;
     // Calculate the report date
     for (const auto& account_d : AccountModel::instance().find_all()) {
-        if (account_d.m_open_date < start_date)
-            start_date = account_d.m_open_date;
+        if (m_account_a && wxNOT_FOUND == m_account_a->Index(account_d.m_name))
+            continue;
+
+        if (!has_included_accounts || account_d.m_open_date < earliest_open_date) {
+            earliest_open_date = account_d.m_open_date;
+            has_included_accounts = true;
+        }
+
         m_account_balance_mDate_mId[account_d.m_id] = loadAccountBalance_mDate(account_d);
         if (AccountModel::type_id(account_d) != mmNavigatorItem::TYPE_ID_INVESTMENT)
             continue;
@@ -149,7 +176,11 @@ wxString BalanceReport::getHTMLText()
         }
     }
 
-    wxDateTime end_datetime = mmDate::today().dateTime();
+    // Skip leading periods where selected accounts cannot have any balance yet.
+    if (has_included_accounts && start_date < earliest_open_date)
+        start_date = earliest_open_date;
+
+    wxDateTime end_datetime = selected_end_date.dateTime();
     wxDateSpan span;
     if (m_period_id == PERIOD_ID::MONTH) {
         end_datetime.SetToLastMonthDay(end_datetime.GetMonth(), end_datetime.GetYear());
@@ -182,6 +213,9 @@ wxString BalanceReport::getHTMLText()
         std::fill(balance_a.begin(), balance_a.end(), 0.0);
         int idx;
         for (const auto& account_d : AccountModel::instance().find_all()) {
+            if (m_account_a && wxNOT_FOUND == m_account_a->Index(account_d.m_name))
+                continue;
+
             idx = mmNavigatorList::instance().getAccountTypeIdx(account_d.m_type_);
             if (idx == -1) {
                 idx = mmNavigatorList::instance().getAccountTypeIdx(mmNavigatorItem::TYPE_ID_CHECKING);
@@ -300,6 +334,7 @@ wxString BalanceReport::getHTMLText()
         hb.endTable();
     }
     hb.endDiv();
+    hb.displayFooter(getAccountNames());
 
     hb.end();
 
