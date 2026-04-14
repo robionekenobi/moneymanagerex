@@ -21,17 +21,16 @@
 
 #pragma once
 
-#include "base/defs.h"
-#include "util/mmDate.h"
-#include "util/mmSingleton.h"
+#include "base/_defs.h"
+#include "base/mmDate.h"
+#include "base/mmSingleton.h"
 #include "table/_TableFactory.h"
 #include "data/AccountData.h"
 
+#include "util/mmNavigatorList.h"
 #include "CurrencyModel.h"
 #include "TrxModel.h"
 #include "SchedModel.h"
-
-#include "uicontrols/navigatortypes.h"  // remove later
 
 class AccountModel : public TableFactory<AccountTable, AccountData>
 {
@@ -45,9 +44,9 @@ public:
     }
 
     // TODO: move to AccountData
-    static NavigatorTypes::TYPE_ID type_id(const Data& account_d) {
-        return static_cast<NavigatorTypes::TYPE_ID>(
-            NavigatorTypes::instance().getTypeIdFromDBName(account_d.m_type_)
+    static mmNavigatorItem::TYPE_ID type_id(const Data& account_d) {
+        return static_cast<mmNavigatorItem::TYPE_ID>(
+            mmNavigatorList::instance().getTypeIdFromDBName(account_d.m_type_)
         );
     }
 

@@ -228,7 +228,7 @@ const AccountModel::DataA AccountModel::find_pattern_data_a(
     )) {
         if (only_open && !account_d.is_open())
             continue;
-        if (type_id(account_d) == NavigatorTypes::TYPE_ID_INVESTMENT)
+        if (type_id(account_d) == mmNavigatorItem::TYPE_ID_INVESTMENT)
             continue;
         if (account_d.m_name.Lower().Matches(name_pattern.Lower().Append("*")))
             account_a.push_back(account_d);
@@ -255,7 +255,7 @@ const wxArrayString AccountModel::find_all_name_a(bool only_open)
     for (const auto& account_d : find_all(Col::COL_ID_ACCOUNTNAME)) {
         if (only_open && !account_d.is_open())
             continue;
-        if (type_id(account_d) == NavigatorTypes::TYPE_ID_SHARES)
+        if (type_id(account_d) == mmNavigatorItem::TYPE_ID_SHARES)
             continue;
         if (account_d.m_name.empty())
             continue;
@@ -270,7 +270,7 @@ const std::map<wxString, int64> AccountModel::find_all_name_id_m(bool only_open)
     for (const auto& account_d : find_all(Col::COL_ID_ACCOUNTNAME)) {
         if (only_open && !account_d.is_open())
             continue;
-        if (type_id(account_d) == NavigatorTypes::TYPE_ID_SHARES)
+        if (type_id(account_d) == mmNavigatorItem::TYPE_ID_SHARES)
             continue;
         if (account_d.m_name.empty())
             continue;
@@ -287,7 +287,7 @@ const wxArrayString AccountModel::find_all_type_a(bool only_open)
     )) {
         if (only_open && !account_d.is_open())
             continue;
-        if (type_id(account_d) == NavigatorTypes::TYPE_ID_INVESTMENT)
+        if (type_id(account_d) == mmNavigatorItem::TYPE_ID_INVESTMENT)
             continue;
         if (usedTypes.Index(account_d.m_type_) == wxNOT_FOUND) {
             usedTypes.Add(account_d.m_type_);
@@ -300,19 +300,19 @@ int AccountModel::find_money_type_c()
 {
     return
         find(
-            AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().type_name(NavigatorTypes::TYPE_ID_CASH))
+            AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_CASH))
         ).size() + find(
-            AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().type_name(NavigatorTypes::TYPE_ID_CHECKING))
+            AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_CHECKING))
         ).size() + find(
-            AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().type_name(NavigatorTypes::TYPE_ID_CREDIT_CARD))
+            AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_CREDIT_CARD))
         ).size() + find(
-            AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().type_name(NavigatorTypes::TYPE_ID_LOAN))
+            AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_LOAN))
         ).size() + find(
-            AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().type_name(NavigatorTypes::TYPE_ID_TERM))
+            AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_TERM))
         ).size() + find(
-            AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().type_name(NavigatorTypes::TYPE_ID_ASSET))
+            AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_ASSET))
         ).size() + find(
-            AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().type_name(NavigatorTypes::TYPE_ID_SHARES))
+            AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_SHARES))
         ).size();
 }
 
@@ -333,7 +333,7 @@ const wxString AccountModel::value_number_currency(const Data& account_d, double
     );
 }
 
-// FIXME: see comments in NavigatorTypes::DeleteEntry()
+// FIXME: see comments in mmNavigatorList::DeleteEntry()
 void AccountModel::dangerous_reset_type(wxString old_type)
 {
     for (auto& account_d : find(
@@ -345,15 +345,15 @@ void AccountModel::dangerous_reset_type(wxString old_type)
     }
 }
 
-// FIXME: see comments in mmNavigatorDialog::setDefault()
+// FIXME: see comments in NavigatorDialog::setDefault()
 void AccountModel::dangerous_reset_unknown_types()
 {
     for (const auto& account_d : find_all(
         Col::COL_ID_ACCOUNTNAME
     )) {
-        // FIXME: cannot use NavigatorTypes::instance() here.
+        // FIXME: cannot use mmNavigatorList::instance() here.
         // *Model is lower level than the GUI; it must be independent of GUI.
-        if (NavigatorTypes::instance().getTypeIdFromDBName(account_d.m_type_, -1) == -1) {
+        if (mmNavigatorList::instance().getTypeIdFromDBName(account_d.m_type_, -1) == -1) {
             // CHECK: use account_d directly
             AccountData acc_d = *(get_name_data_n(account_d.m_name));
             acc_d.m_type_ = "Checking";

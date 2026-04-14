@@ -22,7 +22,7 @@
 #include "model/TrxLinkModel.h"
 #include "model/TrxShareModel.h"
 
-class mmDatePickerCtrl;
+class mmDatePicker;
 class mmTextCtrl;
 class TrxLinkDialog;
 

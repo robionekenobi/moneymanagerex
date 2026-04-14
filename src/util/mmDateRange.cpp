@@ -20,14 +20,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include <wx/intl.h>
 
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "mmDateRange.h"
 #include "model/PrefModel.h"
 
 mmDateRange::mmDateRange() :
     today_(wxDateTime::Today()),
     today_end_(wxDateTime(23, 59, 59, 999)),
-    future_(DATE_MAX),
+    future_(mmDate::max().dateTime()),
     futureIgnored_(false)
 {
     start_date_ = today_;

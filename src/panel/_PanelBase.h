@@ -26,7 +26,7 @@
 #include <wx/event.h>
 #include <wx/webview.h>
 #include <wx/webviewfshandler.h>
-#include "base/defs.h"
+#include "base/_defs.h"
 
 #include "util/_util.h"
 

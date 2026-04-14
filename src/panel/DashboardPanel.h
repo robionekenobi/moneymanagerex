@@ -18,11 +18,11 @@
 
 #pragma once
 
-#include "base/constants.h"
+#include "base/_constants.h"
 #include "model/AccountModel.h"
 #include "_PanelBase.h"
 
-class mmGUIFrame;
+class mmFrame;
 class mmHTMLBuilder;
 class mmDateRange;
 
@@ -34,13 +34,13 @@ private:
     wxString m_templateText;
     std::map<wxString, wxString> m_htmlText_mLabel;
 
-    mmGUIFrame* w_frame   = nullptr;
+    mmFrame* w_frame   = nullptr;
     wxWebView*  w_browser = nullptr;
 
 public:
     DashboardPanel(
         wxWindow* parent_win,
-        mmGUIFrame* frame,
+        mmFrame* frame,
         wxWindowID win_id = wxID_ANY,
         const wxPoint& pos = wxDefaultPosition,
         const wxSize& size = wxDefaultSize,

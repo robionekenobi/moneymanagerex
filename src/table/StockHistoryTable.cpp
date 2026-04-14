@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,7 +27,7 @@ template class mmCache<int64, StockHistoryData>;
 
 // List of column names in database table STOCKHISTORY_V1,
 // in the order of StockHistoryCol::COL_ID.
-const wxArrayString StockHistoryCol::COL_NAME_A = {
+const wxArrayString StockHistoryCol::s_col_name_a = {
     "HISTID",
     "SYMBOL",
     "DATE",
@@ -35,8 +35,15 @@ const wxArrayString StockHistoryCol::COL_NAME_A = {
     "UPDTYPE"
 };
 
-const StockHistoryCol::COL_ID StockHistoryCol::PRIMARY_ID = COL_ID_HISTID;
-const wxString StockHistoryCol::PRIMARY_NAME = COL_NAME_A[COL_ID_HISTID];
+const StockHistoryCol::COL_ID StockHistoryCol::s_primary_id = COL_ID_HISTID;
+const wxString StockHistoryCol::s_primary_name = s_col_name_a[COL_ID_HISTID];
+
+// convenience variables
+const wxString StockHistoryCol::NAME_HISTID = s_col_name_a[COL_ID_HISTID];
+const wxString StockHistoryCol::NAME_SYMBOL = s_col_name_a[COL_ID_SYMBOL];
+const wxString StockHistoryCol::NAME_DATE = s_col_name_a[COL_ID_DATE];
+const wxString StockHistoryCol::NAME_VALUE = s_col_name_a[COL_ID_VALUE];
+const wxString StockHistoryCol::NAME_UPDTYPE = s_col_name_a[COL_ID_UPDTYPE];
 
 StockHistoryRow::StockHistoryRow()
 {

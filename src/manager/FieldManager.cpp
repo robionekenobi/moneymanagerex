@@ -17,13 +17,13 @@ Copyright (C) 2016, 2020 - 2022 Nikolay Akimov
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/dataview.h>
 #include <wx/mimetype.h>
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -69,7 +69,7 @@ void FieldManager::Create(wxWindow* parent)
         return;
     CreateControls();
     fillControls();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Fit();
     Centre();
 }
@@ -96,7 +96,7 @@ void FieldManager::CreateControls()
     wxButton* btnClose = new wxButton(buttons_panel, wxID_OK, wxGetTranslation(g_CloseLabel));
     buttons_sizer->Add(btnClose, g_flagsH);
 
-    wxBitmapButton* magicButton = new wxBitmapButton(buttons_panel, wxID_APPLY, mmBitmapBundle(png::MORE_OPTIONS, mmBitmapButtonSize));
+    wxBitmapButton* magicButton = new wxBitmapButton(buttons_panel, wxID_APPLY, mmImage::bitmapBundle(mmImage::png::MORE_OPTIONS, mmImage::bitmapButtonSize));
     mmToolTip(magicButton, _t("Other tools"));
     buttons_sizer->Add(magicButton, g_flagsH);
 

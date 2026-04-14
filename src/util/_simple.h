@@ -1,27 +1,27 @@
 /*******************************************************
-Copyright (C) 2014 Nikolay Akimov
-Copyright (C) 2014 Gabriele-V
-Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
-Copyright (C) 2025 Klaus Wich
+ Copyright (C) 2014 Nikolay Akimov
+ Copyright (C) 2014 Gabriele-V
+ Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2025 Klaus Wich
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-********************************************************/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ ********************************************************/
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/choicdlg.h>
 #include <wx/spinbutt.h>
 #include <wx/dialog.h>
@@ -30,248 +30,15 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <wx/stc/stc.h>
 #include <wx/timectrl.h>
 
-#include "mmex.h"
-#include "_util.h"
+#include "mmComboBox.h"
 #include "mmTextCtrl.h"
-
+#include "_util.h"
 #include "model/AccountModel.h"
 
 class wxComboBox;
 class wxTextCtrl;
 class wxChoice;
 class wxButton;
-
-class mmCalculatorPopup : public wxPopupTransientWindow
-{
-public:
-    mmCalculatorPopup(wxWindow* parent, mmTextCtrl* target = nullptr, bool trigger = false);
-    virtual ~mmCalculatorPopup();
-
-    void SetValue(wxString& value);
-    void SetFocus() override;
-    void SetTarget(mmTextCtrl* target);
-
-    virtual void Popup(wxWindow* focus = NULL) override;
-
-protected:
-    virtual void OnDismiss() override;
-
-private:
-    bool dismissedByButton_ = false;
-    mmTextCtrl* target_;
-    bool trigger_;
-    mmTextCtrl* valueTextCtrl_ = nullptr;
-    wxSize btnSize;
-    wxFont font;
-    wxButton* button_dec_ = nullptr;
-    wxWindow* panel;
-    wxGridSizer* buttonSizer;
-
-    wxButton* createButton(wxString symbol, int event);
-    void OnButtonPressed(wxCommandEvent& event);
-    enum Buttons
-    {
-        mmID_MULTIPLY = wxID_HIGHEST,
-        mmID_DIVIDE,
-        mmID_DELETE
-    };
-};
-
-inline void mmCalculatorPopup::SetFocus() { valueTextCtrl_->SetFocus(); }
-inline void mmCalculatorPopup::SetTarget(mmTextCtrl* target) { target_ = target; button_dec_->SetLabel(target->GetDecimalPoint()); }
-
-
-class mmComboBox : public wxComboBox
-{
-public:
-    mmComboBox(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , wxSize size = wxDefaultSize
-    );
-    void mmSetId(int64 id);
-    int64 mmGetId() const;
-    const wxString mmGetPattern() const;
-    bool mmIsValid() const;
-    void mmDoReInitialize();
-protected:
-    void OnTextUpdated(wxCommandEvent& event);
-    void OnSetFocus(wxFocusEvent& event);
-    void OnDropDown(wxCommandEvent&);
-    void OnKeyPressed(wxKeyEvent& event);
-    virtual void init() = 0;
-    std::map<wxString, int64> all_elements_;
-private:
-    bool is_initialized_;
-    wxDECLARE_EVENT_TABLE();
-};
-
-class mmComboBoxAccount : public mmComboBox
-{
-public:
-    mmComboBoxAccount(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , wxSize size = wxDefaultSize
-        , int64 accountID = -1
-        , bool excludeClosed = true
-    );
-protected:
-    void init();
-private:
-    int64 accountID_ = -1;
-    bool excludeClosed_ = true;
-};
-
-/* -------------------------------------------- */
-
-class mmComboBoxPayee : public mmComboBox
-{
-public:
-    mmComboBoxPayee(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , wxSize size = wxDefaultSize
-        , int64 payeeID = -1
-        , bool excludeHidden = false
-    );
-protected:
-    void init();
-private:
-    int64 payeeID_;
-    bool excludeHidden_;
-};
-
-class mmComboBoxUsedPayee : public mmComboBox
-{
-public:
-    mmComboBoxUsedPayee(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , wxSize size = wxDefaultSize
-    );
-protected:
-    void init();
-};
-
-/* -------------------------------------------- */
-
-class mmComboBoxCurrency : public mmComboBox
-{
-public:
-    mmComboBoxCurrency(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , wxSize size = wxDefaultSize
-    );
-protected:
-    void init();
-};
-
-/* -------------------------------------------- */
-
-class mmComboBoxCategory : public mmComboBox
-{
-public:
-    mmComboBoxCategory(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , wxSize size = wxDefaultSize
-        , int64 catID = -1
-        , bool excludeInactive = false
-    );
-    int64 mmGetCategoryId() const;
-protected:
-    void init();
-private:
-    int64 catID_;
-    bool excludeHidden_;
-    std::map<wxString, int64> all_categories_;
-};
-
-/* -------------------------------------------- */
-
-class mmComboBoxCustom : public mmComboBox
-{
-public:
-    mmComboBoxCustom(wxWindow* parent
-        , wxArrayString& a
-        , wxWindowID id = wxID_ANY
-        , wxSize size = wxDefaultSize
-    );
-protected:
-    void init();
-};
-inline void mmComboBoxCustom::init() {}
-
-/* -------------------------------------------- */
-
-class mmDatePickerCtrl : public wxPanel
-{
-// -- state
-
-private:
-    wxDateTime m_dateTime;
-
-    wxWindow*         w_parent       = nullptr;
-    wxStaticText*     w_weekday_text = nullptr;
-    wxSpinButton*     w_spin_btn     = nullptr;
-    wxDatePickerCtrl* w_date_picker  = nullptr;
-    wxTimePickerCtrl* w_time_picker  = nullptr;
-
-public:
-    wxDateTime GetValue() { return m_dateTime; }
-
-// -- constructor
-
-public:
-    mmDatePickerCtrl(
-        wxWindow* parent,
-        wxWindowID id,
-        wxDateTime dt = wxDateTime::Today(),
-        wxPoint pos = wxDefaultPosition,
-        wxSize size = wxDefaultSize,
-        long style = wxDP_DROPDOWN | wxDP_SHOWCENTURY
-    );
-    ~mmDatePickerCtrl();
-
-// -- override
-
-public:
-    void SetValue(const wxDateTime &dt);    // override
-    bool Enable(bool state = true);         // override
-    bool Show(bool state = true);           // override
-
-// -- methods
-
-public:
-    bool isItMyDateControl(wxObject* obj);
-    wxBoxSizer* mmGetLayout(bool showTimeCtrl = true);
-    wxBoxSizer* mmGetLayoutWithTime();
-private:
-    wxStaticText* getTextWeek();
-    wxSpinButton* getSpinButton();
-
-// -- event handlers
-
-private:
-    void OnDateChanged(wxDateEvent& event);
-    void OnDateSpin(wxSpinEvent&);
-};
-
-/* -------------------------------------------- */
-
-class mmColorButton : public wxButton
-{
-public:
-    mmColorButton(wxWindow* parent
-        , wxWindowID id
-        , wxSize size = wxDefaultSize
-        , bool noColorAllowed = false
-    );
-    void SetColor(int color_id);
-    int GetColorId() const;
-private:
-    void OnMenuSelected(wxCommandEvent& event);
-    void OnColourButton(wxCommandEvent& event);
-    int m_color_value;
-    bool m_noColorAllowed;
-    wxDECLARE_EVENT_TABLE();
-};
 
 class mmChoiceAmountMask : public wxChoice
 {
@@ -280,46 +47,39 @@ public:
     virtual void SetDecimalChar(const wxString& str);
 };
 
-class mmSingleChoiceDialog : public wxSingleChoiceDialog
-{
-public:
-    using wxSingleChoiceDialog::ShowModal;
-
-    mmSingleChoiceDialog();
-    mmSingleChoiceDialog(wxWindow *parent, const wxString& message,
-        const wxString& caption, const wxArrayString& choices);
-    mmSingleChoiceDialog(wxWindow* parent, const wxString& message,
-        const wxString& caption, const AccountModel::DataA& accounts);
-    int ShowModal()
-    {
-        return wxSingleChoiceDialog::ShowModal();
-    }
-};
-
 class mmDialogComboBoxAutocomplete : public wxDialog
 {
-public:
-    mmDialogComboBoxAutocomplete();
-    mmDialogComboBoxAutocomplete(wxWindow *parent, const wxString& message, const wxString& caption,
-        const wxString& defaultText, const wxArrayString& choices);
-
-    const wxString getText() const;
-
 private:
-    bool Create(wxWindow* parent
-        , wxWindowID id = wxID_ANY
-        , const wxString& caption = ""
-        , const wxPoint& pos = wxDefaultPosition
-        , const wxSize& size = wxDefaultSize
-        , long style = wxCAPTION | wxRESIZE_BORDER | wxCLOSE_BOX);
     wxString m_default_str;
     wxArrayString m_choices;
     wxString m_message;
 
     mmComboBoxCustom* cbText_ = nullptr;
+
+public:
+    mmDialogComboBoxAutocomplete();
+    mmDialogComboBoxAutocomplete(
+        wxWindow *parent,
+        const wxString& message,
+        const wxString& caption,
+        const wxString& defaultText,
+        const wxArrayString& choices
+    );
+
+private:
+    bool Create(
+        wxWindow* parent,
+        wxWindowID id = wxID_ANY,
+        const wxString& caption = "",
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxCAPTION | wxRESIZE_BORDER | wxCLOSE_BOX
+    );
+
+public:
+    const wxString getText() const;
 };
 
-class mmGUIApp;
 class mmErrorDialogs
 {
 public:
@@ -341,35 +101,8 @@ public:
     static void ToolTip4Object(wxWindow *object, const wxString &message, const wxString &title, int ico = wxICON_WARNING);
 };
 
-class mmDateYearMonth : public wxPanel
-{
-    wxDECLARE_EVENT_TABLE();
-public:
-    mmDateYearMonth();
-    mmDateYearMonth(wxWindow *parent);
-    void OnButtonPress(wxCommandEvent& event);
+// --
 
-private:
-    wxWindow* m_parent = nullptr;
-    bool Create(wxWindow* parent, wxWindowID id);
-    int m_shift = 0;
-};
-
-// -------------------------------------------------------------------------- //
-
-class mmMultiChoiceDialog : public wxMultiChoiceDialog
-{
-public:
-    using wxMultiChoiceDialog::ShowModal;
-
-    mmMultiChoiceDialog();
-    mmMultiChoiceDialog(wxWindow* parent, const wxString& message,
-        const wxString& caption, const wxArrayString& items);
-    int ShowModal();
-};
-inline  int mmMultiChoiceDialog::ShowModal() {   return wxMultiChoiceDialog::ShowModal(); }
-
-/* -------------------------------------------- */
 class mmTagCtrlPopupWindow : public wxPopupTransientWindow {
 public:
     mmTagCtrlPopupWindow(wxWindow* parent, wxWindow* button) : wxPopupTransientWindow(parent, wxPU_CONTAINS_CONTROLS) {
@@ -452,16 +185,3 @@ inline void mmTagTextCtrl::Reinitialize() { init(); }
 inline void mmTagTextCtrl::SetText(const wxString& text) { textCtrl_->SetText(text); }
 inline bool mmTagTextCtrl::IsEmpty() const { return textCtrl_->IsEmpty(); }
 inline void mmTagTextCtrl::Clear() { textCtrl_->ClearAll(); }
-
-class mmSplitterWindow : public wxSplitterWindow
-{
-
-public:
-    mmSplitterWindow(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                     long style = wxSP_3D, const wxColour& colour = wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE));
-
-    void DrawSash(wxDC& dc) override;
-
-private:
-    wxColour m_colour;
-};

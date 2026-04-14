@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2006 Madhan Kanagavel
- Copyright (C) 2022  Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (c) 2026 Klaus Wich
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -17,26 +18,30 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "AccountDialog.h"
+
+#include "base/_defs.h"
 #include <wx/valnum.h>
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
+
+#include "dialog/IconManagerDialog.h"
 
 #include "model/CurrencyModel.h"
 #include "model/InfoModel.h"
 #include "model/PrefModel.h"
 #include "model/StockModel.h"
 
-#include "AccountDialog.h"
 #include "AttachmentDialog.h"
 #include "CurrencyChoiceDialog.h"
 #include "import_export/webapp.h"
+
 
 enum {
     ID_DIALOG_NEWACCT_BUTTON_CURRENCY = wxID_HIGHEST + 1000,
@@ -60,10 +65,6 @@ wxBEGIN_EVENT_TABLE(AccountDialog, wxDialog)
     EVT_BUTTON(wxID_CANCEL,                        AccountDialog::OnCancel)
     EVT_BUTTON(ID_DIALOG_NEWACCT_BUTTON_CURRENCY,  AccountDialog::OnCurrency)
     EVT_BUTTON(wxID_FILE,                          AccountDialog::OnAttachments)
-    EVT_MENU_RANGE(
-        wxID_HIGHEST,
-        wxID_HIGHEST + static_cast<int>(acc_img::MAX_ACC_ICON),
-                                                   AccountDialog::OnCustonImage)
     EVT_CHOICE(ID_DIALOG_NEWACCT_COMBO_ACCTSTATUS, AccountDialog::OnAccountStatus)
 wxEND_EVENT_TABLE()
 
@@ -74,7 +75,7 @@ AccountDialog::AccountDialog()
 AccountDialog::AccountDialog(AccountData* account, wxWindow* parent) :
     m_account_n(account)
 {
-    m_images = navtree_images_list();
+    m_images = NavTreeIconImages::instance().getList();
     m_currencyID = m_account_n->m_currency_id;
     [[maybe_unused]] const CurrencyData* currency = CurrencyModel::instance().get_id_data_n(m_currencyID);
     wxASSERT(currency);
@@ -100,7 +101,7 @@ bool AccountDialog::Create(
     SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create(parent, id, caption, pos, size, style);
     this->SetTitle(_t("Edit Account"));
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     CreateControls();
     fillControls();
@@ -135,7 +136,7 @@ void AccountDialog::CreateControls()
 
     grid_sizer->Add(new wxStaticText(this, wxID_STATIC, _t("Account Type:")), g_flagsH);
 
-    wxChoice* itemChoice61 = new wxChoice(this, ID_DIALOG_NEWACCT_COMBO_ACCTTYPE, wxDefaultPosition, wxDefaultSize, NavigatorTypes::instance().getAccountSelectionNames());
+    wxChoice* itemChoice61 = new wxChoice(this, ID_DIALOG_NEWACCT_COMBO_ACCTTYPE, wxDefaultPosition, wxDefaultSize, mmNavigatorList::instance().getAccountSelectionNames());
     mmToolTip(itemChoice61, _t("Specify the account type to be created."));
     grid_sizer->Add(itemChoice61, g_flagsExpand);
     itemChoice61->SetSelection(0);
@@ -144,8 +145,11 @@ void AccountDialog::CreateControls()
 
     wxChoice* itemChoice6 = new wxChoice(this, ID_DIALOG_NEWACCT_COMBO_ACCTSTATUS);
     for (int i = 0; i < AccountStatus::size; ++i) {
-        wxString name = AccountStatus(i).name();
-        itemChoice6->Append(wxGetTranslation(name), new wxStringClientData(name));
+        wxString status_name = AccountStatus(i).name();
+        itemChoice6->Append(
+            wxGetTranslation(status_name),
+            new wxStringClientData(status_name)
+        );
     }
     mmToolTip(itemChoice6, _t("Specify if this account has been closed. Closed accounts are inactive in most calculations, reporting etc."));
     grid_sizer->Add(itemChoice6, g_flagsExpand);
@@ -158,7 +162,7 @@ void AccountDialog::CreateControls()
 
     grid_sizer->Add(new wxStaticText(this, wxID_STATIC, _t("Opening Date:")), g_flagsH);
 
-    m_initdate_ctrl = new mmDatePickerCtrl(this, wxID_ANY, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
+    m_initdate_ctrl = new mmDatePicker(this, wxID_ANY, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
     mmToolTip(m_initdate_ctrl, _t("The date when the account was opened"));
     grid_sizer->Add(m_initdate_ctrl, g_flagsExpand);
 
@@ -200,7 +204,7 @@ void AccountDialog::CreateControls()
     grid_sizer2->AddGrowableCol(1, 1);
     others_sizer->Add(grid_sizer2, g_flagsExpand);
 
-    grid_sizer2->Add(new wxStaticText(others_tab, wxID_STATIC, (AccountModel::type_id(*m_account_n) == NavigatorTypes::TYPE_ID_CREDIT_CARD ? _t("Card Number:") : _t("Account Number:"))), g_flagsH);
+    grid_sizer2->Add(new wxStaticText(others_tab, wxID_STATIC, (AccountModel::type_id(*m_account_n) == mmNavigatorItem::TYPE_ID_CREDIT_CARD ? _t("Card Number:") : _t("Account Number:"))), g_flagsH);
     wxTextCtrl* itemTextCtrl6 = new wxTextCtrl(others_tab, ID_ACCTNUMBER, "", wxDefaultPosition, wxDefaultSize);
     mmToolTip(itemTextCtrl6, _t("Enter the Account Number associated with this account."));
     grid_sizer2->Add(itemTextCtrl6, g_flagsExpand);
@@ -241,7 +245,7 @@ void AccountDialog::CreateControls()
     statement_grid_sizer->Add(m_statement_lock_ctrl, g_flagsExpand);
 
     statement_grid_sizer->Add(new wxStaticText(statement_tab, wxID_STATIC, _t("Reconciled Date:")), g_flagsH);
-    m_statement_date_ctrl = new mmDatePickerCtrl(statement_tab, wxID_ANY, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
+    m_statement_date_ctrl = new mmDatePicker(statement_tab, wxID_ANY, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
     mmToolTip(m_statement_date_ctrl, _t("The date of the transaction lock"));
     statement_grid_sizer->Add(m_statement_date_ctrl, g_flagsExpand);
 
@@ -271,7 +275,7 @@ void AccountDialog::CreateControls()
     credit_grid_sizer->Add(m_interest_rate_ctrl, g_flagsExpand);
 
     credit_grid_sizer->Add(new wxStaticText(credit_tab, wxID_STATIC, _t("Payment Due Date:")), g_flagsH);
-    m_payment_due_date_ctrl = new mmDatePickerCtrl(credit_tab, wxID_ANY, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
+    m_payment_due_date_ctrl = new mmDatePicker(credit_tab, wxID_ANY, wxDefaultDateTime, wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
     credit_grid_sizer->Add(m_payment_due_date_ctrl, g_flagsExpand);
 
     credit_grid_sizer->Add(new wxStaticText(credit_tab, wxID_STATIC, _t("Minimum Payment:")), g_flagsH);
@@ -292,7 +296,7 @@ void AccountDialog::CreateControls()
     m_bitmapButtons->Connect(wxID_STATIC, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(AccountDialog::OnImageButton), nullptr, this);
     itemBoxSizer28->Add(m_bitmapButtons, g_flagsH);
 
-    bAttachments_ = new wxBitmapButton(itemPanel27, wxID_FILE, mmBitmapBundle(png::CLIP));
+    bAttachments_ = new wxBitmapButton(itemPanel27, wxID_FILE, mmImage::bitmapBundle(mmImage::png::CLIP));
     mmToolTip(bAttachments_, _t("Organize attachments of this account"));
     itemBoxSizer28->Add(bAttachments_, g_flagsH);
 
@@ -345,7 +349,7 @@ void AccountDialog::fillControls()
     m_initbalance_ctrl->SetCurrency(currency_p);
     m_initbalance_ctrl->SetValue(initBal);
 
-    m_initdate_ctrl->SetValue(m_account_n->m_open_date.dateTime());
+    m_initdate_ctrl->setValue(m_account_n->m_open_date.dateTime());
 
     int selectedImage = PrefModel::instance().AccountImageId(
         m_account_n->m_id, false, true
@@ -360,7 +364,7 @@ void AccountDialog::fillControls()
     m_interest_rate_ctrl->SetValue(m_account_n->m_interest_rate, 2);
 
     if (m_account_n->m_payment_due_date_n.has_value()) {
-        m_payment_due_date_ctrl->SetValue(m_account_n->m_payment_due_date_n.dateTimeN());
+        m_payment_due_date_ctrl->setValue(m_account_n->m_payment_due_date_n.dateTimeN());
     }
 
     m_minimum_payment_ctrl->SetCurrency(currency_p);
@@ -369,7 +373,7 @@ void AccountDialog::fillControls()
     m_statement_lock_ctrl->SetValue(m_account_n->m_stmt_locked);
 
     if (m_account_n->m_stmt_date_n.has_value()) {
-        m_statement_date_ctrl->SetValue(m_account_n->m_stmt_date_n.dateTimeN());
+        m_statement_date_ctrl->setValue(m_account_n->m_stmt_date_n.dateTimeN());
     }
     m_minimum_balance_ctrl->SetCurrency(currency_p);
     m_minimum_balance_ctrl->SetValue(m_account_n->m_min_balance);
@@ -432,41 +436,94 @@ void AccountDialog::OnAttachments(wxCommandEvent& /*event*/)
     dlg.ShowModal();
 }
 
-
 void AccountDialog::OnImageButton(wxCommandEvent& /*event*/)
 {
     wxMenu mainMenu;
-    wxMenuItem* menuItem = new wxMenuItem(&mainMenu, wxID_HIGHEST + static_cast<int>(acc_img::ACC_ICON_MONEY) - 1, _t("Default Image"));
-
-    menuItem->SetBitmap(m_images.at(
-        PrefModel::instance().AccountImageId(m_account_n->m_id, true)
-    ));
+    int idx = wxID_HIGHEST + static_cast<int>(mmImage::img::LAST_NAVTREE_PNG) - 1;
+    wxMenuItem* menuItem = new wxMenuItem(&mainMenu, idx, _t("Default Image"));
+    menuItem->SetBitmap(m_images.at(PrefModel::instance().AccountImageId(m_account_n->m_id, true)));
     mainMenu.Append(menuItem);
+    Bind(wxEVT_MENU, &AccountDialog::OnDefaultImage, this, idx);
+    mainMenu.AppendSeparator();
 
-    for (int i = img::LAST_NAVTREE_PNG; i < acc_img::MAX_ACC_ICON; ++i)
+    for (int i = mmImage::img::LAST_NAVTREE_PNG; i < mmImage::acc_img::MAX_ACC_ICON; ++i)
     {
         menuItem = new wxMenuItem(&mainMenu, wxID_HIGHEST + i
-            , wxString::Format(_t("Image #%i"), i - img::LAST_NAVTREE_PNG + 1));
+            , wxString::Format(_t("Image #%i"), i - mmImage::img::LAST_NAVTREE_PNG + 1));
         menuItem->SetBitmap(m_images.at(i));
         mainMenu.Append(menuItem);
+        Bind(wxEVT_MENU, &AccountDialog::OnCustomImage, this, wxID_HIGHEST + i);
+    }
+
+    int max = static_cast<int>(m_images.size());
+    std::map<int, wxString> indexMap = NavTreeIconImages::instance().getIndexMap();
+    if (max > mmImage::acc_img::MAX_ACC_ICON) {
+        mainMenu.AppendSeparator();
+    }
+    for (int i = mmImage::acc_img::MAX_ACC_ICON; i < max; ++i)
+    {
+        menuItem = new wxMenuItem(&mainMenu, wxID_HIGHEST + i, indexMap[i]);
+        menuItem->SetBitmap(m_images.at(i));
+        mainMenu.Append(menuItem);
+        Bind(wxEVT_MENU, &AccountDialog::OnFavIconImage, this, wxID_HIGHEST + i);
+    }
+
+    wxTextCtrl* website_ctrl = static_cast<wxTextCtrl*>(FindWindow(ID_DIALOG_NEWACCT_TEXTCTRL_WEBSITE));
+    if (!website_ctrl->GetValue().empty()) {
+        mainMenu.AppendSeparator();
+        mainMenu.Append(new wxMenuItem(&mainMenu, wxID_HIGHEST + max, _t("Load icon from webpage")));
+        Bind(wxEVT_MENU, &AccountDialog::OnLoadFavIconImage, this, wxID_HIGHEST + max);
     }
 
     PopupMenu(&mainMenu);
 }
 
-void AccountDialog::OnCustonImage(wxCommandEvent& event)
+void AccountDialog::OnDefaultImage(wxCommandEvent& WXUNUSED(event))
 {
-    int selectedImage = (event.GetId() - wxID_HIGHEST) - img::LAST_NAVTREE_PNG + 1;
-    int image_id = PrefModel::instance().AccountImageId(m_account_n->m_id, true);
+    auto& data = InfoModel::instance().find(InfoCol::INFONAME(wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id)));
+    for (const auto& rec : data) {
+        InfoModel::instance().unsafe_remove_id(rec.id());
+    }
+    m_bitmapButtons->SetBitmap(m_images.at(PrefModel::instance().AccountImageId(m_account_n->m_id, true)));
+}
 
-    InfoModel::instance().saveInt(
-        wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id),
-        selectedImage
-    );
-    if (selectedImage != 0)
-        image_id = selectedImage + img::LAST_NAVTREE_PNG - 1;
+void AccountDialog::OnCustomImage(wxCommandEvent& event)
+{
+    int image_id = event.GetId() - wxID_HIGHEST;
+    InfoModel::instance().saveInt(wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id), image_id);
 
     m_bitmapButtons->SetBitmap(m_images.at(image_id));
+}
+
+void AccountDialog::OnFavIconImage(wxCommandEvent& event)
+{
+    int image_id = event.GetId() - wxID_HIGHEST;
+    std::map<int, wxString> indexMap = NavTreeIconImages::instance().getIndexMap();
+    InfoModel::instance().saveString(wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id), "CI:" + indexMap[image_id]);
+
+    m_bitmapButtons->SetBitmap(m_images.at(image_id));
+}
+
+void AccountDialog::OnLoadFavIconImage(wxCommandEvent& WXUNUSED(event))
+{
+    wxTextCtrl* website_ctrl = static_cast<wxTextCtrl*>(FindWindow(ID_DIALOG_NEWACCT_TEXTCTRL_WEBSITE));
+    wxString url = website_ctrl->GetValue();
+    wxString serverName = iconExtractServerName(url);
+    wxFileName resDir = mmPath::getPathUserRaw(mmPath::USERICONS, true);
+    if (resDir.IsOk()) {
+        wxFileName path(resDir.GetPathWithSep(), serverName);
+        std::string iconFileName = path.GetFullPath().utf8_string();
+        std::string ext;
+        if (iconDownloadFavicon(website_ctrl->GetValue(), iconFileName, ext)) {
+            iconSetButtonIconFromFile(m_bitmapButtons, iconFileName);
+            InfoModel::instance().saveString(wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id), "CI:" + serverName + ext);
+            m_images = NavTreeIconImages::instance().getList();
+            NavTreeIconImages::instance().setChanged();
+        }
+        else {
+            wxMessageBox( wxString::Format(_t("Fav icon could not be loaded from '%s'"), website_ctrl->GetValue()), _t("Favorite icon download"), wxICON_INFORMATION);
+        }
+    }
 }
 
 void AccountDialog::OnChangeFocus(wxChildFocusEvent& event)

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/wizard.h>
 #include <wx/frame.h>
 #include <wx/textctrl.h>

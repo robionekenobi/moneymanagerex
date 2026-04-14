@@ -18,8 +18,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
-#include "base/paths.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
 #include "util/_util.h"
 
 #include "model/InfoModel.h"
@@ -96,7 +96,7 @@ bool TagManager::create(
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
     this->SetInitialSize();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     Fit();
     mmSetSize(this);

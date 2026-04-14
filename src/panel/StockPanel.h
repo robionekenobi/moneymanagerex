@@ -22,9 +22,9 @@
 #pragma once
 
 #include "model/TrxShareModel.h"
-#include "mmframe.h"
 #include "_PanelBase.h"
 #include "StockList.h"
+#include "app/mmFrame.h"
 
 class wxListEvent;
 class TrxShareModel;
@@ -41,21 +41,26 @@ private:
     wxString m_last_update;
     wxDateTime m_last_refresh;
     bool m_refresh_status;
+    wxString m_name_filter_value = "";
 
-    mmGUIFrame*     w_frame;
+    mmFrame*        w_frame;
     StockList*      w_list           = nullptr;
     wxStaticText*   w_header_title   = nullptr;
     wxStaticText*   w_header_total   = nullptr;
+    wxStaticText*   w_header_info    = nullptr;
+    wxStaticText*   w_header_win     = nullptr;
     wxStaticText*   w_details        = nullptr;
     wxStaticText*   w_details_short  = nullptr;
     wxChoice*       w_filter_choice  = nullptr;
     wxBitmapButton* w_attachment_btn = nullptr;
     wxBitmapButton* w_refresh_btn    = nullptr;
+    wxTextCtrl*     w_nameFilter     = nullptr;
+    wxBitmapButton* w_filter_cancel  = nullptr;
 
 public:
     StockPanel(
         int64 account_id,
-        mmGUIFrame* frame,
+        mmFrame* frame,
         wxWindow* parent_win,
         wxWindowID win_id = mmID_STOCKS
     );
@@ -92,7 +97,6 @@ private:
     void copySelectedRowsToClipboard(wxListCtrl* listCtrl);
     int  getFilter();
     void updateHeader();
-
     void call_dialog(int selectedIndex);
     auto totalShares() -> const wxString;
 
@@ -107,4 +111,6 @@ private:
     void onEditStocks(wxCommandEvent& event) { w_list->onEditStocks(event); }
     void onOpenAttachment(wxCommandEvent& event) { w_list->onOpenAttachment(event); }
     void onRefreshQuotes(wxCommandEvent& event);
+    void onFilterTextChanged(wxCommandEvent& event);
+    void onFilterCancel(wxCommandEvent& event);
 };

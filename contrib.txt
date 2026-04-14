@@ -1,13 +1,15 @@
 ﻿## Active Developers
 
-Nikolay          [Nikolay]
 Whalley          [whalley]
 n-stein          [n-stein]
+George Ef        [george.a.ef]
+Nikolay          [Nikolay]
 Gabriele         [gabriele-v]
 Lisheng          [guanlisheng]
 James            [siena123]
 Stefano          [stef145g]
 Pat              [omalleypat]
+Klaus Wich       [kwich]
 
 =======================================
 
@@ -229,6 +231,9 @@ Weogo Reed
 Andreas Pussack
 Franco Giolitti
 Marco Pelizzoli
+Tom Vergotte
+Tat Hiu Law
+Jerry Marsh
 
 ### 2025
 Renato

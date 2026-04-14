@@ -20,7 +20,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <algorithm>
 #include <cctype>
 #include <string>
@@ -30,10 +30,14 @@
 #include <wx/spinctrl.h>
 #include <wx/display.h>
 
-#include "base/constants.h"
-#include "base/platfdep.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "base/mmPlatform.h"
+#include "base/mmListBoxItem.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
+#include "util/mmDatePicker.h"
+#include "util/mmDateParser.h"
+#include "util/mmSepParser.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -174,7 +178,7 @@ bool mmUnivCSVDialog::Create(
         std::min(sz.GetY(), screenSize.GetY())
     ));
     SetMinSize(GetSize());
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre();
     mmThemeAutoColour(this);
    return true;
@@ -307,12 +311,12 @@ void mmUnivCSVDialog::CreateControls()
         m_choice_preset_name->SetStringSelection(init_preset_name);
 
     wxBitmapButton* itemButton_Save = new wxBitmapButton(scrolledWindow, wxID_SAVEAS,
-        mmBitmapBundle(png::SAVE, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::SAVE, mmImage::bitmapButtonSize)
     );
     preset_box_sizer->Add(itemButton_Save, g_flagsH);
 
     wxBitmapButton* itemButtonClear = new wxBitmapButton(scrolledWindow, wxID_CLEAR,
-        mmBitmapBundle(png::CLEAR, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::CLEAR, mmImage::bitmapButtonSize)
     );
     preset_box_sizer->Add(itemButtonClear, g_flagsH);
 
@@ -471,11 +475,11 @@ void mmUnivCSVDialog::CreateControls()
         itemStaticText7771->SetFont(staticBoxFontSetting);
         grid_sizer72->Add(itemStaticText7771, g_flagsH);
 
-        m_date_picker_start = new mmDatePickerCtrl(itemPanel72, wxID_STATIC,wxDefaultDateTime
+        m_date_picker_start = new mmDatePicker(itemPanel72, wxID_STATIC,wxDefaultDateTime
     , wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
         mmToolTip(m_date_picker_start, _t("Specify the report start date"));
         wxDateTime specificDate(1, wxDateTime::Jan, 1970);
-        m_date_picker_start->SetValue(specificDate);
+        m_date_picker_start->setValue(specificDate);
         grid_sizer72->Add(m_date_picker_start, g_flagsH);
         m_date_picker_start->Bind(wxEVT_DATE_CHANGED, &mmUnivCSVDialog::OnStartDateChange, this);
         // In the beginning the date pickers are disabled since the checkbox is not checked
@@ -485,10 +489,10 @@ void mmUnivCSVDialog::CreateControls()
         itemStaticText7772->SetFont(staticBoxFontSetting);
         grid_sizer72->Add(itemStaticText7772, g_flagsH);
 
-        m_date_picker_end = new mmDatePickerCtrl(itemPanel72, wxID_STATIC,wxDefaultDateTime
+        m_date_picker_end = new mmDatePicker(itemPanel72, wxID_STATIC,wxDefaultDateTime
     , wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN | wxDP_SHOWCENTURY);
         mmToolTip(m_date_picker_end, _t("Specify the report end date"));
-        m_date_picker_end->SetValue(wxDateTime::Today());
+        m_date_picker_end->setValue(wxDateTime::Today());
         grid_sizer72->Add(m_date_picker_end, g_flagsH);
         m_date_picker_end->Bind(wxEVT_DATE_CHANGED, &mmUnivCSVDialog::OnEndDateChange, this);
         m_date_picker_end->Enable(false);
@@ -1443,7 +1447,7 @@ void mmUnivCSVDialog::OnImport(wxCommandEvent& WXUNUSED(event))
     if (!pParser->Load(fileName, m_list_ctrl_->GetColumnCount()))
         return;
 
-    wxFileName logFile = mmex::GetLogDir(true);
+    wxFileName logFile = mmPath::getLogDir(true);
     logFile.SetFullName(fileName);
     logFile.SetExt("txt");
 
@@ -2019,7 +2023,7 @@ void mmUnivCSVDialog::update_preview()
         unsigned int firstRow = m_spinIgnoreFirstRows_->GetValue();
         unsigned int lastRow = totalLines - m_spinIgnoreLastRows_->GetValue();
 
-        std::unique_ptr<mmDates> dParser(new mmDates);
+        std::unique_ptr<mmDateParser> dParser(new mmDateParser);
         wxRegEx categDelimiterRegex(" ?: ?");
         // Import- Add rows to preview
         for (unsigned int row = 0; row < totalLines; row++) {
@@ -2626,19 +2630,21 @@ void mmUnivCSVDialog::OnFileBrowse(wxCommandEvent& WXUNUSED(event))
                 return;
             }
 
-            wxSharedPtr<mmSeparator> sep(new mmSeparator);
+            wxSharedPtr<mmSepParser> sep(new mmSepParser);
             wxString line;
             size_t count = 0;
             for (line = tFile.GetFirstLine(); !tFile.Eof(); line = tFile.GetNextLine()) {
                 *log_field_ << line << "\n";
-                if (++count >= 10) break;
-                sep->isStringHasSeparator(line);
+                if (++count >= 10)
+                    break;
+                sep->search(line);
             }
 
             *log_field_ << "\n";
 
-            delimit_ = sep->getSeparator();
-            if (!IsXML()) m_textDelimiter->ChangeValue(delimit_);
+            delimit_ = sep->max();
+            if (!IsXML())
+                m_textDelimiter->ChangeValue(delimit_);
 
             // TODO: update_preview() is called twice. Once here and once in OnFileNameChanged().
             // This leads to double work and double error messages to the user.

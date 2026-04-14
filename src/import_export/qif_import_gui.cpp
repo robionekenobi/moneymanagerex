@@ -18,15 +18,20 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "base/defs.h"
+#include "qif_import_gui.h"
+
+#include "base/_defs.h"
 #include <wx/progdlg.h>
 #include <wx/dataview.h>
 
-#include "base/constants.h"
-#include "base/paths.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmDateRange.h"
+#include "util/mmDatePicker.h"
+#include "util/mmDateParser.h"
+#include "util/mmNavigatorList.h"
 #include "util/_util.h"
 #include "util/_simple.h"
-#include "util/mmDateRange.h"
 
 #include "model/CategoryModel.h"
 #include "model/PayeeModel.h"
@@ -37,9 +42,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "manager/CategoryManager.h"
 #include "manager/PayeeManager.h"
 #include "webapp.h"
-#include "uicontrols/navigatortypes.h"
 
-#include "qif_import_gui.h"
 #include "qif_import.h"
 #include "export.h"
 
@@ -119,7 +122,7 @@ bool mmQIFImportDialog::Create(wxWindow* parent, wxWindowID id, const wxString& 
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
     this->SetInitialSize();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre();
 
     return true;
@@ -210,7 +213,7 @@ void mmQIFImportDialog::CreateControls()
     // From Date
     dateFromCheckBox_ = new wxCheckBox(static_box, wxID_FILE8, _t("From Date")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    fromDateCtrl_ = new mmDatePickerCtrl(static_box, wxID_STATIC, wxDefaultDateTime
+    fromDateCtrl_ = new mmDatePicker(static_box, wxID_STATIC, wxDefaultDateTime
         , wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
     fromDateCtrl_->Enable(false);
     dates_sizer->Add(dateFromCheckBox_, g_flagsH);
@@ -219,7 +222,7 @@ void mmQIFImportDialog::CreateControls()
     // To Date
     dateToCheckBox_ = new wxCheckBox(static_box, wxID_FILE9, _t("To Date")
         , wxDefaultPosition, wxDefaultSize, wxCHK_2STATE);
-    toDateCtrl_ = new mmDatePickerCtrl(static_box, wxID_STATIC, wxDefaultDateTime
+    toDateCtrl_ = new mmDatePicker(static_box, wxID_STATIC, wxDefaultDateTime
         , wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN);
     toDateCtrl_->Enable(false);
     dates_sizer->Add(dateToCheckBox_, g_flagsH);
@@ -479,24 +482,21 @@ bool mmQIFImportDialog::mmReadQIFFile()
 
     std::unordered_map <int, wxString> trx;
     int64 split_id = 0;
-    wxSharedPtr<mmDates> dParser(new mmDates);
+    wxSharedPtr<mmDateParser> dParser(new mmDateParser);
     std::map<wxString, int> comma({ {".", 0}, {",", 0} });
-    while (input.IsOk() && !input.Eof())
-    {
+    while (input.IsOk() && !input.Eof()) {
         ++numLines;
         const wxString lineStr = text->ReadLine();
         if (lineStr.IsEmpty())
             continue;
 
-        if (numLines % 100 == 0)
-        {
+        if (numLines % 100 == 0) {
             interval = wxGetUTCTimeMillis() - start;
             if (!progressDlg.Pulse(wxString::Format(_t("Reading line %zu, %lld ms")
                 , numLines, interval)))
                 break;
         }
-        if (numLines <= 50)
-        {
+        if (numLines <= 50) {
             *log_field_ << wxString::Format(_t("Line %zu \t %s\n"), numLines, lineStr);
             if (numLines == 50)
                 *log_field_ << "-------------------------------------- 8< --------------------------------------\n";
@@ -1675,7 +1675,7 @@ int64 mmQIFImportDialog::getOrCreateAccounts()
 
             const auto type = item.second.find(QIF_ID_AccountType) != item.second.end() ? item.second.at(QIF_ID_AccountType) : "";
             new_account_d.m_type_ = mmExportTransaction::mm_acc_type(type);
-            //NavigatorTypes::TYPE_NAME_CHECKING;
+            //mmNavigatorItem::TYPE_NAME_CHECKING;
             new_account_d.m_name         = item.first;
             new_account_d.m_open_balance = 0;
             new_account_d.m_open_date    = mmDate::today();

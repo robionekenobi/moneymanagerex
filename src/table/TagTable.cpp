@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,14 +27,19 @@ template class mmCache<int64, TagData>;
 
 // List of column names in database table TAG_V1,
 // in the order of TagCol::COL_ID.
-const wxArrayString TagCol::COL_NAME_A = {
+const wxArrayString TagCol::s_col_name_a = {
     "TAGID",
     "TAGNAME",
     "ACTIVE"
 };
 
-const TagCol::COL_ID TagCol::PRIMARY_ID = COL_ID_TAGID;
-const wxString TagCol::PRIMARY_NAME = COL_NAME_A[COL_ID_TAGID];
+const TagCol::COL_ID TagCol::s_primary_id = COL_ID_TAGID;
+const wxString TagCol::s_primary_name = s_col_name_a[COL_ID_TAGID];
+
+// convenience variables
+const wxString TagCol::NAME_TAGID = s_col_name_a[COL_ID_TAGID];
+const wxString TagCol::NAME_TAGNAME = s_col_name_a[COL_ID_TAGNAME];
+const wxString TagCol::NAME_ACTIVE = s_col_name_a[COL_ID_ACTIVE];
 
 TagRow::TagRow()
 {

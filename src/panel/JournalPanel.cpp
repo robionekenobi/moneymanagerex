@@ -19,29 +19,29 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "JournalPanel.h"
+#include "JournalList.h"
+
+#include "base/_defs.h"
 #include <float.h>
 #include <algorithm>
 #include <wx/clipbrd.h>
 #include <wx/srchctrl.h>
 #include <wx/sound.h>
 
-#include "base/constants.h"
-#include "mmex.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "base/mmTips.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
+#include "util/mmSplitterWindow.h"
+#include "util/mmNavigatorList.h"
 #include "util/_util.h"
 #include "util/_simple.h"
-#include "util/mmTips.h"
 #include "util/mmCalcValidator.h"
 
 #include "model/_all.h"
 #include "model/PrefModel.h"
 #include "model/Journal.h"
-
-#include "mmframe.h"
-#include "JournalPanel.h"
-#include "JournalList.h"
 
 #include "manager/DateRangeManager.h"
 #include "dialog/SplitDialog.h"
@@ -52,8 +52,9 @@
 #include "dialog/TrxFilterDialog.h"
 #include "dialog/TrxShareDialog.h"
 #include "dialog/TrxUpdateDialog.h"
-#include "uicontrols/reconciledialog.h"
-#include "uicontrols/navigatortypes.h"
+#include "dialog/ReconcileDialog.h"
+
+#include "app/mmFrame.h"
 
 // -- static
 
@@ -125,8 +126,8 @@ void JournalPanel::mmPlayTransactionSound()
     if (!play)
         return;
 
-    wxString wav_path = mmex::getPathResource(
-        (play == 2) ? mmex::TRANS_SOUND2 : mmex::TRANS_SOUND1
+    wxString wav_path = mmPath::getPathResource(
+        (play == 2) ? mmPath::TRANS_SOUND2 : mmPath::TRANS_SOUND1
     );
     wxLogDebug("%s", wav_path);
 
@@ -148,10 +149,10 @@ wxString JournalPanel::getPanelTitle() const
             return _t("Favorites");
         else {
             int account_Type = -(static_cast<int>(m_account_group_id.GetValue()) + 4);
-            if (account_Type >= NavigatorTypes::TYPE_ID_size) {
-                account_Type += NavigatorTypes::NAV_IDXDIFF;
+            if (account_Type >= mmNavigatorItem::TYPE_ID_size) {
+                account_Type += mmNavigatorItem::NAV_IDXDIFF;
             }
-            return NavigatorTypes::instance().getAccountSectionName(account_Type);
+            return mmNavigatorList::instance().getAccountSectionName(account_Type);
         }
     }
     else if (m_account_n)
@@ -163,7 +164,7 @@ wxString JournalPanel::getPanelTitle() const
 // -- constructor
 
 JournalPanel::JournalPanel(
-    mmGUIFrame* frame,
+    mmFrame* frame,
     wxWindow* perent_win,
     int64 account_group_id,
     const std::vector<int64>& group_ids /*={}*/
@@ -241,7 +242,7 @@ void JournalPanel::createControls()
 
     wxBoxSizer* sizerHCtrl = new wxBoxSizer(wxHORIZONTAL);
     w_range_btn = new wxButton(this, ID_DATE_RANGE_BUTTON);
-    w_range_btn->SetBitmap(mmBitmapBundle(png::TRANSFILTER, mmBitmapButtonSize));
+    w_range_btn->SetBitmap(mmImage::bitmapBundle(mmImage::png::TRANSFILTER, mmImage::bitmapButtonSize));
     sizerHCtrl->Add(w_range_btn, g_flagsH);
 
     w_range_btn->SetMinSize(wxSize(200 + PrefModel::instance().getIconSize() * 2, -1));
@@ -270,7 +271,7 @@ void JournalPanel::createControls()
     );
 
     w_filter_reset_btn = new wxBitmapButton(this, wxID_ANY,
-        mmBitmapBundle(png::CLEAR, mmBitmapButtonSize)
+        mmImage::bitmapBundle(mmImage::png::CLEAR, mmImage::bitmapButtonSize)
     );
     mmToolTip(w_filter_reset_btn, _t("Reset filter"));
     w_filter_reset_btn->Bind(wxEVT_COMMAND_BUTTON_CLICKED,
@@ -287,7 +288,7 @@ void JournalPanel::createControls()
         sizerHCtrl->AddSpacer(15);
         const auto& size = w_range_btn->GetSize().GetY();
         w_header_scheduled = new wxBitmapToggleButton(
-            this, ID_SCHEDULED_BUTTON, mmBitmapBundle(png::RECURRING),
+            this, ID_SCHEDULED_BUTTON, mmImage::bitmapBundle(mmImage::png::RECURRING),
             wxDefaultPosition, wxSize(size, size)
         );
         sizerHCtrl->Add(w_header_scheduled, g_flagsH);
@@ -301,7 +302,7 @@ void JournalPanel::createControls()
         sizerHCtrl->AddSpacer(100);
 
         wxBitmapButton* btn = new wxBitmapButton(this, wxID_ANY,
-            mmBitmapBundle(png::TRXNUM, mmBitmapButtonSize)
+            mmImage::bitmapBundle(mmImage::png::TRXNUM, mmImage::bitmapButtonSize)
         );
         mmToolTip(btn, _t("Reconcile"));
         btn->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &JournalPanel::onReconcile, this);
@@ -318,17 +319,19 @@ void JournalPanel::createControls()
     /* ---------------------- */
 
     mmSplitterWindow* splitterListFooter = new mmSplitterWindow(
-        this, wxID_ANY, wxDefaultPosition, wxSize(200, 200),
-        wxSP_3DBORDER | wxSP_3DSASH | wxNO_BORDER, mmThemeMetaColour(meta::COLOR_LISTPANEL)
+        this, wxID_ANY,
+        wxDefaultPosition, wxSize(200, 200),
+        wxSP_3DBORDER | wxSP_3DSASH | wxNO_BORDER,
+        mmImage::themeMetaColour(mmImage::COLOR_LISTPANEL)
     );
 
-    w_image_a.push_back(mmBitmapBundle(png::UNRECONCILED));
-    w_image_a.push_back(mmBitmapBundle(png::RECONCILED));
-    w_image_a.push_back(mmBitmapBundle(png::VOID_STAT));
-    w_image_a.push_back(mmBitmapBundle(png::FOLLOW_UP));
-    w_image_a.push_back(mmBitmapBundle(png::DUPLICATE_STAT));
-    w_image_a.push_back(mmBitmapBundle(png::UPARROW));
-    w_image_a.push_back(mmBitmapBundle(png::DOWNARROW));
+    w_image_a.push_back(mmImage::bitmapBundle(mmImage::png::UNRECONCILED));
+    w_image_a.push_back(mmImage::bitmapBundle(mmImage::png::RECONCILED));
+    w_image_a.push_back(mmImage::bitmapBundle(mmImage::png::VOID_STAT));
+    w_image_a.push_back(mmImage::bitmapBundle(mmImage::png::FOLLOW_UP));
+    w_image_a.push_back(mmImage::bitmapBundle(mmImage::png::DUPLICATE_STAT));
+    w_image_a.push_back(mmImage::bitmapBundle(mmImage::png::UPARROW));
+    w_image_a.push_back(mmImage::bitmapBundle(mmImage::png::DOWNARROW));
 
     w_list = new JournalList(this, splitterListFooter);
     w_list->SetSmallImages(w_image_a);
@@ -386,7 +389,7 @@ void JournalPanel::createControls()
 
         const auto& btnDupSize = w_dup_btn->GetSize();
         w_attachment_btn = new wxBitmapButton(
-            panelFooter, wxID_FILE, mmBitmapBundle(png::CLIP), wxDefaultPosition,
+            panelFooter, wxID_FILE, mmImage::bitmapBundle(mmImage::png::CLIP), wxDefaultPosition,
             wxSize(30, btnDupSize.GetY())
         );
         mmToolTip(w_attachment_btn, _t("Open attachments"));
@@ -642,21 +645,23 @@ void JournalPanel::filterList()
     w_list->m_journal_xa.clear();
 
     TrxModel::DataA trx_a =
-        isDeletedTrans() ? TrxModel::instance().find(
-            TrxModel::DATE(OP_GE, range_start),
-            TrxModel::DATE(OP_LE, range_end),
-            TrxModel::IS_DELETED(true)
+        isDeletedTrans() ? TrxModel::instance().find_data_a(
+            TrxModel::WHERE_DATE(OP_GE, range_start),
+            TrxModel::WHERE_DATE(OP_LE, range_end),
+            TrxModel::WHERE_IS_DELETED(true)
         )
-        : isAccount() ? TrxModel::instance().find_or(
-            // TODO: fetch transactions until range_end
-            // TODO: filter out deleted transactions
-            TrxCol::ACCOUNTID(m_account_n->m_id),
-            TrxCol::TOACCOUNTID(m_account_n->m_id)
+        : isAccount() ? TrxModel::instance().find_data_a(
+            TableClause::BEGIN_OR(),
+                TrxCol::WHERE_ACCOUNTID(OP_EQ, m_account_n->m_id),
+                TrxCol::WHERE_TOACCOUNTID(OP_EQ, m_account_n->m_id),
+            TableClause::END(),
+            TrxModel::WHERE_DATE(OP_LE, range_end),
+            TrxModel::WHERE_IS_DELETED(false)
         )
-        : TrxModel::instance().find(
-            TrxModel::DATE(OP_GE, range_start),
-            TrxModel::DATE(OP_LE, range_end),
-            TrxModel::IS_DELETED(false)
+        : TrxModel::instance().find_data_a(
+            TrxModel::WHERE_DATE(OP_GE, range_start),
+            TrxModel::WHERE_DATE(OP_LE, range_end),
+            TrxModel::WHERE_IS_DELETED(false)
         );
     if (PrefModel::instance().getUseTransDateTime()) {
         std::sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTimeId());
@@ -1009,8 +1014,8 @@ void JournalPanel::updateHeader()
             w_header_credit->SetValue(limit);
             w_header_credit->Show();
         }
-        if (AccountModel::type_id(*m_account_n) == NavigatorTypes::TYPE_ID_INVESTMENT ||
-            AccountModel::type_id(*m_account_n) == NavigatorTypes::TYPE_ID_ASSET
+        if (AccountModel::type_id(*m_account_n) == mmNavigatorItem::TYPE_ID_INVESTMENT ||
+            AccountModel::type_id(*m_account_n) == mmNavigatorItem::TYPE_ID_ASSET
         ) {
             std::pair<double, double> investment_bal =
                 AccountModel::instance().get_data_investment_balance(*m_account_n);
@@ -1041,13 +1046,13 @@ void JournalPanel::updateFilter()
 
     if (m_filter_id == FILTER_ID_DATE_RANGE) {
         w_range_btn->SetLabel(m_date_range.rangeName());
-        w_range_btn->SetBitmap(mmBitmapBundle(
+        w_range_btn->SetBitmap(mmImage::bitmapBundle(
             // FIXME: refine the condition below
             (m_date_range.rangeName() != m_date_range_a[0].getName()
-                ? png::TRANSFILTER_ACTIVE
-                : png::TRANSFILTER
+                ? mmImage::png::TRANSFILTER_ACTIVE
+                : mmImage::png::TRANSFILTER
             ),
-            mmBitmapButtonSize
+            mmImage::bitmapButtonSize
         ));
         // TODO: calculate default start/end dates from model
         m_date_range.setDefStartDateN(mmDate::min());
@@ -1062,9 +1067,9 @@ void JournalPanel::updateFilter()
     }
     else if (m_filter_id == FILTER_ID_DATE_PICKER) {
         w_range_btn->SetLabel(_t("Date range"));
-        w_range_btn->SetBitmap(mmBitmapBundle(
-            png::TRANSFILTER_ACTIVE,
-            mmBitmapButtonSize
+        w_range_btn->SetBitmap(mmImage::bitmapBundle(
+            mmImage::png::TRANSFILTER_ACTIVE,
+            mmImage::bitmapButtonSize
         ));
         // set date range to default ('All') and copy default start/end dates from pickers.
         m_date_range = mmDateRange2();
@@ -1078,11 +1083,11 @@ void JournalPanel::updateFilter()
         }
     }
 
-    w_filter_btn->SetBitmap(mmBitmapBundle(
+    w_filter_btn->SetBitmap(mmImage::bitmapBundle(
         m_filter_advanced
-            ? png::TRANSFILTER_ACTIVE
-            : png::TRANSFILTER,
-        mmBitmapButtonSize
+            ? mmImage::png::TRANSFILTER_ACTIVE
+            : mmImage::png::TRANSFILTER,
+        mmImage::bitmapButtonSize
     ));
 
     w_filter_reset_btn->Enable(m_filter_advanced);
@@ -1541,7 +1546,7 @@ void JournalPanel::onInfoPanelClick(wxMouseEvent& event, wxStaticText* infoPanel
 
 void JournalPanel::onReconcile(wxCommandEvent& WXUNUSED(event))
 {
-    mmReconcileDialog dlg(wxGetTopLevelParent(this), m_account_n, this);
+    ReconcileDialog dlg(wxGetTopLevelParent(this), m_account_n, this);
     if (dlg.ShowModal() == wxID_OK) {
         refreshList();
     }

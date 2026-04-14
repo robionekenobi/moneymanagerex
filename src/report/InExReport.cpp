@@ -18,9 +18,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "base/images_list.h"
-#include "util/_util.h"
+#include "util/mmImage.h"
 #include "util/mmDateRange.h"
+#include "util/_util.h"
 #include "htmlbuilder.h"
 
 #include "model/AccountModel.h"
@@ -97,8 +97,8 @@ wxString InExReport::getHTMLText()
     if (!gd.series.empty())
     {
         gd.type = GraphData::BAR;
-        gd.colors = { mmThemeMetaColour(meta::COLOR_REPORT_CREDIT)
-                        , mmThemeMetaColour(meta::COLOR_REPORT_DEBIT) };  
+        gd.colors = { mmImage::themeMetaColour(mmImage::COLOR_REPORT_CREDIT)
+                        , mmImage::themeMetaColour(mmImage::COLOR_REPORT_DEBIT) };  
         hb.addChart(gd);
     }
 
@@ -234,13 +234,14 @@ wxString mmReportIncomeExpensesMonthly::getHTMLText()
         gd.series.push_back(data_negative);
 
 
-        if (!gd.series.empty())
-        {
+        if (!gd.series.empty()) {
             gd.type = GraphData::BARLINE; 
-            gd.colors = { mmThemeMetaColour(meta::COLOR_REPORT_PERF)
-                            , mmThemeMetaColour(meta::COLOR_REPORT_DELTA)
-                            , mmThemeMetaColour(meta::COLOR_REPORT_CREDIT)
-                            , mmThemeMetaColour(meta::COLOR_REPORT_DEBIT) }; 
+            gd.colors = {
+                mmImage::themeMetaColour(mmImage::COLOR_REPORT_PERF),
+                mmImage::themeMetaColour(mmImage::COLOR_REPORT_DELTA),
+                mmImage::themeMetaColour(mmImage::COLOR_REPORT_CREDIT),
+                mmImage::themeMetaColour(mmImage::COLOR_REPORT_DEBIT)
+            }; 
             hb.addChart(gd);
         }
     }

@@ -20,9 +20,9 @@
  ********************************************************/
 
 #include <set>
-#include "base/constants.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 
 #include "model/AttachmentModel.h"
@@ -97,7 +97,7 @@ CategoryManager::CategoryManager(wxWindow* parent
     m_selectedItemId = 0;
     m_IsSelection = bIsSelection;
     m_refresh_requested = false;
-    m_hiddenColor = mmThemeMetaColour(meta::COLOR_HIDDEN);
+    m_hiddenColor = mmImage::themeMetaColour(mmImage::COLOR_HIDDEN);
 
     this->SetFont(parent->GetFont());
     Create(parent);
@@ -112,18 +112,23 @@ CategoryManager::CategoryManager(wxWindow* parent
     SetAcceleratorTable(tab);
 }
 
-bool CategoryManager::Create(wxWindow* parent, wxWindowID id
-    , const wxString& caption, const wxString& name
-    , const wxPoint& pos, const wxSize& size, long style)
-{
+bool CategoryManager::Create(
+    wxWindow* parent,
+    wxWindowID id,
+    const wxString& caption,
+    const wxString& name,
+    const wxPoint& pos,
+    const wxSize& size,
+    long style
+) {
     SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create(parent, id, caption, pos, size, style, name);
 
     SetEvtHandlerEnabled(false);
     CreateControls();
     mmThemeAutoColour(this);
-    mmThemeMetaColour(m_treeCtrl, meta::COLOR_NAVPANEL);
-    mmThemeMetaColour(m_treeCtrl, meta::COLOR_NAVPANEL_FONT, true);
+    mmImage::themeMetaColour(m_treeCtrl, mmImage::COLOR_NAVPANEL);
+    mmImage::themeMetaColour(m_treeCtrl, mmImage::COLOR_NAVPANEL_FONT, true);
     fillControls();
 
     m_treeCtrl->CollapseAll();
@@ -141,7 +146,7 @@ bool CategoryManager::Create(wxWindow* parent, wxWindowID id
 
     mmSetSize(this);
     Centre();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     m_treeCtrl->EnsureVisible(m_selectedItemId);
     m_treeCtrl->SelectItem(m_selectedItemId);
@@ -263,7 +268,7 @@ void CategoryManager::CreateControls()
     itemBoxSizer3->Add(itemBoxSizer33, wxSizerFlags(g_flagsV).Border(wxALL, 0).Center());
 
     m_buttonRelocate = new wxBitmapButton(this
-        , wxID_REPLACE_ALL, mmBitmapBundle(png::RELOCATION, mmBitmapButtonSize));
+        , wxID_REPLACE_ALL, mmImage::bitmapBundle(mmImage::png::RELOCATION, mmImage::bitmapButtonSize));
     m_buttonRelocate->Connect(wxID_REPLACE_ALL, wxEVT_COMMAND_BUTTON_CLICKED
         , wxCommandEventHandler(CategoryManager::OnCategoryRelocation), nullptr, this);
     mmToolTip(m_buttonRelocate, _t("Merge Categories"));

@@ -19,15 +19,16 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
-#include "base/images_list.h"
+#include "StockList.h"
+#include "StockPanel.h"
+
+#include "base/_constants.h"
+#include "util/mmImage.h"
+#include "util/mmSingleChoice.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
 #include "model/_all.h"
-
-#include "StockPanel.h"
-#include "StockList.h"
 
 #include "dialog/AttachmentDialog.h"
 #include "dialog/StockDialog.h"
@@ -92,24 +93,24 @@ StockList::StockList(
     ListBase(parent_win, win_id),
     w_panel(cp),
     w_loss_attr1(new wxListItemAttr(
-        mmThemeMetaColour(meta::COLOR_REPORT_DEBIT),
-        mmThemeMetaColour(meta::COLOR_LISTALT0),
+        mmImage::themeMetaColour(mmImage::COLOR_REPORT_DEBIT),
+        mmImage::themeMetaColour(mmImage::COLOR_LISTALT0),
         GetFont()
     )),
     w_loss_attr2(new wxListItemAttr(
-        mmThemeMetaColour(meta::COLOR_REPORT_DEBIT),
-        mmThemeMetaColour(meta::COLOR_LIST),
+        mmImage::themeMetaColour(mmImage::COLOR_REPORT_DEBIT),
+        mmImage::themeMetaColour(mmImage::COLOR_LIST),
         GetFont()
     ))
 {
     wxVector<wxBitmapBundle> image_a;
-    image_a.push_back(mmBitmapBundle(png::PROFIT));
-    image_a.push_back(mmBitmapBundle(png::LOSS));
-    image_a.push_back(mmBitmapBundle(png::DOWNARROW));
-    image_a.push_back(mmBitmapBundle(png::UPARROW));
+    image_a.push_back(mmImage::bitmapBundle(mmImage::png::PROFIT));
+    image_a.push_back(mmImage::bitmapBundle(mmImage::png::LOSS));
+    image_a.push_back(mmImage::bitmapBundle(mmImage::png::DOWNARROW));
+    image_a.push_back(mmImage::bitmapBundle(mmImage::png::UPARROW));
 
     SetSmallImages(image_a);
-    mmThemeMetaColour(this, meta::COLOR_LISTPANEL);
+    mmImage::themeMetaColour(this, mmImage::COLOR_LISTPANEL);
 
     m_setting_name = "STOCKS";
     o_col_order_prefix = "STOCKS";
@@ -124,6 +125,8 @@ StockList::StockList(
     if (!m_stock_a.empty()) {
         EnsureVisible(m_stock_a.size() - 1);
     }
+
+    this->Bind(wxEVT_SIZE, &StockList::onSize, this);
 }
 
 StockList::~StockList()
@@ -359,7 +362,7 @@ void StockList::onMoveStocks(wxCommandEvent& /*event*/)
         return;
 
     const auto& account_a = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(NavigatorTypes::instance().getInvestmentAccountStr())
+        AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().getInvestmentAccountStr())
     );
     if (account_a.empty())
         return;
@@ -370,7 +373,7 @@ void StockList::onMoveStocks(wxCommandEvent& /*event*/)
     wxString headerMsg = wxString::Format(_t("Moving Transaction from %s to"),
         from_account_n->m_name
     );
-    mmSingleChoiceDialog scd(this, _t("Select the destination Account "),
+    mmSingleChoice scd(this, _t("Select the destination Account "),
         headerMsg, account_a
     );
 
@@ -510,21 +513,38 @@ int StockList::initVirtualListControl(int64 trx_id)
 {
     /* Clear all the records */
     DeleteAllItems();
-
-    // TODO
-    if (w_panel->m_account_id > -1 ) {
-        m_stock_a = StockModel::instance().find(
-            StockCol::HELDAT(w_panel->m_account_id),
-            StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
-        );
+    if (w_panel->m_name_filter_value.IsEmpty()) {
+        // TODO
+        if (w_panel->m_account_id > -1 ) {
+            m_stock_a = StockModel::instance().find(
+                StockCol::HELDAT(w_panel->m_account_id),
+                StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
+            );
+        }
+        else { // create summary
+            m_stock_a = StockModel::instance().find(
+                StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
+            );
+            if (!m_stock_a.empty())
+                createSummary();
+        }
     }
-    // create summary
     else {
-        m_stock_a = StockModel::instance().find(
-            StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
-        );
-        if (!m_stock_a.empty())
-            createSummary();
+        if (w_panel->m_account_id > -1 ) {
+            m_stock_a = StockModel::instance().find(
+                StockCol::HELDAT(w_panel->m_account_id),
+                StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0),
+                StockCol::STOCKNAME(OP_LK, w_panel->m_name_filter_value)
+            );
+        }
+        else { // create summary
+            m_stock_a = StockModel::instance().find(
+                StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0),
+                StockCol::STOCKNAME(OP_LK, w_panel->m_name_filter_value)
+            );
+            if (!m_stock_a.empty())
+                createSummary();
+        }
     }
 
     w_panel->updateHeader();
@@ -769,4 +789,42 @@ wxString StockList::getStockInfo(int selectedIndex, bool with_symbol) const
         );
     }
     return info_str;
+}
+
+void StockList::onSize(wxSizeEvent& event)
+{
+    struct colInfo {
+        int id;
+        int width;
+    };
+
+    // get total column width:
+    int twidth = 0;
+    int rwidth = 0;
+    std::vector<colInfo> resizable_ids;
+    for (int i = 0; i < GetColumnCount(); i++) {
+        int col_id = getColId_Nr(i);
+        if (!isHiddenColId(col_id)) {
+            int cw = GetColumnWidth(i);
+            twidth += cw;
+
+            switch (col_id) {
+                case LIST_ID_NAME:
+                case LIST_ID_NOTES:
+                    resizable_ids.push_back({i, cw});
+                    rwidth += cw;
+                    break;
+            }
+        }
+    }
+
+    // calculate and apply diff:
+    int diff = this->GetSize().GetWidth() - twidth;
+    if (abs(diff) > 5) {
+        int diffdelta = diff / resizable_ids.size();
+        for (colInfo col: resizable_ids) {
+            this->SetColumnWidth(col.id, col.width + diffdelta);
+        }
+    }
+    event.Skip();
 }

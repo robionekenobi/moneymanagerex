@@ -19,7 +19,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <memory>
 #include <wx/thread.h>
 #include <wx/richtooltip.h>
@@ -28,10 +28,11 @@
 #include <wx/wxsqlite3.h>
 #include <rapidjson/error/en.h>
 
-#include "base/constants.h"
-#include "base/platfdep.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "base/mmPlatform.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
+#include "util/mmSplitterWindow.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmMiniEditor.h"
@@ -331,7 +332,7 @@ bool GeneralReportManager::Create(wxWindow* parent
     fillControls();
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     return true;
 }
@@ -366,7 +367,7 @@ void GeneralReportManager::fillControls()
         );
         m_treeCtrl->SetItemData(item, new MyTreeItemData(report_d.m_id, report_d.m_group_name));
         if (!report_d.m_active) {
-            m_treeCtrl->SetItemTextColour(item, mmThemeMetaColour(meta::COLOR_HIDDEN));
+            m_treeCtrl->SetItemTextColour(item, mmImage::themeMetaColour(mmImage::COLOR_HIDDEN));
         }
 
         if (m_selectedReportID == report_d.m_id) {
@@ -402,8 +403,8 @@ void GeneralReportManager::CreateControls()
 
     m_treeCtrl = new wxTreeCtrl(left_panel, ID_REPORT_LIST, wxDefaultPosition, wxDefaultSize,
         wxTR_SINGLE | wxTR_HAS_BUTTONS | wxTR_NO_LINES | wxTR_TWIST_BUTTONS);
-    mmThemeMetaColour(m_treeCtrl, meta::COLOR_NAVPANEL);
-    mmThemeMetaColour(m_treeCtrl, meta::COLOR_NAVPANEL_FONT, true);
+    mmImage::themeMetaColour(m_treeCtrl, mmImage::COLOR_NAVPANEL);
+    mmImage::themeMetaColour(m_treeCtrl, mmImage::COLOR_NAVPANEL_FONT, true);
     left_sizer->Add(m_treeCtrl, g_flagsExpand);
 
     left_panel->SetSizer(left_sizer);
@@ -537,8 +538,8 @@ void GeneralReportManager::createEditorTab(wxNotebook* editors_notebook, int typ
 #endif
         m_dbView = new wxTreeCtrl(splitter_sql, wxID_ANY, wxDefaultPosition
             , wxDefaultSize, treeCtrlFlags);
-        mmThemeMetaColour(m_dbView, meta::COLOR_NAVPANEL);
-        mmThemeMetaColour(m_dbView, meta::COLOR_NAVPANEL_FONT, true);
+        mmImage::themeMetaColour(m_dbView, mmImage::COLOR_NAVPANEL);
+        mmImage::themeMetaColour(m_dbView, mmImage::COLOR_NAVPANEL_FONT, true);
 
         splitter_sql->SplitVertically(templateText, m_dbView);
         splitter_sql->SetSashPosition(500);
@@ -672,10 +673,13 @@ void GeneralReportManager::OnImportReportEvt(wxCommandEvent& WXUNUSED(event))
 
 void GeneralReportManager::importReport()
 {
-    const wxString reportFileName = wxFileSelector(_t("Load report file:")
-        , mmex::getPathResource(mmex::REPORTS), wxEmptyString, wxEmptyString
-        , _t("General Report Manager files (*.grm)")+"|*.grm|"+_t("ZIP files (*.zip)")+"|*.zip"
-        , wxFD_FILE_MUST_EXIST);
+    const wxString reportFileName = wxFileSelector(
+        _t("Load report file:"),
+        mmPath::getPathResource(mmPath::REPORTS),
+        wxEmptyString, wxEmptyString,
+        _t("General Report Manager files (*.grm)")+"|*.grm|"+_t("ZIP files (*.zip)")+"|*.zip",
+        wxFD_FILE_MUST_EXIST
+    );
 
     if (reportFileName.empty()) return;
 
@@ -1253,7 +1257,7 @@ void GeneralReportManager::OnExportReport(wxCommandEvent& WXUNUSED(event))
 
 void GeneralReportManager::showHelp()
 {
-    const auto url = mmex::getPathDoc(mmex::HTML_CUSTOM_SQL);
+    const auto url = mmPath::getPathDoc(mmPath::HTML_CUSTOM_SQL);
     browser_->LoadURL(url);
 }
 

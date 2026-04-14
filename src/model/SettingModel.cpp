@@ -19,13 +19,12 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
-#include "base/paths.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/_util.h"
 
 #include "SettingModel.h"
 #include "PrefModel.h"
-
-#include "panel/JournalPanel.h"
 
 // -- contructor
 
@@ -288,7 +287,7 @@ const wxString SettingModel::getTheme()
 const wxString SettingModel::getLastDbPath()
 {
     wxString path = getString("LASTFILENAME", "");
-    if (!mmex::isPortableMode())
+    if (!mmPath::isPortableMode())
         return path;
     wxString vol = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetVolume();
     if (!vol.IsEmpty()) {
@@ -306,7 +305,7 @@ const wxString SettingModel::getLastDbPath()
 void SettingModel::shrinkUsageTable()
 {
     const wxULongLong max_size = 524287;
-    const wxULongLong file_size = wxFileName(mmex::getPathUser(mmex::SETTINGS)).GetSize();
+    const wxULongLong file_size = wxFileName(mmPath::getPathUser(mmPath::SETTINGS)).GetSize();
     if (file_size < max_size)
         return;
 

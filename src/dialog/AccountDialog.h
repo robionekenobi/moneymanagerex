@@ -1,6 +1,7 @@
 /*******************************************************
  Copyright (C) 2006 Madhan Kanagavel
- Copyright (C) 2022  Mark Whalley (mark@ipx.co.uk)
+ Copyright (C) 2022 Mark Whalley (mark@ipx.co.uk)
+ Copyright (c) 2026 Klaus Wich
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -19,12 +20,12 @@
 
 #pragma once
 
-#include "base/defs.h"
 #include <memory>
-
-#include "model/AccountModel.h"
-#include "util/_simple.h"
+#include "base/_defs.h"
+#include "util/mmDatePicker.h"
 #include "util/mmTextCtrl.h"
+#include "util/_simple.h"
+#include "model/AccountModel.h"
 
 class AccountDialog : public wxDialog
 {
@@ -39,20 +40,20 @@ private:
     wxVector<wxBitmapBundle> m_images;
     wxString m_accessInfo;
 
-    wxNotebook*       m_notebook              = nullptr;
-    wxTextCtrl*       m_textAccountName       = nullptr;
-    wxTextCtrl*       m_notesCtrl             = nullptr;
-    mmTextCtrl*       m_initbalance_ctrl      = nullptr;
-    mmDatePickerCtrl* m_initdate_ctrl         = nullptr;
-    wxBitmapButton*   m_bitmapButtons         = nullptr;
-    wxBitmapButton*   bAttachments_           = nullptr;
-    wxCheckBox*       m_statement_lock_ctrl   = nullptr;
-    mmDatePickerCtrl* m_statement_date_ctrl   = nullptr;
-    mmTextCtrl*       m_minimum_balance_ctrl  = nullptr;
-    mmTextCtrl*       m_credit_limit_ctrl     = nullptr;
-    mmTextCtrl*       m_interest_rate_ctrl    = nullptr;
-    mmDatePickerCtrl* m_payment_due_date_ctrl = nullptr;
-    mmTextCtrl*       m_minimum_payment_ctrl  = nullptr;
+    wxNotebook*     m_notebook              = nullptr;
+    wxTextCtrl*     m_textAccountName       = nullptr;
+    wxTextCtrl*     m_notesCtrl             = nullptr;
+    mmTextCtrl*     m_initbalance_ctrl      = nullptr;
+    mmDatePicker*   m_initdate_ctrl         = nullptr;
+    wxBitmapButton* m_bitmapButtons         = nullptr;
+    wxBitmapButton* bAttachments_           = nullptr;
+    wxCheckBox*     m_statement_lock_ctrl   = nullptr;
+    mmDatePicker*   m_statement_date_ctrl   = nullptr;
+    mmTextCtrl*     m_minimum_balance_ctrl  = nullptr;
+    mmTextCtrl*     m_credit_limit_ctrl     = nullptr;
+    mmTextCtrl*     m_interest_rate_ctrl    = nullptr;
+    mmDatePicker*   m_payment_due_date_ctrl = nullptr;
+    mmTextCtrl*     m_minimum_payment_ctrl  = nullptr;
 
 public:
     AccountDialog();
@@ -74,11 +75,13 @@ private:
     void OnCancel(wxCommandEvent& event);
     void OnCurrency(wxCommandEvent& event);
     void fillControls(void);
-    void OnCustonImage(wxCommandEvent& event);
+    void OnDefaultImage(wxCommandEvent& event);
+    void OnCustomImage(wxCommandEvent& event);
+    void OnFavIconImage(wxCommandEvent& event);
+    void OnLoadFavIconImage(wxCommandEvent& event);
     void OnAttachments(wxCommandEvent& event);
     void OnAccountStatus(void);
     void OnAccountStatus(wxCommandEvent& event);
     void OnImageButton(wxCommandEvent& event);
     void OnChangeFocus(wxChildFocusEvent& event);
 };
-

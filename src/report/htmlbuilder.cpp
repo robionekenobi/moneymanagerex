@@ -22,8 +22,9 @@
 #include <ios>
 #include <float.h>
 
-#include "base/constants.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "base/mmMath.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 
 #include "model/CurrencyModel.h"
@@ -162,8 +163,8 @@ void mmHTMLBuilder::init(bool simple, const wxString& extra_style)
 {
     if (simple)
     {
-        wxString bg = mmThemeMetaString(meta::COLOR_HTMLPANEL_BACK);
-        wxString fg = mmThemeMetaString(meta::COLOR_HTMLPANEL_FORE);
+        wxString bg = mmImage::themeMetaString(mmImage::COLOR_HTMLPANEL_BACK);
+        wxString fg = mmImage::themeMetaString(mmImage::COLOR_HTMLPANEL_FORE);
         html_ += wxString::Format(tags::HTML_SIMPLE
                     , bg.IsEmpty() ? "" : wxString::Format("bgcolor='%s';", bg)
                     , fg.IsEmpty() ? "" : wxString::Format("text='%s';", fg));
@@ -441,7 +442,7 @@ void mmHTMLBuilder::addColorMarker(const wxString& color, bool center)
 
 const wxString mmHTMLBuilder::getColor(int i)
 {
-    std::vector<wxColour> colours = mmThemeMetaColourArray(meta::COLOR_REPORT_PALETTE);
+    std::vector<wxColour> colours = mmImage::themeMetaColour_a(mmImage::COLOR_REPORT_PALETTE);
     int c = i % colours.size();
     return colours.at(c).GetAsString(wxC2S_HTML_SYNTAX);
 }
@@ -559,7 +560,7 @@ void mmHTMLBuilder::startTableRowColor(const wxString& color)
 
 void mmHTMLBuilder::startAltTableRow()
 {
-    startTableRowColor(mmThemeMetaString(meta::COLOR_REPORT_ALTROW));
+    startTableRowColor(mmImage::themeMetaString(mmImage::COLOR_REPORT_ALTROW));
 }
 
 void mmHTMLBuilder::startTotalTableRow()
@@ -611,7 +612,7 @@ void mmHTMLBuilder::endTableCell()
 void mmHTMLBuilder::addChart(const GraphData& gd)
 {
     int precision = CurrencyModel::instance().get_base_data_n()->precision();
-    int k = pow10(precision);
+    int k = mmMath::pow10(precision);
     wxString htmlChart, htmlPieData;
     wxString divid = wxString::Format("apex%i", rand()); // Generate unique identifier for each graph
 
@@ -663,7 +664,7 @@ void mmHTMLBuilder::addChart(const GraphData& gd)
                     , gtype
                     , (gd.type == GraphData::STACKEDAREA ||
                        gd.type == GraphData::STACKEDBARLINE) ? "stacked: true," : ""
-                    , mmThemeMetaString(meta::COLOR_REPORT_FORECOLOR)
+                    , mmImage::themeMetaString(mmImage::COLOR_REPORT_FORECOLOR)
                     , chartWidth);
     htmlChart += wxString::Format(", title: { text: '%s'}", gd.title);
 
@@ -718,7 +719,7 @@ void mmHTMLBuilder::addChart(const GraphData& gd)
     if (!gd.colors.empty())
         colors = gd.colors;
     else
-        colors = mmThemeMetaColourArray(meta::COLOR_REPORT_PALETTE);
+        colors = mmImage::themeMetaColour_a(mmImage::COLOR_REPORT_PALETTE);
 
     htmlChart += ", colors: ";
     bool first = true;

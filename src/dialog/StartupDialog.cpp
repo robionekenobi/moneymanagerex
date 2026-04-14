@@ -16,9 +16,10 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
-#include "base/constants.h"
-#include "base/paths.h"
+#include "base/_defs.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmSingleChoice.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -41,26 +42,45 @@ wxBEGIN_EVENT_TABLE(StartupDialog, wxDialog)
     EVT_CLOSE(               StartupDialog::OnClose)
 wxEND_EVENT_TABLE()
 
-StartupDialog::StartupDialog(wxWindow* parent, mmGUIApp* app, const wxString& name)
-    : m_app(app)
+StartupDialog::StartupDialog(
+    wxWindow* parent_win,
+    mmApp* app,
+    const wxString& name
+) :
+    w_app(app)
 {
-    this->SetFont(parent->GetFont());
-    const auto caption = wxString::Format("%s %s", mmex::getProgramName(), mmex::getTitleProgramVersion());
+    this->SetFont(parent_win->GetFont());
+    const auto caption = wxString::Format("%s %s",
+        mmex::getProgramName(),
+        mmex::getTitleProgramVersion()
+    );
     long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX;
-    Create(parent, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize, style, name);
+    create(
+        parent_win, wxID_ANY,
+        caption,
+        wxDefaultPosition, wxDefaultSize,
+        style,
+        name
+    );
     SetMinSize(wxSize(350, 300));
     Fit();
 }
 
-bool StartupDialog::Create(wxWindow* parent, wxWindowID id, const wxString& caption
-    , const wxPoint& pos, const wxSize& size, long style, const wxString& name)
-{
-    SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS);
-    bool ok = wxDialog::Create(parent, id, caption, pos, size, style, name);
+bool StartupDialog::create(
+    wxWindow* parent_win,
+    wxWindowID win_id,
+    const wxString& caption,
+    const wxPoint& pos,
+    const wxSize& size,
+    long style,
+    const wxString& name
+) {
+    SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+    bool ok = wxDialog::Create(parent_win, win_id, caption, pos, size, style, name);
 
     if (ok) {
-        SetIcon(mmex::getProgramIcon());
-        CreateControls();
+        SetIcon(mmPath::getProgramIcon());
+        createControls();
         GetSizer()->Fit(this);
         GetSizer()->SetSizeHints(this);
         this->SetInitialSize();
@@ -73,18 +93,16 @@ bool StartupDialog::Create(wxWindow* parent, wxWindowID id, const wxString& capt
 
 StartupDialog::~StartupDialog()
 {
-    try
-    {
-        bool showBeginApp = itemCheckBox->GetValue();
+    try {
+        bool showBeginApp = w_show_cb->GetValue();
         SettingModel::instance().saveBool("SHOWBEGINAPP", showBeginApp);
     }
-    catch (...)
-    {
+    catch (...) {
         wxASSERT(false);
     }
 }
 
-void StartupDialog::CreateControls()
+void StartupDialog::createControls()
 {
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
     this->SetSizer(itemBoxSizer2);
@@ -92,9 +110,10 @@ void StartupDialog::CreateControls()
     wxBoxSizer* itemBoxSizer3 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer2->Add(itemBoxSizer3, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 
-    wxBitmapBundle logo = wxBitmapBundle::FromSVGFile(mmex::getPathResource(mmex::MMEX_LOGO), wxSize(160, 160));
+    wxBitmapBundle logo = wxBitmapBundle::FromSVGFile(
+        mmPath::getPathResource(mmPath::MMEX_LOGO), wxSize(160, 160)
+    );
     wxStaticBitmap* itemStaticBitmap4 = new wxStaticBitmap(this, wxID_STATIC, logo);
-
     itemBoxSizer3->Add(itemStaticBitmap4, g_flagsCenter);
 
     wxBoxSizer* itemBoxSizer5 = new wxBoxSizer(wxVERTICAL);
@@ -120,57 +139,68 @@ void StartupDialog::CreateControls()
     itemBoxSizer5->Add(itemButton9, 0, wxGROW | wxALL, 5);
 
     wxButton* itemButton10 = new wxButton(this, wxID_INDEX, _t("&Website"));
-    const wxString s = wxString::Format(_t("Visit MMEX website for the latest news and updates"));
-    mmToolTip(itemButton10, s);
+    mmToolTip(itemButton10, wxString::Format(
+        _t("Visit MMEX website for the latest news and updates")
+    ));
     itemBoxSizer5->Add(itemButton10, 0, wxGROW | wxALL, 5);
 
     wxButton* itemButton11 = new wxButton(this, wxID_FORWARD, _t("&Forum"));
-    mmToolTip(itemButton11, _t("Visit MMEX forum to read and post comments and for support"));
+    mmToolTip(itemButton11,
+        _t("Visit MMEX forum to read and post comments and for support")
+    );
     itemBoxSizer5->Add(itemButton11, 0, wxGROW | wxALL, 5);
 
     wxBoxSizer* itemBoxSizer10 = new wxBoxSizer(wxHORIZONTAL);
     itemBoxSizer2->Add(itemBoxSizer10, 0, wxALIGN_LEFT | wxALL, 5);
 
-    itemCheckBox = new wxCheckBox(this, wxID_ANY, _t("&Show this dialog box at startup"), wxDefaultPosition,
-        wxDefaultSize, wxCHK_2STATE);
+    w_show_cb = new wxCheckBox(this, wxID_ANY,
+        _t("&Show this dialog box at startup"),
+        wxDefaultPosition, wxDefaultSize,
+        wxCHK_2STATE
+    );
     bool showBeginApp = SettingModel::instance().getBool("SHOWBEGINAPP", true);
-    itemCheckBox->SetValue(showBeginApp);
+    w_show_cb->SetValue(showBeginApp);
 
-    itemBoxSizer10->Add(itemCheckBox, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    itemBoxSizer10->Add(w_show_cb, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
-    wxStaticLine* line = new wxStaticLine(this, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
+    wxStaticLine* line = new wxStaticLine(this, wxID_STATIC,
+        wxDefaultPosition, wxDefaultSize,
+        wxLI_HORIZONTAL
+    );
     itemBoxSizer2->Add(line, 0, wxGROW | wxALL, 5);
 
-    m_buttonClose = new wxButton(this, wxID_OK, _t("&OK "));
-    m_buttonExit = new wxButton(this, wxID_EXIT, _t("E&xit "));
+    w_close_btn = new wxButton(this, wxID_OK, _t("&OK "));
+    w_exit_btn = new wxButton(this, wxID_EXIT, _t("E&xit "));
 
-    m_buttonClose->Show(true);
-    m_buttonExit->Show(false);
+    w_close_btn->Show(true);
+    w_exit_btn->Show(false);
 
-    itemBoxSizer2->Add(m_buttonClose, 0, wxALIGN_RIGHT | wxALL, 10);
-    itemBoxSizer2->Add(m_buttonExit, 0, wxALIGN_RIGHT | wxALL, 10);
+    itemBoxSizer2->Add(w_close_btn, 0, wxALIGN_RIGHT | wxALL, 10);
+    itemBoxSizer2->Add(w_exit_btn, 0, wxALIGN_RIGHT | wxALL, 10);
 
-    wxString val = SettingModel::instance().getLastDbPath();
-    wxFileName lastfile(val);
-    if (!lastfile.FileExists())
-    {
-        itemButton61->Disable();
+    wxString last_path = SettingModel::instance().getLastDbPath();
+    wxFileName last_file(last_path);
+    if (last_file.FileExists()) {
+        mmToolTip(itemButton61, wxString::Format(
+                _t("Open the previously opened database: %s"),
+                last_path
+            )
+        );
     }
-    else
-    {
-        mmToolTip(itemButton61, wxString::Format(_t("Open the previously opened database: %s"), val));
+    else {
+        itemButton61->Disable();
     }
 }
 
 void StartupDialog::SetCloseButtonToExit()
 {
-    m_buttonClose->Show(false);
-    m_buttonExit->Show(true);
+    w_close_btn->Show(false);
+    w_exit_btn->Show(true);
 }
 
 void StartupDialog::OnButtonAppstartHelpClick( wxCommandEvent& /*event*/ )
 {
-    wxLaunchDefaultBrowser(mmex::getPathDoc(mmex::HTML_INDEX));
+    wxLaunchDefaultBrowser(mmPath::getPathDoc(mmPath::HTML_INDEX));
 }
 
 void StartupDialog::OnButtonAppstartWebsiteClick( wxCommandEvent& /*event*/ )
@@ -193,7 +223,7 @@ void StartupDialog::OnButtonAppstartOpenDatabaseClick( wxCommandEvent& /*event*/
     EndModal(wxID_OPEN);
 }
 
-void StartupDialog::OnButtonAppstartChangeLanguage( wxCommandEvent& /*event*/ )
+void StartupDialog::OnButtonAppstartChangeLanguage(wxCommandEvent& /*event*/)
 {
     const std::vector<mm_language_t> lang_a = g_translations();
     wxArrayString lang_label_a;
@@ -201,7 +231,7 @@ void StartupDialog::OnButtonAppstartChangeLanguage( wxCommandEvent& /*event*/ )
     int i = 0;
     for (auto const& lang : lang_a) {
         lang_label_a.Add(std::get<1>(lang));
-        if (current_i < 0 && std::get<0>(lang) == m_app->getGUILanguage())
+        if (current_i < 0 && std::get<0>(lang) == w_app->getGUILanguage())
             current_i = i;
         ++i;
     }
@@ -210,7 +240,7 @@ void StartupDialog::OnButtonAppstartChangeLanguage( wxCommandEvent& /*event*/ )
         current_i = 0;
     }
 
-    mmSingleChoiceDialog lang_choice(this,
+    mmSingleChoice lang_choice(this,
         _t("Change user interface language"),
         _t("User Interface Language"),
         lang_label_a
@@ -220,7 +250,7 @@ void StartupDialog::OnButtonAppstartChangeLanguage( wxCommandEvent& /*event*/ )
 
     std::size_t lang_i = static_cast<std::size_t>(lang_choice.GetSelection());
     wxLanguage lang_id = static_cast<wxLanguage>(std::get<0>(lang_a[lang_i]));
-    if (lang_id != m_app->getGUILanguage() && m_app->setGUILanguage(lang_id)) {
+    if (lang_id != w_app->getGUILanguage() && w_app->setGUILanguage(lang_id)) {
         mmErrorDialogs::MessageWarning(this,
             _t("The language for this application has been changed. "
                 "The change will take effect the next time the application is started."
@@ -237,7 +267,7 @@ void StartupDialog::OnQuit(wxCommandEvent& /*event*/)
 
 void StartupDialog::OnClose(wxCloseEvent& /*event*/)
 {
-    if (m_buttonExit->IsShown())
+    if (w_exit_btn->IsShown())
         EndModal(wxID_EXIT);
     else
         EndModal(wxID_OK);

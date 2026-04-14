@@ -147,3 +147,92 @@ under src/ in increasing chronological order.
   webapp                             -> import_export/webapp
   webappdialog                       -> import_export/webappdialog
 
++ PR #8182 (2026-02-24)
+  util/_choices                      -> util/mmChoice
+  util/mmDateDay                     -> util/mmDate
+
++ PR #8182 (2026-02-24)
+  table/ScheduledTable               -> table/SchedTable
+  table/ScheduledSplitTable          -> table/SchedSplitTable
+  table/TransactionTable             -> table/TrxTable
+  table/TransactionLinkTable         -> table/TrxLinkTable
+  table/TransactionShareTable        -> table/TrxShareTable
+  table/TransactionSplitTable        -> table/TrxSplitTable
+  data/ScheduledData                 -> data/SchedData
+  data/ScheduledSplitData            -> data/SchedSplitData
+  data/TransactionData               -> data/TrxData
+  data/TransactionLinkData           -> data/TrxLinkData
+  data/TransactionShareData          -> data/TrxShareData
+  data/TransactionSplitData          -> data/TrxSplitData
+  model/PreferencesModel             -> model/PrefModel
+  model/ScheduledModel               -> model/SchedModel
+  model/ScheduledSplitModel          -> model/SchedSplitModel
+  model/TransactionModel             -> model/TrxModel
+  model/TransactionFilter            -> model/TrxFilter
+  model/TransactionLinkModel         -> model/TrxLinkModel
+  model/TransactionShareModel        -> model/TrxShareModel
+  model/TransactionSplitModel        -> model/TrxSplitModel
+
++ PR #8182 (2026-02-24)
+  panel/ScheduledPanel               -> panel/SchedPanel
+  manager/PreferencesManager         -> manager/PrefManager
+  dialog/ScheduledDialog             -> dialog/SchedDialog
+  dialog/TransactionDialog           -> dialog/TrxDialog
+  dialog/TransactionFilterDialog     -> dialog/TrxFilterDialog
+  dialog/TransactionLinkDialog       -> dialog/TrxLinkDialog
+  dialog/TransactionShareDialog      -> dialog/TrxShareDialog
+  dialog/TransactionUpdateDialog     -> dialog/TrxUpdateDialog
+  report/TransactionsReport          -> report/TrxReport
+
++ PR #8182 (2026-02-24)
+  preferences/                       -> pref/
+  pref/*Preferences                  -> pref/*Pref
+
++ PR #8293 (2026-04-05)
+  base/constants                     -> base/_constants
+  base/defs.h                        -> base/_defs.h
+  base/platfdep*                     -> base/mmPlatform*
+  base/types.h                       -> base/_types.h
+  util/_primitive:StringBuilder      -> base/mmStringBuilder
+  util/_primitive:mmColors           -> base/mmUserColor
+  util/_primitive:pow10              -> base/mmMath
+  util/_util:mmHtmlWindow            -> base/mmHtmlWindow
+  util/_util:mmListBoxItem           -> base/mmListBoxItem.h
+  util/_util:mmPlatformType          -> base/mmPlatform
+  util/mmCache                       -> base/mmCache
+  util/mmChoice                      -> base/mmChoice
+  util/mmDate                        -> base/mmDate
+  util/mmDateTime                    -> base/mmDateTime
+  util/mmSingleton.h                 -> base/mmSingleton.h
+  util/mmTips.h                      -> base/mmTips.h
+
++ PR #8293 (2026-04-05)
+  mmcombobox.h                       -> util/_UNUSED_mmComboBoxText
+  base/images_list                   -> util/mmImage
+  base/paths                         -> util/mmPath
+  uicontrols/navigatortypes          -> util/mmNavigatorList
+  uicontrols/toolbartypes            -> util/mmToolbarList
+  util/_primitive:mmSplitterWindow   -> util/mmSplitterWindow
+  util/_simple:mmCalculatorPopup     -> util/mmCalcPopup
+  util/_simple:mmColorButton         -> util/mmColorButton
+  util/_simple:mmComboBox*           -> util/mmComboBox
+  util/_simple:mmDatePickerCtrl      -> util/mmDatePicker
+  util/_simple:mmDateYearMonth       -> util/mmDateShifter
+  util/_simple:mmMultiChoiceDialog   -> util/mmMultiChoice
+  util/_simple:mmSingleChoiceDialog  -> util/mmSingleChoice
+  util/_util:mmDates                 -> util/mmDateParser
+  util/_util:mmSeparator             -> util/mmSepParser
+
++ PR #8293 (2026-04-05)
+  generic/generictreelistdialog      -> dialog/TreeListDialog
+  uicontrols/navigatordialog         -> dialog/NavigatorDialog
+  uicontrols/navigatoreditdialog     -> dialog/NavigatorEditDialog
+  uicontrols/reconciledialog         -> dialog/ReconcileDialog
+  uicontrols/toolbardialog           -> dialog/ToolbarDialog
+  mmframereport.cpp                  -> report/GeneralGroupReport
+
++ PR #8293 (2026-04-05)
+  mmex                               -> app/mmApp
+  mmframe                            -> app/mmFrame
+  mmframereport.cpp                  -> app/mmFrame
+

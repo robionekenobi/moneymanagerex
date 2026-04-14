@@ -21,15 +21,10 @@
 
 #pragma once
 
-#include "base/defs.h"
-#include "base/types.h"
+#include "base/_defs.h"
+#include "base/_types.h"
 
-//----------------------------------------------------------------------------
-
-//fast alternative for pow(10, y)
-int pow10(const int y);
-
-//----------------------------------------------------------------------------
+// -- String
 
 struct caseInsensitiveComparator {
     bool operator()(const wxString& lhs, const wxString& rhs) const {
@@ -40,40 +35,15 @@ struct caseInsensitiveComparator {
 int CaseInsensitiveCmp(const wxString &s1, const wxString &s2);
 int CaseInsensitiveLocaleCmp(const wxString &s1, const wxString &s2);
 
-typedef wxString::const_iterator StringIt;
-
-struct StringBuilder
-{
-    wxString buffer = "";
-    bool flag = false;
-
-    void append(const wxString x);
-    void sep(const wxString s = " ");
-    void flush();
-    void reset();
-};
-
-inline void StringBuilder::flush() {
-    flag = false;
-}
-
-inline void StringBuilder::reset() {
-    // make buffer empty, but don't free memory
-    buffer.Empty();
-    flag = false;
-}
-
 const wxString mmTrimAmount(
     const wxString& value, const wxString& decimal, const wxString& replace_decimal = ""
 );
 
+// -- URI
+
 bool isValidURI(const wxString& validate);
 
-//----------------------------------------------------------------------------
-
-wxDateTime parseDateTime(const wxString& str_date);
-
-//----------------------------------------------------------------------------
+// -- DateTime
 
 extern const wxString MONTHS[12];
 extern const wxString MONTHS_SHORT[12];
@@ -82,31 +52,9 @@ extern const wxString g_short_days_of_week[7];
 
 inline const wxString mmGetMonthName(const wxDateTime::Month& month)
 {
-    return MONTHS[static_cast<int>(month)];
-}
-
-inline wxString dateTimeISO(wxDateTime dateTime)
-{
-    return (dateTime == wxInvalidDateTime) ? "" : dateTime.FormatISOCombined();
+    return MONTHS[month - wxDateTime::Month::Jan];
 }
 
 bool mmParseISODate(const wxString& in_str, wxDateTime& out_date);
 
-//----------------------------------------------------------------------------
-
-const wxColor* bestFontColour(const wxColour& background);
-
-class mmColors
-{
-public:
-    static wxColour userDefColor1;
-    static wxColour userDefColor2;
-    static wxColour userDefColor3;
-    static wxColour userDefColor4;
-    static wxColour userDefColor5;
-    static wxColour userDefColor6;
-    static wxColour userDefColor7;
-};
-
-wxColour getUDColour(const int c);
-
+wxDateTime DEPRECATED_parseDateTime(const wxString& str_date);

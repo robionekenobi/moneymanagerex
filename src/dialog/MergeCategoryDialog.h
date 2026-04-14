@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/dialog.h>
 
 #include "util/_simple.h"

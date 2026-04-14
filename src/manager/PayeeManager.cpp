@@ -19,9 +19,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
 #include "util/_util.h"
 
 #include "model/_all.h"
@@ -61,7 +61,7 @@ PayeeManager::PayeeManager(wxWindow *parent, PayeeData* payee_n, const wxString 
     CreateControls();
     mmSetSize(this);
     Centre();
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     mmThemeAutoColour(this);
     fillControls();
 }
@@ -145,11 +145,11 @@ void PayeeManager::CreateControls()
 
     patternButton_Arranger = new wxBoxSizer(wxVERTICAL);
     //Move up button
-    wxBitmapButton* itemButton_MoveUp = new wxBitmapButton(this, wxID_UP, mmBitmapBundle(png::UPARROW, mmBitmapButtonSize));
+    wxBitmapButton* itemButton_MoveUp = new wxBitmapButton(this, wxID_UP, mmImage::bitmapBundle(mmImage::png::UPARROW, mmImage::bitmapButtonSize));
     patternButton_Arranger->Add(itemButton_MoveUp, wxSizerFlags().Align(wxALIGN_LEFT).Border(wxBOTTOM,5));
 
     //Move down button
-    wxBitmapButton* itemButton_MoveDown = new wxBitmapButton(this, wxID_DOWN, mmBitmapBundle(png::DOWNARROW, mmBitmapButtonSize));
+    wxBitmapButton* itemButton_MoveDown = new wxBitmapButton(this, wxID_DOWN, mmImage::bitmapBundle(mmImage::png::DOWNARROW, mmImage::bitmapButtonSize));
     patternButton_Arranger->Add(itemButton_MoveDown, wxSizerFlags().Align(wxALIGN_LEFT).Border(wxTOP, 5));
     patternTable_Arranger->Add(patternButton_Arranger, g_flagsH);
     patternButton_Arranger->Show(false);
@@ -457,7 +457,7 @@ mmPayeeDialog::mmPayeeDialog(
     m_lastSort(PAYEE_NAME)
 {
     this->SetFont(parent->GetFont());
-    m_hiddenColor = mmThemeMetaColour(meta::COLOR_HIDDEN);
+    m_hiddenColor = mmImage::themeMetaColour(mmImage::COLOR_HIDDEN);
 
     m_showHiddenPayees = SettingModel::instance().getBool("SHOW_HIDDEN_PAYEES", true);
     Create(parent, name);
@@ -540,7 +540,7 @@ void mmPayeeDialog::Create(wxWindow* parent, const wxString &name)
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
 
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
 
     // Calculate payee usage
     for (const auto& trx_d : TrxModel::instance().find_all()) {
@@ -585,7 +585,7 @@ void mmPayeeDialog::CreateControls()
     tools_sizer->Add(tools_sizer2, wxSizerFlags(g_flagsExpand).Border(0));
 
     m_magicButton = new wxBitmapButton(buttons_panel
-        , wxID_APPLY, mmBitmapBundle(png::MORE_OPTIONS, mmBitmapButtonSize));
+        , wxID_APPLY, mmImage::bitmapBundle(mmImage::png::MORE_OPTIONS, mmImage::bitmapButtonSize));
     mmToolTip(m_magicButton, _t("Other tools"));
     tools_sizer2->Add(m_magicButton, g_flagsH);
 

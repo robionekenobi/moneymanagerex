@@ -19,8 +19,8 @@
 
 #pragma once
 
-#include "base/defs.h"
-#include "util/mmSingleton.h"
+#include "base/_defs.h"
+#include "base/mmSingleton.h"
 #include "table/_TableFactory.h"
 #include "data/TrxData.h"
 // cannot include "util/util.h"
@@ -94,6 +94,13 @@ public:
     static const RefTypeN s_ref_type;
 
 public:
+    static auto WHERE_DATE(OP op, const mmDate& date) -> TableClauseV<wxString>;
+    static auto WHERE_TYPE(OP op, TrxType trx_type) -> TableClauseV<wxString>;
+    static auto WHERE_STATUS(OP op, TrxStatus trx_status) -> TableClauseV<wxString>;
+    static auto WHERE_IS_VOID(bool value) -> TableClauseV<wxString>;
+    static auto WHERE_IS_DELETED(bool value) -> TableClauseV<wxString>;
+    static auto WHERE_IS_VALID(bool value) -> TableClauseD;
+
     static auto DATE(OP op, const mmDate& date) -> TrxCol::TRANSDATE;
     static auto TYPE(OP op, TrxType trx_type) -> TrxCol::TRANSCODE;
     static auto STATUS(OP op, TrxStatus trx_status) -> TrxCol::STATUS;

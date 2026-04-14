@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/tglbtn.h>
 #include "model/StockModel.h"
 #include "_ListBase.h"
@@ -113,4 +113,6 @@ private:
     void onMarkAllTransactions(wxCommandEvent& event);
     void onListKeyDown(wxListEvent& event);
     void onListItemSelected(wxListEvent& event);
+    void onSize(wxSizeEvent& event);
+
 };

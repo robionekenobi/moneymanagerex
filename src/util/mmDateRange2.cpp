@@ -16,12 +16,14 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/constants.h"
+#include "base/_constants.h"
+#include "base/_types.h"
+#include "base/mmStringBuilder.h"
 #include "mmDateRange2.h"
 
 #include "model/PrefModel.h"
 
-const mmDatePeriod::MapIdLabel mmDatePeriod::mapIdLabel[] =
+const std::vector<mmDatePeriod::IdLabel> mmDatePeriod::s_id_label_a =
 {
     { _A, "A" },
     { _Y, "Y" },
@@ -31,14 +33,14 @@ const mmDatePeriod::MapIdLabel mmDatePeriod::mapIdLabel[] =
     { _T, "T" },
     { _S, "S" },
 };
-const mmDatePeriod::MapLabelId mmDatePeriod::mapLabelId = makeLabelId();
+const mmDatePeriod::LabelIdM mmDatePeriod::s_label_id_m = makeLabelId();
 
-mmDatePeriod::MapLabelId mmDatePeriod::makeLabelId()
+mmDatePeriod::LabelIdM mmDatePeriod::makeLabelId()
 {
-    MapLabelId map;
-    for (int i = 0; i < static_cast<int>(sizeof(mapIdLabel)/sizeof(mapIdLabel[0])); ++i) {
-        char c = mapIdLabel[i].label[0];
-        map[c] = mapIdLabel[i].id;
+    LabelIdM map;
+    for (int i = 0; i < static_cast<int>(s_id_label_a.size()); ++i) {
+        char c = s_id_label_a[i].label[0];
+        map[c] = s_id_label_a[i].id;
     }
     return map;
 }
@@ -50,8 +52,8 @@ mmDatePeriod::mmDatePeriod(Id id) :
 
 mmDatePeriod::mmDatePeriod(char label)
 {
-    auto it = mapLabelId.find(label);
-    m_id = (it == mapLabelId.end()) ? _A : it->second;
+    auto it = s_label_id_m.find(label);
+    m_id = (it == s_label_id_m.end()) ? _A : it->second;
 }
 
 wxDateSpan mmDatePeriod::span(int offset, mmDatePeriod period)
@@ -171,7 +173,7 @@ char mmDateRange2::Range::scanToken(
     if (c1)
         return '_';
 
-    if (auto it = mmDatePeriod::mapLabelId.find(c); it != mmDatePeriod::mapLabelId.end()) {
+    if (auto it = mmDatePeriod::s_label_id_m.find(c); it != mmDatePeriod::s_label_id_m.end()) {
         ++buffer_i;
         token_p = it->second;
         return 'p';
@@ -287,7 +289,7 @@ const wxString mmDateRange2::Range::offsetRangeStr(int so, int eo, bool show_zer
         return offsetStr(so, show_zero);
     }
     else {
-        StringBuilder s;
+        mmStringBuilder s;
         s.append(offsetStr(so, true));
         s.append("..");
         s.append(offsetStr(eo, true));
@@ -297,7 +299,7 @@ const wxString mmDateRange2::Range::offsetRangeStr(int so, int eo, bool show_zer
 
 const wxString mmDateRange2::Range::getLabel() const
 {
-    StringBuilder sb;
+    mmStringBuilder sb;
 
     // first range
     if (m_sp1 == m_ep1) {
@@ -349,7 +351,7 @@ const wxString mmDateRange2::Range::checkingName() const
 
 const wxString mmDateRange2::Range::checkingDescription() const
 {
-    static StringBuilder sb;
+    static mmStringBuilder sb;
     sb.reset();
     sb.append(getLabel());
     // TODO
@@ -415,7 +417,7 @@ bool mmDateRange2::Reporting::parseLabel(StringIt& buffer_i, StringIt buffer_end
 
 const wxString mmDateRange2::Reporting::getLabel() const
 {
-    StringBuilder sb;
+    mmStringBuilder sb;
     sb.append(multiplierStr(m_m)); sb.sep(); sb.append(m_p.label());
     return sb.buffer;
 }
@@ -639,7 +641,7 @@ mmDateN mmDateRange2::reportingNextN() const
 
 const wxString mmDateRange2::checkingTooltip() const
 {
-    static StringBuilder sb;
+    static mmStringBuilder sb;
     sb.reset();
 
     mmDateN s = rangeStartN();
@@ -717,12 +719,12 @@ bool mmDateRange2::debug()
     bool ok = true;
     wxLogDebug("{{{ mmDateRange2::debug()");
 
-    // check order in mmDatePeriod::mapIdLabel
-    int n = static_cast<int>(sizeof(mmDatePeriod::mapIdLabel)/sizeof(mmDatePeriod::mapIdLabel[0]));
+    // check order in mmDatePeriod::s_id_label_a
+    int n = static_cast<int>(mmDatePeriod::s_id_label_a.size());
     for (int i = 0; i < n; i++) {
         wxASSERT_MSG(
-            static_cast<int>(mmDatePeriod::mapIdLabel[i].id) == i,
-            "Wrong order in mmDatePeriod::mapIdLabel"
+            static_cast<int>(mmDatePeriod::s_id_label_a[i].id) == i,
+            "Wrong order in mmDatePeriod::s_id_label_a"
         );
     }
 
@@ -770,7 +772,7 @@ bool mmDateRange2::debug()
         { "W, -1..+1 Q",  "-2 M", "2024-10-28", "2025-05-04",  4 }, // Mon, Sun
     };
     for (int i = 0; i < static_cast<int>(sizeof(test)/sizeof(test[0])); ++i) {
-        StringBuilder sb;
+        mmStringBuilder sb;
         if (!test[i].range_label.empty()) {
             sb.append(test[i].range_label);
         }

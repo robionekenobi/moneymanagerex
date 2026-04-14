@@ -22,10 +22,10 @@
 #include "model/PrefModel.h"
 #include "model/TrxLinkModel.h"
 
-class mmDatePickerCtrl;
+class mmDatePicker;
 class mmTextCtrl;
 class TrxLinkDialog;
-class mmGUIFrame;
+class mmFrame;
 
 class AssetDialog : public wxDialog
 {
@@ -53,20 +53,20 @@ private:
     bool m_hidden_trans_entry = true;
     bool m_asset_rich_text = true;
 
-    wxChoice*         w_assetType            = nullptr;
-    wxTextCtrl*       w_assetName            = nullptr;
-    mmDatePickerCtrl* w_dpc                  = nullptr;
-    wxTextCtrl*       w_notes                = nullptr;
-    mmTextCtrl*       w_value                = nullptr;
-    mmTextCtrl*       w_curr_val             = nullptr;
-    wxChoice*         w_valueChange          = nullptr;
-    wxStaticText*     w_compoundingLabel     = nullptr;
-    wxChoice*         w_compoundingChoice    = nullptr;
-    wxStaticText*     w_valueChangeRateLabel = nullptr;
-    mmTextCtrl*       w_valueChangeRate      = nullptr;
-    wxBitmapButton*   w_attachments          = nullptr;
-    wxStaticBox*      w_transaction_frame    = nullptr;
-    TrxLinkDialog* w_transaction_panel = nullptr;
+    wxChoice*       w_assetType            = nullptr;
+    wxTextCtrl*     w_assetName            = nullptr;
+    mmDatePicker*   w_date_picker          = nullptr;
+    wxTextCtrl*     w_notes                = nullptr;
+    mmTextCtrl*     w_value                = nullptr;
+    mmTextCtrl*     w_curr_val             = nullptr;
+    wxChoice*       w_valueChange          = nullptr;
+    wxStaticText*   w_compoundingLabel     = nullptr;
+    wxChoice*       w_compoundingChoice    = nullptr;
+    wxStaticText*   w_valueChangeRateLabel = nullptr;
+    mmTextCtrl*     w_valueChangeRate      = nullptr;
+    wxBitmapButton* w_attachments          = nullptr;
+    wxStaticBox*    w_transaction_frame    = nullptr;
+    TrxLinkDialog*  w_transaction_panel = nullptr;
 
 public:
     AssetDialog() {};

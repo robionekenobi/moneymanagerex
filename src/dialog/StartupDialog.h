@@ -18,47 +18,62 @@
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <wx/dialog.h>
-#include "mmex.h"
+#include "app/mmApp.h"
 
 class wxCheckBox;
-class mmGUIApp;
 
 class StartupDialog: public wxDialog
 {
     wxDECLARE_DYNAMIC_CLASS(StartupDialog);
     wxDECLARE_EVENT_TABLE();
 
+// -- state
+
+private:
+    mmApp*      w_app       = nullptr;
+    wxCheckBox* w_show_cb   = nullptr;
+    wxButton*   w_close_btn = nullptr;
+    wxButton*   w_exit_btn  = nullptr;
+
+// -- constructor
+
 public:
-    mmGUIApp* m_app = nullptr;
-    StartupDialog(wxWindow* parent, mmGUIApp* app, const wxString& name = "StartupDialog");
+    StartupDialog(wxWindow* parent_win, mmApp* app, const wxString& name = "StartupDialog");
     ~StartupDialog();
+
+private:
+    bool create(
+        wxWindow* parent_win,
+        wxWindowID win_id,
+        const wxString& caption,
+        const wxPoint& pos,
+        const wxSize& size,
+        long style,
+        const wxString& name = "StartupDialog"
+    );
+    void createControls();
+
+// -- methods
+
+public:
     void SetCloseButtonToExit();
 
 private:
     StartupDialog(){};
-    wxCheckBox* itemCheckBox = nullptr;
-    wxButton* m_buttonClose = nullptr;
-    wxButton* m_buttonExit = nullptr;
 
-    bool Create(wxWindow* parent
-        , wxWindowID id
-        , const wxString& caption
-        , const wxPoint& pos
-        , const wxSize& size
-        , long style
-        , const wxString& name = "StartupDialog");
-    void CreateControls();
+// -- event handlers
+
+private:
     void OnButtonAppstartOpenDatabaseClick( wxCommandEvent& event );
-    void OnButtonAppstartNewDatabaseClick( wxCommandEvent& event );
-    void OnButtonAppstartChangeLanguage( wxCommandEvent& /*event*/ );
-    void OnButtonAppstartHelpClick( wxCommandEvent& event );
-    void OnButtonAppstartWebsiteClick( wxCommandEvent& event );
-    void OnButtonAppstartForumsClick( wxCommandEvent& /*event*/ );
+    void OnButtonAppstartNewDatabaseClick(  wxCommandEvent& event );
+    void OnButtonAppstartChangeLanguage(    wxCommandEvent& /*event*/ );
+    void OnButtonAppstartHelpClick(         wxCommandEvent& event );
+    void OnButtonAppstartWebsiteClick(      wxCommandEvent& event );
+    void OnButtonAppstartForumsClick(       wxCommandEvent& /*event*/ );
     void OnButtonAppstartLastDatabaseClick( wxCommandEvent& event );
-    void OnQuit(wxCommandEvent& event);
-    void OnClose(wxCloseEvent& event);
-
+    void OnQuit(                            wxCommandEvent& event);
+    void OnClose(                           wxCloseEvent&   event);
 };
 

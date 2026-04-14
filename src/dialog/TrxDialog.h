@@ -22,7 +22,10 @@
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
+#include "util/mmDatePicker.h"
+#include "util/mmCalcPopup.h"
+#include "util/mmColorButton.h"
 #include "util/_simple.h"
 
 #include "model/TrxModel.h"
@@ -99,33 +102,33 @@ private:
     void SetCategoryForPayee(const PayeeData *payee = nullptr);
 
 private:
-    wxTextCtrl* textNumber_ = nullptr;
-    mmTextCtrl* m_textAmount = nullptr;
-    mmTextCtrl* toTextAmount_ = nullptr;
-    wxTextCtrl* textNotes_ = nullptr;
-    wxBitmapButton* bAttachments_ = nullptr;
-    mmColorButton* bColours_ = nullptr;
-    wxStaticText* account_label_ = nullptr;
-    wxStaticText* categ_label_ = nullptr;
-    mmComboBoxAccount* cbAccount_ = nullptr;
-    wxStaticText* to_acc_label_ = nullptr;
-    mmComboBoxAccount* cbToAccount_ = nullptr;
-    wxStaticText* payee_label_ = nullptr;
-    mmComboBoxPayee* cbPayee_ = nullptr;
-    mmComboBoxCategory* cbCategory_ = nullptr;
-    wxBitmapButton* bSplit_ = nullptr;
-    wxBitmapButton* bAuto = nullptr;
-    wxCheckBox* cAdvanced_ = nullptr;
-    wxButton* m_button_cancel = nullptr;
-    wxButton* m_button_ok_new = nullptr;
-    wxChoice* choiceStatus_ = nullptr;
-    wxChoice* transaction_type_ = nullptr;
-    mmDatePickerCtrl* dpc_ = nullptr;
-    mmTagTextCtrl* tagTextCtrl_ = nullptr;
-    wxBitmapButton* bCalc_ = nullptr;
-    wxBitmapButton* bSwitch_ = nullptr;
-    mmCalculatorPopup* calcPopup_ = nullptr;
-    mmTextCtrl* calcTarget_ = nullptr;
+    wxTextCtrl*         textNumber_       = nullptr;
+    mmTextCtrl*         m_textAmount      = nullptr;
+    mmTextCtrl*         toTextAmount_     = nullptr;
+    wxTextCtrl*         textNotes_        = nullptr;
+    wxBitmapButton*     bAttachments_     = nullptr;
+    mmColorButton*      bColours_         = nullptr;
+    wxStaticText*       account_label_    = nullptr;
+    wxStaticText*       categ_label_      = nullptr;
+    mmComboBoxAccount*  cbAccount_        = nullptr;
+    wxStaticText*       to_acc_label_     = nullptr;
+    mmComboBoxAccount*  cbToAccount_      = nullptr;
+    wxStaticText*       payee_label_      = nullptr;
+    mmComboBoxPayee*    cbPayee_          = nullptr;
+    mmComboBoxCategory* cbCategory_       = nullptr;
+    wxBitmapButton*     bSplit_           = nullptr;
+    wxBitmapButton*     bAuto             = nullptr;
+    wxCheckBox*         cAdvanced_        = nullptr;
+    wxButton*           m_button_cancel   = nullptr;
+    wxButton*           m_button_ok_new   = nullptr;
+    wxChoice*           choiceStatus_     = nullptr;
+    wxChoice*           transaction_type_ = nullptr;
+    mmDatePicker*       w_date_picker     = nullptr;
+    mmTagTextCtrl*      tagTextCtrl_      = nullptr;
+    wxBitmapButton*     bCalc_            = nullptr;
+    wxBitmapButton*     bSwitch_          = nullptr;
+    mmCalcPopup*        calcPopup_        = nullptr;
+    mmTextCtrl*         calcTarget_       = nullptr;
 
     enum MODE { MODE_NEW = 0, MODE_DUP, MODE_EDIT };
     MODE m_mode = MODE_EDIT;

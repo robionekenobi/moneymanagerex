@@ -19,15 +19,14 @@
 
 #pragma once
 
-#include "base/defs.h"
-#include "base/types.h"
 #include <map>
 #include <vector>
+#include "base/_defs.h"
 #include <wx/dataview.h>
 #include <wx/srchctrl.h>
-
-class mmDatePickerCtrl;
-class mmTextCtrl;
+#include "base/_types.h"
+#include "util/mmDatePicker.h"
+#include "util/mmTextCtrl.h"
 
 struct CurrencyHistoryRate
 {
@@ -78,7 +77,7 @@ private:
     wxButton*           w_select_btn        = nullptr;
     wxSearchCtrl*       w_mask_text         = nullptr;
     wxCheckBox*         w_show_all_cb       = nullptr;
-    mmDatePickerCtrl*   w_date_picker       = nullptr;
+    mmDatePicker*       w_date_picker       = nullptr;
     mmTextCtrl*         w_value_text        = nullptr;
     wxStaticBox*        w_hostory_box       = nullptr;
 

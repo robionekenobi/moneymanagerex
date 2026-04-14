@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-02-25 08:58:12.230056.
+ *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
  *          DO NOT EDIT!
  */
 //=============================================================================
@@ -27,15 +27,21 @@ template class mmCache<int64, TrxLinkData>;
 
 // List of column names in database table TRANSLINK_V1,
 // in the order of TrxLinkCol::COL_ID.
-const wxArrayString TrxLinkCol::COL_NAME_A = {
+const wxArrayString TrxLinkCol::s_col_name_a = {
     "TRANSLINKID",
     "CHECKINGACCOUNTID",
     "LINKTYPE",
     "LINKRECORDID"
 };
 
-const TrxLinkCol::COL_ID TrxLinkCol::PRIMARY_ID = COL_ID_TRANSLINKID;
-const wxString TrxLinkCol::PRIMARY_NAME = COL_NAME_A[COL_ID_TRANSLINKID];
+const TrxLinkCol::COL_ID TrxLinkCol::s_primary_id = COL_ID_TRANSLINKID;
+const wxString TrxLinkCol::s_primary_name = s_col_name_a[COL_ID_TRANSLINKID];
+
+// convenience variables
+const wxString TrxLinkCol::NAME_TRANSLINKID = s_col_name_a[COL_ID_TRANSLINKID];
+const wxString TrxLinkCol::NAME_CHECKINGACCOUNTID = s_col_name_a[COL_ID_CHECKINGACCOUNTID];
+const wxString TrxLinkCol::NAME_LINKTYPE = s_col_name_a[COL_ID_LINKTYPE];
+const wxString TrxLinkCol::NAME_LINKRECORDID = s_col_name_a[COL_ID_LINKRECORDID];
 
 TrxLinkRow::TrxLinkRow()
 {

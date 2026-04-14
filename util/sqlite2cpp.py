@@ -203,7 +203,7 @@ class Table:
     # {{{ def generate_table_h(self, header)
 
     def generate_table_h(self, header):
-        """ Generate .h file for the *Table class"""
+        """ Generate .h file for the ${Table}Table class"""
 
         # short names
         dt = self.table_name
@@ -225,7 +225,7 @@ class Table:
 ''' % base_basename
 
         # }}}
-        # {{{ struct *Col ...
+        # {{{ struct ${Table}Col ...
 
         code += '''
 // Columns in database table %s
@@ -247,23 +247,66 @@ struct %s
         code += ''',
         COL_ID_size
     };
-
-    static const wxArrayString COL_NAME_A;
-    static const COL_ID PRIMARY_ID;
-    static const wxString PRIMARY_NAME;
-
-    static wxString col_name(COL_ID col_id) { return COL_NAME_A[col_id]; }
 '''
 
         # }}}
+        # {{{ static variables
+
+        code += '''
+    static const wxArrayString s_col_name_a;
+    static const COL_ID s_primary_id;
+    static const wxString s_primary_name;
+
+    static wxString col_id_name(COL_ID col_id) { return s_col_name_a[col_id]; }
+'''
+
+        # }}}
+        # {{{ convenience variables
+
+        code += '''
+    // convenience variables
+'''
+
+        for f in fa:
+            code += '''
+    static const wxString NAME_%s;''' % f['name'].upper()
+
+        code += '''
+'''
+
+        # }}}
+        # {{{ convenience methods
+
+        code += '''
+    // convenience methods
+'''
+
+        for f in fa:
+            code += '''
+    static TableClauseV<%s> WHERE_%s(OP op, const %s& value) {
+        return TableClause::WHERE<%s>(NAME_%s, op, value);
+    }
+''' % (
+                dbtype_ctype[f['type']],
+                f['name'].upper(),
+                dbtype_ctype[f['type']],
+                dbtype_ctype[f['type']],
+                f['name'].upper()
+            )
+
+        # }}}
         # {{{ struct (COLUMN_NAME)
+
+        code += '''
+    // deprecated
+'''
 
         for f in fa:
             code += '''
     struct %s : public TableOpV<%s>
     {
         static COL_ID col_id() { return COL_ID_%s; }
-        static wxString col_name() { return COL_NAME_A[COL_ID_%s]; }
+        static wxString col_name() { return s_col_name_a[COL_ID_%s]; }
         explicit %s(const %s &v): TableOpV<%s>(OP_EQ, v) {}
         explicit %s(OP op, const %s &v): TableOpV<%s>(op, v) {}
     };
@@ -276,13 +319,13 @@ struct %s
             )
 
         # }}}
-        # {{{ ... struct *Col
+        # {{{ ... struct ${Table}Col
 
         code += '''};
 '''
         # }}}
 
-        # {{{ struct *Row ...
+        # {{{ struct ${Table}Row ...
 
         code += '''
 // A single record in database table %s
@@ -404,13 +447,13 @@ struct %s
 '''
 
         # }}}
-        # {{{ ... struct *Row
+        # {{{ ... struct ${Table}Row
 
         code += '''};
 '''
         # }}}
 
-        # {{{ struct *Table ...
+        # {{{ struct ${Table}Table ...
 
         code += '''
 // Interface to database table %s
@@ -448,7 +491,7 @@ struct %s : public TableBase
 '''
 
         # }}}
-        # {{{ ... struct *Table
+        # {{{ ... struct ${Table}Table
 
         code += '''};
 '''
@@ -491,7 +534,7 @@ inline %s& %s::clone_from(const %s& other)
     # {{{ def generate_table_cpp(self, header)
 
     def generate_table_cpp(self, header):
-        """ Generate .cpp file for the *Table class"""
+        """ Generate .cpp file for the ${Table}Table class"""
 
         # short names
         dt = self.table_name
@@ -518,17 +561,17 @@ template class mmCache<int64, %s>;
 ''' % (ct, cd, cd)
 
         # }}}
-        # {{{ *Col
+        # {{{ ${Table}Col
 
         code += '''
 // List of column names in database table %s,
 // in the order of %s::COL_ID.
-const wxArrayString %s::COL_NAME_A = {
+const wxArrayString %s::s_col_name_a = {
     "%s"%s
 };
 
-const %s::COL_ID %s::PRIMARY_ID = COL_ID_%s;
-const wxString %s::PRIMARY_NAME = COL_NAME_A[COL_ID_%s];
+const %s::COL_ID %s::s_primary_id = COL_ID_%s;
+const wxString %s::s_primary_name = s_col_name_a[COL_ID_%s];
 ''' % (
             dt, cc,
             cc,
@@ -537,9 +580,23 @@ const wxString %s::PRIMARY_NAME = COL_NAME_A[COL_ID_%s];
             cc, fp['name'].upper()
         )
 
+        code += '''
+// convenience variables'''
+
+        for f in fa:
+            code += '''
+const wxString %s::NAME_%s = s_col_name_a[COL_ID_%s];''' % (
+                cc,
+                f['name'].upper(),
+                f['name'].upper()
+            )
+
+        code += '''
+'''
+
         # }}}
 
-        # {{{ *Row::*Row
+        # {{{ ${Table}Row::${Table}Row
 
         code += '''
 %s::%s()
@@ -561,7 +618,7 @@ const wxString %s::PRIMARY_NAME = COL_NAME_A[COL_ID_%s];
 '''
 
         # }}}
-        # {{{ *Row::to_insert_stmt, *Row::from_select_result
+        # {{{ ${Table}Row::to_insert_stmt, ${Table}Row::from_select_result
 
         code += '''
 // Bind a Row record to database insert statement.
@@ -592,7 +649,7 @@ void %s::to_insert_stmt(wxSQLite3Statement& stmt, int64 id) const
 '''
 
         # }}}
-        # {{{ *Row::to_json, *Row::as_json
+        # {{{ ${Table}Row::to_json, ${Table}Row::as_json
 
         code += '''
 // Return the data record as a json string
@@ -638,7 +695,7 @@ void %s::as_json(PrettyWriter<StringBuffer>& json_writer) const
 '''
 
         # }}}
-        # {{{ *Row::to_html_row, *Row::to_html_template
+        # {{{ ${Table}Row::to_html_row, ${Table}Row::to_html_template
 
         code += '''
 row_t %s::to_html_row() const
@@ -675,7 +732,7 @@ void %s::to_html_template(html_template& t) const
 '''
 
         # }}}
-        # {{{ *Row::equals
+        # {{{ ${Table}Row::equals
 
         code += '''
 bool %s::equals(const %s* other) const
@@ -698,7 +755,7 @@ bool %s::equals(const %s* other) const
 
         # }}}
 
-        # {{{ *Table:*Table
+        # {{{ ${Table}Table:${Table}Table
 
         create_query = self.table_sql.replace('\n', '')
         drop_query = 'DROP TABLE IF EXISTS %s' % dt
@@ -806,7 +863,7 @@ void %s::ensure_data()
     # {{{ def generate_data_h(self, header)
 
     def generate_data_h(self, header):
-        """ Generate sample .h file for the *Data class"""
+        """ Generate sample .h file for the ${Table}Data class"""
 
         # short names
         dt = self.table_name
@@ -844,7 +901,7 @@ void %s::ensure_data()
 ''' % (ct, base_basename, ct)
 
         # }}}
-        # {{{ struct *Data ...
+        # {{{ struct ${Table}Data ...
 
         code += '''
 // User-friendly representation of a record in table %s.
@@ -928,7 +985,7 @@ struct %s
 '''
 
         # }}}
-        # {{{ ... struct *Data
+        # {{{ ... struct ${Table}Data
 
         code += '''};
 '''
@@ -1004,7 +1061,7 @@ inline %s& %s::clone_from(const %s& other)
     # {{{ def generate_data_cpp(self, header)
 
     def generate_data_cpp(self, header):
-        """ Generate sample .cpp file for the *Data class"""
+        """ Generate sample .cpp file for the ${Table}Data class"""
 
         # short names
         dt = self.table_name
@@ -1027,7 +1084,7 @@ inline %s& %s::clone_from(const %s& other)
 ''' % (ct, cd)
 
         # }}}
-        # {{{ *Data::*Data
+        # {{{ ${Table}Data::${Table}Data
 
         code += '''
 %s::%s()
@@ -1049,7 +1106,7 @@ inline %s& %s::clone_from(const %s& other)
 '''
 
         # }}}
-        # {{{ *Data::to_row, *Data::from_row
+        # {{{ ${Table}Data::to_row, ${Table}Data::from_row
 
         code += '''
 // Convert %s to %s
@@ -1084,7 +1141,7 @@ inline %s& %s::clone_from(const %s& other)
 '''
 
         # }}}
-        # {{{ *Data::equals
+        # {{{ ${Table}Data::equals
 
         code += '''
 bool %s::equals(const %s* other) const

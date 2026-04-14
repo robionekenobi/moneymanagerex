@@ -21,9 +21,11 @@
 
 #pragma once
 
-#include "base/defs.h"
 #include <wx/dialog.h>
-
+#include "base/_defs.h"
+#include "util/mmDatePicker.h"
+#include "util/mmCalcPopup.h"
+#include "util/mmColorButton.h"
 #include "util/_simple.h"
 #include "model/SchedModel.h"
 #include "model/TrxModel.h"
@@ -109,7 +111,7 @@ private:
     int                 w_focus             = wxID_ANY;
     wxSize              w_min_size;
     wxBitmapButton*     w_calc_btn          = nullptr;
-    mmCalculatorPopup*  w_calc              = nullptr;
+    mmCalcPopup*        w_calc              = nullptr;
     wxTextCtrl*         w_number_text       = nullptr;
     mmTextCtrl*         w_amount_text       = nullptr;
     mmTextCtrl*         w_to_amount_text    = nullptr;
@@ -127,8 +129,8 @@ private:
     wxCheckBox*         w_advanced_cb       = nullptr;
     wxChoice*           w_status_choice     = nullptr;
     wxChoice*           w_type_choice       = nullptr;
-    mmDatePickerCtrl*   w_pay_date          = nullptr; // Stored in TRANSDATE
-    mmDatePickerCtrl*   w_due_date          = nullptr; // Stored in NEXTOCCURRENCEDATE
+    mmDatePicker*       w_pay_date          = nullptr; // Stored in TRANSDATE
+    mmDatePicker*       w_due_date          = nullptr; // Stored in NEXTOCCURRENCEDATE
     wxChoice*           w_freq_choice       = nullptr;
     wxCheckBox*         w_mode_suggested_cb = nullptr;
     wxCheckBox*         w_mode_automated_cb = nullptr;

@@ -18,7 +18,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ********************************************************/
 
-#include "base/defs.h"
+#include "base/_defs.h"
 #include <algorithm>
 #include "util/mmDateRange.h"
 
@@ -64,11 +64,10 @@ void PayeeReport::loadData()
     m_id_data.clear();
 
     const auto trxId_tpA_m = TrxSplitModel::instance().find_all_mTrxId();
-    for (const auto& trx_d : TrxModel::instance().find(
-        TrxModel::DATE(OP_GE, m_date_range2.rangeStartN().value()),
-        TrxModel::DATE(OP_LE, m_date_range2.rangeEndN().value()),
-        TrxModel::IS_VOID(false),
-        TrxModel::IS_DELETED(false)
+    for (const auto& trx_d : TrxModel::instance().find_data_a(
+        TrxModel::WHERE_DATE(OP_GE, m_date_range2.rangeStartN().value()),
+        TrxModel::WHERE_DATE(OP_LE, m_date_range2.rangeEndN().value()),
+        TrxModel::WHERE_IS_VALID(true)
     )) {
         // Do not include asset or stock transfers
         if (TrxModel::is_foreignAsTransfer(trx_d))

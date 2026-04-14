@@ -17,22 +17,23 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "AssetDialog.h"
+
+#include "base/_defs.h"
 #include <wx/valnum.h>
 
-#include "base/constants.h"
-#include "base/paths.h"
-#include "base/images_list.h"
+#include "base/_constants.h"
+#include "util/mmPath.h"
+#include "util/mmImage.h"
+#include "util/mmNavigatorList.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
 
-#include "AssetDialog.h"
 #include "AccountDialog.h"
 #include "AttachmentDialog.h"
 #include "TrxLinkDialog.h"
-#include "uicontrols/navigatortypes.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(AssetDialog, wxDialog);
 
@@ -100,7 +101,7 @@ bool AssetDialog::Create(
     GetSizer()->Fit(this);
     this->SetInitialSize();
     GetSizer()->SetSizeHints(this);
-    SetIcon(mmex::getProgramIcon());
+    SetIcon(mmPath::getProgramIcon());
     Centre();
     mmThemeAutoColour(this);
     return true;
@@ -114,7 +115,7 @@ void AssetDialog::dataToControls()
     w_assetName->SetValue(m_asset_n->m_name);
     if (AccountModel::instance().get_name_data_n(m_asset_n->m_name))
         w_assetName->Enable(false);
-    w_dpc->SetValue(m_asset_n->m_start_date.dateTime());
+    w_date_picker->setValue(m_asset_n->m_start_date.dateTime());
     w_assetType->SetSelection(m_asset_n->m_type.id());
     // TODO: translate asset type
     if (AccountModel::instance().get_name_data_n(m_asset_n->m_type.name()))
@@ -151,7 +152,7 @@ void AssetDialog::dataToControls()
 
     if (!m_hidden_trans_entry) {
         w_assetName->Enable(false);
-        w_dpc->Enable(false);
+        w_date_picker->Enable(false);
         w_assetType->Enable(false);
         w_value->Enable(false);
         w_valueChange->Enable(false);
@@ -202,16 +203,19 @@ void AssetDialog::CreateControls()
     itemFlexGridSizer6->Add(w_assetName, g_flagsExpand);
 
     itemFlexGridSizer6->Add(new wxStaticText(asset_details_panel, wxID_STATIC, _t("Date")), g_flagsH);
-    w_dpc = new mmDatePickerCtrl(asset_details_panel, wxID_ANY);
-    itemFlexGridSizer6->Add(w_dpc->mmGetLayout(false));
-    mmToolTip(w_dpc, _t("Specify the date of purchase of asset"));
+    w_date_picker = new mmDatePicker(asset_details_panel, wxID_ANY);
+    itemFlexGridSizer6->Add(w_date_picker->mmGetLayout(false));
+    mmToolTip(w_date_picker, _t("Specify the date of purchase of asset"));
 
     itemFlexGridSizer6->Add(new wxStaticText(asset_details_panel, wxID_STATIC, _t("Asset Type")), g_flagsH);
 
     w_assetType = new wxChoice(asset_details_panel, wxID_STATIC);
     for (int i = 0; i < AssetType::size; ++i) {
-        wxString name = AssetType(i).name();
-        w_assetType->Append(wxGetTranslation(name), new wxStringClientData(name));
+        wxString type_name = AssetType(i).name();
+        w_assetType->Append(
+            wxGetTranslation(type_name),
+            new wxStringClientData(type_name)
+        );
     }
 
     mmToolTip(w_assetType, _t("Select type of asset"));
@@ -247,8 +251,8 @@ void AssetDialog::CreateControls()
 
     w_valueChange = new wxChoice(asset_details_panel, IDC_COMBO_TYPE);
     for (mmChoiceId i = 0; i < AssetChange::size; ++i) {
-        wxString name = AssetChange(i).name();
-        w_valueChange->Append(wxGetTranslation(name));
+        wxString change_name = AssetChange(i).name();
+        w_valueChange->Append(wxGetTranslation(change_name));
     }
 
     mmToolTip(w_valueChange, _t("Specify if the value of the asset changes over time"));
@@ -277,15 +281,25 @@ void AssetDialog::CreateControls()
     itemFlexGridSizer6->Add(w_valueChangeRate, g_flagsExpand);
     enableDisableRate(false);
 
-    itemFlexGridSizer6->Add(new wxStaticText( asset_details_panel, wxID_STATIC, _t("Notes")), g_flagsH);
+    itemFlexGridSizer6->Add(new wxStaticText(
+        asset_details_panel, wxID_STATIC,
+        _t("Notes")
+    ), g_flagsH);
 
-    w_attachments = new wxBitmapButton(asset_details_panel, wxID_FILE
-        , mmBitmapBundle(png::CLIP, mmBitmapButtonSize), wxDefaultPosition
-        , wxSize(w_valueChange->GetSize().GetY(), w_valueChange->GetSize().GetY()));
+    w_attachments = new wxBitmapButton(
+        asset_details_panel, wxID_FILE,
+        mmImage::bitmapBundle(mmImage::png::CLIP, mmImage::bitmapButtonSize),
+        wxDefaultPosition,
+        wxSize(w_valueChange->GetSize().GetY(), w_valueChange->GetSize().GetY())
+    );
     itemFlexGridSizer6->Add(w_attachments, wxSizerFlags(g_flagsV).Align(wxALIGN_RIGHT));
     mmToolTip(w_attachments, _t("Organize attachments of this asset"));
 
-    w_notes = new wxTextCtrl(details_frame, IDC_NOTES, wxGetEmptyString(), wxDefaultPosition, wxSize(220, 170), wxTE_MULTILINE);
+    w_notes = new wxTextCtrl(details_frame, IDC_NOTES,
+        wxGetEmptyString(),
+        wxDefaultPosition, wxSize(220, 170),
+        wxTE_MULTILINE
+    );
     mmToolTip(w_notes, _t("Enter notes associated with this asset"));
     details_frame_sizer->Add(w_notes, 0, wxGROW | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
@@ -430,7 +444,7 @@ void AssetDialog::OnOk(wxCommandEvent& /*event*/)
     m_asset_n->m_type          = asset_type;
     m_asset_n->m_status        = AssetStatus();
     m_asset_n->m_name          = asset_name;
-    m_asset_n->m_start_date    = mmDate(w_dpc->GetValue());
+    m_asset_n->m_start_date    = mmDate(w_date_picker->GetValue());
     m_asset_n->m_currency_id_n = -1;
     m_asset_n->m_value         = asset_value;
     m_asset_n->m_change        = AssetChange(asset_change_id);
@@ -486,7 +500,7 @@ void AssetDialog::SetTransactionAccountName(const wxString& account_name)
 
 void AssetDialog::SetTransactionDate()
 {
-    w_transaction_panel->TransactionDate(w_dpc->GetValue());
+    w_transaction_panel->TransactionDate(w_date_picker->GetValue());
 }
 
 void AssetDialog::CreateAssetAccount()
@@ -496,7 +510,7 @@ void AssetDialog::CreateAssetAccount()
 
     AccountData new_account_d = AccountData();
     new_account_d.m_name         = name;
-    new_account_d.m_type_        = NavigatorTypes::instance().getAssetAccountStr();
+    new_account_d.m_type_        = mmNavigatorList::instance().getAssetAccountStr();
     new_account_d.m_open_balance = 0;
     new_account_d.m_open_date    = m_asset_n->m_start_date;
     new_account_d.m_currency_id  = CurrencyModel::instance().get_base_data_n()->m_id;

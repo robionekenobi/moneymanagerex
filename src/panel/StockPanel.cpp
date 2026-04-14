@@ -19,19 +19,19 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/defs.h"
+#include "StockPanel.h"
+
+#include "base/_defs.h"
 #include <wx/clipbrd.h>
 
-#include "base/images_list.h"
+#include "base/mmTips.h"
+#include "util/mmImage.h"
+#include "util/mmSplitterWindow.h"
 #include "util/_simple.h"
-#include "util/mmTips.h"
 #include "model/_all.h"
 
-#include "StockPanel.h"
 #include "dialog/StockDialog.h"
 #include "dialog/TrxShareDialog.h"
-
-class StockPanel;
 
 BEGIN_EVENT_TABLE(StockPanel, wxPanel)
     EVT_BUTTON(wxID_NEW,          StockPanel::onNewStocks)
@@ -46,7 +46,7 @@ END_EVENT_TABLE()
 
 StockPanel::StockPanel(
     int64 account_id,
-    mmGUIFrame* frame,
+    mmFrame* frame,
     wxWindow* parent_win,
     wxWindowID win_id
 ) :
@@ -89,20 +89,18 @@ bool StockPanel::create(
 
 StockPanel::~StockPanel()
 {
+    InfoModel::instance().saveBool("STOCKPANEL_SHOW_NON_ZERO", w_filter_choice->GetSelection() > 0);
 }
 
 void StockPanel::createControls()
 {
-    wxBoxSizer* itemBoxSizer9 = new wxBoxSizer(wxVERTICAL);
-    this->SetSizer(itemBoxSizer9);
+    wxBoxSizer* sizerVHeader = new wxBoxSizer(wxVERTICAL);
+    this->SetSizer(sizerVHeader);
 
     /* ---------------------- */
     wxPanel* headerPanel = new wxPanel(this, wxID_ANY
         , wxDefaultPosition , wxDefaultSize, wxNO_BORDER | wxTAB_TRAVERSAL);
-    itemBoxSizer9->Add(headerPanel, 0, wxALIGN_LEFT);
-
-    wxBoxSizer* itemBoxSizerVHeader = new wxBoxSizer(wxVERTICAL);
-    headerPanel->SetSizer(itemBoxSizerVHeader);
+    sizerVHeader->Add(headerPanel, 0, wxALIGN_LEFT);
 
     w_header_title = new wxStaticText(headerPanel, wxID_STATIC, "");
     w_header_title->SetFont(this->GetFont().Larger().Bold());
@@ -111,7 +109,7 @@ void StockPanel::createControls()
     w_filter_choice->Append(_t("All"));
     w_filter_choice->Append(_t("Non-Zero Shares"));
     w_filter_choice->SetMinSize(wxSize(150, -1));
-    w_filter_choice->SetSelection(0);
+    w_filter_choice->SetSelection(InfoModel::instance().getBool("STOCKPANEL_SHOW_NON_ZERO", false) ? 1 : 0);
 
     w_filter_choice->Bind(wxEVT_CHOICE, [this](wxCommandEvent&)
     {
@@ -119,29 +117,69 @@ void StockPanel::createControls()
     });
 
     w_header_total = new wxStaticText(headerPanel, wxID_STATIC, "");
+    w_header_info = new wxStaticText(headerPanel, wxID_STATIC, "");
+    w_header_win = new wxStaticText(headerPanel, wxID_STATIC, "");
+    wxBoxSizer* itemBoxSizerHHeader1 = new wxBoxSizer(wxHORIZONTAL);
+    //itemBoxSizerHHeader1->AddSpacer(15);
+    itemBoxSizerHHeader1->Add(w_header_total, 0, wxALIGN_BOTTOM, 1);
+    itemBoxSizerHHeader1->AddSpacer(20);
+    itemBoxSizerHHeader1->Add(w_header_info, 0, wxALIGN_BOTTOM, 1);
+    itemBoxSizerHHeader1->AddSpacer(20);
+    itemBoxSizerHHeader1->Add(w_header_win, 0, wxALIGN_BOTTOM, 1);
+
+    wxStaticText* sfilter = new wxStaticText(headerPanel, wxID_STATIC, "Name:", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+    w_nameFilter = new wxTextCtrl(headerPanel, wxID_INDEX, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+    w_nameFilter->Bind(wxEVT_TEXT, &StockPanel::onFilterTextChanged, this);
+    w_filter_cancel = new wxBitmapButton(headerPanel, wxID_ANY, mmImage::bitmapBundle(mmImage::png::CLEAR, mmImage::bitmapButtonSize));
+    w_filter_cancel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &StockPanel::onFilterCancel, this);
+    mmToolTip(w_filter_cancel, _t("Reset filter"));
+
+    wxBoxSizer* itemBoxSizerVHeader1 = new wxBoxSizer(wxVERTICAL);
+    itemBoxSizerVHeader1->Add(w_header_title, 1, wxALL, 1);
+    itemBoxSizerVHeader1->AddSpacer(5);
+    itemBoxSizerVHeader1->Add(itemBoxSizerHHeader1, 1, wxEXPAND, 1);
 
     wxBoxSizer* itemBoxSizerHHeader = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizerHHeader->Add(w_header_title, 1, wxALIGN_CENTER_VERTICAL | wxALL, 1);
+    itemBoxSizerHHeader->AddSpacer(15);
+    itemBoxSizerHHeader->Add(itemBoxSizerVHeader1, 1, wxEXPAND, 1);
 
-    itemBoxSizerVHeader->Add(itemBoxSizerHHeader, 1, wxEXPAND, 1);
-    itemBoxSizerVHeader->Add(w_filter_choice, g_flagsBorder1V);
-    itemBoxSizerVHeader->Add(w_header_total, 1, wxALL, 1);
+    wxBoxSizer* itemBoxSizerHHeader2 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizerHHeader2->AddSpacer(15);
+    itemBoxSizerHHeader2->Add(w_filter_choice, 0, wxALIGN_CENTER_VERTICAL, 1);
+    itemBoxSizerHHeader2->AddSpacer(30);
+    itemBoxSizerHHeader2->Add(sfilter, 0, wxALIGN_CENTER_VERTICAL, 1);
+    itemBoxSizerHHeader2->AddSpacer(10);
+    itemBoxSizerHHeader2->Add(w_nameFilter, 0, wxALIGN_CENTER_VERTICAL, 1);
+    itemBoxSizerHHeader2->Add(w_filter_cancel, 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL, 2);
+
+    wxBoxSizer* itemBoxSizerVHeader = new wxBoxSizer(wxVERTICAL);
+    headerPanel->SetSizer(itemBoxSizerVHeader);
+    itemBoxSizerVHeader->Add(itemBoxSizerHHeader, 1, wxALL, 1);
+    itemBoxSizerVHeader->AddSpacer(5);
+    itemBoxSizerVHeader->Add(itemBoxSizerHHeader2, 1, wxEXPAND, 1);
+
 
     /* ---------------------- */
-    mmSplitterWindow* itemSplitterWindow10 = new mmSplitterWindow(this
-        , wxID_ANY, wxDefaultPosition, wxSize(200, 200)
-        , wxSP_3DBORDER | wxSP_3DSASH | wxNO_BORDER, mmThemeMetaColour(meta::COLOR_LISTPANEL));
+    mmSplitterWindow* itemSplitterWindow10 = new mmSplitterWindow(
+        this, wxID_ANY,
+        wxDefaultPosition, wxSize(200, 200),
+        wxSP_3DBORDER | wxSP_3DSASH | wxNO_BORDER,
+        mmImage::themeMetaColour(mmImage::COLOR_LISTPANEL)
+    );
 
     w_list = new StockList(this, itemSplitterWindow10, wxID_ANY);
 
-    wxPanel* BottomPanel = new wxPanel(itemSplitterWindow10, wxID_ANY
-        , wxDefaultPosition, wxDefaultSize, wxNO_BORDER | wxTAB_TRAVERSAL);
-    mmThemeMetaColour(BottomPanel, meta::COLOR_LISTPANEL);
+    wxPanel* BottomPanel = new wxPanel(
+        itemSplitterWindow10, wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxNO_BORDER | wxTAB_TRAVERSAL
+    );
+    mmImage::themeMetaColour(BottomPanel, mmImage::COLOR_LISTPANEL);
 
     itemSplitterWindow10->SplitHorizontally(w_list, BottomPanel);
     itemSplitterWindow10->SetMinimumPaneSize(100);
     itemSplitterWindow10->SetSashGravity(1.0);
-    itemBoxSizer9->Add(itemSplitterWindow10, g_flagsExpandBorder1);
+    sizerVHeader->Add(itemSplitterWindow10, g_flagsExpandBorder1);
 
     wxBoxSizer* BoxSizerVBottom = new wxBoxSizer(wxVERTICAL);
     BottomPanel->SetSizer(BoxSizerVBottom);
@@ -179,7 +217,7 @@ void StockPanel::createControls()
     bMove->Enable(false);
 
     w_attachment_btn = new wxBitmapButton(BottomPanel,
-        wxID_FILE, mmBitmapBundle(png::CLIP, mmBitmapButtonSize), wxDefaultPosition,
+        wxID_FILE, mmImage::bitmapBundle(mmImage::png::CLIP, mmImage::bitmapButtonSize), wxDefaultPosition,
         wxSize(30, bMove->GetSize().GetY())
     );
     mmToolTip(w_attachment_btn, _t("Open attachments"));
@@ -187,7 +225,7 @@ void StockPanel::createControls()
     w_attachment_btn->Enable(false);
 
     w_refresh_btn = new wxBitmapButton(BottomPanel,
-        wxID_REFRESH, mmBitmapBundle(png::LED_OFF, mmBitmapButtonSize),
+        wxID_REFRESH, mmImage::bitmapBundle(mmImage::png::LED_OFF, mmImage::bitmapButtonSize),
         wxDefaultPosition, wxSize(30, bMove->GetSize().GetY())
     );
     w_refresh_btn->SetLabelText(_t("Refresh"));
@@ -241,7 +279,7 @@ void StockPanel::viewStockTransactions(int selectedIndex)
         wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER
     );
 
-    dlg.SetIcon(mmex::getProgramIcon());
+    dlg.SetIcon(mmPath::getProgramIcon());
     wxWindow* parent_win = dlg.GetMainWindowOfCompositeControl();
     wxBoxSizer* topsizer = new wxBoxSizer(wxVERTICAL);
 
@@ -475,15 +513,31 @@ void StockPanel::updateHeader()
     double diffPercents = InvestedVal != 0.0
         ? (marketValue > InvestedVal ? marketValue / InvestedVal*100.0 - 100.0 : -(marketValue / InvestedVal*100.0 - 100.0))
         : 0.0;
-    lbl = wxString::Format("%s     %s     %s     %s     %s (%s %%)"
-        , wxString::Format(_t("Total: %s"), CurrencyModel::instance().toCurrency(marketValue + cashBalance, m_currency_n))
-        , wxString::Format(_t("Cash Balance: %s"), CurrencyModel::instance().toCurrency(cashBalance, m_currency_n))
-        , wxString::Format(_t("Market Value: %s"), CurrencyModel::instance().toCurrency(marketValue, m_currency_n))
-        , wxString::Format(_t("Invested: %s"), CurrencyModel::instance().toCurrency(InvestedVal, m_currency_n))
-        , wxString::Format(marketValue > InvestedVal ? _t("Gain: %s") : _t("Loss: %s"), diffStr)
-        , CurrencyModel::instance().toString(diffPercents, m_currency_n, 2));
 
-    w_header_total->SetLabelText(lbl);
+    w_header_total->SetLabelText(cashBalance != 0 ? wxString::Format(_t("Total: %s"), CurrencyModel::instance().toCurrency(marketValue + cashBalance, m_currency_n))
+                                                 : wxString::Format(_t("Market Value: %s"), CurrencyModel::instance().toCurrency(marketValue, m_currency_n))
+    );
+
+    if (cashBalance != 0) {
+        lbl << wxString::Format(_t("Cash Balance: %s"), CurrencyModel::instance().toCurrency(cashBalance, m_currency_n))
+            << "    "
+            << wxString::Format(_t("Market Value: %s"), CurrencyModel::instance().toCurrency(marketValue, m_currency_n))
+            << "    ";
+    }
+    lbl << wxString::Format(_t("Invested: %s"), CurrencyModel::instance().toCurrency(InvestedVal, m_currency_n));
+    w_header_info->SetLabelText(lbl);
+
+    if (InvestedVal > 0) {
+        lbl =  wxString::Format(marketValue > InvestedVal ? _t("Gain: %s") : _t("Loss: %s"), diffStr)
+            << " (" << CurrencyModel::instance().toString(diffPercents, m_currency_n, 2) << "%)";
+    }
+    else {
+        lbl = "";
+    }
+
+    w_header_win->SetLabelText(lbl);
+    const wxString c = mmImage::themeMetaString(marketValue > InvestedVal || InvestedVal == 0 ? mmImage::COLOR_TEXTCONTROL_FONT : mmImage::COLOR_REPORT_DEBIT);
+    w_header_win->SetForegroundColour(wxColor(c));
     this->Layout();
 }
 
@@ -497,17 +551,37 @@ void StockPanel::onRefreshQuotes(wxCommandEvent& WXUNUSED(event))
         w_details_short->SetLabelText(wxString::Format(_t("Last updated %s"), m_last_update));
         wxMessageDialog msgDlg(this, sError, header);
         msgDlg.ShowModal();
-        w_refresh_btn->SetBitmapLabel(mmBitmapBundle(png::LED_GREEN, mmBitmapButtonSize));
+        w_refresh_btn->SetBitmapLabel(mmImage::bitmapBundle(mmImage::png::LED_GREEN, mmImage::bitmapButtonSize));
     }
     else {
-        w_refresh_btn->SetBitmapLabel(mmBitmapBundle(png::LED_RED, mmBitmapButtonSize));
+        w_refresh_btn->SetBitmapLabel(mmImage::bitmapBundle(mmImage::png::LED_RED, mmImage::bitmapButtonSize));
         w_details->SetLabelText(sError);
         w_details_short->SetLabelText(_t("Error"));
         mmErrorDialogs::MessageError(this, sError, _t("Error"));
     }
 }
 
-// Trigger a quote download
+void StockPanel::onFilterTextChanged(wxCommandEvent& WXUNUSED(event))
+{
+    w_filter_cancel->Enable(!w_nameFilter->GetValue().IsEmpty());
+    m_name_filter_value = w_nameFilter->GetValue();
+    if (!m_name_filter_value.IsEmpty()) {
+        m_name_filter_value = m_name_filter_value + "%";
+    }
+    refreshList();
+}
+
+void StockPanel::onFilterCancel(wxCommandEvent& WXUNUSED(event))
+{
+    w_nameFilter->SetValue("");
+    m_name_filter_value = w_nameFilter->GetValue();
+    if (!m_name_filter_value.IsEmpty()) {
+        m_name_filter_value = m_name_filter_value + "%";
+    }
+    refreshList();
+}
+
+/*** Trigger a quote download ***/
 bool StockPanel::onlineQuoteRefresh(wxString& msg)
 {
     wxString base_currency_symbol;
@@ -529,7 +603,7 @@ bool StockPanel::onlineQuoteRefresh(wxString& msg)
         symbols[symbol] = stock_d.m_purchase_value;
     }
 
-    w_refresh_btn->SetBitmapLabel(mmBitmapBundle(png::LED_YELLOW, mmBitmapButtonSize));
+    w_refresh_btn->SetBitmapLabel(mmImage::bitmapBundle(mmImage::png::LED_YELLOW, mmImage::bitmapButtonSize));
     w_details->SetLabelText(_tu("Connecting…"));
 
     std::map<wxString, double > stocks_data;

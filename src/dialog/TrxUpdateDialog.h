@@ -19,12 +19,12 @@
 
 #pragma once
 
-#include "base/defs.h"
+#include "base/_defs.h"
+#include "util/mmDatePicker.h"
+#include "util/mmTextCtrl.h"
+#include "util/mmColorButton.h"
 #include "util/_simple.h"
-#include "mmcombobox.h"
 #include "FieldValueDialog.h"
-
-class mmTextCtrl;
 
 class TrxUpdateDialog : public wxDialog
 {
@@ -51,7 +51,7 @@ private:
     wxCheckBox*         w_payee_cb             = nullptr;
     mmComboBoxPayee*    w_payee_text           = nullptr;
     wxCheckBox*         w_date_cb              = nullptr;
-    mmDatePickerCtrl*   w_date_picker          = nullptr;
+    mmDatePicker*       w_date_picker          = nullptr;
     wxCheckBox*         w_time_cb              = nullptr;
     wxTimePickerCtrl*   w_time_picker          = nullptr;
     wxCheckBox*         w_type_cb              = nullptr;
