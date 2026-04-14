@@ -273,13 +273,7 @@ void mmNavigatorList::LoadFromDB(bool keepnames)
         }
         if (obj.HasMember("imageIds") && obj["imageIds"].IsString()) {
             wxString timg = wxString::FromUTF8(obj["imageIds"].GetString());
-            wxString fileid;
-            if (timg.StartsWith("CI:", &fileid)) {
-                info->imageId = NavTreeIconImages::instance().getImgIndex(fileid);
-            }
-            else {
-                info->imageId = wxAtoi(timg);
-            }
+            info->imageId = NavTreeIconImages::instance().getImgIndexFromStorageString(timg);
             if (info->imageId >= NavTreeIconImages::instance().getListSize() || info->imageId < 0) {
                 info->imageId = GetDefaultImage(id);
             }

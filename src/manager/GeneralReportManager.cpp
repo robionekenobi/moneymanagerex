@@ -45,11 +45,13 @@
 #include "GeneralReportManager.h"
 #include "report/_ReportBase.h"
 
+#include "dialog/IconManagerDialog.h"
+
 using namespace rapidjson;
 
 class GeneralReportManager;
 
-#ifdef MMEX_USE_REPORT_SYNC  // probably should be removed completly since unused
+#ifdef MMEX_USE_REPORT_SYNC  // probably should be removed completely since unused
 class SyncReportThread : public wxThread
 {
 public:
@@ -334,6 +336,8 @@ bool GeneralReportManager::Create(wxWindow* parent
     GetSizer()->SetSizeHints(this);
     SetIcon(mmPath::getProgramIcon());
 
+    m_images = NavTreeIconImages::instance().getList(PrefModel::instance().getToolbarIconSize());
+
     return true;
 }
 
@@ -374,12 +378,13 @@ void GeneralReportManager::fillControls()
             m_selectedItemID = item;
         }
     }
+    loadTreeIconState();
     m_treeCtrl->ExpandAll();
     m_treeCtrl->SelectItem(m_selectedItemID);
     SetEvtHandlerEnabled(true);
     m_treeCtrl->SetFocus();
     DoWindowsFreezeThaw(this);
-    //Show help page or report detailes (bugs:#421)
+    //Show help page or report details (bugs:#421)
     wxTreeEvent evt(wxEVT_TREE_SEL_CHANGED, ID_REPORT_LIST);
     evt.SetItem(m_selectedItemID);
     OnSelChanged(evt);
@@ -405,6 +410,10 @@ void GeneralReportManager::CreateControls()
         wxTR_SINGLE | wxTR_HAS_BUTTONS | wxTR_NO_LINES | wxTR_TWIST_BUTTONS);
     mmImage::themeMetaColour(m_treeCtrl, mmImage::COLOR_NAVPANEL);
     mmImage::themeMetaColour(m_treeCtrl, mmImage::COLOR_NAVPANEL_FONT, true);
+
+    const auto navIconSize = PrefModel::instance().getNavigationIconSize();
+    m_treeCtrl->SetImages(NavTreeIconImages::instance().getList(navIconSize));
+
     left_sizer->Add(m_treeCtrl, g_flagsExpand);
 
     left_panel->SetSizer(left_sizer);
@@ -839,6 +848,7 @@ void GeneralReportManager::OnContextMenu(wxContextMenuEvent& event)
     ctxMenu->Append(ID_GROUP, report_n ?_tu("Change Group…") : _tu("Rename Group…"));
     ctxMenu->Append(ID_UNGROUP, _t("UnGroup"));
     ctxMenu->Append(ID_RENAME, _tu("Rename Report…"));
+    ctxMenu->Append(ID_ICON, _tu("Set Icon…"));
     ctxMenu->AppendSeparator();
 
     wxMenuItem* menuItemActive = new wxMenuItem(ctxMenu, ID_ACTIVE,
@@ -868,6 +878,7 @@ void GeneralReportManager::OnContextMenu(wxContextMenuEvent& event)
         ctxMenu->Enable(ID_SYNC, false);
         #endif
     }
+    ctxMenu->Enable(ID_ICON, id != m_treeCtrl->GetRootItem());
 
     PopupMenu(ctxMenu);
 }
@@ -1145,11 +1156,20 @@ void GeneralReportManager::OnMenuSelected(wxCommandEvent& event)
                 case ID_DUPLICATE:
                     duplicateReport(report_id);
                     break;
+                case ID_ICON:
+                    this->setTreeIcon();
+                    return;
+                    break;
             }
         }
         else if (id == ID_GROUP)
         {
             this->renameReportGroup(m_selectedGroup);
+        }
+        else if (id == ID_ICON)
+        {
+            this->setTreeIcon();
+            return;
         }
     }
     fillControls();
@@ -1448,6 +1468,144 @@ void GeneralReportManager::OnNewWindow(wxWebViewEvent& evt)
         evt.Veto();
     }
     evt.Skip();
+}
+
+void GeneralReportManager::setTreeIcon()
+{
+    IconSelectionDialog dlg(this, m_images);
+    if (dlg.ShowModal() == wxID_OK) {
+        wxTreeItemId tid = m_treeCtrl->GetSelection();
+        if (tid) {
+            m_treeCtrl->SetItemImage(tid, dlg.GetSelectedIndex());
+            saveTreeIconState();
+        }
+    }
+}
+
+void GeneralReportManager::traverseTree(
+                    const wxTreeItemId& item,
+                    const std::string& path,
+                    rapidjson::Document& doc,
+                    rapidjson::Document::AllocatorType& alloc)
+{
+    if (!item.IsOk())
+        return;
+
+    wxString text = m_treeCtrl->GetItemText(item);
+
+    std::string currentPath = path.empty()
+        ? std::string(text.ToUTF8())
+        : path + "/" + std::string(text.ToUTF8());
+
+    int imageIndex = m_treeCtrl->GetItemImage(item);
+    if (imageIndex != -1) {
+        rapidjson::Value key;
+        key.SetString(currentPath.c_str(), static_cast<rapidjson::SizeType>(currentPath.length()), alloc);
+        wxString imageValue;
+        if (imageIndex < mmImage::acc_img::MAX_ACC_ICON) {
+            imageValue = wxString::Format(wxT("%i"), imageIndex);
+        }
+        else {
+            imageValue = "CI:" + NavTreeIconImages::instance().getIndexMap()[imageIndex];
+        }
+        rapidjson::Value dbImageValue(imageValue.ToUTF8().data(), alloc);
+        doc.AddMember(key, dbImageValue, alloc);
+    }
+
+    wxTreeItemIdValue cookie;
+    wxTreeItemId child = m_treeCtrl->GetFirstChild(item, cookie);
+
+    while (child.IsOk()) {
+        this->traverseTree(child, currentPath, doc, alloc);
+        child = m_treeCtrl->GetNextChild(item, cookie);
+    }
+}
+
+void GeneralReportManager::saveTreeIconState()
+{
+    rapidjson::Document doc;
+    doc.SetObject();
+
+    auto& alloc = doc.GetAllocator();
+
+    wxTreeItemId root = m_treeCtrl->GetRootItem();
+    if (root.IsOk()) {
+        traverseTree(root, "", doc, alloc);
+    }
+
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    doc.Accept(writer);
+
+    InfoModel::instance().saveString("GRM_REPORT_IMAGE_STATUS", buffer.GetString());
+}
+
+
+std::vector<std::string> GeneralReportManager::splitPath(const std::string& path)
+{
+    std::vector<std::string> parts;
+    std::stringstream ss(path);
+    std::string item;
+
+    while (std::getline(ss, item, '/')) {
+        if (!item.empty())
+            parts.push_back(item);
+    }
+
+    return parts;
+}
+
+wxTreeItemId GeneralReportManager::findChild(wxTreeCtrl* tree, const wxTreeItemId& parent, const std::string& name)
+{
+    wxTreeItemIdValue cookie;
+    wxTreeItemId child = tree->GetFirstChild(parent, cookie);
+
+    while (child.IsOk()) {
+        if (std::string(tree->GetItemText(child).ToUTF8()) == name) {
+            return child;
+        }
+        child = tree->GetNextChild(parent, cookie);
+    }
+    return wxTreeItemId();
+}
+
+void GeneralReportManager::loadTreeIconState()
+{
+    rapidjson::Document doc;
+    const wxString& json = InfoModel::instance().getString("GRM_REPORT_IMAGE_STATUS", "");
+    doc.Parse(json.c_str());
+
+    if (!doc.IsObject())
+        return;
+
+    wxTreeItemId root = m_treeCtrl->GetRootItem();
+    if (!root.IsOk())
+        return;
+
+    for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
+        std::vector<std::string> parts = splitPath(it->name.GetString());
+        wxTreeItemId current = root;
+        if (!parts.empty()) {
+            if (std::string(m_treeCtrl->GetItemText(root).ToUTF8()) != parts[0]) {
+                continue;
+            }
+
+            for (size_t i = 1; i < parts.size(); ++i) {
+                wxTreeItemId next = findChild(m_treeCtrl, current, parts[i]);
+                if (!next.IsOk()) {
+                    current = wxTreeItemId();
+                    break;
+                }
+                current = next;
+            }
+        }
+
+        if (current.IsOk()) {
+            wxString timg = wxString::FromUTF8(it->value.GetString());
+            int imageIndex = NavTreeIconImages::instance().getImgIndexFromStorageString(timg);
+            m_treeCtrl->SetItemImage(current, imageIndex, wxTreeItemIcon_Normal);
+        }
+    }
 }
 
 // Event handler implementation
