@@ -74,3 +74,26 @@ private:
 
     wxDECLARE_EVENT_TABLE();
 };
+
+
+class IconSelectionDialog : public wxDialog
+{
+public:
+    IconSelectionDialog(wxWindow* parent, wxVector<wxBitmapBundle>& images, int iconSize = 32);
+
+    int GetSelectedIndex() const;
+    //wxBitmapBundle GetSelectedIcon() const;
+
+private:
+    void OnIconClicked(wxMouseEvent& event);
+
+    wxScrolledWindow* m_scrollWin;
+    wxGridSizer* m_gridSizer;
+
+    wxVector<wxBitmapBundle> m_icons;
+    int m_selectedIndex = wxNOT_FOUND;
+
+    std::vector<wxStaticBitmap*> m_iconWidgets;
+
+    //wxDECLARE_EVENT_TABLE();
+};

@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "base/_defs.h"
 #include <wx/bmpbndl.h>
 #include <wx/window.h>
-//#include <wx/imaglist.h>
 #include <wx/arrstr.h>
 
 struct mmImage
@@ -288,6 +287,7 @@ public:
     std::map<int, wxString>& getIndexMap();
     void initIndexMap();
     int getImgIndex(wxString imgName);
+    int getImgIndexFromStorageString(wxString strString);
     bool isListChanged();
     void setChanged();
 
