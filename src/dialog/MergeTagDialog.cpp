@@ -169,13 +169,16 @@ void MergeTagDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 {
     const auto& source_tag_name = cbSourceTag_->GetValue();
     const auto& destination_tag_name = cbDestTag_->GetValue();
-    const wxString& info = wxString::Format(_t("From %1$s to %2$s")
-        , source_tag_name
-        , destination_tag_name);
+    const wxString& info = wxString::Format(_t("From %1$s to %2$s"),
+        source_tag_name,
+        destination_tag_name
+    );
 
-    int ans = wxMessageBox(_t("Please Confirm:") + "\n" + info
-        , _t("Merge tags confirmation")
-        , wxOK | wxCANCEL | wxICON_INFORMATION);
+    int ans = wxMessageBox(
+        _t("Please Confirm:") + "\n" + info,
+        _t("Merge tags confirmation"),
+        wxOK | wxCANCEL | wxICON_INFORMATION
+    );
 
     if (ans != wxOK)
         return;
@@ -184,6 +187,7 @@ void MergeTagDialog::OnOk(wxCommandEvent& WXUNUSED(event))
     TagLinkModel::DataA gl_a = TagLinkModel::instance().find_data_a(
         TagLinkCol::WHERE_TAGID(OP_EQ, sourceTagID_)
     );
+    // CHECK: a tag link to destTagID_ may already exist
     for (TagLinkData& gl_d : gl_a) {
         gl_d.m_tag_id = destTagID_;
     }

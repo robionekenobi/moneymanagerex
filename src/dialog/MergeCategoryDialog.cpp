@@ -101,8 +101,9 @@ void MergeCategoryDialog::CreateControls()
     cbDestCategory_ = new mmComboBoxCategory(this, wxID_NEW, wxDefaultSize, -1, true);
     cbDestCategory_->SetMinSize(wxSize(200, -1));
 
-    cbDeleteSourceCategory_ = new wxCheckBox(this, wxID_ANY
-        , _t("&Delete source category after merge (if source category has no subcategories)"));
+    cbDeleteSourceCategory_ = new wxCheckBox(this, wxID_ANY,
+        _t("&Delete source category after merge (if source category has no subcategories)")
+    );
 
     wxStaticLine* lineBottom = new wxStaticLine(this, wxID_STATIC);
 
@@ -149,90 +150,82 @@ void MergeCategoryDialog::OnCancel(wxCommandEvent& WXUNUSED(event))
 
 void MergeCategoryDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 {
-    const int64 m_destCatID = cbDestCategory_->mmGetCategoryId();
-
-    const auto& source_cat_name = cbSourceCategory_->GetValue();
-    const auto& destination_cat_name = cbDestCategory_->GetValue();
     const wxString& info = wxString::Format(_t("From %1$s to %2$s"),
-        source_cat_name,
-        destination_cat_name
+        cbSourceCategory_->GetValue(),
+        cbDestCategory_->GetValue()
     );
-
-    if (wxMessageBox(_t("Please Confirm:") + "\n" + info,
+    if (wxMessageBox(
+        _t("Please Confirm:") + "\n" + info,
         _t("Merge categories confirmation"),
-        wxOK | wxCANCEL | wxICON_INFORMATION) == wxOK
-    ) {
-        auto trx_a = TrxModel::instance().find_data_a(
-            TrxCol::WHERE_CATEGID(OP_EQ, m_sourceCatID)
-        );
-        auto tp_a = TrxSplitModel::instance().find_data_a(
-            TrxSplitCol::WHERE_CATEGID(OP_EQ, m_sourceCatID)
-        );
-        auto sched_a = SchedModel::instance().find_data_a(
-            SchedCol::WHERE_CATEGID(OP_EQ, m_sourceCatID)
-        );
-        auto budget_a = BudgetModel::instance().find_data_a(
-            BudgetCol::WHERE_CATEGID(OP_EQ, m_sourceCatID)
-        );
-        auto qp_a = SchedSplitModel::instance().find_data_a(
-            SchedSplitCol::WHERE_CATEGID(OP_EQ, m_sourceCatID)
-        );
-        auto payee_a = PayeeModel::instance().find_data_a(
-            PayeeCol::WHERE_CATEGID(OP_EQ, m_sourceCatID)
-        );
+        wxOK | wxCANCEL | wxICON_INFORMATION
+    ) != wxOK)
+        return;
 
-        for (auto& trx_d : trx_a) {
-            trx_d.m_category_id_n = m_destCatID;
-        }
-        TrxModel::instance().save_trx_a(trx_a);
-        m_changedRecords += trx_a.size();
+    const int64 dst_cat_id = cbDestCategory_->mmGetCategoryId();
 
-        for (auto& sched_d : sched_a) {
-            sched_d.m_category_id_n = m_destCatID;
-        }
-        SchedModel::instance().save_data_a(sched_a);
-        m_changedRecords += sched_a.size();
-
-        for (auto& tp_d : tp_a) {
-            tp_d.m_category_id = m_destCatID;
-        }
-        TrxSplitModel::instance().save_data_a(tp_a);
-        m_changedRecords += tp_a.size();
-
-        for (auto& payee_d : payee_a) {
-            payee_d.m_category_id_n = m_destCatID;
-        }
-        PayeeModel::instance().save_data_a(payee_a);
-        m_changedRecords += payee_a.size();
-        mmWebApp::uploadPayee();
-
-        for (auto& qp_d : qp_a) {
-            qp_d.m_category_id = m_destCatID;
-        }
-        SchedSplitModel::instance().save_data_a(qp_a);
-        m_changedRecords += qp_a.size();
-
-        for (auto& budget_d : budget_a) {
-            BudgetModel::instance().purge_id(budget_d.m_period_id);
-            m_changedRecords++;
-        }
-
-        if (cbDeleteSourceCategory_->IsChecked()) {
-            if (m_sourceSubCatID == -1) {
-                const CategoryData* src_cat_n = CategoryModel::instance().get_id_data_n(
-                    m_sourceCatID
-                );
-                if (CategoryModel::instance().find_data_sub_a(*src_cat_n).empty())
-                    CategoryModel::instance().purge_id(m_sourceCatID);
-            }
-
-            cbSourceCategory_->mmDoReInitialize();
-            cbDestCategory_->mmDoReInitialize();
-            mmWebApp::uploadCategory();
-        }
-
-        IsOkOk();
+    for (auto& trx_d : TrxModel::instance().find_data_a(
+        TrxCol::WHERE_CATEGID(OP_EQ, m_sourceCatID)
+    )) {
+        trx_d.m_category_id_n = dst_cat_id;
+        TrxModel::instance().save_trx_n(trx_d);
+        m_changedRecords++;
     }
+
+    for (auto& tp_d : TrxSplitModel::instance().find_data_a(
+        TrxSplitCol::WHERE_CATEGID(OP_EQ, m_sourceCatID)
+    )) {
+        tp_d.m_category_id = dst_cat_id;
+        TrxSplitModel::instance().save_data_n(tp_d);
+        m_changedRecords++;
+    }
+
+    for (auto& sched_d : SchedModel::instance().find_data_a(
+        SchedCol::WHERE_CATEGID(OP_EQ, m_sourceCatID)
+    )) {
+        sched_d.m_category_id_n = dst_cat_id;
+        SchedModel::instance().save_data_n(sched_d);
+        m_changedRecords++;
+    }
+
+    for (auto& qp_d : SchedSplitModel::instance().find_data_a(
+        SchedSplitCol::WHERE_CATEGID(OP_EQ, m_sourceCatID)
+    )) {
+        qp_d.m_category_id = dst_cat_id;
+        SchedSplitModel::instance().save_data_n(qp_d);
+        m_changedRecords++;
+    }
+
+    for (auto& payee_d : PayeeModel::instance().find_data_a(
+        PayeeCol::WHERE_CATEGID(OP_EQ, m_sourceCatID)
+    )) {
+        payee_d.m_category_id_n = dst_cat_id;
+        PayeeModel::instance().save_data_n(payee_d);
+        m_changedRecords++;
+    }
+    mmWebApp::uploadPayee();
+
+    for (auto& budget_d : BudgetModel::instance().find_data_a(
+        BudgetCol::WHERE_CATEGID(OP_EQ, m_sourceCatID)
+    )) {
+        BudgetModel::instance().purge_id(budget_d.m_id);
+        m_changedRecords++;
+    }
+
+    if (cbDeleteSourceCategory_->IsChecked()) {
+        if (m_sourceSubCatID == -1) {
+            const CategoryData* src_cat_n = CategoryModel::instance().get_id_data_n(
+                m_sourceCatID
+            );
+            if (CategoryModel::instance().find_data_sub_a(*src_cat_n).empty())
+                CategoryModel::instance().purge_id(m_sourceCatID);
+        }
+
+        cbSourceCategory_->mmDoReInitialize();
+        cbDestCategory_->mmDoReInitialize();
+        mmWebApp::uploadCategory();
+    }
+
+    IsOkOk();
 }
 
 void MergeCategoryDialog::IsOkOk()

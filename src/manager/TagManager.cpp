@@ -433,7 +433,7 @@ void TagManager::OnListSelChanged(wxCommandEvent& WXUNUSED(event))
         bool is_used = false;
         for (const auto& tag_name : tag_name_a) {
             const TagData* tag_n = TagModel::instance().get_name_data_n(tag_name);
-            is_used = is_used || (TagModel::instance().find_id_isUsed(tag_n->m_id, true));
+            is_used = is_used || TagModel::instance().find_id_isUsed(tag_n->m_id, true);
         }
         w_delete_btn->Enable(!is_used);
     }    

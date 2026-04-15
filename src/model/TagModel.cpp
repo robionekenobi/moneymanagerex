@@ -50,7 +50,7 @@ bool TagModel::find_id_isUsed(int64 tag_id, bool ignore_deleted)
     bool is_used = false;
 
     if (!ignore_deleted) {
-        // Fast path: find tag_id with a single query.
+        // Fast path: search tag_id with a single query.
         is_used = is_used || TagLinkModel::instance().find_count(
             TagLinkCol::WHERE_TAGID(OP_EQ, tag_id)
         ) > 0;

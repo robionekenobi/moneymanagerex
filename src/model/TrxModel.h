@@ -132,7 +132,7 @@ public:
     void update_timestamp(Data& trx_d);
     auto unsafe_save_trx_n(Data* trx_n) -> const Data*;
     auto save_trx_n(Data& trx_d) -> const Data*;
-    bool save_trx_a(DataA& rows);
+    bool save_trx_a(DataA& trx_a);
 
     auto find_id_count(int64 trx_id, bool ignore_deleted = false) -> std::size_t;
     auto find_id_tp_a(int64 trx_id) -> const TrxSplitModel::DataA;
