@@ -18,10 +18,11 @@
 
 #pragma once
 
+// TagLinkData represents a record in table TAGLINK_V1.
+
 #include "_DataEnum.h"
 #include "table/TagLinkTable.h"
 
-// User-friendly representation of a record in table TAGLINK_V1.
 struct TagLinkData
 {
     int64 m_id;

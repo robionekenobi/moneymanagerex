@@ -18,11 +18,12 @@
 
 #pragma once
 
+// AccountData represents a record in table ACCOUNTLIST_V1.
+
 #include "base/mmDate.h"
 #include "_DataEnum.h"
 #include "table/AccountTable.h"
 
-// User-friendly representation of a record in table ACCOUNTLIST_V1.
 struct AccountData
 {
     int64           m_id;

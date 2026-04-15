@@ -1,5 +1,4 @@
 /*******************************************************
- Copyright (C) 2016 Guan Lisheng (guanlisheng@gmail.com)
  Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
@@ -17,37 +16,39 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#pragma once
+#include "_ModelAll.h"
 
-#include "base/_defs.h"
-#include "base/mmSingleton.h"
-#include "table/_TableFactory.h"
-#include "data/TagData.h"
+#include "TrxModel.h"
+#include "TrxSplitModel.h"
 
-class TagModel : public TableFactory<TagTable, TagData>
-{
 // -- constructor
 
-public:
-    TagModel() :
-        TableFactory<TagTable, TagData>() {}
-    ~TagModel() {}
+ModelAll& ModelAll::instance(wxSQLite3Database* db)
+{
+    ModelAll& ins = Singleton<ModelAll>::instance();
+    ins.m_db = db;
 
-public:
-    static TagModel& instance(wxSQLite3Database* db);
-    static TagModel& instance();
+    return ins;
+}
 
-// -- override
-
-public:
-    // override TableFactory
-    virtual bool find_id_isUsed(int64 id, bool ignore_deleted = false) override;
-    virtual bool purge_id(int64 id) override {
-        return unsafe_remove_id(id);
-    }
+ModelAll& ModelAll::instance()
+{
+    return Singleton<ModelAll>::instance();
+}
 
 // -- methods
 
-public:
-    auto get_name_data_n(const wxString& name) -> const Data*;
-};
+// This function is called by find_id_isUsed(), in the slow branch
+// (when ignore_deleted is true), to check if a reference is not deleted.
+std::size_t ModelAll::find_ref_count(RefTypeN ref_type, int64 ref_id, bool ignore_deleted)
+{
+    if (ref_type == TrxModel::s_ref_type) {
+        return TrxModel::instance().find_id_count(ref_id, ignore_deleted);
+    }
+    else if (ref_type == TrxSplitModel::s_ref_type) {
+        return TrxSplitModel::instance().find_id_count(ref_id, ignore_deleted); 
+    }
+    else {
+        return 1;
+    }
+}

@@ -47,10 +47,10 @@ FieldValueDialog::FieldValueDialog(
     m_ref_id(ref_id)
 {
     m_dialog = dialog;
-    m_field_a = FieldModel::instance().find(
-        FieldCol::REFTYPE(RefTypeN::field_ref_type_n(m_ref_type).key_n())
+    m_field_a = FieldModel::instance().find_data_a(
+        FieldCol::WHERE_REFTYPE(OP_EQ, RefTypeN::field_ref_type_n(m_ref_type).key_n()),
+        TableClause::ORDERBY(FieldCol::NAME_DESCRIPTION)
     );
-    std::sort(m_field_a.begin(), m_field_a.end(), FieldData::SorterByDESCRIPTION());
     m_data_changed.clear();
 }
 
@@ -344,10 +344,10 @@ void FieldValueDialog::OnMultiChoice(wxCommandEvent& event)
 
     const auto& name = button->GetName();
 
-    FieldModel::DataA field_a = FieldModel::instance().find(
-        FieldCol::REFTYPE(m_ref_type.key_n()),
-        FieldCol::TYPE(FieldTypeN(FieldTypeN::e_multi_choice).key_n()),
-        FieldCol::DESCRIPTION(name)
+    FieldModel::DataA field_a = FieldModel::instance().find_data_a(
+        FieldCol::WHERE_REFTYPE(OP_EQ, m_ref_type.key_n()),
+        FieldCol::WHERE_TYPE(OP_EQ, FieldTypeN(FieldTypeN::e_multi_choice).key_n()),
+        FieldCol::WHERE_DESCRIPTION(OP_EQ, name)
     );
     wxArrayString all_choices = FieldModel::getChoices(field_a.begin()->m_properties);
 
@@ -382,9 +382,9 @@ void FieldValueDialog::OnMultiChoice(wxCommandEvent& event)
 
 size_t FieldValueDialog::GetActiveCustomFieldsCount() const
 {
-    return FieldValueModel::instance().find(
-        FieldValueCol::REFID(m_ref_id)
-    ).size();
+    return FieldValueModel::instance().find_count(
+        FieldValueCol::WHERE_REFID(OP_EQ, m_ref_id)
+    );
 }
 
 std::map<int64, wxString> FieldValueDialog::GetActiveCustomFields() const
@@ -513,6 +513,7 @@ const wxString FieldValueDialog::GetWidgetData(wxWindowID controlID) const
 bool FieldValueDialog::SaveCustomValues(RefTypeN ref_type, int64 ref_id)
 {
     bool changed = false;
+
     FieldValueModel::instance().db_savepoint();
     int field_index = 0;
     for (const auto& field_d : m_field_a) {
@@ -523,7 +524,6 @@ bool FieldValueDialog::SaveCustomValues(RefTypeN ref_type, int64 ref_id)
             field_d.m_id, ref_type, ref_id
         );
         if (!data.empty()) {
-            FieldValueData old_fv_d = fv_n ? *fv_n : FieldValueData();
             FieldValueData fv_d = fv_n ? *fv_n : FieldValueData();
             fv_d.m_field_id = field_d.m_id;
             fv_d.m_ref_type = ref_type;
@@ -535,7 +535,7 @@ bool FieldValueDialog::SaveCustomValues(RefTypeN ref_type, int64 ref_id)
                 data
             );
 
-            if (fv_n && !fv_d.equals(&old_fv_d))
+            if (!fv_n || !fv_d.equals(fv_n))
                 changed = true;
 
             FieldValueModel::instance().save_data_n(fv_d);
@@ -547,7 +547,7 @@ bool FieldValueDialog::SaveCustomValues(RefTypeN ref_type, int64 ref_id)
     }
     FieldValueModel::instance().db_release_savepoint();
 
-    if (ref_type.id_n() == TrxModel::s_ref_type.id_n() && changed)
+    if (ref_type == TrxModel::s_ref_type && changed)
         TrxModel::instance().save_timestamp(ref_id);        
 
     return true;
@@ -556,6 +556,7 @@ bool FieldValueDialog::SaveCustomValues(RefTypeN ref_type, int64 ref_id)
 void FieldValueDialog::UpdateCustomValues(RefTypeN ref_type, int64 ref_id)
 {
     bool changed = false;
+
     FieldValueModel::instance().db_savepoint();
     int field_index = 0;
     for (const auto& field_d : m_field_a) {
@@ -570,14 +571,13 @@ void FieldValueDialog::UpdateCustomValues(RefTypeN ref_type, int64 ref_id)
             field_d.m_id, ref_type, ref_id
         );
         if (!data.empty()) {
-            FieldValueData old_fv_d = fv_n ? *fv_n : FieldValueData();
             FieldValueData fv_d = fv_n ? *fv_n : FieldValueData();
             fv_d.m_field_id = field_d.m_id;
             fv_d.m_ref_type = ref_type;
             fv_d.m_ref_id   = ref_id;
             fv_d.m_content  = data;
 
-            if (!fv_d.equals(&old_fv_d))
+            if (!fv_n || !fv_d.equals(fv_n))
                 changed = true;
 
             FieldValueModel::instance().save_data_n(fv_d);
@@ -589,7 +589,7 @@ void FieldValueDialog::UpdateCustomValues(RefTypeN ref_type, int64 ref_id)
     }
     FieldValueModel::instance().db_release_savepoint();
 
-    if (ref_type.id_n() == TrxModel::s_ref_type.id_n() && changed)
+    if (ref_type == TrxModel::s_ref_type && changed)
         TrxModel::instance().save_timestamp(ref_id);        
 }
 
@@ -662,8 +662,8 @@ void FieldValueDialog::OnRadioButtonChanged(wxCommandEvent& event)
 int FieldValueDialog::GetWidgetType(wxWindowID controlID) const
 {
     int control_id = (controlID - GetBaseID()) / FIELDMULTIPLIER;
-    for (const auto& field_d : FieldModel::instance().find(
-        FieldCol::REFTYPE(m_ref_type.key_n())
+    for (const FieldData& field_d : FieldModel::instance().find_data_a(
+        FieldCol::WHERE_REFTYPE(OP_EQ, m_ref_type.key_n())
     )) {
         if (field_d.m_id == m_field_a[control_id].m_id) {
             return field_d.m_type_n.id_n();
@@ -742,16 +742,15 @@ void FieldValueDialog::SetWidgetChanged(wxWindowID id, const wxString& data)
 
 bool FieldValueDialog::IsDataFound(const TrxModel::DataExt& trx_dx)
 {
-    const auto& fv_a = FieldValueModel::instance().find(
-        FieldValueCol::REFID(trx_dx.m_id)
+    const FieldValueModel::DataA fv_a = FieldValueModel::instance().find_data_a(
+        FieldValueCol::WHERE_REFID(OP_EQ, trx_dx.m_id)
     );
     for (const auto& filter : m_data_changed) {
-        for (const auto& fv_d : fv_a) {
+        for (const FieldValueData& fv_d : fv_a) {
             if (filter.second == fv_d.m_content) {
                 return true;
             }
         }
-
     }
     return false;
 }

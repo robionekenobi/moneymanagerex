@@ -128,23 +128,22 @@ wxString BalanceReport::getHTMLText()
 
     mmDate start_date = mmDate::today();
     // Calculate the report date
-    for (const auto& account_d : AccountModel::instance().find_all()) {
+    for (const auto& account_d : AccountModel::instance().find_data_a(
+        TableClause::ORDERBY(AccountCol::s_primary_name)
+    )) {
         if (account_d.m_open_date < start_date)
             start_date = account_d.m_open_date;
         m_account_balance_mDate_mId[account_d.m_id] = loadAccountBalance_mDate(account_d);
         if (AccountModel::type_id(account_d) != mmNavigatorItem::TYPE_ID_INVESTMENT)
             continue;
-        for (const auto& stock_d : StockModel::instance().find(
-            StockCol::HELDAT(account_d.m_id)
+        for (const auto& stock_d : StockModel::instance().find_data_a(
+            StockCol::WHERE_HELDAT(OP_EQ, account_d.m_id)
         )) {
             StockDataExt stock_dx = StockDataExt(stock_d);
-            stock_dx.m_hist_data_a = StockHistoryModel::instance().find(
-                StockHistoryCol::SYMBOL(stock_d.m_symbol)
+            stock_dx.m_hist_data_a = StockHistoryModel::instance().find_data_a(
+                StockHistoryCol::WHERE_SYMBOL(OP_EQ, stock_d.m_symbol),
+                TableClause::ORDERBY(StockHistoryCol::NAME_DATE, true)
             );
-            std::stable_sort(stock_dx.m_hist_data_a.begin(), stock_dx.m_hist_data_a.end(),
-                StockHistoryData::SorterByDATE()
-            );
-            std::reverse(stock_dx.m_hist_data_a.begin(), stock_dx.m_hist_data_a.end());
             m_stock_xa.push_back(stock_dx);
         }
     }
@@ -181,7 +180,9 @@ wxString BalanceReport::getHTMLText()
         std::vector<double> balance_a(acc_size +1);
         std::fill(balance_a.begin(), balance_a.end(), 0.0);
         int idx;
-        for (const auto& account_d : AccountModel::instance().find_all()) {
+        for (const auto& account_d : AccountModel::instance().find_data_a(
+            TableClause::ORDERBY(AccountCol::s_primary_name)
+        )) {
             idx = mmNavigatorList::instance().getAccountTypeIdx(account_d.m_type_);
             if (idx == -1) {
                 idx = mmNavigatorList::instance().getAccountTypeIdx(mmNavigatorItem::TYPE_ID_CHECKING);
@@ -198,7 +199,9 @@ wxString BalanceReport::getHTMLText()
 
         idx = mmNavigatorList::instance().getAccountTypeIdx(mmNavigatorItem::TYPE_ID_ASSET);
         if (idx > -1) {
-            for (const auto& asset_d : AssetModel::instance().find_all()) {
+            for (const auto& asset_d : AssetModel::instance().find_data_a(
+                TableClause::ORDERBY(AssetCol::s_primary_name)
+            )) {
                 double rate = getCurrencyDateRate(asset_d.m_currency_id_n, end_date);
                 balance_a[idx] += AssetModel::instance().get_data_value_date(
                     asset_d, end_date

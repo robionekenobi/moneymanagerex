@@ -55,6 +55,10 @@ TableClauseD TableClause::LIMIT(int limit, int offset) {
     );
 }
 
+TableClauseD TableClause::VOID() {
+    return TableClauseD(CLAUSE_ID_VOID, "");
+}
+
 // -- methods
 
 TableClause TableClause::where_op(const wxString& col, OP op)
@@ -112,11 +116,24 @@ TableClauseD TableClause::eval(const TableClauseV<double>& clause)
     return TableClauseD(clause.m_id, text);
 }
 
-// Merge clauses in clause_na. This is a helper function for the variadic merge().
-// clause_na must not be empty and must contain clauses of the same type.
-// The multiplicity of the merged clause is the multiplicity of the first clause.
+// This is a helper function used in the implementation of variadic merge().
+// Merge the clauses in non-empty vector clause_na and return a single clause.
+// All clauses shall be of the same type (_PAREN is coalesced to _WHERE).
+// The first clause shall not be void. Other clauses cannot have _VOID type
+// (since the first clause is not void), but can be void (with empty text).
+// The type of the returned clause is the type of the first clause, after coalescence.
+// The multiplicity of the returned clause is the multiplicity of the first clause.
 TableClause TableClause::merge(const std::vector<const TableClause*>& clause_na)
 {
+    if (clause_na.empty()) {
+        wxLogError("TableClause::merge: clause_na is empty");
+        return TableClause::VOID();
+    }
+    if (clause_na[0]->is_void()) {
+        wxLogError("TableClause::merge: clause_na[0] is void");
+        return TableClause::VOID();
+    }
+
     CLAUSE_ID id = collate_id(clause_na[0]->m_id);
     int mult = clause_na[0]->m_mult;
     wxString text = "";
@@ -132,6 +149,8 @@ TableClause TableClause::merge(const std::vector<const TableClause*>& clause_na)
             wxLogError("TableClause::merge: cannot merge clauses of different type");
             continue;
         }
+        if (clause.is_void())
+            continue;
 
         switch (clause.m_id)
         {

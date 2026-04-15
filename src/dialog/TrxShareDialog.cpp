@@ -25,10 +25,11 @@
 #include "base/_constants.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
-#include "util/_util.h"
-#include "util/_simple.h"
+#include "util/mmAttachment.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
+#include "util/_util.h"
+#include "util/_simple.h"
 
 #include "model/AccountModel.h"
 #include "model/CategoryModel.h"
@@ -90,13 +91,13 @@ TrxShareDialog::TrxShareDialog(
                 // FIXME: m_ts_n is changed but not saved
                 m_ts_n->m_lot = m_stock_n->m_id.ToString();
 
-            for (const auto& tp_d: TrxSplitModel::instance().find(
-                TrxSplitCol::TRANSID(m_ts_n->m_id)
+            for (const auto& tp_d: TrxSplitModel::instance().find_data_a(
+                TrxSplitCol::WHERE_TRANSID(OP_EQ, m_ts_n->m_id)
             )) {
                 wxArrayInt64 tag_id_a;
-                for (const auto& gl_d : TagLinkModel::instance().find(
-                    TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.key_n()),
-                    TagLinkCol::REFID(tp_d.m_id)
+                for (const auto& gl_d : TagLinkModel::instance().find_data_a(
+                    TagLinkCol::WHERE_REFTYPE(OP_EQ, TrxSplitModel::s_ref_type.key_n()),
+                    TagLinkCol::WHERE_REFID(OP_EQ, tp_d.m_id)
                 )) {
                     tag_id_a.push_back(gl_d.m_tag_id);
                 }
@@ -108,13 +109,13 @@ TrxShareDialog::TrxShareDialog(
     }
 
     if (m_trx_n) {
-        for (const auto& tp_d: TrxSplitModel::instance().find(
-            TrxSplitCol::TRANSID(m_trx_n->m_id)
+        for (const auto& tp_d: TrxSplitModel::instance().find_data_a(
+            TrxSplitCol::WHERE_TRANSID(OP_EQ, m_trx_n->m_id)
         )) {
             wxArrayInt64 tag_id_a;
-            for (const auto& gl_d : TagLinkModel::instance().find(
-                TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.key_n()),
-                TagLinkCol::REFID(tp_d.m_id)
+            for (const auto& gl_d : TagLinkModel::instance().find_data_a(
+                TagLinkCol::WHERE_REFTYPE(OP_EQ, TrxSplitModel::s_ref_type.key_n()),
+                TagLinkCol::WHERE_REFID(OP_EQ, tp_d.m_id)
             )) {
                 tag_id_a.push_back(gl_d.m_tag_id);
             }
@@ -420,7 +421,7 @@ void TrxShareDialog::OnQuit(wxCloseEvent& WXUNUSED(event))
 {
     // FIXME
     if (!this->m_stock_n)
-        mmAttachmentManage::DeleteAllAttachments(StockModel::s_ref_type, 0);
+        mmAttachment::delete_ref_all(StockModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 
@@ -428,7 +429,7 @@ void TrxShareDialog::OnCancel(wxCommandEvent& WXUNUSED(event))
 {
     // FIXME
     if (m_stock_id <= 0)
-        mmAttachmentManage::DeleteAllAttachments(StockModel::s_ref_type, 0);
+        mmAttachment::delete_ref_all(StockModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 
@@ -536,17 +537,17 @@ void TrxShareDialog::OnDeductibleSplit(wxCommandEvent&)
         double commission = 0;
         m_share_commission_ctrl->GetDouble(commission);
 
-        const CategoryData* category_n = CategoryModel::instance().get_key_data_n(
+        const CategoryData* cat_n = CategoryModel::instance().get_key_data_n(
             _("Investment"), int64(-1L)
         );
-        if (!category_n) {
-            CategoryData new_category_d = CategoryData();
-            new_category_d.m_name = _("Investment");
-            CategoryModel::instance().add_data_n(new_category_d);
-            category_n = CategoryModel::instance().get_id_data_n(new_category_d.m_id);
+        if (!cat_n) {
+            CategoryData new_cat_d = CategoryData();
+            new_cat_d.m_name = _("Investment");
+            CategoryModel::instance().add_data_n(new_cat_d);
+            cat_n = CategoryModel::instance().get_id_data_n(new_cat_d.m_id);
         }
         m_local_deductible_splits.push_back({
-            category_n->m_id, commission, "", wxArrayInt64()
+            cat_n->m_id, commission, "", wxArrayInt64()
         });
     }
 

@@ -1,5 +1,4 @@
 /*******************************************************
- Copyright (C) 2016 Gabriele-V
  Copyright (C) 2026 George Ef (george.a.ef@gmail.com)
 
  This program is free software; you can redistribute it and/or modify
@@ -19,44 +18,43 @@
 
 #pragma once
 
+// ModelAll contains methods which span across different ${Table}Model.
+// These methods could be added in one of the individual ${Table}Model;
+// collecting them in a separate class slightly improves readability.
+//
+// ModelAll could be stateless, and all its method could be static.
+// A stateful design, containing a database handle m_db, is preferred here.
+// As in other ${Table}Model classes, all methods depending on m_db are defined
+// as member methods, and they are accessed through ModelAll::instance().
+// This allows a future extension, in which the application can open
+// more than database simultaneously.
+
 #include "base/_defs.h"
 #include "base/mmSingleton.h"
-#include "table/_TableFactory.h"
-#include "data/FieldValueData.h"
+#include "data/_DataEnum.h"
 
-class FieldValueModel : public TableFactory<FieldValueTable, FieldValueData>
+class ModelAll
 {
-// -- static
+// -- state
 
-public:
-    static auto WHERE_REFTYPEID(RefTypeN ref_type, int64 ref_id) -> TableClauseV<int64>;
+private:
+    wxSQLite3Database* m_db;
 
 // -- constructor
 
 public:
-    FieldValueModel() :
-        TableFactory<FieldValueTable, FieldValueData>() {}
-    ~FieldValueModel() {}
+    ModelAll() {}
+    ~ModelAll() {}
 
 public:
-    static FieldValueModel& instance(wxSQLite3Database* db);
-    static FieldValueModel& instance();
-
-// -- override
-
-public:
-    // override TableFactory
-    virtual bool purge_id(int64 id) override {
-        return unsafe_remove_id(id);
-    }
+    static ModelAll& instance(wxSQLite3Database* db);
+    static ModelAll& instance();
 
 // -- methods
 
 public:
-    auto find_fieldId_c(int64 field_id) -> std::size_t;
-    bool purge_fieldId_all(int64 field_id);
-    bool purge_ref_all(RefTypeN ref_type, int64 ref_id);
-
-    auto get_key_data_n(int64 field_id, RefTypeN ref_type, int64 ref_id) -> const Data*;
-    auto find_refType_mRefId(RefTypeN ref_type) -> std::map<int64, DataA>;
+    auto find_ref_count(
+        RefTypeN ref_type, int64 ref_id,
+        bool ignore_deleted = false
+    ) -> std::size_t;
 };

@@ -28,11 +28,9 @@
 
 #include "base/_constants.h"
 #include "base/mmUserColor.h"
+#include "util/mmAttachment.h"
 #include "util/_util.h"
-
 #include "model/_all.h"
-#include "dialog/AttachmentDialog.h"
-
 #include "htmlbuilder.h"
 
 TrxReport::TrxReport(wxSharedPtr<TrxFilterDialog>& transDialog) :
@@ -56,12 +54,20 @@ void TrxReport::displayTotals(const std::map<int64, double>& total, std::map<int
         const bool isBaseCurr = (curr->m_symbol == CurrencyModel::instance().get_base_data_n()->m_symbol);
         grand_total += total_in_base_curr[curr_id];
         if (total.size() > 1 || !isBaseCurr) {
-            const wxString totalStr_curr = isBaseCurr ? "" : CurrencyModel::instance().toCurrency(curr_total, curr);
-            const wxString totalStr = CurrencyModel::instance().toCurrency(total_in_base_curr[curr_id], CurrencyModel::instance().get_base_data_n());
+            const wxString totalStr_curr = isBaseCurr
+                ? ""
+                : CurrencyModel::instance().toCurrency(curr_total, curr);
+            const wxString totalStr = CurrencyModel::instance().toCurrency(
+                total_in_base_curr[curr_id],
+                CurrencyModel::instance().get_base_data_n()
+            );
             hb.addTotalRow(curr->m_symbol, noOfCols, { totalStr_curr,  totalStr });
         }
     }
-    const wxString totalStr = CurrencyModel::instance().toCurrency(grand_total, CurrencyModel::instance().get_base_data_n());
+    const wxString totalStr = CurrencyModel::instance().toCurrency(
+        grand_total,
+        CurrencyModel::instance().get_base_data_n()
+    );
     const std::vector<wxString> v{ "", totalStr };
     hb.addTotalRow(_t("Grand Total:"), noOfCols, v);
 }
@@ -376,7 +382,7 @@ table {
                 )) {
                     AttachmentsLink = wxString::Format(R"(<a href = "attachment:%s|%lld" target="_blank">%s</a>)",
                         TrxModel::s_ref_type.key_n(), trx_dx.m_id,
-                        mmAttachmentManage::GetAttachmentNoteSign()
+                        mmAttachment::getMarker()
                     );
                 }
 
@@ -564,7 +570,9 @@ void TrxReport::Run(wxSharedPtr<TrxFilterDialog>& dlg)
         TrxModel::s_ref_type
     );
     bool combine_splits = dlg.get()->mmIsCombineSplitsChecked();
-    for (const auto& trx_d : TrxModel::instance().find_all()) {
+    for (const auto& trx_d : TrxModel::instance().find_data_a(
+        TableClause::ORDERBY(TrxCol::s_primary_name)
+    )) {
         TrxModel::DataExt trx_dx(trx_d, trxId_tpA_m, trxId_glA_m);
         trx_dx.PAYEENAME = trx_dx.real_payee_name(trx_dx.m_account_id);
         if (trx_dx.has_split()) {

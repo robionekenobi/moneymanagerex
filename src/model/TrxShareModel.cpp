@@ -43,18 +43,25 @@ TrxShareModel& TrxShareModel::instance()
 
 // -- methods
 
-void TrxShareModel::purge_trxId(const int64 trx_id)
+bool TrxShareModel::purge_trxId_all(const int64 trx_id)
 {
-    int64 ts_id = get_trxId_id(trx_id);
-    if (ts_id > 0) {
-        purge_id(ts_id);
+    bool ok = true;
+
+    for (int64 ts_id : find_id_a(
+        TrxShareCol::WHERE_CHECKINGACCOUNTID(OP_EQ, trx_id)
+    )) {
+        ok = ok && purge_id(ts_id);
     }
+
+    return ok;
 }
 
 int64 TrxShareModel::get_trxId_id(const int64 trx_id)
 {
-    DataA ts_a = find(TrxShareCol::CHECKINGACCOUNTID(trx_id));
-    return !ts_a.empty() ? ts_a.at(0).m_id : -1;
+    std::vector<int64> id_a = find_id_a(
+        TrxShareCol::WHERE_CHECKINGACCOUNTID(OP_EQ, trx_id)
+    );
+    return !id_a.empty() ? id_a.at(0) : -1;
 }
 
 TrxShareData* TrxShareModel::unsafe_get_trxId_data_n(const int64 trx_id)

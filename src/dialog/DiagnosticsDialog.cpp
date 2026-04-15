@@ -120,8 +120,8 @@ void DiagnosticsDialog::RefreshView()
          << ", closed: " << all_accounts.size() - all_accounts_open.size()
          << "</td></tr>";
     // Transactions info
-    auto all_transactions = TrxModel::instance().find_all();
-    html << "<tr><td><b>Transactions</b></td><td>" << all_transactions.size() 
+    size_t trx_c = TrxModel::instance().find_count();
+    html << "<tr><td><b>Transactions</b></td><td>" << trx_c
          << "</td></tr>";
     // Payee info
     auto all_payees = PayeeModel::instance().find_all_name_id_m(false);

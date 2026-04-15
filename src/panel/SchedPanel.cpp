@@ -23,6 +23,7 @@
 #include "base/_constants.h"
 #include "util/mmImage.h"
 #include "util/mmSplitterWindow.h"
+#include "util/mmAttachment.h"
 #include "model/CategoryModel.h"
 #include "model/AttachmentModel.h"
 #include "model/UsageModel.h"
@@ -213,8 +214,8 @@ int SchedPanel::initList(int64 sched_id_n)
 
     m_sched_xa.clear();
     const auto schedId_qpA_m = SchedSplitModel::instance().find_all_mSchedId();
-    for (const SchedData& data : SchedModel::instance().find_all(
-        SchedCol::COL_ID_NEXTOCCURRENCEDATE
+    for (const SchedData& data : SchedModel::instance().find_data_a(
+        TableClause::ORDERBY(SchedCol::NAME_NEXTOCCURRENCEDATE)
     )) {
         if (m_filter_active && !w_filter_dlg->mmIsRecordMatches(data, schedId_qpA_m))
             continue;
@@ -324,7 +325,7 @@ wxString SchedPanel::getItem(long item, int col_id)
         wxString value = sched_dx.m_notes;
         value.Replace("\n", " ");
         if (AttachmentModel::instance().find_ref_c(SchedModel::s_ref_type, sched_dx.m_id))
-            value.Prepend(mmAttachmentManage::GetAttachmentNoteSign());
+            value.Prepend(mmAttachment::getMarker());
         return value;
     }
     default:

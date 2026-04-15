@@ -48,15 +48,13 @@ public:
 // -- override
 
 public:
-    // TODO: add to virtual methods in TableFactory
-    int find_id_aux_c(int64 payee_id);
-    int find_id_dep_c(int64 payee_id);
-
     // override TableFactory
-    virtual bool purge_id(int64 payee_id) override;
+    virtual bool find_id_isUsed(int64 id, bool ignore_deleted = false) override;
+    virtual bool purge_id(int64 id) override;
 
 // -- methods
 
+public:
     // lookup for given id
     auto get_id_name(int64 payee_id) -> const wxString;
 

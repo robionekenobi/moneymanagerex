@@ -34,10 +34,10 @@ class AssetModel : public TableFactory<AssetTable, AssetData>
 public:
     static const RefTypeN s_ref_type;
 
-    static AssetCol::ASSETTYPE ASSETTYPE(OP op, AssetType type) {
-        return AssetCol::ASSETTYPE(op, type.key());
-    }
-    static AssetCol::STARTDATE STARTDATE(OP op, const mmDate& date);
+    static auto WHERE_TYPE(OP op, AssetType type) -> TableClauseV<wxString>;
+    static auto WHERE_STATUS(OP op, AssetStatus status) -> TableClauseV<wxString>;
+    static auto WHERE_STARTDATE(OP op, const mmDate& date) -> TableClauseV<wxString>;
+    static auto WHERE_IGNORE_CLOSED(bool value) -> TableClauseD;
 
 // -- constructor
 
@@ -53,9 +53,14 @@ public:
 // -- override
 
 public:
-    // FIXME: add purge_id() to remove AttachmentData owned by AssetData
+    // override TableFactory
+    virtual bool find_id_isUsed(int64 id, bool ignore_deleted = false) override;
+    virtual bool purge_id(int64 id) override;
 
 // -- methods
+
+public:
+    bool purge_id_dep(int64 asset_id);
 
 public:
     // lookup for given Data

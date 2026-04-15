@@ -29,10 +29,11 @@
 #include "base/_constants.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
-#include "util/_util.h"
-#include "util/_simple.h"
+#include "util/mmAttachment.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
+#include "util/_util.h"
+#include "util/_simple.h"
 
 #include "model/_all.h"
 
@@ -385,14 +386,14 @@ void StockDialog::CreateControls()
 void StockDialog::OnQuit(wxCloseEvent& /*event*/)
 {
     if (!m_edit)
-        mmAttachmentManage::DeleteAllAttachments(StockModel::s_ref_type, 0);
+        mmAttachment::delete_ref_all(StockModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 
 void StockDialog::OnCancel(wxCommandEvent& /*event*/)
 {
     if (m_stock_id <= 0)
-        mmAttachmentManage::DeleteAllAttachments(StockModel::s_ref_type, 0);
+        mmAttachment::delete_ref_all(StockModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 
@@ -497,7 +498,7 @@ void StockDialog::OnSave(wxCommandEvent & /*event*/)
 
     if (!m_edit) {
         // FIXME
-        mmAttachmentManage::RelocateAllAttachments(
+        mmAttachment::relocate_ref_all(
             StockModel::s_ref_type, 0,
             StockModel::s_ref_type, m_stock_n->m_id
         );
@@ -842,10 +843,10 @@ void StockDialog::OnHistoryDownloadButton(wxCommandEvent& /*event*/)
                 continue;
             float price = date_price.second;
 
-            if (StockHistoryModel::instance().find(
-                StockHistoryCol::SYMBOL(m_stock_n->m_symbol),
-                StockHistoryCol::DATE(date.isoDate())
-            ).empty() && price > 0) {
+            if (StockHistoryModel::instance().find_count(
+                StockHistoryCol::WHERE_SYMBOL(OP_EQ, m_stock_n->m_symbol),
+                StockHistoryCol::WHERE_DATE(OP_EQ, date.isoDate())
+            ) == 0 && price > 0) {
                 StockHistoryData new_sh_d = StockHistoryData();
                 new_sh_d.m_symbol      = m_stock_n->m_symbol;
                 new_sh_d.m_date        = date;
@@ -937,16 +938,17 @@ void StockDialog::OnHistoryDeleteButton(wxCommandEvent& /*event*/)
     if (w_price_list->GetSelectedItemCount() <= 0)
         return;
 
-    long item = -1;
     StockHistoryModel::instance().db_savepoint();
     for (;;) {
-        item = w_price_list->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-
+        long item = w_price_list->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
         if (item == -1)
             break;
-        StockHistoryModel::instance().purge_id(static_cast<int64>(w_price_list->GetItemData(item)));
+        StockHistoryModel::instance().purge_id(
+            static_cast<int64>(w_price_list->GetItemData(item))
+        );
     }
     StockHistoryModel::instance().db_release_savepoint();
+
     ShowStockHistory();
 }
 
@@ -959,17 +961,15 @@ void StockDialog::ShowStockHistory()
     const AccountData* account = AccountModel::instance().get_id_data_n(
         m_stock_n->m_account_id_n
     );
-    StockHistoryModel::DataA sh_a = StockHistoryModel::instance().find(
-        StockHistoryCol::SYMBOL(m_stock_n->m_symbol)
+    StockHistoryModel::DataA sh_a = StockHistoryModel::instance().find_data_a(
+        StockHistoryCol::WHERE_SYMBOL(OP_EQ, m_stock_n->m_symbol),
+        TableClause::ORDERBY(StockHistoryCol::NAME_DATE, true),
+        TableClause::LIMIT(300)
     );
-    std::stable_sort(sh_a.begin(), sh_a.end(), StockHistoryData::SorterByDATE());
-    std::reverse(sh_a.begin(), sh_a.end());
-    if (sh_a.size()>300)
-        sh_a.resize(300);
-    size_t rows = sh_a.size() - 1;
     if (sh_a.empty())
         return;
 
+    size_t rows = sh_a.size() - 1;
     for (size_t sh_i = 0; sh_i < sh_a.size(); ++sh_i ) {
         StockHistoryData& sh_d = sh_a.at(sh_i);
         wxListItem item;

@@ -21,6 +21,7 @@
 
 #include "base/_constants.h"
 #include "util/mmPath.h"
+#include "util/mmAttachment.h"
 #include "util/_util.h"
 
 #include "model/SchedModel.h"
@@ -161,10 +162,10 @@ void MergePayeeDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 
     if (ans == wxOK) {
         TrxModel::instance().db_savepoint();
-        auto trx_a = TrxModel::instance().find(
-            TrxCol::PAYEEID(sourcePayeeID_)
+        TrxModel::DataA trx_a = TrxModel::instance().find_data_a(
+            TrxCol::WHERE_PAYEEID(OP_EQ, sourcePayeeID_)
         );
-        for (auto& trx_d : trx_a) {
+        for (TrxData& trx_d : trx_a) {
             trx_d.m_payee_id_n = destPayeeID_;
         }
         TrxModel::instance().save_trx_a(trx_a);
@@ -172,10 +173,10 @@ void MergePayeeDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         TrxModel::instance().db_release_savepoint();
 
         SchedModel::instance().db_savepoint();
-        auto sched_a = SchedModel::instance().find(
-            SchedCol::PAYEEID(sourcePayeeID_)
+        SchedModel::DataA sched_a = SchedModel::instance().find_data_a(
+            SchedCol::WHERE_PAYEEID(OP_EQ, sourcePayeeID_)
         );
-        for (auto& sched_d : sched_a) {
+        for (SchedData& sched_d : sched_a) {
             sched_d.m_payee_id_n = destPayeeID_;
         }
         SchedModel::instance().save_data_a(sched_a);
@@ -184,7 +185,10 @@ void MergePayeeDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 
         if (cbDeleteSourcePayee_->IsChecked()) {
             if (PayeeModel::instance().purge_id(sourcePayeeID_)) {
-                mmAttachmentManage::DeleteAllAttachments(PayeeModel::s_ref_type, sourcePayeeID_);
+                mmAttachment::delete_ref_all(
+                    PayeeModel::s_ref_type,
+                    sourcePayeeID_
+                );
                 mmWebApp::uploadPayee();
             }
             cbSourcePayee_->mmDoReInitialize();
@@ -201,23 +205,28 @@ void MergePayeeDialog::IsOkOk()
 
     destPayeeID_ = cbDestPayee_->mmGetId();
     sourcePayeeID_ = cbSourcePayee_->mmGetId();
-    int trxs_size = (sourcePayeeID_ < 0) ? 0 : TrxModel::instance().find(
-        TrxCol::PAYEEID(sourcePayeeID_)
-    ).size();
-    int bills_size = (sourcePayeeID_ < 0) ? 0 : SchedModel::instance().find(
-        SchedCol::PAYEEID(sourcePayeeID_)
-    ).size();
 
-    if (destPayeeID_ < 0 || sourcePayeeID_ < 0
-        || destPayeeID_ == sourcePayeeID_
-        || trxs_size + bills_size == 0) {
+    int trx_c = (sourcePayeeID_ < 0)
+        ? 0
+        : TrxModel::instance().find_count(
+            TrxCol::WHERE_PAYEEID(OP_EQ, sourcePayeeID_)
+        );
+    int sched_c = (sourcePayeeID_ < 0)
+        ? 0
+        : SchedModel::instance().find_count(
+            SchedCol::WHERE_PAYEEID(OP_EQ, sourcePayeeID_)
+        );
+
+    if (destPayeeID_ < 0 || sourcePayeeID_ < 0 ||
+        destPayeeID_ == sourcePayeeID_ ||
+        (trx_c == 0 && sched_c == 0)
+    ) {
         e = false;
     }
 
     wxString msgStr = wxString()
-        << wxString::Format(_t("Records found in transactions: %i"), trxs_size) << "\n"
-        << wxString::Format(_t("Records found in scheduled transactions: %i"), bills_size);
-
+        << wxString::Format(_t("Records found in transactions: %i"), trx_c) << "\n"
+        << wxString::Format(_t("Records found in scheduled transactions: %i"), sched_c);
     m_info->SetLabel(msgStr);
 
     wxButton* ok = wxStaticCast(FindWindow(wxID_OK), wxButton);

@@ -18,9 +18,10 @@
 
 #pragma once
 
+// TrxSplitData represents a record in table SPLITTRANSACTIONS_V1.
+
 #include "table/TrxSplitTable.h"
 
-// User-friendly representation of a record in table SPLITTRANSACTIONS_V1.
 struct TrxSplitData
 {
     int64    m_id;

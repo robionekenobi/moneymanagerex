@@ -52,7 +52,9 @@ SettingModel& SettingModel::instance()
 // Returns true if key setting found
 bool SettingModel::contains(const wxString& key)
 {
-    return !find(SettingCol::SETTINGNAME(key)).empty();
+    return (find_count(
+        SettingCol::WHERE_SETTINGNAME(OP_EQ, key)
+    ) > 0);
 }
 
 // Raw
@@ -62,9 +64,11 @@ void SettingModel::saveRaw(const wxString& key, const wxString& newValue)
     const Data* setting_n = search_cache_n(SettingCol::SETTINGNAME(key));
     if (!setting_n) {
         // not found in cache; search in db
-        const DataA setting_a = find(SettingCol::SETTINGNAME(key));
-        if (!setting_a.empty())
-            setting_n = get_id_data_n(setting_a[0].m_id);
+        for (int64 setting_id : find_id_a(
+            SettingCol::WHERE_SETTINGNAME(OP_EQ, key)
+        )) {
+            setting_n = get_id_data_n(setting_id);
+        }
     }
 
     Data setting_d = setting_n ? *setting_n : Data();
@@ -85,11 +89,11 @@ const wxString SettingModel::getRaw(const wxString& key, const wxString& default
         return setting_n->m_value;
 
     // search in db
-    DataA setting_a = find(
-        SettingCol::SETTINGNAME(key)
-    );
-    if (!setting_a.empty())
-        return setting_a[0].m_value;
+    for (const Data& setting_d : find_data_a(
+        SettingCol::WHERE_SETTINGNAME(OP_EQ, key)
+    )) {
+        return setting_d.m_value;
+    }
 
     // not found
     return defaultValue;
@@ -219,10 +223,12 @@ void SettingModel::prependArrayItem(const wxString& key, const wxString& value, 
         return;
 
     const Data* setting_n = search_cache_n(SettingCol::SETTINGNAME(key));
-    if (!setting_n) { // not cached
-        DataA setting_a = find(SettingCol::SETTINGNAME(key));
-        if (!setting_a.empty())
-            setting_n = get_id_data_n(setting_a[0].m_id);
+    if (!setting_n) {
+        for (int64 setting_id : find_id_a(
+            SettingCol::WHERE_SETTINGNAME(OP_EQ, key)
+        )) {
+            setting_n = get_id_data_n(setting_id);
+        }
     }
 
     Data setting_d = setting_n ? *setting_n : Data();
@@ -328,7 +334,10 @@ void SettingModel::shrinkUsageTable()
 row_t SettingModel::to_html_row()
 {
     row_t row;
-    for (const auto& setting_a: find_all())
+    for (const auto& setting_a: find_data_a(
+        TableClause::ORDERBY(SettingCol::s_primary_name)
+    )) {
         row(setting_a.m_name.ToStdWstring()) = setting_a.m_value;
+    }
     return row;
 }

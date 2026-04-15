@@ -18,11 +18,13 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "ReportModel.h"
+
 #include "base/_constants.h"
 #include "base/mmPlatform.h"
 #include "util/mmPath.h"
+#include "util/mmAttachment.h"
 
-#include "ReportModel.h"
 #include "SettingModel.h"
 #include "PrefModel.h"
 
@@ -152,9 +154,12 @@ const ReportData* ReportModel::get_name_data_n(const wxString& name)
     if (report_n)
         return report_n;
 
-    DataA report_a = find(ReportCol::REPORTNAME(name));
-    if (!report_a.empty())
-        report_n = get_id_data_n(report_a[0].m_id);
+    for (int64 report_id : find_id_a(
+        ReportCol::WHERE_REPORTNAME(OP_EQ, name)
+    )) {
+        report_n = get_id_data_n(report_id);
+    }
+
     return report_n;
 }
 
@@ -162,7 +167,9 @@ const wxArrayString ReportModel::find_all_group_name_a()
 {
     wxArrayString group_name_a;
     wxString previous_group_name;
-    for (const auto& report_d : find_all(Col::COL_ID_GROUPNAME)) {
+    for (const auto& report_d : find_data_a(
+        TableClause::ORDERBY(Col::NAME_GROUPNAME)
+    )) {
         if (report_d.m_group_name != previous_group_name) {
             group_name_a.Add(report_d.m_group_name);
             previous_group_name = report_d.m_group_name;
@@ -368,7 +375,7 @@ int ReportModel::generate_html(const Data& report_d, wxString& out)
         for (const auto& label_value : label_value_m) {
             report_template(label_value.first.Upper().ToStdWstring()) = label_value.second;
         }
-        auto att_path = mmPath::getPathAttachment(mmAttachmentManage::InfotablePathSetting());
+        auto att_path = mmAttachment::getFolder();
         //javascript does not handle backslashs
         att_path.Replace("\\", "\\\\");
         report_template(L"ATTACHMENTSFOLDER") = att_path;

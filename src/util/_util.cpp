@@ -771,7 +771,8 @@ END_EVENT_TABLE()
 
 //--------------------------------------------------------------------
 
-bool getOnlineCurrencyRates(wxString& msg,const int64 curr_id, const bool used_only)
+// CHECK: used_only has wrong name
+bool getOnlineCurrencyRates(wxString& msg, const int64 currency_id, const bool used_only)
 {
     wxString base_currency_symbol;
 
@@ -780,110 +781,127 @@ bool getOnlineCurrencyRates(wxString& msg,const int64 curr_id, const bool used_o
         return false;
     }
 
-    std::map<wxString, double> fiat;
+    std::map<wxString, double> symbol_rate_m;
     mmDate today = mmDate::today();
 
-    auto currency_a = CurrencyModel::instance().find(
-        CurrencyCol::CURRENCY_SYMBOL(OP_NE, base_currency_symbol)
+    CurrencyModel::DataA currency_a = CurrencyModel::instance().find_data_a(
+        CurrencyCol::WHERE_CURRENCY_SYMBOL(OP_NE, base_currency_symbol)
     );
     for (const CurrencyData& currency_d : currency_a) {
-        if (curr_id > 0 && currency_d.m_id != curr_id)
+        if (currency_id > 0 && currency_d.m_id != currency_id)
             continue;
-        if (curr_id < 0 && CurrencyModel::instance().find_id_dep_c(currency_d.m_id) == 0)
+        if (currency_id < 0 && !CurrencyModel::instance().find_id_isUsed(currency_d.m_id, true))
             continue;
-        const auto symbol = currency_d.m_symbol;
+
+        const wxString symbol = currency_d.m_symbol;
         if (symbol.IsEmpty())
             continue;
 
-        fiat[symbol] = CurrencyHistoryModel::instance().get_id_date_rate(
-            currency_d.m_id,
-            today
+        symbol_rate_m[symbol] = CurrencyHistoryModel::instance().get_id_date_rate(
+            currency_d.m_id, today
         );
     }
 
-    if (fiat.empty()) {
+    if (symbol_rate_m.empty()) {
         msg = _t("Nothing to update");
         return false;
     }
 
     wxString output;
-    std::map<wxString, double> currency_data;
+    std::map<wxString, double> new_symbol_rate_m;
 
-    get_yahoo_prices(fiat, currency_data, base_currency_symbol, output, yahoo_price_type::FIAT);
+    get_yahoo_prices(
+        symbol_rate_m, new_symbol_rate_m, base_currency_symbol, output, yahoo_price_type::FIAT
+    );
 
     // fallback to coincap if some currencies were not found
     double usd_conv_rate = -1;
-    for (const auto & item : fiat) {
-        if (currency_data.find(item.first) == currency_data.end() &&
-            !g_fiat_curr().Contains(item.first)
-        ) {
-            wxString coincap_id;
-            wxString coincap_msg;
-            double coincap_price_usd;
-            if (getCoincapInfoFromSymbol(item.first, coincap_id, coincap_price_usd, coincap_msg) && coincap_price_usd > 0) {
-                if (usd_conv_rate < 0) {
-                    auto usd = CurrencyModel::instance().get_symbol_data_n("USD");
-                    if (usd == nullptr) {
-                        break; // can't use coincap without USD, since all prices are in USD so give up
-                    }
-                    usd_conv_rate = usd->m_base_conv_rate;
-                }
+    for (const auto & symbol_rate : symbol_rate_m) {
+        if (new_symbol_rate_m.find(symbol_rate.first) != new_symbol_rate_m.end() ||
+            g_fiat_curr().Contains(symbol_rate.first)
+        )
+            continue;
 
-                currency_data[item.first] = coincap_price_usd * usd_conv_rate;
+        wxString coincap_id;
+        wxString coincap_msg;
+        double coincap_price_usd;
+        if (
+            getCoincapInfoFromSymbol(
+                symbol_rate.first, coincap_id, coincap_price_usd, coincap_msg
+            ) &&
+            coincap_price_usd > 0
+        ) {
+            if (usd_conv_rate < 0) {
+                auto usd = CurrencyModel::instance().get_symbol_data_n("USD");
+                // can't use coincap without USD, since all prices are in USD so give up
+                if (usd == nullptr) {
+                    break;
+                }
+                usd_conv_rate = usd->m_base_conv_rate;
             }
+
+            new_symbol_rate_m[symbol_rate.first] = coincap_price_usd * usd_conv_rate;
         }
     }
 
     const auto b = CurrencyModel::instance().get_base_data_n();
     msg << _t("Currency rates have been updated");
     msg << "\n\n";
-    for (const auto & item : fiat) {
-        const wxString value0_str(fmt::format("{:>{}}",
-            fmt::string_view(CurrencyModel::instance().toString(item.second, b, 4).mb_str()),
+    for (const auto & symbol_rate : symbol_rate_m) {
+        const wxString old_rate_s(fmt::format("{:>{}}",
+            fmt::string_view(CurrencyModel::instance().toString(
+                symbol_rate.second, b, 4
+            ).mb_str()),
             20
         ));
         const wxString symbol(fmt::format("{:<{}}",
-            fmt::string_view(item.first.mb_str()),
+            fmt::string_view(symbol_rate.first.mb_str()),
             10
         ));
 
-        if (currency_data.find(item.first) != currency_data.end()) {
-            auto value1 = currency_data[item.first];
-            const wxString value1_str(fmt::format("{:>{}}",
-                fmt::string_view(CurrencyModel::instance().toString(value1, b, 4).mb_str()),
+        if (new_symbol_rate_m.find(symbol_rate.first) != new_symbol_rate_m.end()) {
+            auto new_rate = new_symbol_rate_m[symbol_rate.first];
+            const wxString new_rate_s(fmt::format("{:>{}}",
+                fmt::string_view(
+                    CurrencyModel::instance().toString(new_rate, b, 4).mb_str()
+                ),
                 20
             ));
-            msg << wxString::Format("%s\t%s\t\t%s\n", symbol, value0_str, value1_str);
+            msg << wxString::Format("%s\t%s\t\t%s\n", symbol, old_rate_s, new_rate_s);
         }
         else {
-            msg << wxString::Format("%s\t%s\t\t%s\n", symbol, value0_str, _t("Invalid value"));
+            msg << wxString::Format("%s\t%s\t\t%s\n", symbol, old_rate_s, _t("Invalid value"));
         }
     }
 
     CurrencyModel::instance().db_savepoint();
     CurrencyHistoryModel::instance().db_savepoint();
     for (auto& currency_d : currency_a) {
-        if (!used_only && CurrencyModel::instance().find_id_dep_c(currency_d.m_id) == 0)
+        // CHECK: redundant condition; currency_a does not contain unused currencies
+        if (!used_only && !CurrencyModel::instance().find_id_isUsed(currency_d.m_id, true))
             continue;
 
-        const wxString currency_symbol = currency_d.m_symbol;
-        if (!currency_symbol.IsEmpty()
-            && currency_data.find(currency_symbol) != currency_data.end()
-        ) {
-            double new_rate = currency_data[currency_symbol];
-            if (new_rate > 0) {
-                if(PrefModel::instance().getUseCurrencyHistory())
-                    CurrencyHistoryModel::instance().save_record(
-                        currency_d.m_id,
-                        today,
-                        new_rate,
-                        UpdateType(UpdateType::e_online)
-                    );
-                else {
-                    currency_d.m_base_conv_rate = new_rate;
-                    CurrencyModel::instance().save_data_n(currency_d);
-                }
-            }
+        const wxString symbol = currency_d.m_symbol;
+        if (symbol.IsEmpty() ||
+            new_symbol_rate_m.find(symbol) == new_symbol_rate_m.end()
+        )
+            continue;
+
+        double new_rate = new_symbol_rate_m[symbol];
+        if (new_rate <= 0)
+            continue;
+
+        if (PrefModel::instance().getUseCurrencyHistory()) {
+            CurrencyHistoryModel::instance().save_record(
+                currency_d.m_id,
+                today,
+                new_rate,
+                UpdateType(UpdateType::e_online)
+            );
+        }
+        else {
+            currency_d.m_base_conv_rate = new_rate;
+            CurrencyModel::instance().save_data_n(currency_d);
         }
     }
     CurrencyModel::instance().db_release_savepoint();

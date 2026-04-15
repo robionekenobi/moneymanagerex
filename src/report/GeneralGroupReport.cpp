@@ -77,11 +77,13 @@ const char* GeneralGroupReport::group_report_template = R"(
 </html>
 )";
 
-GeneralGroupReport::GeneralGroupReport(const wxString& groupname) :
+GeneralGroupReport::GeneralGroupReport(const wxString& group_name) :
     ReportBase(_n("General Group Report")),
-    m_group_name(groupname)
+    m_group_name(group_name)
 {
-    m_sub_reports = ReportModel::instance().find(ReportCol::GROUPNAME(groupname));
+    m_sub_reports = ReportModel::instance().find_data_a(
+        ReportCol::WHERE_GROUPNAME(OP_EQ, group_name)
+    );
 }
 
 wxString GeneralGroupReport::getHTMLText()

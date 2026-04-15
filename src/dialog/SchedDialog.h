@@ -45,6 +45,8 @@ class SchedDialog : public wxDialog
     wxDECLARE_DYNAMIC_CLASS(SchedDialog);
     wxDECLARE_EVENT_TABLE();
 
+// -- static
+
 private:
     enum
     {
@@ -87,17 +89,17 @@ private:
     };
 
 private:
-    const wxString payeeWithdrawalTip_ = _t("Specify where the transaction is going to");
-    const wxString payeeDepositTip_    = _t("Specify where the transaction is coming from");
-    const wxString payeeTransferTip_   = _t("Specify which account the transfer is going to");
-    const wxString amountNormalTip_    = _t("Specify the amount for this transaction");
-    const wxString amountTransferTip_  = _t("Specify the amount to be transferred");
+    const wxString s_payeeWithdrawalTip = _t("Specify where the transaction is going to");
+    const wxString s_amountNormalTip    = _t("Specify the amount for this transaction");
+    const wxString s_amountTransferTip  = _t("Specify the amount to be transferred");
+
+// -- state
 
 private:
     SchedData m_sched_d = SchedData();
+    int64 m_sched_id;
     std::vector<Split> m_split_a;
     wxArrayInt64 m_tag_id_a;
-    int64 m_sched_id;
     bool m_is_transfer = false;
     bool m_is_new = false;
     bool m_is_duplicate = false;
@@ -107,7 +109,7 @@ private:
     bool m_advanced = false;
     std::vector<wxString> m_frequent_note_a;
 
-    wxSharedPtr<FieldValueDialog> m_custom_fields;
+    wxSharedPtr<FieldValueDialog> w_fv_dialog;
     int                 w_focus             = wxID_ANY;
     wxSize              w_min_size;
     wxBitmapButton*     w_calc_btn          = nullptr;
@@ -141,17 +143,17 @@ private:
     mmTagTextCtrl*      w_tag_text          = nullptr;
 
 public:
-    SchedDialog();
+    auto GetTransID() -> int64 { return m_sched_id; }
+
+// -- constructor
+
+public:
+    SchedDialog() {}
     SchedDialog(wxWindow* parent, int64 bdD, bool duplicate, bool enterOccur);
     ~SchedDialog();
 
-public:
-    int64 GetTransID() { return m_sched_id; }
-    void SetDialogHeader(const wxString& header);
-    void SetDialogParameters(int64 trx_id);
-
 private:
-    bool Create(
+    bool create(
         wxWindow* parent,
         wxWindowID id = wxID_ANY,
         const wxString& caption = _t("New Scheduled Transaction"),
@@ -160,43 +162,47 @@ private:
         long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX,
         const wxString& name = "Scheduled Transaction Dialog"
     );
-
-    void CreateControls();
-
-    // utility functions
-    void OnQuit(wxCloseEvent& event);
-    void OnOk(wxCommandEvent& event);
-    void OnCancel(wxCommandEvent& event);
-    void OnCategs(wxCommandEvent& event);
-    void OnPayee(wxCommandEvent& event);
-    void OnTypeChanged(wxCommandEvent& event);
-    void OnAttachments(wxCommandEvent& event);
-    void OnComboKey(wxKeyEvent& event);
-
+    void createControls();
     void dataToControls();
-    void updateControlsForTransType();
-    void OnAccountUpdated(wxCommandEvent& event);
-    void OnAutoExecutionUserAckChecked(wxCommandEvent& event);
-    void OnAutoExecutionSilentChecked(wxCommandEvent& event);
-    void OnFocusChange(wxChildFocusEvent& event);
-    void SetAmountCurrencies(int64 accountID, int64 toAccountID);
-    void OnCalculator(wxCommandEvent& event);
+
+// methods
+
+public:
+    void SetDialogHeader(const wxString& header);
+    void SetDialogParameters(int64 trx_id);
 
 private:
+    void updateControlsForTransType();
+    void SetAmountCurrencies(int64 accountID, int64 toAccountID);
     void setTooltips();
     void setCategoryLabel();
-    void OnAdvanceChecked(wxCommandEvent& event);
     void SetTransferControls(bool transfers = false);
     void SetAdvancedTransferControls(bool advanced = false);
     void SetSplitControls(bool split = false);
-    void OnFrequentUsedNotes(wxCommandEvent& event);
-    void OnNoteSelected(wxCommandEvent& event);
-
-    void OnRepeatTypeChanged(wxCommandEvent& event);
-    void OnsetPrevOrNextRepeatDate(wxCommandEvent& event);
     void setRepeatDetails();
-    RepeatFreq getRepeatFreq();
-    void OnMoreFields(wxCommandEvent& event);
-
+    auto getRepeatFreq() -> RepeatFreq;
     void activateSplitTransactionsDlg();
+
+// -- event handlers
+
+private:
+    void OnQuit(                        wxCloseEvent&      event);
+    void OnOk(                          wxCommandEvent&    event);
+    void OnCancel(                      wxCommandEvent&    event);
+    void OnCategs(                      wxCommandEvent&    event);
+    void OnPayee(                       wxCommandEvent&    event);
+    void OnTypeChanged(                 wxCommandEvent&    event);
+    void OnAttachments(                 wxCommandEvent&    event);
+    void OnComboKey(                    wxKeyEvent&        event);
+    void OnAccountUpdated(              wxCommandEvent&    event);
+    void OnAutoExecutionUserAckChecked( wxCommandEvent&    event);
+    void OnAutoExecutionSilentChecked(  wxCommandEvent&    event);
+    void OnFocusChange(                 wxChildFocusEvent& event);
+    void OnCalculator(                  wxCommandEvent&    event);
+    void OnAdvanceChecked(              wxCommandEvent&    event);
+    void OnFrequentUsedNotes(           wxCommandEvent&    event);
+    void OnNoteSelected(                wxCommandEvent&    event);
+    void OnRepeatTypeChanged(           wxCommandEvent&    event);
+    void OnsetPrevOrNextRepeatDate(     wxCommandEvent&    event);
+    void OnMoreFields(                  wxCommandEvent&    event);
 };

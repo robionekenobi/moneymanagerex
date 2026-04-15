@@ -26,6 +26,7 @@
 #include "util/mmPath.h"
 #include "util/mmImage.h"
 #include "util/mmNavigatorList.h"
+#include "util/mmAttachment.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 #include "util/mmTextCtrl.h"
@@ -457,7 +458,7 @@ void AssetDialog::OnOk(wxCommandEvent& /*event*/)
     int64 new_asset_id = m_asset_n->id();
 
     if (old_asset_id < 0) {
-        mmAttachmentManage::RelocateAllAttachments(
+        mmAttachment::relocate_ref_all(
             AssetModel::s_ref_type, 0,
             AssetModel::s_ref_type, new_asset_id
         );
@@ -529,7 +530,7 @@ void AssetDialog::OnCancel(wxCommandEvent& /*event*/)
 
     // FIXME: temporary records (with id <= 0) are not stored in database
     if (!m_asset_n)
-        mmAttachmentManage::DeleteAllAttachments(AssetModel::s_ref_type, 0);
+        mmAttachment::delete_ref_all(AssetModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 
@@ -537,7 +538,7 @@ void AssetDialog::OnQuit(wxCloseEvent& /*event*/)
 {
     // FIXME: temporary records (with id <= 0) are not stored in database
     if (!m_asset_n)
-        mmAttachmentManage::DeleteAllAttachments(AssetModel::s_ref_type, 0);
+        mmAttachment::delete_ref_all(AssetModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 

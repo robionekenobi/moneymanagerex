@@ -58,9 +58,9 @@ public:
     static const RefTypeN s_ref_type;
 
 public:
-    static auto TYPE(OP op, TrxType sched_type) -> SchedCol::TRANSCODE;
-    static auto STATUS(OP op, TrxStatus sched_status) -> SchedCol::STATUS;
-    static auto IS_VOID(bool value) -> SchedCol::STATUS;
+    static auto WHERE_TYPE(OP op, TrxType type) -> TableClauseV<wxString>;
+    static auto WHERE_STATUS(OP op, TrxStatus status) -> TableClauseV<wxString>;
+    static auto WHERE_IS_VOID(bool value) -> TableClauseV<wxString>;
 
 // -- constructor
 
@@ -77,10 +77,11 @@ public:
 
 public:
     // override TableFactory
-    virtual bool purge_id(int64 sched_id) override;
+    virtual bool purge_id(int64 id) override;
 
 // -- methods
 
+public:
     auto find_id_qp_a(int64 sched_id) -> const SchedSplitModel::DataA;
     auto find_id_gl_a(int64 sched_id) -> const TagLinkModel::DataA;
     bool is_data_allowed(const Data& sched_d);

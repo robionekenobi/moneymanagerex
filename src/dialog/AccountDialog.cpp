@@ -551,44 +551,42 @@ void AccountDialog::OnOk(wxCommandEvent& /*event*/)
             _t("Invalid Date")
         );
     if (m_account_n) {
-        bool valid_open_date_trx1 = TrxModel::instance().find(
-            TrxCol::TRANSDATE(OP_LT, open_date.isoStart()),
-            TrxCol::ACCOUNTID(OP_EQ, m_account_n->m_id)
-        ).empty();
-        bool valid_open_date_trx2 = TrxModel::instance().find(
-            TrxCol::TRANSDATE(OP_LT, open_date.isoStart()),
-            TrxCol::TOACCOUNTID(OP_EQ, m_account_n->m_id)
-        ).empty();
-        if (!valid_open_date_trx1 || !valid_open_date_trx2)
+        if (TrxModel::instance().find_count(
+            TrxCol::WHERE_TRANSDATE(OP_LT, open_date.isoStart()),
+            TableClause::BEGIN_OR(),
+                TrxCol::WHERE_ACCOUNTID(OP_EQ, m_account_n->m_id),
+                TrxCol::WHERE_TOACCOUNTID(OP_EQ, m_account_n->m_id),
+            TableClause::END()
+        ) > 0) {
             return mmErrorDialogs::ToolTip4Object(
                 m_initdate_ctrl,
                 _t("Transactions for this account already exist before this date"),
                 _t("Invalid Date")
             );
-        bool valid_open_date_stock = StockModel::instance().find(
-            StockCol::PURCHASEDATE(OP_LT, open_date.isoStart()),
-            StockCol::HELDAT(OP_EQ, m_account_n->m_id)
-        ).empty();
-        if (!valid_open_date_stock)
+        }
+        if (StockModel::instance().find_count(
+            StockCol::WHERE_PURCHASEDATE(OP_LT, open_date.isoStart()),
+            StockCol::WHERE_HELDAT(OP_EQ, m_account_n->m_id)
+        ) > 0) {
             return mmErrorDialogs::ToolTip4Object(
                 m_initdate_ctrl,
                 _t("Stock purchases for this account already exist before this date"),
                 _t("Invalid Date")
             );
-        bool valid_open_date_sched1 = SchedModel::instance().find(
-            SchedCol::TRANSDATE(OP_LT, open_date.isoStart()),
-            SchedCol::ACCOUNTID(OP_EQ, m_account_n->m_id)
-        ).empty();
-        bool valid_open_date_sched2 = SchedModel::instance().find(
-            SchedCol::TRANSDATE(OP_LT, open_date.isoStart()),
-            SchedCol::TOACCOUNTID(OP_EQ, m_account_n->m_id)
-        ).empty();
-        if (!valid_open_date_sched1 || !valid_open_date_sched2)
+        }
+        if (SchedModel::instance().find_count(
+            SchedCol::WHERE_TRANSDATE(OP_LT, open_date.isoStart()),
+            TableClause::BEGIN_OR(),
+                SchedCol::WHERE_ACCOUNTID(OP_EQ, m_account_n->m_id),
+                SchedCol::WHERE_TOACCOUNTID(OP_EQ, m_account_n->m_id),
+            TableClause::END()
+        ) > 0) {
             return mmErrorDialogs::ToolTip4Object(
                 m_initdate_ctrl,
                 _t("Scheduled transactions for this account are scheduled before this date."),
                 _t("Invalid Date")
             );
+        }
     }
 
     double open_balance = 0.0;

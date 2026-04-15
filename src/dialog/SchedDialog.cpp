@@ -27,13 +27,14 @@
 #include <wx/valnum.h>
 
 #include "base/_constants.h"
+#include "base/mmDate.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
-#include "util/_util.h"
-#include "util/_simple.h"
-#include "base/mmDate.h"
+#include "util/mmAttachment.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
+#include "util/_util.h"
+#include "util/_simple.h"
 
 #include "model/PayeeModel.h"
 #include "model/CurrencyHistoryModel.h"
@@ -72,21 +73,6 @@ wxBEGIN_EVENT_TABLE(SchedDialog, wxDialog)
     EVT_CLOSE(                                     SchedDialog::OnQuit)
 wxEND_EVENT_TABLE()
 
-SchedDialog::SchedDialog()
-{
-}
-
-SchedDialog::~SchedDialog()
-{
-    wxSize size = GetSize();
-    if (m_custom_fields->IsCustomPanelShown())
-        size = wxSize(
-            GetSize().GetWidth() - m_custom_fields->GetMinWidth(),
-            GetSize().GetHeight()
-        );
-    InfoModel::instance().saveSize("RECURRINGTRANS_DIALOG_SIZE", size);
-}
-
 SchedDialog::SchedDialog(
     wxWindow* parent,
     int64 sched_id,
@@ -101,33 +87,18 @@ SchedDialog::SchedDialog(
     );
     m_is_new = !sched_n;
 
-    if (!m_is_new) {
-        // If duplicate then we will be creating a new identity
-        if (!m_is_duplicate) {
-            m_sched_d.m_id = sched_id;
+    if (sched_n) {
+        m_sched_d = *sched_n;
+        if (m_is_duplicate) {
+            m_sched_d.m_id = -1;
         }
-        m_sched_d.m_datetime        = sched_n->m_datetime;
-        m_sched_d.m_type            = sched_n->m_type;
-        m_sched_d.m_status          = sched_n->m_status;
-        m_sched_d.m_account_id      = sched_n->m_account_id;
-        m_sched_d.m_to_account_id_n = sched_n->m_to_account_id_n;
-        m_sched_d.m_payee_id_n      = sched_n->m_payee_id_n;
-        m_sched_d.m_category_id_n   = sched_n->m_category_id_n;
-        m_sched_d.m_amount          = sched_n->m_amount;
-        m_sched_d.m_to_amount       = sched_n->m_to_amount;
-        m_sched_d.m_notes           = sched_n->m_notes;
-        m_sched_d.m_number          = sched_n->m_number;
-        m_sched_d.m_followup_id     = sched_n->m_followup_id;
-        m_sched_d.m_color           = sched_n->m_color;
-        m_sched_d.m_due_date        = sched_n->m_due_date;
-        m_sched_d.m_repeat          = sched_n->m_repeat;
 
         m_tag_id_a.clear();
-        for (const auto& gl_d : SchedModel::instance().find_id_gl_a(sched_n->m_id)) {
+        for (const auto& gl_d : SchedModel::instance().find_id_gl_a(sched_id)) {
             m_tag_id_a.push_back(gl_d.m_tag_id);
         }
 
-        for (const auto& qp_d : SchedModel::instance().find_id_qp_a(sched_n->m_id)) {
+        for (const auto& qp_d : SchedModel::instance().find_id_qp_a(sched_id)) {
             wxArrayInt64 split_tag_id_a;
             for (const auto& gl_d : SchedSplitModel::instance().find_id_gl_a(qp_d.m_id))
                 split_tag_id_a.push_back(gl_d.m_tag_id);
@@ -139,7 +110,7 @@ SchedDialog::SchedDialog(
         // If duplicate then we may need to copy the attachments
         if (m_is_duplicate && InfoModel::instance().getBool("ATTACHMENTSDUPLICATE", false)) {
             // FIXME: id 0 does not exist in database
-            mmAttachmentManage::CloneAllAttachments(
+            mmAttachment::clone_ref_all(
                 SchedModel::s_ref_type, sched_id, 0
             );
         }
@@ -151,18 +122,29 @@ SchedDialog::SchedDialog(
 
     m_is_transfer = m_sched_d.is_transfer();
 
-    m_custom_fields = new mmCustomDataTransaction(this,
+    w_fv_dialog = new mmCustomDataTransaction(this,
         SchedModel::s_ref_type,
         (m_is_duplicate ? sched_id : !m_is_new ? m_sched_d.m_id : -1),
         ID_CUSTOMFIELDS
     );
 
     this->SetFont(parent->GetFont());
-    Create(parent);
+    create(parent);
     mmThemeAutoColour(this);
 }
 
-bool SchedDialog::Create(
+SchedDialog::~SchedDialog()
+{
+    wxSize size = GetSize();
+    if (w_fv_dialog->IsCustomPanelShown())
+        size = wxSize(
+            GetSize().GetWidth() - w_fv_dialog->GetMinWidth(),
+            GetSize().GetHeight()
+        );
+    InfoModel::instance().saveSize("RECURRINGTRANS_DIALOG_SIZE", size);
+}
+
+bool SchedDialog::create(
     wxWindow* parent,
     wxWindowID id,
     const wxString& caption,
@@ -176,10 +158,10 @@ bool SchedDialog::Create(
     SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create(parent, id, caption, pos, size, style, name);
 
-    CreateControls();
+    createControls();
     dataToControls();
 
-    //generate date change events for set weekday name
+    // generate date change events for set weekday name
     wxDateEvent dateEventPaid(w_pay_date, w_pay_date->GetValue(), wxEVT_DATE_CHANGED);
     GetEventHandler()->ProcessEvent(dateEventPaid);
     wxDateEvent dateEventDue(w_due_date, w_due_date->GetValue(), wxEVT_DATE_CHANGED);
@@ -201,7 +183,7 @@ bool SchedDialog::Create(
     );
     wxSize sz = wxSize(
         GetMinWidth() + minWidth +
-            (m_custom_fields->IsCustomPanelShown() ? m_custom_fields->GetMinWidth() : 0),
+            (w_fv_dialog->IsCustomPanelShown() ? w_fv_dialog->GetMinWidth() : 0),
         GetMinHeight()
     );
     if (sz.GetWidth() > GetSize().GetWidth())
@@ -231,8 +213,9 @@ void SchedDialog::dataToControls()
     }
     w_freq_choice->SetSelection(RepeatFreq::e_1_month);
 
+    std::size_t account_c = AccountModel::instance().find_count();
     for (int i = 0; i < TrxType::size; ++i) {
-        if (i == TrxType::e_transfer && AccountModel::instance().find_all().size() < 2)
+        if (i == TrxType::e_transfer && account_c < 2)
             break;
         wxString type_name = TrxType(i).name();
         w_type_choice->Append(
@@ -242,7 +225,8 @@ void SchedDialog::dataToControls()
     }
     w_type_choice->SetSelection(TrxType::e_withdrawal);
 
-    SetTransferControls();  // hide appropriate fields
+    // hide appropriate fields
+    SetTransferControls();
     setCategoryLabel();
 
     if (m_is_new && !m_enter) {
@@ -337,7 +321,7 @@ void SchedDialog::SetDialogParameters(int64 trx_id)
     const auto schedId_glA_m = TagLinkModel::instance().find_refType_mRefId(
         SchedModel::s_ref_type
     );
-    //const auto trx = TrxModel::instance().find(TrxCol::TRANSID(trx_id)).at(0);
+    //const auto trx = TrxModel::instance().find_data_a(TrxCol::WHERE_TRANSID(OP_EQ, trx_id)).at(0);
     const TrxData* trx_n = TrxModel::instance().get_id_data_n(trx_id);
     TrxModel::DataExt trx_dx(*trx_n, trxId_tpA_m, schedId_glA_m);
     m_sched_d.m_account_id = trx_dx.m_account_id;
@@ -388,7 +372,7 @@ void SchedDialog::SetDialogParameters(int64 trx_id)
     setCategoryLabel();
 }
 
-void SchedDialog::CreateControls()
+void SchedDialog::createControls()
 {
     wxBoxSizer* mainBoxSizerOuter = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* mainBoxSizerInner = new wxBoxSizer(wxHORIZONTAL);
@@ -563,7 +547,7 @@ void SchedDialog::CreateControls()
         wxALIGN_RIGHT | wxTE_PROCESS_ENTER,
         mmCalcValidator()
     );
-    mmToolTip(w_amount_text, amountNormalTip_);
+    mmToolTip(w_amount_text, s_amountNormalTip);
 
     w_to_amount_text = new mmTextCtrl(this,
         ID_DIALOG_TRANS_TOTEXTAMOUNT,
@@ -625,7 +609,7 @@ void SchedDialog::CreateControls()
         m_sched_d.m_to_account_id_n
     );
     w_to_account_text->SetMinSize(w_to_account_text->GetSize());
-    mmToolTip(w_to_account_text, payeeTransferTip_);
+    mmToolTip(w_to_account_text, _t("Specify which account the transfer is going to"));
     transPanelSizer->Add(w_to_account_text, g_flagsExpand);
     transPanelSizer->AddSpacer(1);
 
@@ -640,7 +624,7 @@ void SchedDialog::CreateControls()
         mmID_PAYEE, wxDefaultSize,
         m_sched_d.m_payee_id_n, true
     );
-    mmToolTip(w_payee_text, payeeWithdrawalTip_);
+    mmToolTip(w_payee_text, s_payeeWithdrawalTip);
     w_payee_text->SetMinSize(w_payee_text->GetSize());
     transPanelSizer->Add(payee_label, g_flagsH);
     transPanelSizer->Add(w_payee_text, g_flagsExpand);
@@ -754,7 +738,7 @@ void SchedDialog::CreateControls()
         mmImage::bitmapBundle(mmImage::png::RIGHTARROW, mmImage::bitmapButtonSize)
     );
     mmToolTip(button_hide, _t("Show/Hide custom fields window"));
-    if (m_custom_fields->GetCustomFieldsCount() == 0) {
+    if (w_fv_dialog->GetCustomFieldsCount() == 0) {
         button_hide->Hide();
     }
 
@@ -763,8 +747,8 @@ void SchedDialog::CreateControls()
     button_sizer->Add(button_hide, wxSizerFlags(g_flagsH).Border(wxBOTTOM | wxRIGHT, 10));
 
     // Custom fields
-    m_custom_fields->FillCustomFields(custom_fields_box_sizer);
-    if (m_custom_fields->GetActiveCustomFieldsCount() > 0) {
+    w_fv_dialog->FillCustomFields(custom_fields_box_sizer);
+    if (w_fv_dialog->GetActiveCustomFieldsCount() > 0) {
         wxCommandEvent evt(wxEVT_BUTTON, ID_BTN_CUSTOMFIELDS);
         this->GetEventHandler()->AddPendingEvent(evt);
     }
@@ -773,13 +757,13 @@ void SchedDialog::CreateControls()
     this->SetSizerAndFit(mainBoxSizerOuter);
     w_min_size = GetMinSize();
     custom_fields_box_sizer->SetMinSize(transDetailsStaticBoxSizer->GetSize());
-    m_custom_fields->SetMinSize(custom_fields_box_sizer->GetMinSize());
+    w_fv_dialog->SetMinSize(custom_fields_box_sizer->GetMinSize());
 }
 
 void SchedDialog::OnQuit(wxCloseEvent& WXUNUSED(event))
 {
     if (m_enter && m_sched_d.m_id > 0) {
-        mmAttachmentManage::DeleteAllAttachments(SchedModel::s_ref_type, m_sched_d.m_id);
+        mmAttachment::delete_ref_all(SchedModel::s_ref_type, m_sched_d.m_id);
     }
     EndModal(wxID_CANCEL);
 }
@@ -797,7 +781,7 @@ void SchedDialog::OnCancel(wxCommandEvent& WXUNUSED(event))
 #endif
 
     if (m_enter && m_sched_d.m_id > 0) {
-        mmAttachmentManage::DeleteAllAttachments(SchedModel::s_ref_type, m_sched_d.m_id);
+        mmAttachment::delete_ref_all(SchedModel::s_ref_type, m_sched_d.m_id);
     }
     EndModal(wxID_CANCEL);
 }
@@ -915,7 +899,7 @@ void SchedDialog::updateControlsForTransType()
     {
     case TrxType::e_transfer: {
         m_is_transfer = true;
-        mmToolTip(w_amount_text, amountTransferTip_);
+        mmToolTip(w_amount_text, s_amountTransferTip);
         accountLabel->SetLabelText(_t("From"));
 
         w_to_account_text->mmSetId(m_sched_d.m_to_account_id_n);
@@ -923,10 +907,10 @@ void SchedDialog::updateControlsForTransType()
         break;
     }
     case TrxType::e_withdrawal: {
-        mmToolTip(w_amount_text, amountNormalTip_);
+        mmToolTip(w_amount_text, s_amountNormalTip);
         accountLabel->SetLabelText(_t("Account"));
         stp->SetLabelText(_t("Payee"));
-        mmToolTip(w_payee_text, payeeWithdrawalTip_);
+        mmToolTip(w_payee_text, s_payeeWithdrawalTip);
 
         w_payee_text->mmSetId(m_sched_d.m_payee_id_n);
         m_sched_d.m_to_account_id_n = -1;
@@ -935,10 +919,10 @@ void SchedDialog::updateControlsForTransType()
         break;
     }
     case TrxType::e_deposit: {
-        mmToolTip(w_amount_text, amountNormalTip_);
+        mmToolTip(w_amount_text, s_amountNormalTip);
         accountLabel->SetLabelText(_t("Account"));
         stp->SetLabelText(_t("From"));
-        mmToolTip(w_payee_text, payeeDepositTip_);
+        mmToolTip(w_payee_text, _t("Specify where the transaction is coming from"));
 
         w_payee_text->mmSetId(m_sched_d.m_payee_id_n);
         m_sched_d.m_to_account_id_n = -1;
@@ -1069,7 +1053,7 @@ void SchedDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         );
     }
 
-    if (!m_custom_fields->ValidateCustomValues())
+    if (!w_fv_dialog->ValidateCustomValues())
         return;
 
     if (!m_advanced || m_sched_d.m_to_amount < 0) {
@@ -1202,7 +1186,7 @@ void SchedDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         }
 
         // FIXME: ref_id 0 does not exists in database
-        mmAttachmentManage::RelocateAllAttachments(
+        mmAttachment::relocate_ref_all(
             SchedModel::s_ref_type, 0,
             SchedModel::s_ref_type, m_sched_id
         );
@@ -1222,7 +1206,7 @@ void SchedDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         );
 
         //Custom Data
-        m_custom_fields->SaveCustomValues(SchedModel::s_ref_type, m_sched_id);
+        w_fv_dialog->SaveCustomValues(SchedModel::s_ref_type, m_sched_id);
     }
     else {
         // FIXME: use m_sched_d directly
@@ -1278,9 +1262,9 @@ void SchedDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         }
 
         // Custom Data
-        m_custom_fields->SaveCustomValues(TrxModel::s_ref_type, new_trx_id);
+        w_fv_dialog->SaveCustomValues(TrxModel::s_ref_type, new_trx_id);
 
-        mmAttachmentManage::RelocateAllAttachments(
+        mmAttachment::relocate_ref_all(
             SchedModel::s_ref_type, m_sched_d.m_id,
             TrxModel::s_ref_type, new_trx_id
         );
@@ -1377,7 +1361,7 @@ void SchedDialog::SetAdvancedTransferControls(bool advanced)
     m_advanced = advanced;
     w_to_amount_text->Enable(m_advanced);
     mmToolTip(w_amount_text, m_advanced
-        ? amountTransferTip_
+        ? s_amountTransferTip
         : _t("Specify the transfer amount in the From Account")
     );
     if (m_advanced)
@@ -1515,21 +1499,23 @@ void SchedDialog::setCategoryLabel()
         w_amount_text->SetValue(TrxSplitModel::instance().get_total(m_split_a));
         m_sched_d.m_category_id_n = -1;
     }
-    else if (m_is_transfer && m_is_new
-        && PrefModel::instance().getTransCategoryTransferNone() == PrefModel::LASTUSED
+    else if (m_is_transfer && m_is_new &&
+        PrefModel::instance().getTransCategoryTransferNone() == PrefModel::LASTUSED
     ) {
-        TrxModel::DataA transactions = TrxModel::instance().find(
-            TrxModel::DATE(OP_LE, mmDate::today()),
-            TrxModel::TYPE(OP_EQ, TrxType(TrxType::e_transfer))
-        );
-
-        if (!transactions.empty()) {
-            int64 cat_id = transactions.back().m_category_id_n;
+        for (const TrxData& trx_d : TrxModel::instance().find_data_a(
+            TrxModel::WHERE_DATE(OP_LE, mmDate::today()),
+            TrxModel::WHERE_TYPE(OP_EQ, TrxType(TrxType::e_transfer)),
+            TableClause::ORDERBY(TrxCol::NAME_TRANSID, true),
+            TableClause::LIMIT(1)
+        )) {
+            int64 cat_id = trx_d.m_category_id_n;
             w_cat_text->ChangeValue(CategoryModel::instance().get_id_fullname(cat_id));
         }
     }
     else {
-        const auto cat_fullname = CategoryModel::instance().get_id_fullname(m_sched_d.m_category_id_n);
+        const auto cat_fullname = CategoryModel::instance().get_id_fullname(
+            m_sched_d.m_category_id_n
+        );
         w_cat_text->ChangeValue(cat_fullname);
     }
 
@@ -1549,24 +1535,24 @@ void SchedDialog::OnMoreFields(wxCommandEvent& WXUNUSED(event))
     wxBitmapButton* button = static_cast<wxBitmapButton*>(FindWindow(ID_BTN_CUSTOMFIELDS));
 
     if (button)
-        button->SetBitmap(mmImage::bitmapBundle(m_custom_fields->IsCustomPanelShown() ? mmImage::png::RIGHTARROW : mmImage::png::LEFTARROW, mmImage::bitmapButtonSize));
+        button->SetBitmap(mmImage::bitmapBundle(w_fv_dialog->IsCustomPanelShown() ? mmImage::png::RIGHTARROW : mmImage::png::LEFTARROW, mmImage::bitmapButtonSize));
 
-    m_custom_fields->ShowHideCustomPanel();
+    w_fv_dialog->ShowHideCustomPanel();
 
-    if (m_custom_fields->IsCustomPanelShown()) {
+    if (w_fv_dialog->IsCustomPanelShown()) {
         SetMinSize(wxSize(
-            w_min_size.GetWidth() + m_custom_fields->GetMinWidth(),
+            w_min_size.GetWidth() + w_fv_dialog->GetMinWidth(),
             w_min_size.GetHeight()
         ));
         SetSize(wxSize(
-            GetSize().GetWidth() + m_custom_fields->GetMinWidth(),
+            GetSize().GetWidth() + w_fv_dialog->GetMinWidth(),
             GetSize().GetHeight()
         ));
     }
     else {
         SetMinSize(w_min_size);
         SetSize(wxSize(
-            GetSize().GetWidth() - m_custom_fields->GetMinWidth(),
+            GetSize().GetWidth() - w_fv_dialog->GetMinWidth(),
             GetSize().GetHeight()
         ));
     }

@@ -29,9 +29,7 @@ class StockHistoryModel : public TableFactory<StockHistoryTable, StockHistoryDat
 // -- static
 
 public:
-    static StockHistoryCol::DATE DATE(OP op, const mmDate& date) {
-        return StockHistoryCol::DATE(op, date.isoDate());
-    }
+    static auto WHERE_DATE(OP op, const mmDate& date) -> TableClauseV<wxString>;
 
 // -- constructor
 
@@ -44,9 +42,19 @@ public:
     static StockHistoryModel& instance(wxSQLite3Database* db);
     static StockHistoryModel& instance();
 
+// -- override
+
+public:
+    // override TableFactory
+    virtual bool purge_id(int64 id) override {
+        return unsafe_remove_id(id);
+    }
+
 // -- methods
 
 public:
+    bool purge_symbol_all(const wxString& symbol);
+
     auto get_key_data_n(const wxString& symbol, const mmDate& date) -> const Data*;
 
     auto save_record(

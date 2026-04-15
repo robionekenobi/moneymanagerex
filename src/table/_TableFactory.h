@@ -59,7 +59,6 @@ public:
     auto save_data_n(Data& data) -> const Data*;
     bool save_data_a(DataA& data);
     bool unsafe_remove_id(const int64 id);
-    auto find_all(const COL_ID = Col::s_primary_id, const bool asc = true) -> const DataA;
     void preload_cache(int max_size = 1000);
     void reset_cache() { m_cache.reset(); }
     bool cache_empty() const { return m_cache.get_stat().max_size == 0; }
@@ -68,13 +67,19 @@ public:
 
     template<typename... Args>
     auto find_data_a(const Args&... clause_args) -> DataA;
+    auto find_data_a() -> DataA;
     template<typename... Args>
     auto find_id_a(const Args&... clause_args) -> std::vector<int64>;
+    auto find_id_a() -> std::vector<int64>;
     template<typename... Args>
     auto find_count(const Args&... clause_args) -> std::size_t;
-    template<typename V, typename ArgV, typename... Args>
-    auto find_value(const ArgV& clause_value, const Args&... clause_args) -> V;
+    auto find_count() -> std::size_t;
 
+    template<typename V, typename ArgV, typename... Args>
+    auto find_value(
+        const ArgV& clause_value,
+        const Args&... clause_args
+    ) -> V;
     template<typename G, typename... Args>
     auto find_count_mGroup(
         const wxString& group,
@@ -92,49 +97,26 @@ public:
     template<typename... Args>
     auto search_cache_n(const Args& ... args) -> const Data*;
 
-// -- deprecated methods
-
-    template<typename... Args>
-    auto find_where(bool op_and, const Args&... args) -> const DataA;
-    template<typename... Args>
-    auto find(const Args&... args) -> const DataA { return find_where(true, args...); }
-    template<typename... Args>
-    auto find_or(const Args&... args) -> const DataA { return find_where(false, args...); }
-
-    template<typename Arg1>
-    void write_condition(wxString& out, bool /*op_and*/, const Arg1& arg1);
-    template<typename Arg1, typename... Args>
-    void write_condition(wxString& out, bool op_and, const Arg1& arg1, const Args&... args);
-
-    template<typename Arg1>
-    void bind_at(wxSQLite3Statement& stmt, int& index, const Arg1& arg1);
-    template<typename Arg1, typename... Args>
-    void bind_at(wxSQLite3Statement& stmt, int& index, const Arg1& arg1, const Args&... args);
-
 // -- virtual
 
-    // TODO:
-    //   Add unordered_map<wxString, wxString> m_ref_query_m (a map from
-    //   other_table to SQL query) in TableBase and initialize it in *Model.
-    // Find records in other_table which refer to id in this table.
-    // The returned records either use id, or fully belong to id in this table.
-    // Returns a vector of ids in other_table.
+    // Check if id in this table is used by other records (in this or other tables).
+    // id in this table cannot be deleted if it is used by other records.
+    // Records fully owned by id are ignored (they can be deleted together with id).
+    // If ignore_deleted is true, deleted transactions are also also ignored.
     // The complete list of table dependencies can be found in _dependencies.txt
-    // virtual auto find_ref(int64 id, wxString other_table) -> std::vector<int64>;
+    virtual auto find_id_isUsed(int64 id, bool ignore_deleted = false) -> bool {
+        return false;
+    }
 
-    // Remove all auxiliary records in other tables owned by id, and then remove id
-    // from this table. Return false in case or error.
+    // Remove all auxiliary records in other tables owned by id, and then
+    // remove id from this table. Return false in case or error.
     // Before calling this function, the caller shall validate that only records fully
     // owned by id refer to it, i.e., no references to id remain after this call.
-    // The default implementation assumes no auxiliary records; tables which have
-    // auxiliary records shall override it.
     // Specializations of this function shall stop immediately in case of error,
     // such that id in this table is removed only after all its auxiliary records
     // are removed (otherwise the database will contain dangling references).
     // The complete list of table dependencies can be found in _dependencies.txt
-    virtual bool purge_id(int64 id) {
-        return unsafe_remove_id(id);
-    }
+    virtual bool purge_id(int64 id) = 0;
 };
 
 // -- template methods
@@ -192,6 +174,12 @@ auto TableFactory<T, D>::find_data_a(const Args&... clause_args) -> DataA
     return result;
 }
 
+template<typename T, typename D>
+auto TableFactory<T, D>::find_data_a() -> DataA
+{
+    return find_data_a(TableClause::VOID());
+}
+
 // Return the results of the following query:
 //   SELECT ${PRIMARY} FROM ${TABLE} ${clause_args}
 // clause_args may contain _WHERE, _PAREN, _ORDER, _LIMIT clauses, as in find_data_a().
@@ -232,6 +220,12 @@ auto TableFactory<T, D>::find_id_a(const Args&... clause_args) -> std::vector<in
     return result;
 }
 
+template<typename T, typename D>
+auto TableFactory<T, D>::find_id_a() -> std::vector<int64>
+{
+    return find_id_a(TableClause::VOID());
+}
+
 // Return the results of the following query:
 //   SELECT COUNT(*) FROM ${TABLE} ${clause_args}
 // clause_args may contain _WHERE or _PAREN clauses.
@@ -269,6 +263,12 @@ auto TableFactory<T, D>::find_count(const Args&... clause_args) -> std::size_t
     }
 
     return result;
+}
+
+template<typename T, typename D>
+auto TableFactory<T, D>::find_count() -> std::size_t
+{
+    return find_count(TableClause::VOID());
 }
 
 // Return the results of the following query:
@@ -468,103 +468,4 @@ template<typename... Args>
 auto TableFactory<T, D>::search_cache_n(const Args& ... args) -> const Data*
 {
     return unsafe_search_cache_n(args...);
-}
-
-// -- deprecated methods
-
-// Return the result of a SELECT query as a vector of Data records.
-// The WHERE conditions are specified with arguments of the form:
-//   ${Table}Col::${COLUMN}(op, value)
-// where op can be omitted if it is equal to OP_EQ (the "equal" operator).
-// The conditions are combined with AND or OR, if op_and is true or false, resp.
-// Example:
-//   find_where(true, AssetCol::ASSETID(2), AssetCol::ASSETTYPE("Jewellery"))
-//   produces the SQLite WHERE clause (ASSETID = 2 AND ASSETTYPE = "Jewellery").
-// Return an empty array if no records are found.
-// 
-// TODO: do not store all results in a vactor; return an iterator instead.
-template<typename T, typename D>
-template<typename... Args>
-auto TableFactory<T, D>::find_where(bool op_and, const Args&... args) -> const DataA
-{
-    DataA result;
-    try {
-        wxString query = this->m_select_query + " WHERE";
-        write_condition(query, op_and, args...);
-        wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
-        int index = 0;
-        bind_at(stmt, index, args...);
-        wxSQLite3ResultSet q = stmt.ExecuteQuery();
-
-        while (q.NextRow()) {
-            Data r(q);
-            result.push_back(std::move(r));
-        }
-
-        q.Finalize();
-    }
-    catch(const wxSQLite3Exception &e) {
-        wxLogError("%s: Exception %s", this->m_table_name, e.GetMessage().utf8_str());
-    }
-
-    return result;
-}
-
-template<typename T, typename D>
-template<typename Arg1>
-void TableFactory<T, D>::write_condition(wxString& out, bool /*op_and*/, const Arg1& arg1)
-{
-    wxString col = Arg1::col_name();
-    switch (arg1.m_operator)
-    {
-        case OP_EQ:  out += " " + col +  " = ?"; break;
-        case OP_NE:  out += " " + col + " != ?"; break;
-        case OP_GT:  out += " " + col +  " > ?"; break;
-        case OP_LT:  out += " " + col +  " < ?"; break;
-        case OP_GE:  out += " " + col + " >= ?"; break;
-        case OP_LE:  out += " " + col + " <= ?"; break;
-        case OP_EQN: out += " IFNULL(" + col + ", ?)" +  " = ?"; break;
-        case OP_NEN: out += " IFNULL(" + col + ", ?)" + " != ?"; break;
-    }
-}
-
-template<typename T, typename D>
-template<typename Arg1, typename... Args>
-void TableFactory<T, D>::write_condition(
-    wxString& out, bool op_and, const Arg1& arg1, const Args&... args
-) {
-    write_condition(out, op_and, arg1);
-    out += op_and ? " AND" : " OR";
-    write_condition(out, op_and, args...);
-}
-
-template<typename T, typename D>
-template<typename Arg1>
-void TableFactory<T, D>::bind_at(wxSQLite3Statement& stmt, int& index, const Arg1& arg1)
-{
-    switch (arg1.m_operator)
-    {
-        case OP_EQ:
-        case OP_NE:
-        case OP_GT:
-        case OP_LT:
-        case OP_GE:
-        case OP_LE:
-            stmt.Bind(++index, arg1.m_value);
-            break;
-        case OP_EQN:
-        case OP_NEN:
-            stmt.Bind(++index, arg1.m_value);
-            stmt.Bind(++index, arg1.m_value);
-            break;
-    }
-}
-
-template<typename T, typename D>
-template<typename Arg1, typename... Args>
-void TableFactory<T, D>::bind_at(
-    wxSQLite3Statement& stmt, int& index, const Arg1& arg1, const Args&... args
-) {
-    bind_at(stmt, index, arg1);
-    bind_at(stmt, index, args...);
 }

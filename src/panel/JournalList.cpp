@@ -31,6 +31,7 @@
 #include "base/mmUserColor.h"
 #include "util/mmImage.h"
 #include "util/mmSingleChoice.h"
+#include "util/mmAttachment.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -697,9 +698,9 @@ int64 JournalList::pasteTrx(const TrxData* trx_n)
 
     // Clone transaction tags
     TagLinkModel::DataA new_gl_a;
-    for (const auto& tl_d : TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(TrxModel::s_ref_type.key_n()),
-        TagLinkCol::REFID(trx_n->m_id)
+    for (const auto& tl_d : TagLinkModel::instance().find_data_a(
+        TagLinkCol::WHERE_REFTYPE(OP_EQ, TrxModel::s_ref_type.key_n()),
+        TagLinkCol::WHERE_REFID(OP_EQ, trx_n->m_id)
     )) {
         TagLinkData new_gl_d;
         new_gl_d.clone_from(tl_d);
@@ -715,9 +716,9 @@ int64 JournalList::pasteTrx(const TrxData* trx_n)
         TrxSplitModel::instance().add_data_n(new_tp_d);
 
         // Clone split tags
-        for (const auto& tl_d : TagLinkModel::instance().find(
-            TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.key_n()),
-            TagLinkCol::REFID(tp_d.m_id)
+        for (const auto& tl_d : TagLinkModel::instance().find_data_a(
+            TagLinkCol::WHERE_REFTYPE(OP_EQ, TrxSplitModel::s_ref_type.key_n()),
+            TagLinkCol::WHERE_REFID(OP_EQ, tp_d.m_id)
         )) {
             TagLinkData new_gl_d;
             new_gl_d.clone_from(tl_d);
@@ -728,8 +729,8 @@ int64 JournalList::pasteTrx(const TrxData* trx_n)
     TagLinkModel::instance().save_data_a(new_gl_a);
 
     // Clone duplicate custom fields
-    const auto& fv_a = FieldValueModel::instance().find(
-        FieldValueCol::REFID(trx_n->m_id)
+    const auto& fv_a = FieldValueModel::instance().find_data_a(
+        FieldValueCol::WHERE_REFID(OP_EQ, trx_n->m_id)
     );
     if (fv_a.size() > 0) {
         FieldValueModel::instance().db_savepoint();
@@ -746,7 +747,7 @@ int64 JournalList::pasteTrx(const TrxData* trx_n)
 
     // Clone attachments if wanted
     if (InfoModel::instance().getBool("ATTACHMENTSDUPLICATE", false)) {
-        mmAttachmentManage::CloneAllAttachments(
+        mmAttachment::clone_ref_all(
             TrxModel::s_ref_type, trx_n->m_id, new_trx_id
         );
     }
@@ -817,7 +818,7 @@ const wxString JournalList::getItem(long item, int col_id) const
         }
         value.Replace("\n", " ");
         if (journal_dx.has_attachment())
-            value.Prepend(mmAttachmentManage::GetAttachmentNoteSign());
+            value.Prepend(mmAttachment::getMarker());
         return value.Trim(false);
     }
     case LIST_ID_TAGS:
@@ -1115,14 +1116,17 @@ void JournalList::deleteTransactionsByStatus(std::optional<TrxStatus> status_n)
             TrxModel::instance().purge_id(journal_dx.m_id);
         }
         else {
-            TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(journal_dx.m_id);
+            TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(
+                journal_dx.m_id
+            );
             trx_n->m_deleted_utc_n = mmDateTime::now().fromLocalToUtc();
             TrxModel::instance().unsafe_save_trx_n(trx_n);
-            TrxLinkModel::DataA translink = TrxLinkModel::instance().find(
-                TrxLinkCol::CHECKINGACCOUNTID(trx_n->m_id)
-            );
-            if (!translink.empty()) {
-                assetStockAccts.emplace(translink.at(0).m_ref_type, translink.at(0).m_ref_id);
+            for (const TrxLinkData& tl_d : TrxLinkModel::instance().find_data_a(
+                TrxLinkCol::WHERE_CHECKINGACCOUNTID(OP_EQ, trx_n->m_id),
+                TableClause::ORDERBY(TrxLinkCol::NAME_TRANSLINKID)
+            )) {
+                assetStockAccts.emplace(tl_d.m_ref_type, tl_d.m_ref_id);
+                break;
             }
         }
     }
@@ -1828,11 +1832,11 @@ void JournalList::onDeleteTrx(wxCommandEvent& WXUNUSED(event))
             else {
                 trx_n->m_deleted_utc_n = mmDateTime::now().fromLocalToUtc();
                 TrxModel::instance().unsafe_save_trx_n(trx_n);
-                TrxLinkModel::DataA tl_a = TrxLinkModel::instance().find(
-                    TrxLinkCol::CHECKINGACCOUNTID(trx_n->m_id)
-                );
-                if (!tl_a.empty()) {
-                    assetStockAccts.emplace(tl_a.at(0).m_ref_type, tl_a.at(0).m_ref_id);
+                for (const TrxLinkData& tl_d : TrxLinkModel::instance().find_data_a(
+                    TrxLinkCol::WHERE_CHECKINGACCOUNTID(OP_EQ, trx_n->m_id),
+                    TableClause::ORDERBY(TrxLinkCol::NAME_TRANSLINKID)
+                )) {
+                    assetStockAccts.emplace(tl_d.m_ref_type, tl_d.m_ref_id);
                 }
             }
             m_copy_key_a.erase(
@@ -1895,11 +1899,11 @@ void JournalList::onRestoreTrx(wxCommandEvent& WXUNUSED(event))
                 TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(journal_key.rid());
                 trx_n->m_deleted_utc_n = mmDateTimeN();
                 TrxModel::instance().unsafe_save_trx_n(trx_n);
-                TrxLinkModel::DataA tl_a = TrxLinkModel::instance().find(
-                    TrxLinkCol::CHECKINGACCOUNTID(trx_n->m_id)
-                );
-                if (!tl_a.empty()) {
-                    assetStockAccts.emplace(tl_a.at(0).m_ref_type, tl_a.at(0).m_ref_id);
+                for (const TrxLinkData& tl_d : TrxLinkModel::instance().find_data_a(
+                    TrxLinkCol::WHERE_CHECKINGACCOUNTID(OP_EQ, trx_n->m_id)
+                )) {
+                    assetStockAccts.emplace(tl_d.m_ref_type, tl_d.m_ref_id);
+                    break;
                 }
             }
         }
@@ -1937,11 +1941,11 @@ void JournalList::onRestoreViewedTrx(wxCommandEvent&)
             TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(journal_dx.m_id);
             trx_n->m_deleted_utc_n = mmDateTimeN();
             TrxModel::instance().unsafe_save_trx_n(trx_n);
-            TrxLinkModel::DataA tl_a = TrxLinkModel::instance().find(
-                TrxLinkCol::CHECKINGACCOUNTID(trx_n->m_id)
-            );
-            if (!tl_a.empty()) {
-                assetStockAccts.emplace(tl_a.at(0).m_ref_type, tl_a.at(0).m_ref_id);
+            for (const TrxLinkData& tl_d : TrxLinkModel::instance().find_data_a(
+                TrxLinkCol::WHERE_CHECKINGACCOUNTID(OP_EQ, trx_n->m_id)
+            )) {
+                assetStockAccts.emplace(tl_d.m_ref_type, tl_d.m_ref_id);
+                break;
             }
         }
         if (!assetStockAccts.empty()) {
@@ -1992,9 +1996,9 @@ void JournalList::onEditTrx(wxCommandEvent& /*event*/)
         if (checkTransactionLocked(trx_n->m_account_id, trx_n->m_date()))
             return;
 
-        if (!TrxLinkModel::instance().find(
-            TrxLinkCol::CHECKINGACCOUNTID(trx_id)
-        ).empty()) {
+        if (TrxLinkModel::instance().find_count(
+            TrxLinkCol::WHERE_CHECKINGACCOUNTID(OP_EQ, trx_id)
+        ) > 0) {
             const TrxLinkData* tl_n = TrxLinkModel::instance().get_trx_data_n(trx_id);
             if (tl_n && tl_n->m_ref_type == StockModel::s_ref_type) {
                 TrxLinkData tl_d = *tl_n;
@@ -2460,7 +2464,7 @@ void JournalList::onOpenAttachment(wxCommandEvent& WXUNUSED(event))
 
     setSelectKeyA();
     JournalKey journal_key = m_select_key_a[0];
-    mmAttachmentManage::OpenAttachmentFromPanelIcon(this,
+    mmAttachment::openFromPanelIcon(this,
         journal_key.ref_type(), journal_key.ref_id()
     );
     refreshVisualList();

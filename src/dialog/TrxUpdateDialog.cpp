@@ -77,13 +77,9 @@ TrxUpdateDialog::TrxUpdateDialog(
         const TrxData* trx_n = TrxModel::instance().get_id_data_n(trx_id);
         const bool isTransfer = trx_n->is_transfer();
 
-        if (!m_hasSplits) {
-            TrxSplitModel::DataA tp_a = TrxSplitModel::instance().find(
-                TrxSplitCol::TRANSID(trx_id)
-            );
-            if (!tp_a.empty())
-                m_hasSplits = true;
-        }
+        m_hasSplits = m_hasSplits || TrxSplitModel::instance().find_count(
+            TrxSplitCol::WHERE_TRANSID(OP_EQ, trx_id)
+        ) > 0;
 
         if (!m_hasTransfers && isTransfer)
             m_hasTransfers = true;
@@ -92,7 +88,9 @@ TrxUpdateDialog::TrxUpdateDialog(
             m_hasNonTransfers = true;
     }
 
-    m_custom_fields = new mmCustomDataTransaction(this, TrxModel::s_ref_type, 0, ID_CUSTOMFIELDS);
+    m_custom_fields = new mmCustomDataTransaction(this,
+        TrxModel::s_ref_type, 0, ID_CUSTOMFIELDS
+    );
 
     this->SetFont(parent->GetFont());
     Create(parent);
@@ -483,9 +481,9 @@ void TrxUpdateDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 
             if (tag_append_checkbox_->IsChecked()) {
                 // Since we are appending, start with the existing tags
-                gl_a = TagLinkModel::instance().find(
-                    TagLinkCol::REFTYPE(TrxModel::s_ref_type.key_n()),
-                    TagLinkCol::REFID(trx_n->m_id)
+                gl_a = TagLinkModel::instance().find_data_a(
+                    TagLinkCol::WHERE_REFTYPE(OP_EQ, TrxModel::s_ref_type.key_n()),
+                    TagLinkCol::WHERE_REFID(OP_EQ, trx_n->m_id)
                 );
                 // Remove existing tags from the new list to avoid duplicates
                 for (const auto& gl_d : gl_a) {

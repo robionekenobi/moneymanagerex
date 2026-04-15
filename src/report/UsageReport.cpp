@@ -41,15 +41,18 @@ wxString UsageReport::getHTMLText()
     wxDateTime _start_date, _end_date;
 
     if (m_date_range && m_date_range->is_with_date()) {
-        xu_a = UsageModel::instance().find(
-            UsageCol::USAGEDATE(OP_GE, m_date_range->start_date().FormatISODate()),
-            UsageCol::USAGEDATE(OP_LE, m_date_range->end_date().FormatISOCombined())
+        xu_a = UsageModel::instance().find_data_a(
+            UsageCol::WHERE_USAGEDATE(OP_GE, m_date_range->start_date().FormatISODate()),
+            UsageCol::WHERE_USAGEDATE(OP_LE, m_date_range->end_date().FormatISOCombined())
         );
         _start_date = m_date_range->start_date();
         _end_date = m_date_range->end_date();
     }
     else {
-        xu_a = UsageModel::instance().find_all();
+        // TODO: ORDERBY USAGEDATE; make two queries with LIMIT(1)
+        xu_a = UsageModel::instance().find_data_a(
+            TableClause::ORDERBY(UsageCol::s_primary_name)
+        );
         wxASSERT(_start_date.ParseISODate(xu_a.front().m_date));
         wxASSERT(_end_date.ParseISODate(xu_a.back().m_date));
     }

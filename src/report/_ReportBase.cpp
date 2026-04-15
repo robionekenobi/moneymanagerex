@@ -85,17 +85,16 @@ void ReportBase::setAccounts(int selection, const wxString& type_name)
 
     switch (selection)
     {
-    case 0: // All Accounts
+    // All Accounts
+    case 0:
         m_account_a = nullptr;
         break;
-    case 1: // Select Accounts
-    {
+    // Select Accounts
+    case 1: {
         wxArrayString account_name_a;
-        auto account_a = AccountModel::instance().find_all();
-        std::stable_sort(account_a.begin(), account_a.end(),
-            AccountData::SorterByName()
-        );
-        for (const auto& account_d : account_a) {
+        for (const auto& account_d : AccountModel::instance().find_data_a(
+            TableClause::ORDERBY(AccountCol::NAME_ACCOUNTNAME)
+        )) {
             if (m_only_active && !account_d.is_open())
                 continue;
             account_name_a.Add(account_d.m_name);
@@ -124,20 +123,20 @@ void ReportBase::setAccounts(int selection, const wxString& type_name)
             }
             m_account_selected_a = m_account_a = accountSelections;
         }
+        break;
     }
-    break;
-    default: // All of Account type
-    {
+    // All of Account type
+    default: {
         wxArrayString* accountSelections = new wxArrayString();
-        auto account_a = AccountModel::instance().find(
-            AccountCol::ACCOUNTTYPE(type_name),
-            AccountModel::STATUS(OP_NE, AccountStatus(AccountStatus::e_closed))
-        );
-        for (const auto& account_d : account_a) {
+        for (const auto& account_d : AccountModel::instance().find_data_a(
+            AccountCol::WHERE_ACCOUNTTYPE(OP_EQ, type_name),
+            AccountModel::WHERE_STATUS(OP_NE, AccountStatus(AccountStatus::e_closed))
+        )) {
             accountSelections->Add(account_d.m_name);
         }
         m_account_a = accountSelections;
-    } }
+    }
+    }
 }
 
 const wxString ReportBase::getAccountNames() const
@@ -452,9 +451,11 @@ mm_html_template::mm_html_template(const wxString& arg_template): html_template(
 void mm_html_template::load_context()
 {
     (*this)(L"TODAY") = mmDate::today().isoDate();
-    for (const auto& info_d: InfoModel::instance().find_all())
+    for (const auto& info_d: InfoModel::instance().find_data_a(
+        TableClause::ORDERBY(InfoCol::s_primary_name)
+    ))
         (*this)(info_d.m_name.ToStdWstring()) = info_d.m_value;
-    (*this)(L"INFOTABLE") = InfoModel::to_loop_t();
+    (*this)(L"INFOTABLE") = InfoModel::instance().to_loop_t();
 
     const CurrencyData* currency = CurrencyModel::instance().get_base_data_n();
     if (currency) currency->to_html_template(*this);

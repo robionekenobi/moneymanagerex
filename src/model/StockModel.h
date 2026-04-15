@@ -49,12 +49,17 @@ public:
 
 public:
     // override TableFactory
+    virtual bool find_id_isUsed(int64 id, bool ignore_deleted = false) override;
     virtual bool purge_id(int64 id) override;
 
 // -- methods
 
 public:
+    bool purge_id_dep(int64 stock_id);
+
+public:
     auto get_id_name(int64 stock_id) -> const wxString;
+    auto get_id_symbol(int64 stock_id) -> const wxString;
     auto find_last_hist_date(const Data& stock_d) -> mmDate;
 
     auto calculate_account_balance(const AccountData& account_d, const mmDate& date) -> double;

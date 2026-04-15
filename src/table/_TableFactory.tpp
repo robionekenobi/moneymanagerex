@@ -275,9 +275,12 @@ void TableFactory<T, D>::preload_cache(int max_size)
     // usually all records are preloaded and max_size is not reached.
 
     int i = 0;
-    for (const Data& data : find_all()) {
+    for (const Data& data : find_data_a(
+        TableClause::ORDERBY(Col::s_primary_name)
+    )) {
         m_cache.add(data.id(), data);
-        if (++i >= max_size) break;
+        if (++i >= max_size)
+            break;
     }
 }
 
@@ -319,33 +322,4 @@ void TableFactory<T, D>::debug_stat() const
         this->m_table_name,
         cache_stat.capacity, cache_stat.max_size, cache_stat.hit_c, cache_stat.miss_c
     );
-}
-
-// Return an array of Data records (DataA) fetched directly from database,
-// bypassing the cache. The records are sorted by the col_id column.
-template<typename T, typename D>
-auto TableFactory<T, D>::find_all(const COL_ID col_id, const bool asc) -> const DataA
-{
-    DataA result;
-    try {
-        wxString query = this->m_select_query
-            + " ORDER BY " + Col::col_id_name(col_id)
-            + " COLLATE NOCASE"
-            + (asc ? " ASC" : " DESC");
-        wxSQLite3ResultSet q = this->m_db->ExecuteQuery(query);
-
-        while (q.NextRow()) {
-            Data r(q);
-            result.push_back(std::move(r));
-        }
-
-        q.Finalize();
-    }
-    catch (const wxSQLite3Exception &e) {
-        wxLogError("%s: Exception %s",
-            this->m_table_name, e.GetMessage().utf8_str()
-        );
-    }
-
-    return result;
 }

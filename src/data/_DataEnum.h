@@ -107,8 +107,8 @@ struct AssetStatus
 public:
     enum
     {
-        e_closed = 0,
-        e_open,
+        e_open = 0,
+        e_closed,
         size
     };
     static mmChoiceKeyNameA s_choice_a;

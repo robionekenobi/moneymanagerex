@@ -18,35 +18,34 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "SchedModel.h"
+
+#include "util/mmAttachment.h"
 #include "AccountModel.h"
 #include "AttachmentModel.h"
 #include "CategoryModel.h"
 #include "FieldValueModel.h"
 #include "PayeeModel.h"
 #include "PrefModel.h"
-#include "SchedModel.h"
 #include "TagModel.h"
-
-// TODO: Move attachment management outside of AttachmentDialog
-#include "dialog/AttachmentDialog.h"
 
 // -- static
 
 const RefTypeN SchedModel::s_ref_type = RefTypeN(RefTypeN::e_sched);
 
-SchedCol::TRANSCODE SchedModel::TYPE(OP op, TrxType sched_type)
+TableClauseV<wxString> SchedModel::WHERE_TYPE(OP op, TrxType type)
 {
-    return SchedCol::TRANSCODE(op, sched_type.key());
+    return SchedCol::WHERE_TRANSCODE(op, type.key());
 }
 
-SchedCol::STATUS SchedModel::STATUS(OP op, TrxStatus sched_status)
+TableClauseV<wxString> SchedModel::WHERE_STATUS(OP op, TrxStatus status)
 {
-    return SchedCol::STATUS(op, sched_status.key());
+    return SchedCol::WHERE_STATUS(op, status.key());
 }
 
-SchedCol::STATUS SchedModel::IS_VOID(bool value)
+TableClauseV<wxString> SchedModel::WHERE_IS_VOID(bool value)
 {
-    return SchedCol::STATUS(value ? OP_EQ : OP_NE, TrxStatus(TrxStatus::e_void).key());
+    return SchedModel::WHERE_STATUS(value ? OP_EQ : OP_NE, TrxStatus(TrxStatus::e_void));
 }
 
 // -- constructor --
@@ -71,37 +70,38 @@ SchedModel& SchedModel::instance()
 
 // -- override
 
-// Remove the Data record instance from memory and the database
-// including any splits associated with the Data Record.
 bool SchedModel::purge_id(int64 sched_id)
 {
-    // purge SchedSplitData owned by sched_id
-    for (auto& qp_d : find_id_qp_a(sched_id))
-        SchedSplitModel::instance().purge_id(qp_d.m_id);
+    bool ok;
 
-    // remove TagLinkData owned by sched_id
-    TagLinkModel::instance().purge_ref(s_ref_type, sched_id);
+    ok = ok && SchedSplitModel::instance().purge_schedId_all(sched_id);
+    ok = ok && TagLinkModel::instance().purge_ref_all(s_ref_type, sched_id);
+    ok = ok && FieldValueModel::instance().purge_ref_all(s_ref_type, sched_id);
 
-    // FIXME: remove FieldValueData owned by sched_id
-    // FIXME: remove AttachmentData owned by sched_id
+    // FIXME: see mmAttachment::delete_ref_all
+    db_savepoint();
+    ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, sched_id);
+    db_release_savepoint();
 
-    return unsafe_remove_id(sched_id);
+    ok = ok && unsafe_remove_id(sched_id);
+
+    return ok;
 }
 
 // -- methods
 
 const SchedSplitModel::DataA SchedModel::find_id_qp_a(int64 sched_id)
 {
-    return SchedSplitModel::instance().find(
-        SchedSplitCol::TRANSID(sched_id)
+    return SchedSplitModel::instance().find_data_a(
+        SchedSplitCol::WHERE_TRANSID(OP_EQ, sched_id)
     );
 }
 
 const TagLinkModel::DataA SchedModel::find_id_gl_a(int64 sched_id)
 {
-    return TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(SchedModel::s_ref_type.key_n()),
-        TagLinkCol::REFID(sched_id)
+    return TagLinkModel::instance().find_data_a(
+        TagLinkCol::WHERE_REFTYPE(OP_EQ, SchedModel::s_ref_type.key_n()),
+        TagLinkCol::WHERE_REFID(OP_EQ, sched_id)
     );
 }
 
@@ -112,7 +112,9 @@ bool SchedModel::is_data_allowed(const Data& sched_d)
     if (sched_d.is_deposit())
         return true;
 
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(sched_d.m_account_id);
+    const AccountData* account_n = AccountModel::instance().get_id_data_n(
+        sched_d.m_account_id
+    );
     if (account_n->m_min_balance == 0 && account_n->m_credit_limit == 0)
         return true;
 
@@ -165,7 +167,7 @@ void SchedModel::reschedule_id(int64 sched_id)
     if (sched_n->m_repeat.m_num == 1) {
         // this was the last repetition
         // FIXME: delete attachments inside purge_id()
-        mmAttachmentManage::DeleteAllAttachments(s_ref_type, sched_id);
+        mmAttachment::delete_ref_all(s_ref_type, sched_id);
         purge_id(sched_id);
         return;
     }

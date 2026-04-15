@@ -18,9 +18,11 @@
  ********************************************************/
 
 #include "TagModel.h"
+
 #include "TagLinkModel.h"
 #include "AttachmentModel.h"
 #include "TrxModel.h"
+#include "_ModelAll.h"
 
 // -- constructor
 
@@ -41,38 +43,37 @@ TagModel& TagModel::instance()
     return Singleton<TagModel>::instance();
 }
 
-// -- methods
+// -- override
 
-int TagModel::is_used(int64 tag_id)
+bool TagModel::find_id_isUsed(int64 tag_id, bool ignore_deleted)
 {
-    TagLinkModel::DataA gl_a = TagLinkModel::instance().find(
-        TagLinkCol::TAGID(tag_id)
-    );
+    bool is_used = false;
 
-    if (gl_a.empty())
-        return 0;
-
-    for (const auto& gl_d : gl_a) {
-        // FIXME: do not exclude deleted transactions
-        if (gl_d.m_ref_type == TrxModel::s_ref_type) {
-            const TrxData* trx_n = TrxModel::instance().get_id_data_n(gl_d.m_ref_id);
-            if (trx_n && !trx_n->is_deleted())
-                return 1;
+    if (!ignore_deleted) {
+        // Fast path: find tag_id with a single query.
+        is_used = is_used || TagLinkModel::instance().find_count(
+            TagLinkCol::WHERE_TAGID(OP_EQ, tag_id)
+        ) > 0;
+    }
+    else {
+        // Slow path: fetch each tag link, until a match is found.
+        // Alternatively, a single join query could be constructed and executed,
+        // at the cost of more code (join queries are not supported by TableFactory).
+        for (const TagLinkData& gl_d : TagLinkModel::instance().find_data_a(
+            TagLinkCol::WHERE_TAGID(OP_EQ, tag_id)
+        )) {
+            is_used = is_used || ModelAll::instance().find_ref_count(
+                gl_d.m_ref_type, gl_d.m_ref_id, true
+            ) > 0;
+            if (is_used)
+                break;
         }
-        else if (gl_d.m_ref_type == TrxSplitModel::s_ref_type) {
-            const TrxSplitData* tp_n = TrxSplitModel::instance().get_id_data_n(gl_d.m_ref_id);
-            if (tp_n) {
-                const TrxData* trx_n = TrxModel::instance().get_id_data_n(tp_n->m_trx_id);
-                if (trx_n && !trx_n->is_deleted())
-                    return 1;
-            }
-        }
-        else
-            return 1;
     }
 
-    return -1;
+    return is_used;
 }
+
+// -- methods
 
 const TagData* TagModel::get_name_data_n(const wxString& name)
 {
@@ -80,9 +81,12 @@ const TagData* TagModel::get_name_data_n(const wxString& name)
     if (tag_n)
         return tag_n;
 
-    DataA tag_a = this->find(TagCol::TAGNAME(name));
-    if (!tag_a.empty())
-        tag_n = get_id_data_n(tag_a[0].m_id);
+    for (int64 tag_id : find_id_a(
+        TagCol::WHERE_TAGNAME(OP_EQ, name)
+    )) {
+        tag_n = get_id_data_n(tag_id);
+    }
+
     return tag_n;
 }
 

@@ -61,13 +61,13 @@ TrxLinkDialog::TrxLinkDialog(
     m_enable_revalue(enable_revalue)
 {
     if (m_transaction_n) {
-        for (const auto& tp_d: TrxSplitModel::instance().find(
-            TrxSplitCol::TRANSID(m_transaction_n->m_id)
+        for (const auto& tp_d : TrxSplitModel::instance().find_data_a(
+            TrxSplitCol::WHERE_TRANSID(OP_EQ, m_transaction_n->m_id)
         )) {
             wxArrayInt64 tag_id_a;
-            for (const auto& gl_d : TagLinkModel::instance().find(
-                TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.key_n()),
-                TagLinkCol::REFID(tp_d.m_id)
+            for (const auto& gl_d : TagLinkModel::instance().find_data_a(
+                TagLinkCol::WHERE_REFTYPE(OP_EQ, TrxSplitModel::s_ref_type.key_n()),
+                TagLinkCol::WHERE_REFID(OP_EQ, tp_d.m_id)
             )) {
                 tag_id_a.push_back(gl_d.m_tag_id);
             }
@@ -328,28 +328,31 @@ void TrxLinkDialog::BindEventsAndTrigger()
 
 void TrxLinkDialog::SetLastPayeeAndCategory(const int64 account_id)
 {
-    if (PrefModel::instance().getTransPayeeNone() == PrefModel::LASTUSED) {
-        TrxModel::DataA trans_list = TrxModel::instance().find(
-            TrxModel::TYPE(OP_NE, TrxType(TrxType::e_transfer)),
-            TrxCol::ACCOUNTID(account_id)
-        );
-        if (!trans_list.empty()) {
-            int last_trans_pos = trans_list.size() - 1;
+    if (PrefModel::instance().getTransPayeeNone() != PrefModel::LASTUSED)
+        return;
 
-            const PayeeData* last_payee_n = PayeeModel::instance().get_id_data_n(
-                trans_list.at(last_trans_pos).m_payee_id_n
-            );
-            if (last_payee_n) {
-                w_payee_btn->SetLabelText(last_payee_n->m_name);
-                m_payee_id = last_payee_n->m_id;
-                if (PrefModel::instance().getTransCategoryNone() == PrefModel::LASTUSED &&
-                    CategoryModel::instance().get_id_active(last_payee_n->m_category_id_n)
-                ) {
-                    m_category_id = last_payee_n->m_category_id_n;
-                    w_cat_text->SetLabelText(CategoryModel::instance().get_id_fullname(last_payee_n->m_category_id_n));
-                }
+    for (const TrxData& trx_d : TrxModel::instance().find_data_a(
+        TrxModel::WHERE_TYPE(OP_NE, TrxType(TrxType::e_transfer)),
+        TrxCol::WHERE_ACCOUNTID(OP_EQ, account_id),
+        TableClause::ORDERBY(TrxCol::NAME_TRANSID, true),
+        TableClause::LIMIT(1)
+    )) {
+        const PayeeData* last_payee_n = PayeeModel::instance().get_id_data_n(
+            trx_d.m_payee_id_n
+        );
+        if (last_payee_n) {
+            w_payee_btn->SetLabelText(last_payee_n->m_name);
+            m_payee_id = last_payee_n->m_id;
+            if (PrefModel::instance().getTransCategoryNone() == PrefModel::LASTUSED &&
+                CategoryModel::instance().get_id_active(last_payee_n->m_category_id_n)
+            ) {
+                m_category_id = last_payee_n->m_category_id_n;
+                w_cat_text->SetLabelText(CategoryModel::instance().get_id_fullname(
+                    last_payee_n->m_category_id_n
+                ));
             }
         }
+        break;
     }
 }
 

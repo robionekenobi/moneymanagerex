@@ -50,11 +50,26 @@ SchedSplitModel& SchedSplitModel::instance()
 
 bool SchedSplitModel::purge_id(int64 qp_id)
 {
-    TagLinkModel::instance().purge_ref(s_ref_type, qp_id);
-    return unsafe_remove_id(qp_id);
+    bool ok = true;
+    ok = ok && TagLinkModel::instance().purge_ref_all(s_ref_type, qp_id);
+    ok = ok && unsafe_remove_id(qp_id);
+    return ok;
 }
 
 // -- methods
+
+bool SchedSplitModel::purge_schedId_all(const int64 sched_id)
+{
+    bool ok = true;
+
+    for (int64 qp_id : find_id_a(
+        SchedSplitCol::WHERE_TRANSID(OP_EQ, sched_id)
+    )) {
+        ok = ok && purge_id(qp_id);
+    }
+
+    return ok;
+}
 
 double SchedSplitModel::get_data_amount(const DataA& qp_a)
 {
@@ -66,16 +81,18 @@ double SchedSplitModel::get_data_amount(const DataA& qp_a)
 
 const TagLinkModel::DataA SchedSplitModel::find_id_gl_a(int64 qp_id)
 {
-    return TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(SchedSplitModel::s_ref_type.key_n()),
-        TagLinkCol::REFID(qp_id)
+    return TagLinkModel::instance().find_data_a(
+        TagLinkCol::WHERE_REFTYPE(OP_EQ, SchedSplitModel::s_ref_type.key_n()),
+        TagLinkCol::WHERE_REFID(OP_EQ, qp_id)
     );
 }
 
 std::map<int64, SchedSplitModel::DataA> SchedSplitModel::find_all_mSchedId()
 {
     std::map<int64, SchedSplitModel::DataA> schedId_qpA_m;
-    for (const auto& qp_d : find_all()) {
+    for (const auto& qp_d : find_data_a(
+        TableClause::ORDERBY(SchedSplitCol::s_primary_name)
+    )) {
         schedId_qpA_m[qp_d.m_sched_id].push_back(qp_d);
     }
     return schedId_qpA_m;
@@ -84,8 +101,8 @@ std::map<int64, SchedSplitModel::DataA> SchedSplitModel::find_all_mSchedId()
 int SchedSplitModel::update(int64 dst_sched_id, DataA& src_qp_a)
 {
 
-    for (const auto& qp_d : find(
-        SchedSplitCol::TRANSID(dst_sched_id)
+    for (const auto& qp_d : find_data_a(
+        SchedSplitCol::WHERE_TRANSID(OP_EQ, dst_sched_id)
     )) {
         instance().purge_id(qp_d.m_id);
     }

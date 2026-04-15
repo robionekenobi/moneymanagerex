@@ -39,9 +39,8 @@ class AccountModel : public TableFactory<AccountTable, AccountData>
 public:
     static const RefTypeN s_ref_type;
 
-    static AccountCol::STATUS STATUS(OP op, AccountStatus status) {
-        return AccountCol::STATUS(op, status.key());
-    }
+    static auto WHERE_STATUS(OP op, AccountStatus status) -> TableClauseV<wxString>;
+    static auto WHERE_IGNORE_CLOSED(bool value) -> TableClauseD;
 
     // TODO: move to AccountData
     static mmNavigatorItem::TYPE_ID type_id(const Data& account_d) {
@@ -65,9 +64,13 @@ public:
 
 public:
     // override TableFactory
-    virtual bool purge_id(int64 account_id) override;
+    virtual bool find_id_isUsed(int64 id, bool ignore_deleted = false) override;
+    virtual bool purge_id(int64 id) override;
 
 // -- methods
+
+public:
+    bool purge_id_dep(int64 account_id);
 
     // lookup for given Data
     auto get_data_currency_p(const Data& account_d) -> const CurrencyData*;

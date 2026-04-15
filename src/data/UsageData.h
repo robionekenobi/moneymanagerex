@@ -18,9 +18,10 @@
 
 #pragma once
 
+// UsageData represents a record in table USAGE_V1.
+
 #include "table/UsageTable.h"
 
-// User-friendly representation of a record in table USAGE_V1.
 struct UsageData
 {
     int64    m_id;

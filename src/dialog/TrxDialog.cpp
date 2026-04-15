@@ -31,10 +31,11 @@
 #include "base/_constants.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
-#include "util/_util.h"
-#include "util/_simple.h"
+#include "util/mmAttachment.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
+#include "util/_util.h"
+#include "util/_simple.h"
 
 #include "model/AccountModel.h"
 #include "model/AttachmentModel.h"
@@ -132,9 +133,9 @@ TrxDialog::TrxDialog(
         RefTypeN split_ref_type = m_journal_d.key().ref_type();
         for (const auto& tp_d : Journal::split(m_journal_d)) {
             wxArrayInt64 tag_id_a;
-            for (const auto& gl_d : TagLinkModel::instance().find(
-                TagLinkCol::REFTYPE(split_ref_type.key_n()),
-                TagLinkCol::REFID(tp_d.m_id))
+            for (const TagLinkData& gl_d : TagLinkModel::instance().find_data_a(
+                TagLinkCol::WHERE_REFTYPE(OP_EQ, split_ref_type.key_n()),
+                TagLinkCol::WHERE_REFID(OP_EQ, tp_d.m_id))
             )
                 tag_id_a.push_back(gl_d.m_tag_id);
             m_local_splits.push_back({
@@ -173,7 +174,7 @@ TrxDialog::TrxDialog(
     if (m_mode == MODE_DUP && InfoModel::instance().getBool("ATTACHMENTSDUPLICATE", false)) {
         // FIXME: check if journal_key.is_reliazed()
         // FIXME: id -1 does not exist in database
-        mmAttachmentManage::CloneAllAttachments(
+        mmAttachment::clone_ref_all(
             TrxModel::s_ref_type, journal_key.rid(), -1
         );
     }
@@ -301,14 +302,14 @@ void TrxDialog::dataToControls()
         payee_label_->SetLabelText(_t("From"));
     }
 
-    //Advanced
+    // Advanced
     cAdvanced_->Show(m_transfer);
     cAdvanced_->SetValue(m_advanced && m_transfer);
     toTextAmount_->Show(m_advanced && m_transfer);
 
     bSwitch_->Show(m_transfer);
 
-    //Amounts
+    // Amounts
     if (!skip_amount_init_) {
         if (m_transfer && m_advanced)
             toTextAmount_->SetValue(m_journal_d.m_to_amount);
@@ -320,7 +321,7 @@ void TrxDialog::dataToControls()
         skip_amount_init_ = true;
     }
 
-    //Payee
+    // Payee
     if (!skip_payee_init_) {
         cbPayee_->SetEvtHandlerEnabled(false);
 
@@ -331,18 +332,20 @@ void TrxDialog::dataToControls()
                 m_journal_d.m_to_account_id_n = -1;
             }
 
-            int64 accountID = cbAccount_->mmGetId();
-            if (m_mode == MODE_NEW
-                && PrefModel::instance().getTransPayeeNone() == PrefModel::LASTUSED
-                && (accountID != -1)
+            int64 account_id = cbAccount_->mmGetId();
+            if (m_mode == MODE_NEW &&
+                PrefModel::instance().getTransPayeeNone() == PrefModel::LASTUSED &&
+                account_id != -1
             ) {
-                TrxModel::DataA transactions = T.find(
-                    TrxModel::TYPE(OP_NE, TrxType(TrxType::e_transfer)),
-                    TrxCol::ACCOUNTID(OP_EQ, accountID));
-
-                if (!transactions.empty()) {
-                    const PayeeData* payee_n = P.get_id_data_n(transactions.back().m_payee_id_n);
+                for (const TrxData& trx_d : T.find_data_a(
+                    TrxModel::WHERE_TYPE(OP_NE, TrxType(TrxType::e_transfer)),
+                    TrxCol::WHERE_ACCOUNTID(OP_EQ, account_id),
+                    TableClause::ORDERBY(TrxCol::NAME_TRANSID, true),
+                    TableClause::LIMIT(1)
+                )) {
+                    const PayeeData* payee_n = P.get_id_data_n(trx_d.m_payee_id_n);
                     cbPayee_->ChangeValue(payee_n->m_name);
+                    break;
                 }
             }
             else if (m_mode == MODE_NEW
@@ -379,8 +382,7 @@ void TrxDialog::dataToControls()
     bool has_split = !m_local_splits.empty();
     if (!skip_category_init_) {
         bSplit_->UnsetToolTip();
-        if (has_split)
-        {
+        if (has_split) {
             cbCategory_->ChangeValue(_t("Split Transaction"));
             cbCategory_->Disable();
             m_textAmount->SetValue(TrxSplitModel::instance().get_total(m_local_splits));
@@ -389,16 +391,19 @@ void TrxDialog::dataToControls()
         else if (m_mode == MODE_NEW && m_transfer &&
             PrefModel::instance().getTransCategoryTransferNone() == PrefModel::LASTUSED
         ) {
-            TrxModel::DataA transactions = T.find(
-                TrxModel::TYPE(OP_EQ, TrxType(TrxType::e_transfer))
-            );
-
-            if (!transactions.empty() &&
-                CategoryModel::instance().get_id_active(transactions.back().m_category_id_n)
-            ) {
-                int64 cat_id = transactions.back().m_category_id_n;
-                const wxString cat_fullname = CategoryModel::instance().get_id_fullname(cat_id);
-                cbCategory_->ChangeValue(cat_fullname);
+            for (const TrxData& trx_d : T.find_data_a(
+                TrxModel::WHERE_TYPE(OP_EQ, TrxType(TrxType::e_transfer)),
+                TableClause::ORDERBY(TrxCol::NAME_TRANSID, true),
+                TableClause::LIMIT(1)
+            )) {
+                if (CategoryModel::instance().get_id_active(trx_d.m_category_id_n)) {
+                    int64 cat_id = trx_d.m_category_id_n;
+                    const wxString cat_fullname = CategoryModel::instance().get_id_fullname(
+                        cat_id
+                    );
+                    cbCategory_->ChangeValue(cat_fullname);
+                }
+                break;
             }
         }
         else {
@@ -417,16 +422,16 @@ void TrxDialog::dataToControls()
     // Tags
     if (!skip_tag_init_) {
         wxArrayInt64 tag_id_a;
-        for (const auto& gl_d : GL.find(
-            TagLinkCol::REFTYPE(m_journal_d.key().ref_type().key_n()),
-            TagLinkCol::REFID(m_journal_d.key().ref_id())
+        for (const auto& gl_d : GL.find_data_a(
+            TagLinkCol::WHERE_REFTYPE(OP_EQ, m_journal_d.key().ref_type().key_n()),
+            TagLinkCol::WHERE_REFID(OP_EQ, m_journal_d.key().ref_id())
         ))
             tag_id_a.push_back(gl_d.m_tag_id);
         tagTextCtrl_->SetTags(tag_id_a);
         skip_tag_init_ = true;
     }
 
-    //Notes & Transaction Number
+    // Notes & Transaction Number
     if (!skip_notes_init_) {
         textNumber_->SetValue(m_journal_d.m_number);
         textNotes_->SetValue(m_journal_d.m_notes);
@@ -497,14 +502,15 @@ void TrxDialog::CreateControls()
     // Type --------------------------------------------
     transaction_type_ = new wxChoice(static_box, ID_DIALOG_TRANS_TYPE);
 
+    std::size_t account_c = AccountModel::instance().find_count();
     for (int i = 0; i < TrxType::size; ++i) {
-        if (i != TrxType::e_transfer || AccountModel::instance().find_all().size() > 1) {
-            wxString type_name = TrxType(i).name();
-            transaction_type_->Append(
-                wxGetTranslation(type_name),
-                new wxStringClientData(type_name)
-            );
-        }
+        if (i == TrxType::e_transfer && account_c < 2)
+            continue;
+        wxString type_name = TrxType(i).name();
+        transaction_type_->Append(
+            wxGetTranslation(type_name),
+            new wxStringClientData(type_name)
+        );
     }
 
     cAdvanced_ = new wxCheckBox(static_box,
@@ -1048,18 +1054,18 @@ void TrxDialog::SetCategoryForPayee(const PayeeData *payee_n)
         && PrefModel::instance().getTransCategoryNone() == PrefModel::UNUSED
         && m_local_splits.empty()
     ) {
-        const CategoryData* category_n = CategoryModel::instance().get_key_data_n(
+        const CategoryData* cat_n = CategoryModel::instance().get_key_data_n(
             _t("Unknown"), int64(-1)
         );
-        if (!category_n) {
-            CategoryData new_category_d = CategoryData();
-            new_category_d.m_name = _t("Unknown");
-            CategoryModel::instance().add_data_n(new_category_d);
-            category_n = CategoryModel::instance().get_id_data_n(new_category_d.m_id);
+        if (!cat_n) {
+            CategoryData new_cat_d = CategoryData();
+            new_cat_d.m_name = _t("Unknown");
+            CategoryModel::instance().add_data_n(new_cat_d);
+            cat_n = CategoryModel::instance().get_id_data_n(new_cat_d.m_id);
             cbCategory_->mmDoReInitialize();
         }
 
-        m_journal_d.m_category_id_n = category_n->m_id;
+        m_journal_d.m_category_id_n = cat_n->m_id;
         cbCategory_->ChangeValue(_t("Unknown"));
         return;
     }
@@ -1079,8 +1085,8 @@ void TrxDialog::SetCategoryForPayee(const PayeeData *payee_n)
         CategoryModel::instance().get_id_active(payee_n->m_category_id_n)
     ) {
         // if payee has memory of last category used then display last category for payee
-        const CategoryData* category_n = CategoryModel::instance().get_id_data_n(payee_n->m_category_id_n);
-        if (category_n) {
+        const CategoryData* cat_n = CategoryModel::instance().get_id_data_n(payee_n->m_category_id_n);
+        if (cat_n) {
             m_journal_d.m_category_id_n = payee_n->m_category_id_n;
             cbCategory_->ChangeValue(CategoryModel::instance().get_id_fullname(payee_n->m_category_id_n));
             wxLogDebug("Category: %s = %.2f", cbCategory_->GetLabel(), m_journal_d.m_amount);
@@ -1115,14 +1121,14 @@ void TrxDialog::OnAutoTransNum(wxCommandEvent& WXUNUSED(event))
     mmDate date = m_journal_d.m_date();
     date.subDateSpan(wxDateSpan::Months(12));
     double next_number = 0, temp_num;
-    const auto numbers = TrxModel::instance().find(
-        TrxModel::DATE(OP_GE, date),
-        TrxCol::ACCOUNTID(OP_EQ, m_journal_d.m_account_id),
-        TrxCol::TRANSACTIONNUMBER(OP_NEN, "")
-    );
-    for (const auto &num : numbers) {
-        if (!num.m_number.IsNumber()) continue;
-        if (num.m_number.ToDouble(&temp_num) && temp_num > next_number)
+    for (const auto& trx_d : TrxModel::instance().find_data_a(
+        TrxModel::WHERE_DATE(OP_GE, date),
+        TrxCol::WHERE_ACCOUNTID(OP_EQ, m_journal_d.m_account_id),
+        TrxCol::WHERE_TRANSACTIONNUMBER(OP_NEN, "")
+    )) {
+        if (!trx_d.m_number.IsNumber())
+            continue;
+        if (trx_d.m_number.ToDouble(&temp_num) && temp_num > next_number)
             next_number = temp_num;
     }
 
@@ -1143,11 +1149,22 @@ void TrxDialog::OnCategs(wxCommandEvent& WXUNUSED(event))
         m_journal_d.m_amount = 0;
     }
 
-    if (cbCategory_->IsEnabled() && !cbCategory_->GetValue().IsEmpty() && !cbCategory_->mmIsValid()) {
-        mmErrorDialogs::ToolTip4Object(cbCategory_, _t("Invalid value"), _t("Category"), wxICON_ERROR);
+    if (cbCategory_->IsEnabled() &&
+        !cbCategory_->GetValue().IsEmpty() &&
+        !cbCategory_->mmIsValid()
+    ) {
+        mmErrorDialogs::ToolTip4Object(cbCategory_,
+            _t("Invalid value"),
+            _t("Category"),
+            wxICON_ERROR
+        );
         return;
     }
-    wxLogDebug("Cat Valid %d, Cat Is Empty %d, Cat value [%s]", cbCategory_->mmIsValid(), cbCategory_->GetValue().IsEmpty(), cbCategory_->GetValue());
+    wxLogDebug("Cat Valid %d, Cat Is Empty %d, Cat value [%s]",
+        cbCategory_->mmIsValid(),
+        cbCategory_->GetValue().IsEmpty(),
+        cbCategory_->GetValue()
+    );
     if (m_local_splits.empty()) {
         Split split_d;
         split_d.m_amount = m_journal_d.m_amount;
@@ -1158,8 +1175,7 @@ void TrxDialog::OnCategs(wxCommandEvent& WXUNUSED(event))
 
     SplitDialog dlg(this, m_local_splits, m_journal_d.m_account_id);
 
-    if (dlg.ShowModal() == wxID_OK)
-    {
+    if (dlg.ShowModal() == wxID_OK) {
         m_local_splits = dlg.mmGetResult();
 
         if (m_local_splits.size() == 1) {
@@ -1314,7 +1330,7 @@ void TrxDialog::OnOk(wxCommandEvent& event)
     }
     if (m_mode != MODE_EDIT) {
         // FIXME
-        mmAttachmentManage::RelocateAllAttachments(
+        mmAttachment::relocate_ref_all(
             TrxModel::s_ref_type, -1,
             TrxModel::s_ref_type, m_journal_d.m_id
         );
@@ -1364,9 +1380,9 @@ void TrxDialog::OnCancel(wxCommandEvent& WXUNUSED(event))
 #endif
 
     if (m_mode != MODE_EDIT) {
-        // FIXME: temporary records (with id -1) are not stored in database
-        mmAttachmentManage::DeleteAllAttachments(TrxModel::s_ref_type, -1);
-        FieldValueModel::instance().purge_ref(TrxModel::s_ref_type, -1);
+        // Y_FIXME: temporary records (with id -1) are not stored in database
+        mmAttachment::delete_ref_all(TrxModel::s_ref_type, -1);
+        FieldValueModel::instance().purge_ref_all(TrxModel::s_ref_type, -1);
     }
     m_previousDate = wxDateTime(); // invalidate!
     EndModal(wxID_CANCEL);
@@ -1423,8 +1439,8 @@ void TrxDialog::OnQuit(wxCloseEvent& WXUNUSED(event))
 {
     if (m_mode != MODE_EDIT) {
         // FIXME: temporary records (with id -1) are not stored in database
-        mmAttachmentManage::DeleteAllAttachments(TrxModel::s_ref_type, -1);
-        FieldValueModel::instance().purge_ref(TrxModel::s_ref_type, -1);
+        mmAttachment::delete_ref_all(TrxModel::s_ref_type, -1);
+        FieldValueModel::instance().purge_ref_all(TrxModel::s_ref_type, -1);
     }
     EndModal(wxID_CANCEL);
 }

@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "base/_defs.h"
 #include "util/mmPath.h"
 #include "util/mmNavigatorList.h"
+#include "util/mmAttachment.h"
 #include "util/_util.h"
 
 #include "model/AccountModel.h"
@@ -226,12 +227,11 @@ bool mmWebApp::uploadAccount()
 
     json_writer.StartArray();
 
-    for (const auto& account_d : AccountModel::instance().find_all(
-        AccountCol::COL_ID_ACCOUNTNAME
+    for (const auto& account_d : AccountModel::instance().find_data_a(
+        AccountModel::WHERE_STATUS(OP_NE, AccountStatus(AccountStatus::e_closed)),
+        TableClause::ORDERBY(AccountCol::NAME_ACCOUNTNAME)
     )) {
-        if (AccountModel::type_id(account_d) == mmNavigatorItem::TYPE_ID_INVESTMENT ||
-            account_d.is_closed()
-        )
+        if (AccountModel::type_id(account_d) == mmNavigatorItem::TYPE_ID_INVESTMENT)
             continue;
 
         json_writer.StartObject();
@@ -270,8 +270,8 @@ bool mmWebApp::uploadPayee()
     json_writer.StartArray();
 
     wxString cat_name, subcat_name;
-    for (const auto& payee_d : PayeeModel::instance().find_all(
-        PayeeCol::COL_ID_PAYEENAME
+    for (const auto& payee_d : PayeeModel::instance().find_data_a(
+        TableClause::ORDERBY(PayeeCol::NAME_PAYEENAME)
     )) {
         const CategoryData* cat_n = CategoryModel::instance().get_id_data_n(
             payee_d.m_category_id_n
@@ -336,8 +336,8 @@ bool mmWebApp::uploadCategory()
     json_writer.Key("Categories");
 
     json_writer.StartArray();
-    for (const CategoryData& cat_d : CategoryModel::instance().find(
-        CategoryCol::PARENTID(-1)
+    for (const CategoryData& cat_d : CategoryModel::instance().find_data_a(
+        CategoryCol::WHERE_PARENTID(OP_EQ, -1)
     )) {
         bool first_category_run = true;
         bool sub_category_found = false;
@@ -516,8 +516,8 @@ int64 mmWebApp::insertNewTrx(TrxWebData& trx_w)
         trx_status = TrxStatus(TrxStatus::e_followup);
 
         // Search first bank account
-        for (const auto& first_account_d : AccountModel::instance().find_all(
-            AccountCol::COL_ID_ACCOUNTNAME
+        for (const auto& first_account_d : AccountModel::instance().find_data_a(
+            TableClause::ORDERBY(AccountCol::NAME_ACCOUNTNAME)
         )) {
             if (AccountModel::type_id(first_account_d) != mmNavigatorItem::TYPE_ID_INVESTMENT &&
                 AccountModel::type_id(first_account_d) != mmNavigatorItem::TYPE_ID_TERM
@@ -624,10 +624,8 @@ int64 mmWebApp::insertNewTrx(TrxWebData& trx_w)
         return trx_d_id;
 
     if (!trx_w.Attachments.IsEmpty()) {
-        const wxString attachment_folder = mmPath::getPathAttachment(
-            mmAttachmentManage::InfotablePathSetting()
-        );
-        if (attachment_folder == wxEmptyString || !wxDirExists(attachment_folder)) {
+        const wxString folder = mmAttachment::getFolder();
+        if (folder == wxEmptyString || !wxDirExists(folder)) {
             TrxModel::instance().purge_id(trx_d_id);
 
             wxString msgStr = wxString()
@@ -687,14 +685,12 @@ wxString mmWebApp::downloadAttachment(
     wxString& error
 ) {
     const wxString file_ext = wxFileName(attachment_w_name).GetExt().MakeLower();
-    const wxString file_name =
-        TrxModel::s_ref_type.key_n() + "_" +
-        wxString::Format("%lld", trx_id) +
-        "_Attach" + wxString::Format("%i", attachment_number) +
-        "." + file_ext;
+    const wxString file_name = wxString::Format("%s_%lld_Attach%i.%s",
+        TrxModel::s_ref_type.key_n(), trx_id, attachment_number, file_ext
+    );
     const wxString file_path =
-        mmPath::getPathAttachment(mmAttachmentManage::InfotablePathSetting()) +
-        TrxModel::s_ref_type.key_n() + wxFileName::GetPathSeparator() +
+        mmAttachment::getFolder() +
+        TrxModel::s_ref_type.key_n() + mmAttachment::s_path_sep +
         file_name;
 
     CURLcode curlStatus = http_download_file(

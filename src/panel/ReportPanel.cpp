@@ -30,6 +30,7 @@
 #include "util/mmImage.h"
 #include "util/mmDateShifter.h"
 #include "util/mmNavigatorList.h"
+#include "util/mmAttachment.h"
 #include "util/_util.h"
 #include "model/PrefModel.h"
 #include "model/TrxFilter.h"
@@ -318,8 +319,8 @@ void ReportPanel::createControls()
 
             int64 sel_id = m_rb->getDateSelection();
             wxString sel_name;
-            for (const auto& bp_d : BudgetPeriodModel::instance().find_all(
-                BudgetPeriodCol::COL_ID_BUDGETYEARNAME
+            for (const auto& bp_d : BudgetPeriodModel::instance().find_data_a(
+                TableClause::ORDERBY(BudgetPeriodCol::NAME_BUDGETYEARNAME)
             )) {
                 const wxString& name = bp_d.m_name;
 
@@ -401,12 +402,12 @@ void ReportPanel::createControls()
             itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
             itemBoxSizerHeader->AddSpacer(5);
 
-            StockModel::DataA stock_a = StockModel::instance().find_all();
-            std::stable_sort(stock_a.begin(), stock_a.end(), StockData::SorterBySTOCKNAME());
-
             wxString prevSymbol = "";
             w_stocks_choice = new wxChoice(itemPanel3, ID_STOCK_CHOICE);
-            for (const StockModel::Data& stock_d : stock_a) {
+            for (const StockData& stock_d : StockModel::instance().find_data_a(
+                TableClause::ORDERBY(StockCol::NAME_STOCKNAME),
+                TableClause::ORDERBY(StockCol::NAME_STOCKID)
+            )) {
                 const AccountModel::Data* account_n = AccountModel::instance().get_id_data_n(
                     stock_d.m_account_id_n
                 );
@@ -871,7 +872,7 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
         sData.AfterFirst('|').ToLongLong(&ref_id);
 
         if (ref_type.has_value() && ref_id > 0) {
-            mmAttachmentManage::OpenAttachmentFromPanelIcon(w_frame, ref_type, ref_id);
+            mmAttachment::openFromPanelIcon(w_frame, ref_type, ref_id);
             const auto name = getVFname4print("rep", getReportBase()->getHTMLText());
             w_browser->LoadURL(name);
         }
@@ -903,9 +904,9 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
         }
 
         //get model budget for yearID and cat_id
-        BudgetModel::DataA budget_a = BudgetModel::instance().find(
-            BudgetCol::BUDGETYEARID(bp_id_n),
-            BudgetCol::CATEGID(std::stoll(parms[2]))
+        BudgetModel::DataA budget_a = BudgetModel::instance().find_data_a(
+            BudgetCol::WHERE_BUDGETYEARID(OP_EQ, bp_id_n),
+            BudgetCol::WHERE_CATEGID(OP_EQ, std::stoll(parms[2]))
         );
 
         BudgetData budget_d;

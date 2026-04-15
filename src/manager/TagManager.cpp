@@ -109,8 +109,8 @@ void TagManager::createControls()
     wxBoxSizer* boxSizer = new wxBoxSizer(wxVERTICAL);
     this->SetSizer(boxSizer);
 
-    for (const auto& tag_d : TagModel::instance().find_all(
-        TagCol::COL_ID_TAGNAME
+    for (const auto& tag_d : TagModel::instance().find_data_a(
+        TableClause::ORDERBY(TagCol::NAME_TAGNAME)
     ))
         m_tag_a.Add(tag_d.m_name);
 
@@ -248,10 +248,9 @@ void TagManager::OnAdd(wxCommandEvent& WXUNUSED(event))
     if (text.IsEmpty())
         return;
 
-    const auto& tag_a = TagModel::instance().find(
-        TagCol::TAGNAME(text)
-    );
-    if (!tag_a.empty()) {
+    if (TagModel::instance().find_count(
+        TagCol::WHERE_TAGNAME(OP_EQ, text)
+    ) > 0) {
         wxMessageBox(
             _t("A tag with this name already exists"),
             _t("Tag Manager: Adding Error"),
@@ -315,23 +314,23 @@ void TagManager::OnEdit(wxCommandEvent& WXUNUSED(event))
 
 void TagManager::OnDelete(wxCommandEvent& WXUNUSED(event))
 {
-    wxArrayInt selections;
-    wxArrayString stringSelections;
-    w_tag_list->GetSelections(selections);
-    for (const auto& selection : selections)
-        stringSelections.Add(w_tag_list->GetString(selection));
+    wxArrayInt index_a;
+    w_tag_list->GetSelections(index_a);
+    wxArrayString tag_name_a;
+    for (const auto& index : index_a)
+        tag_name_a.Add(w_tag_list->GetString(index));
 
-    if (stringSelections.IsEmpty())
+    if (tag_name_a.IsEmpty())
         return;
 
     TagModel::instance().db_savepoint();
     TagLinkModel::instance().db_savepoint();
     TrxModel::instance().db_savepoint();
     TrxSplitModel::instance().db_savepoint();
-    for (const auto& selection : stringSelections) {
-        const TagData* tag_n = TagModel::instance().get_name_data_n(selection);
-        int tag_used = TagModel::instance().is_used(tag_n->m_id);
-        if (tag_used == 1) {
+
+    for (const auto& tag_name : tag_name_a) {
+        const TagData* tag_n = TagModel::instance().get_name_data_n(tag_name);
+        if (TagModel::instance().find_id_isUsed(tag_n->m_id, true)) {
             wxMessageBox(
                 wxString::Format(_t("Tag '%s' in use"), tag_n->m_name),
                 _t("Tag Manager: Delete Error"),
@@ -339,51 +338,66 @@ void TagManager::OnDelete(wxCommandEvent& WXUNUSED(event))
             );
             continue;
         }
-        wxMessageDialog msgDlg(this,
-            wxString::Format(
-                _t("Deleted transactions exist which use tag '%s'."),
-                tag_n->m_name
-            ) + "\n\n" +
-                _t("Deleting the tag will also automatically purge the associated deleted transactions.") + "\n\n" +
-                _t("Do you want to continue?"),
-            _t("Confirm Tag Deletion"),
-            wxYES_NO | wxNO_DEFAULT | wxICON_WARNING
-        );
-        
-        if (tag_used == 0 || (tag_used == -1 && msgDlg.ShowModal() == wxID_YES)) {
-            TagLinkModel::DataA gl_a = TagLinkModel::instance().find(
-                TagLinkCol::TAGID(tag_n->m_id)
-            );
-            for (const auto& gl_d : gl_a)
-                // Taglinks for deleted transactions are either TRANSACTION or TRANSACTIONSPLIT type.
-                // Remove the transactions which will delete all associated tags.
-                if (gl_d.m_ref_type == TrxModel::s_ref_type)
-                    TrxModel::instance().purge_id(gl_d.m_ref_id);
-                else if (gl_d.m_ref_type == TrxSplitModel::s_ref_type) {
-                    const TrxSplitData* tp_n = TrxSplitModel::instance().get_id_data_n(
-                        gl_d.m_ref_id
-                    );
-                    TrxModel::instance().purge_id(tp_n->m_trx_id);
-                }
-            TagModel::instance().purge_id(tag_n->m_id);
-            m_tag_a.Remove(selection);
-            int index = m_selected_tag_a.Index(selection);
-            if (index != wxNOT_FOUND)
-                m_selected_tag_a.RemoveAt(index);
+
+        // Tag may be used in deleted tranasctions.
+        std::set<int64> trx_id_m;
+        for (const auto& gl_d : TagLinkModel::instance().find_data_a(
+            TagLinkCol::WHERE_TAGID(OP_EQ, tag_n->m_id)
+        )) {
+            // gl_d points to a deleted transaction or its splits.
+            if (gl_d.m_ref_type == TrxModel::s_ref_type) {
+                trx_id_m.insert(gl_d.m_ref_id);
+            }
+            else if (gl_d.m_ref_type == TrxSplitModel::s_ref_type) {
+                const TrxSplitData* tp_n = TrxSplitModel::instance().get_id_data_n(
+                    gl_d.m_ref_id
+                );
+                trx_id_m.insert(tp_n->m_trx_id);
+            }
         }
+
+        if (!trx_id_m.empty()) {
+            wxMessageDialog msgDlg(this,
+                wxString::Format(
+                    _t("Deleted transactions exist which use tag '%s'."),
+                    tag_n->m_name
+                ) + "\n\n" +
+                    _t("Deleting the tag will also automatically purge the associated deleted transactions.") + "\n\n" +
+                    _t("Do you want to continue?"),
+                _t("Confirm Tag Deletion"),
+                wxYES_NO | wxNO_DEFAULT | wxICON_WARNING
+            );
+            if (msgDlg.ShowModal() != wxID_YES)
+                continue;
+        }
+
+        // Purge all deleted transactions which use this tag.
+        // This also deletes the associated tag links.
+        for (int64 trx_id : trx_id_m) {
+            TrxModel::instance().purge_id(trx_id);
+        }
+
+        TagModel::instance().purge_id(tag_n->m_id);
+
+        m_tag_a.Remove(tag_name);
+        int index = m_selected_tag_a.Index(tag_name);
+        if (index != wxNOT_FOUND)
+            m_selected_tag_a.RemoveAt(index);
     }
-    TagModel::instance().db_release_savepoint();
-    TagLinkModel::instance().db_release_savepoint();
-    TrxModel::instance().db_release_savepoint();
+
     TrxSplitModel::instance().db_release_savepoint();
+    TrxModel::instance().db_release_savepoint();
+    TagLinkModel::instance().db_release_savepoint();
+    TagModel::instance().db_release_savepoint();
+
     m_refresh_requested = true;
     fillControls();
-    int newIndex = std::min(
-        selections[0],
+    int new_index = std::min(
+        index_a[0],
         static_cast<int>(w_tag_list->GetCount()) - 1
     );
-    if (newIndex >= 0)
-        setSelectedItem(newIndex);
+    if (new_index >= 0)
+        setSelectedItem(new_index);
 }
 
 void TagManager::OnTextChanged(wxCommandEvent& event)
@@ -419,7 +433,7 @@ void TagManager::OnListSelChanged(wxCommandEvent& WXUNUSED(event))
         bool is_used = false;
         for (const auto& tag_name : tag_name_a) {
             const TagData* tag_n = TagModel::instance().get_name_data_n(tag_name);
-            is_used |= TagModel::instance().is_used(tag_n->m_id) == 1;
+            is_used = is_used || (TagModel::instance().find_id_isUsed(tag_n->m_id, true));
         }
         w_delete_btn->Enable(!is_used);
     }    

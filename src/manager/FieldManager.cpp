@@ -107,11 +107,12 @@ void FieldManager::fillControls()
 {
     fieldListBox_->DeleteAllItems();
 
-    FieldModel::DataA field_a = FieldModel::instance().find_all();
+    FieldModel::DataA field_a = FieldModel::instance().find_data_a(
+        TableClause::ORDERBY(FieldCol::NAME_DESCRIPTION)
+    );
     if (field_a.empty())
         return;
 
-    std::sort(field_a.begin(), field_a.end(), FieldData::SorterByDESCRIPTION());
     int64 firstInTheListID = -1;
     for (const auto& field_d : field_a) {
         if (firstInTheListID == -1)
@@ -227,9 +228,9 @@ void FieldManager::UpdateField()
             return;
     }
 
-    auto fv_a = FieldValueModel::instance().find(
-        FieldValueCol::FIELDID(m_field_id),
-        FieldValueCol::CONTENT(txtSearch)
+    FieldValueModel::DataA fv_a = FieldValueModel::instance().find_data_a(
+        FieldValueCol::WHERE_FIELDID(OP_EQ, m_field_id),
+        FieldValueCol::WHERE_CONTENT(OP_EQ, txtSearch)
     );
     for (auto& fv_d : fv_a) {
         fv_d.m_content = txtReplace;

@@ -100,12 +100,7 @@ public:
     static auto WHERE_IS_VOID(bool value) -> TableClauseV<wxString>;
     static auto WHERE_IS_DELETED(bool value) -> TableClauseV<wxString>;
     static auto WHERE_IS_VALID(bool value) -> TableClauseD;
-
-    static auto DATE(OP op, const mmDate& date) -> TrxCol::TRANSDATE;
-    static auto TYPE(OP op, TrxType trx_type) -> TrxCol::TRANSCODE;
-    static auto STATUS(OP op, TrxStatus trx_status) -> TrxCol::STATUS;
-    static auto IS_VOID(bool value) -> TrxCol::STATUS;
-    static auto IS_DELETED(bool value) -> TrxCol::DELETEDTIME;
+    static auto WHERE_IGNORE_DELETED(bool value) -> TableClauseD;
 
 public:
     // TODO: move to TrxData
@@ -132,12 +127,14 @@ public:
 
 // -- methods
 
+public:
     void save_timestamp(int64 id);
     void update_timestamp(Data& trx_d);
     auto unsafe_save_trx_n(Data* trx_n) -> const Data*;
     auto save_trx_n(Data& trx_d) -> const Data*;
     bool save_trx_a(DataA& rows);
 
+    auto find_id_count(int64 trx_id, bool ignore_deleted = false) -> std::size_t;
     auto find_id_tp_a(int64 trx_id) -> const TrxSplitModel::DataA;
     auto find_id_gl_a(int64 trx_id) -> const TagLinkModel::DataA;
     auto find_all_aDateTimeId() -> const TrxModel::DataA;

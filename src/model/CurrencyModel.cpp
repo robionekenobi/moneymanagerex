@@ -28,6 +28,7 @@
 #include "util/_util.h"
 
 #include "AccountModel.h"
+#include "AssetModel.h"
 #include "CurrencyHistoryModel.h"
 #include "PrefModel.h"
 #include "StockModel.h"
@@ -36,6 +37,13 @@
 constexpr auto LIMIT = 1e-10;
 static wxString s_locale;
 static wxString s_use_locale;
+
+// -- static
+
+TableClauseV<wxString> CurrencyModel::WHERE_CURRENCY_TYPE(OP op, CurrencyType type)
+{
+    return CurrencyCol::WHERE_CURRENCY_TYPE(op, type.key());
+}
 
 // -- constructor
 
@@ -62,37 +70,38 @@ CurrencyModel& CurrencyModel::instance()
 
 // -- override
 
-int CurrencyModel::find_id_dep_c(int64 currency_id)
+// ignore_closed specifies whether closed Account or Asset dependencies are ignored.
+bool CurrencyModel::find_id_isUsed(int64 currency_id, bool ignore_closed)
 {
-    int dep_c = 0;
+    bool is_used = false;
 
-    if (PrefModel::instance().getBaseCurrencyID() == currency_id)
-        dep_c += 1;
+    is_used = is_used || (PrefModel::instance().getBaseCurrencyID() == currency_id);
 
-    // FIXME: do not exclude closed accounts
-    dep_c += AccountModel::instance().find(
-        AccountCol::CURRENCYID(currency_id),
-        AccountModel::STATUS(OP_NE, AccountStatus(AccountStatus::e_closed))
-    ).size();
+    is_used = is_used || AccountModel::instance().find_count(
+        AccountCol::WHERE_CURRENCYID(OP_EQ, currency_id),
+        AccountModel::WHERE_IGNORE_CLOSED(ignore_closed)
+    ) > 0;
 
-    // FIXME: search for currency_id in AssetModel
+    is_used = is_used || AssetModel::instance().find_count(
+        AssetCol::WHERE_CURRENCYID(OP_EQ, currency_id),
+        AssetModel::WHERE_IGNORE_CLOSED(ignore_closed)
+    ) > 0;
 
-    return dep_c;
+    return is_used;
 }
 
 // Remove the Data record from memory and the database.
 // Delete also all currency history
 bool CurrencyModel::purge_id(int64 currency_id)
 {
-    // purge CurrencyHistoryData owned by currency_id
+    bool ok = true;
+
     db_savepoint();
-    for (const auto& uh_d : CurrencyHistoryModel::instance().find(
-        CurrencyHistoryCol::CURRENCYID(currency_id)
-    ))
-        CurrencyHistoryModel::instance().purge_id(uh_d.m_id);
+    ok = ok && CurrencyHistoryModel::instance().purge_currencyId_all(currency_id);
+    ok = ok && unsafe_remove_id(currency_id);
     db_release_savepoint();
 
-    return unsafe_remove_id(currency_id);
+    return ok;
 }
 
 // -- methods
@@ -123,11 +132,11 @@ const CurrencyData* CurrencyModel::get_symbol_data_n(const wxString& symbol)
     if (currency_n)
         return currency_n;
 
-    const DataA currency_a = CurrencyModel::instance().find(
-        CurrencyCol::CURRENCY_SYMBOL(symbol)
-    );
-    if (currency_a.empty())
-        currency_n = get_id_data_n(currency_a[0].m_id);
+    for (int64 currency_id : CurrencyModel::instance().find_id_a(
+        CurrencyCol::WHERE_CURRENCY_SYMBOL(OP_EQ, symbol)
+    )) {
+        currency_n = get_id_data_n(currency_id);
+    }
 
     return currency_n;
 }
@@ -135,20 +144,22 @@ const CurrencyData* CurrencyModel::get_symbol_data_n(const wxString& symbol)
 std::set<mmDate> CurrencyModel::find_id_date_m(int64 currency_id)
 {
     std::set<mmDate> date_m;
-    for (const auto& account_d : AccountModel::instance().find(
-        CurrencyCol::CURRENCYID(currency_id)
+    for (const auto& account_d : AccountModel::instance().find_data_a(
+        CurrencyCol::WHERE_CURRENCYID(OP_EQ, currency_id)
     )) {
         if (AccountModel::type_id(account_d) == mmNavigatorItem::TYPE_ID_INVESTMENT) {
-            for (const auto& stock_d : StockModel::instance().find(
-                StockCol::HELDAT(account_d.m_id)
+            for (const auto& stock_d : StockModel::instance().find_data_a(
+                StockCol::WHERE_HELDAT(OP_EQ, account_d.m_id)
             )) {
                 date_m.insert(stock_d.m_purchase_date);
             }
         }
         else {
-            for (const auto& trx_d : TrxModel::instance().find_or(
-                TrxCol::ACCOUNTID(account_d.m_id),
-                TrxCol::TOACCOUNTID(account_d.m_id)
+            for (const TrxData& trx_d : TrxModel::instance().find_data_a(
+                TableClause::BEGIN_OR(),
+                    TrxCol::WHERE_ACCOUNTID(OP_EQ, account_d.m_id),
+                    TrxCol::WHERE_TOACCOUNTID(OP_EQ, account_d.m_id),
+                TableClause::END()
             )) {
                 date_m.insert(trx_d.m_date());
             }
@@ -160,24 +171,30 @@ std::set<mmDate> CurrencyModel::find_id_date_m(int64 currency_id)
 const wxArrayString CurrencyModel::find_all_name_a()
 {
     wxArrayString name_a;
-    for (const Data& currency_d : find_all(Col::COL_ID_CURRENCYNAME))
+    for (const Data& currency_d : find_data_a(
+        TableClause::ORDERBY(Col::NAME_CURRENCYNAME)
+    )) {
         name_a.Add(currency_d.m_name);
+    }
     return name_a;
 }
 
 const wxArrayString CurrencyModel::find_all_symbol_a()
 {
     wxArrayString symbol_a;
-    for (const Data& currency_d : find_all(Col::COL_ID_CURRENCY_SYMBOL))
+    for (const Data& currency_d : find_data_a(
+        TableClause::ORDERBY(Col::NAME_CURRENCY_SYMBOL)
+    )) {
         symbol_a.Add(currency_d.m_symbol);
+    }
     return symbol_a;
 }
 
 const std::map<wxString, int64> CurrencyModel::find_all_name_id_m()
 {
     std::map<wxString, int64> name_id_m;
-    for (const Data& currency_n : find_all(
-        Col::COL_ID_CURRENCYNAME
+    for (const Data& currency_n : find_data_a(
+        TableClause::ORDERBY(Col::NAME_CURRENCYNAME)
     )) {
         name_id_m[currency_n.m_name] = currency_n.m_id;
     }
@@ -366,7 +383,7 @@ bool CurrencyModel::fromString(wxString s, double& val, const Data* currency_n)
 void CurrencyModel::resetBaseConversionRates()
 {
     db_savepoint();
-    for (auto currency_d : find_all()) {
+    for (auto currency_d : find_data_a()) {
         currency_d.m_base_conv_rate = 1;
         save_data_n(currency_d);
     }

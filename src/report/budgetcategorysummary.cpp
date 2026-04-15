@@ -135,8 +135,10 @@ wxString mmReportBudgetCategorySummary::getHTMLText()
     m_filter.clear();
     m_filter.setDateRange(yearBegin, yearEnd);
 
-    CategoryModel::DataA cat_a = CategoryModel::instance().find(CategoryCol::PARENTID(-1));
-    std::stable_sort(cat_a.begin(), cat_a.end(), CategoryData::SorterByCATEGNAME());
+    CategoryModel::DataA cat_a = CategoryModel::instance().find_data_a(
+        CategoryCol::WHERE_PARENTID(OP_EQ, -1),
+        TableClause::ORDERBY(CategoryCol::NAME_CATEGNAME)
+    );
 
     // Chart
     if (getChartSelection() == 0) {

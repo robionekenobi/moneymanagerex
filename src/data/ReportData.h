@@ -18,9 +18,10 @@
 
 #pragma once
 
+// ReportData represens a record in table REPORT_V1.
+
 #include "table/ReportTable.h"
 
-// User-friendly representation of a record in table REPORT_V1.
 struct ReportData
 {
     int64    m_id;

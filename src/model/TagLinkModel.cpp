@@ -44,17 +44,20 @@ TagLinkModel& TagLinkModel::instance()
 
 // -- methods
 
-// Delete all tag links for a (REFTYPE, REFID)
-void TagLinkModel::purge_ref(RefTypeN ref_type, int64 ref_id)
+bool TagLinkModel::purge_ref_all(RefTypeN ref_type, int64 ref_id)
 {
-    const auto& gl_a = instance().find(
-        TagLinkCol::REFTYPE(ref_type.key_n()),
-        TagLinkCol::REFID(ref_id)
-    );
-    instance().db_savepoint();
-    for (const auto& gl_d : gl_a)
-        instance().purge_id(gl_d.m_id);
-    instance().db_release_savepoint();
+    bool ok = true;
+
+    db_savepoint();
+    for (int64 gl_id : find_id_a(
+        TagLinkCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n()),
+        TagLinkCol::WHERE_REFID(OP_EQ, ref_id)
+    )) {
+        ok = ok && purge_id(gl_id);
+    }
+    db_release_savepoint();
+
+    return ok;
 }
 
 const TagLinkData* TagLinkModel::get_key_data_n(int64 tag_id, RefTypeN ref_type, int64 ref_id)
@@ -67,24 +70,27 @@ const TagLinkData* TagLinkModel::get_key_data_n(int64 tag_id, RefTypeN ref_type,
     if (gl_n)
         return gl_n;
 
-    DataA gl_a = find(
-        TagLinkCol::TAGID(tag_id),
-        TagLinkCol::REFTYPE(ref_type.key_n()),
-        TagLinkCol::REFID(ref_id)
-    );
-    if (!gl_a.empty())
-        gl_n = get_id_data_n(gl_a[0].m_id);
+    for (int64 gl_id : find_id_a(
+        TagLinkCol::WHERE_TAGID(OP_EQ, tag_id),
+        TagLinkCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n()),
+        TagLinkCol::WHERE_REFID(OP_EQ, ref_id)
+    )) {
+        gl_n = get_id_data_n(gl_id);
+    }
+
     return gl_n;
 }
 
 std::map<wxString, int64> TagLinkModel::find_ref_mTagName(RefTypeN ref_type, int64 ref_id)
 {
     std::map<wxString, int64> tag_name_id_m;
-    for (const auto& gl_d : find(
-        TagLinkCol::REFTYPE(ref_type.key_n()),
-        TagLinkCol::REFID(ref_id)
+    for (const auto& gl_d : find_data_a(
+        TagLinkCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n()),
+        TagLinkCol::WHERE_REFID(OP_EQ, ref_id)
     )) {
-        const TagData* tag_n = TagModel::instance().get_id_data_n(gl_d.m_tag_id);
+        const TagData* tag_n = TagModel::instance().get_id_data_n(
+            gl_d.m_tag_id
+        );
         tag_name_id_m[tag_n->m_name] = gl_d.m_tag_id;
     }
     return tag_name_id_m;
@@ -94,8 +100,8 @@ std::map<int64, TagLinkModel::DataA> TagLinkModel::find_refType_mRefId(
     RefTypeN ref_type
 ) {
     std::map<int64, DataA> refId_dataA_m;
-    for (const auto& gl_d : instance().find(
-        TagLinkCol::REFTYPE(ref_type.key_n())
+    for (const auto& gl_d : instance().find_data_a(
+        TagLinkCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n())
     )) {
         refId_dataA_m[gl_d.m_ref_id].push_back(gl_d);
     }
@@ -108,9 +114,9 @@ int TagLinkModel::update(RefTypeN ref_type, int64 ref_id, const DataA& src_gl_a)
     bool save_timestamp = false;
     std::map<int, int64> index_id_m;
 
-    DataA old_gl_a = instance().find(
-        TagLinkCol::REFTYPE(ref_type.key_n()),
-        TagLinkCol::REFID(ref_id)
+    DataA old_gl_a = instance().find_data_a(
+        TagLinkCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n()),
+        TagLinkCol::WHERE_REFID(OP_EQ, ref_id)
     );
     if (old_gl_a.size() != src_gl_a.size())
         save_timestamp = true;

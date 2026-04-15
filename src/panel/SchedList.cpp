@@ -18,15 +18,17 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "SchedList.h"
+#include "SchedPanel.h"
+
 #include "base/_constants.h"
 #include "base/mmUserColor.h"
+#include "util/mmAttachment.h"
 #include "util/mmImage.h"
 #include "model/_all.h"
 
-#include "SchedPanel.h"
-
-#include "dialog/AttachmentDialog.h"
 #include "dialog/SchedDialog.h"
+#include "dialog/AttachmentDialog.h"
 
 enum
 {
@@ -299,8 +301,8 @@ void SchedList::onDeleteBDSeries(wxCommandEvent& WXUNUSED(event))
     if (msgDlg.ShowModal() == wxID_YES) {
         int64 sched_id = w_panel->m_sched_xa[m_select_n].m_id;
         SchedModel::instance().purge_id(sched_id);
-        mmAttachmentManage::DeleteAllAttachments(SchedModel::s_ref_type, sched_id);
-        FieldValueModel::instance().purge_ref(SchedModel::s_ref_type, sched_id);
+        mmAttachment::delete_ref_all(SchedModel::s_ref_type, sched_id);
+        FieldValueModel::instance().purge_ref_all(SchedModel::s_ref_type, sched_id);
         w_panel->initList();
         refreshVisualList(m_select_n);
     }
@@ -351,7 +353,7 @@ void SchedList::onOpenAttachment(wxCommandEvent& WXUNUSED(event))
         return;
 
     int64 ref_id = w_panel->m_sched_xa[m_select_n].m_id;
-    mmAttachmentManage::OpenAttachmentFromPanelIcon(this, SchedModel::s_ref_type, ref_id);
+    mmAttachment::openFromPanelIcon(this, SchedModel::s_ref_type, ref_id);
     refreshVisualList(w_panel->initList(ref_id));
 }
 

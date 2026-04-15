@@ -26,15 +26,32 @@
 
 const RefTypeN AssetModel::s_ref_type = RefTypeN(RefTypeN::e_asset);
 
-AssetCol::STARTDATE AssetModel::STARTDATE(OP op, const mmDate& date)
+TableClauseV<wxString> AssetModel::WHERE_TYPE(OP op, AssetType type)
+{
+    return AssetCol::WHERE_ASSETTYPE(op, type.key());
+}
+
+TableClauseV<wxString> AssetModel::WHERE_STATUS(OP op, AssetStatus status)
+{
+    return AssetCol::WHERE_ASSETSTATUS(op, status.key());
+}
+
+TableClauseV<wxString> AssetModel::WHERE_STARTDATE(OP op, const mmDate& date)
 {
     // OP_EQ and OP_NE should not be used for date comparisons.
     // if needed, create an equivalent AND/OR combination of two other operators.
-    return AssetCol::STARTDATE(op,
+    return AssetCol::WHERE_STARTDATE(op,
         (op == OP_GE || op == OP_LT) ? date.isoStart() :
         (op == OP_LE || op == OP_GT) ? date.isoEnd() :
         date.isoDate()
     );
+}
+
+TableClauseD AssetModel::WHERE_IGNORE_CLOSED(bool value)
+{
+    return value
+        ? TableClause::eval(WHERE_STATUS(OP_NE, AssetStatus(AssetStatus::e_closed)))
+        : TableClause::VOID();
 }
 
 // -- constructor
@@ -57,7 +74,36 @@ AssetModel& AssetModel::instance()
     return Singleton<AssetModel>::instance();
 }
 
+// -- override
+
+bool AssetModel::find_id_isUsed(int64 asset_id, [[maybe_unused]] bool ignore_deleted)
+{
+    // FIXME: use ignore_deleted
+    return TrxLinkModel::instance().find_count(
+        TrxLinkCol::WHERE_LINKTYPE(OP_EQ, s_ref_type.key_n()),
+        TrxLinkCol::WHERE_LINKRECORDID(OP_EQ, asset_id)
+    );
+}
+
+bool AssetModel::purge_id(int64 asset_id)
+{
+    bool ok = true;
+
+    db_savepoint();
+    ok = ok && AttachmentModel::instance().purge_ref_all(AssetModel::s_ref_type, asset_id);
+    db_release_savepoint();
+
+    ok = ok && unsafe_remove_id(asset_id);
+
+    return ok;
+}
+
 // -- methods
+
+bool AssetModel::purge_id_dep(int64 asset_id)
+{
+    return TrxLinkModel::instance().Z_purge_ref(s_ref_type, asset_id);
+}
 
 const wxString AssetModel::get_id_name(int64 asset_id)
 {
@@ -94,9 +140,9 @@ const std::pair<double, double> AssetModel::get_data_value_date(
         }
     };
 
-    TrxLinkModel::DataA tl_a = TrxLinkModel::instance().find(
-        TrxLinkCol::LINKRECORDID(asset_d.m_id),
-        TrxLinkCol::LINKTYPE(s_ref_type.key_n())
+    TrxLinkModel::DataA tl_a = TrxLinkModel::instance().find_data_a(
+        TrxLinkCol::WHERE_LINKRECORDID(OP_EQ, asset_d.m_id),
+        TrxLinkCol::WHERE_LINKTYPE(OP_EQ, s_ref_type.key_n())
     );
 
     TrxModel::DataA trx_a;
@@ -177,7 +223,7 @@ const std::pair<double, double> AssetModel::get_data_value(const Data& asset_d)
 double AssetModel::find_all_balance()
 {
     double balance = 0.0;
-    for (const auto& asset_d : find_all()) {
+    for (const auto& asset_d : find_data_a()) {
         balance += get_data_value(asset_d).second;
     }
     return balance;

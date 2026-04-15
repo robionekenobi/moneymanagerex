@@ -18,9 +18,10 @@
 
 #pragma once
 
+// BudgetPeriodData represents a record in table BUDGETYEAR_V1.
+
 #include "table/BudgetPeriodTable.h"
 
-// User-friendly representation of a record in table BUDGETYEAR_V1.
 struct BudgetPeriodData
 {
     int64    m_id;

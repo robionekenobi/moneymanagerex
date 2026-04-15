@@ -13,7 +13,7 @@
  *      @author [sqlite2cpp.py]
  *
  *      Revision History:
- *          AUTO GENERATED at 2026-04-07 09:19:54.382542.
+ *          AUTO GENERATED at 2026-04-11 13:27:18.900578.
  *          DO NOT EDIT!
  */
 //=============================================================================

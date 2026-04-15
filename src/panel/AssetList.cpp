@@ -19,16 +19,18 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "AssetList.h"
+#include "AssetPanel.h"
+
 #include "base/_defs.h"
 #include <wx/srchctrl.h>
 
 #include "base/_constants.h"
 #include "util/mmImage.h"
+#include "util/mmAttachment.h"
 #include "util/_simple.h"
 
 #include "model/_all.h"
-
-#include "AssetPanel.h"
 
 #include "dialog/AssetDialog.h"
 #include "dialog/AttachmentDialog.h"
@@ -224,9 +226,9 @@ void AssetList::onDeleteAsset(wxCommandEvent& /*event*/)
 
     if (msgDlg.ShowModal() == wxID_YES) {
         const AssetData& asset = w_panel->m_asset_a[m_selected_row];
+        AssetModel::instance().purge_id_dep(asset.m_id);
+        mmAttachment::delete_ref_all(AssetModel::s_ref_type, asset.m_id);
         AssetModel::instance().purge_id(asset.m_id);
-        mmAttachmentManage::DeleteAllAttachments(AssetModel::s_ref_type, asset.m_id);
-        TrxLinkModel::instance().purge_ref(AssetModel::s_ref_type, asset.m_id);
 
         w_panel->initVirtualListControl();
         m_selected_row = -1;
@@ -298,7 +300,7 @@ void AssetList::onOpenAttachment(wxCommandEvent& /*event*/)
         return;
 
     int64 ref_id = w_panel->m_asset_a[m_selected_row].m_id;
-    mmAttachmentManage::OpenAttachmentFromPanelIcon(this, AssetModel::s_ref_type, ref_id);
+    mmAttachment::openFromPanelIcon(this, AssetModel::s_ref_type, ref_id);
     doRefreshItems(ref_id);
 }
 

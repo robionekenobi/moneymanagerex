@@ -19,20 +19,20 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "AssetPanel.h"
+
 #include "base/_defs.h"
 #include <wx/srchctrl.h>
 
 #include "base/_constants.h"
 #include "util/mmImage.h"
 #include "util/mmSplitterWindow.h"
+#include "util/mmAttachment.h"
 #include "util/_simple.h"
 
 #include "model/_all.h"
 
-#include "AssetPanel.h"
-
 #include "dialog/AssetDialog.h"
-#include "dialog/AttachmentDialog.h"
 
 BEGIN_EVENT_TABLE(AssetPanel, wxPanel)
     EVT_BUTTON(wxID_NEW,                 AssetPanel::onNewAsset)
@@ -289,9 +289,11 @@ int AssetPanel::initVirtualListControl(int64 id)
     w_list->DeleteAllItems();
 
     m_asset_a = (m_asset_type_id_n == -1)
-        ? AssetModel::instance().find_all()
-        : AssetModel::instance().find(
-            AssetModel::ASSETTYPE(OP_EQ, AssetType(m_asset_type_id_n))
+        ? AssetModel::instance().find_data_a(
+            TableClause::ORDERBY(AssetCol::s_primary_name)
+        )
+        : AssetModel::instance().find_data_a(
+            AssetModel::WHERE_TYPE(OP_EQ, AssetType(m_asset_type_id_n))
         );
     sortList();
 
@@ -343,7 +345,7 @@ wxString AssetPanel::getItem(long item, int col_id)
         wxString full_notes = asset.m_notes;
         full_notes.Replace("\n", " ");
         if (AttachmentModel::instance().find_ref_c(AssetModel::s_ref_type, asset.m_id))
-            full_notes = full_notes.Prepend(mmAttachmentManage::GetAttachmentNoteSign());
+            full_notes = full_notes.Prepend(mmAttachment::getMarker());
         return full_notes;
     }
     default:

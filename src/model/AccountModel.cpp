@@ -19,9 +19,10 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "AccountModel.h"
+
 #include <unordered_set>
 
-#include "AccountModel.h"
 #include "PrefModel.h"
 #include "StockModel.h"
 #include "TrxLinkModel.h"
@@ -30,6 +31,20 @@
 // -- static
 
 const RefTypeN AccountModel::s_ref_type = RefTypeN(RefTypeN::e_account);
+
+TableClauseV<wxString> AccountModel::WHERE_STATUS(OP op, AccountStatus status)
+{
+    return AccountCol::WHERE_STATUS(op, status.key());
+}
+
+TableClauseD AccountModel::WHERE_IGNORE_CLOSED(bool value)
+{
+    return value
+        ? TableClause::eval(AccountModel::WHERE_STATUS(
+            OP_NE, AccountStatus(AccountStatus::e_closed)
+        ))
+        : TableClause::VOID();
+}
 
 // -- constructor
 
@@ -54,46 +69,85 @@ AccountModel& AccountModel::instance()
 
 // -- override
 
-// Remove the Data record of a given id, including its auxiliary records
+bool AccountModel::find_id_isUsed(int64 account_id, bool ignore_deleted)
+{
+    bool is_used = false;
+
+    is_used = is_used || StockModel::instance().find_count(
+        StockCol::WHERE_HELDAT(OP_EQ, account_id)
+    ) > 0;
+
+    is_used = is_used || TrxModel::instance().find_count(
+        TableClause::BEGIN_OR(),
+            TrxCol::WHERE_ACCOUNTID(OP_EQ, account_id),
+            TrxCol::WHERE_TOACCOUNTID(OP_EQ, account_id),
+        TableClause::END(),
+        TrxModel::WHERE_IGNORE_DELETED(ignore_deleted)
+    ) > 0;
+
+    is_used = is_used || SchedModel::instance().find_count(
+        TableClause::BEGIN_OR(),
+            SchedCol::WHERE_ACCOUNTID(OP_EQ, account_id),
+            SchedCol::WHERE_TOACCOUNTID(OP_EQ, account_id),
+        TableClause::END()
+    ) > 0;
+
+    return is_used;
+}
+
 bool AccountModel::purge_id(int64 account_id)
 {
-    // FIXME: check if account_id is used in InfoTable
+    bool ok = true;
+
+    // FIXME: Do not remove dependencies; move to GUI and ask for permission.
+    ok = ok && purge_id_dep(account_id);
 
     db_savepoint();
-
-    for (const auto& trx_d : TrxModel::instance().find_or(
-        TrxCol::ACCOUNTID(account_id),
-        TrxCol::TOACCOUNTID(account_id)
-    )) {
-        if (TrxModel::is_foreign(trx_d)) {
-            TrxShareModel::instance().purge_trxId(trx_d.m_id);
-            const TrxLinkData* tl_n = TrxLinkModel::instance().get_trx_data_n(trx_d.m_id);
-            if (tl_n) {
-                TrxLinkModel::instance().purge_id(tl_n->m_id);
-            }
-        }
-        TrxModel::instance().purge_id(trx_d.m_id);
-    }
-
-    for (const auto& sched_d : SchedModel::instance().find_or(
-        SchedCol::ACCOUNTID(account_id),
-        SchedCol::TOACCOUNTID(account_id)
-    ))
-        SchedModel::instance().purge_id(sched_d.m_id);
-
-    for (const auto& stock_d : StockModel::instance().find(StockCol::HELDAT(account_id))) {
-        TrxLinkModel::instance().purge_ref(StockModel::s_ref_type, stock_d.m_id);
-        StockModel::instance().purge_id(stock_d.m_id);
-    }
-
-    // FIXME: remove AttachmentData owned by account_id
-
+    ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, account_id);
     db_release_savepoint();
 
-    return unsafe_remove_id(account_id);
+    ok = ok && unsafe_remove_id(account_id);
+
+    return ok;
 }
 
 // -- methods
+
+bool AccountModel::purge_id_dep(int64 account_id)
+{
+    bool ok = true;
+
+    db_savepoint();
+
+    for (int64 stock_id : StockModel::instance().find_id_a(
+        StockCol::WHERE_HELDAT(OP_EQ, account_id)
+    )) {
+        ok = ok && StockModel::instance().purge_id_dep(stock_id);
+        ok = ok && StockModel::instance().purge_id(stock_id);
+    }
+
+    for (const TrxData& trx_d : TrxModel::instance().find_data_a(
+        TableClause::BEGIN_OR(),
+            TrxCol::WHERE_ACCOUNTID(OP_EQ, account_id),
+            TrxCol::WHERE_TOACCOUNTID(OP_EQ, account_id),
+        TableClause::END()
+    )) {
+        ok = ok && TrxModel::instance().purge_id(trx_d.m_id);
+    }
+
+    for (int64 sched_id : SchedModel::instance().find_id_a(
+        TableClause::BEGIN_OR(),
+            SchedCol::WHERE_ACCOUNTID(OP_EQ, account_id),
+            SchedCol::WHERE_TOACCOUNTID(OP_EQ, account_id),
+        TableClause::END()
+    )) {
+        ok = ok && SchedModel::instance().purge_id(sched_id);
+    }
+
+    db_release_savepoint();
+
+    return ok;
+}
 
 const CurrencyData* AccountModel::get_data_currency_p(const Data& account_d)
 {
@@ -135,16 +189,18 @@ std::pair<double, double> AccountModel::get_data_investment_balance(const Data& 
 {
     std::pair<double /*market value*/, double /*invest value*/> sum;
 
-    for (const auto& stock_d : StockModel::instance().find(
-        StockCol::HELDAT(account_d.m_id)
+    for (const auto& stock_d : StockModel::instance().find_data_a(
+        StockCol::WHERE_HELDAT(OP_EQ, account_d.m_id)
     )) {
         sum.first  += stock_d.current_value();
         sum.second += stock_d.m_purchase_value;
     }
 
-    for (const auto& asset_d : AssetModel::instance().find_or(
-        AssetCol::ASSETNAME(account_d.m_name),
-        AssetCol::ASSETTYPE(account_d.m_name)
+    for (const auto& asset_d : AssetModel::instance().find_data_a(
+        TableClause::BEGIN_OR(),
+            AssetCol::WHERE_ASSETNAME(OP_EQ, account_d.m_name),
+            AssetCol::WHERE_ASSETTYPE(OP_EQ, account_d.m_name),
+        TableClause::END()
     )) {
         auto asset_bal = AssetModel::instance().get_data_value(asset_d);
         sum.first  += asset_bal.second;
@@ -180,23 +236,27 @@ const CurrencyData* AccountModel::get_id_currency_p(int64 account_id)
 // sorted by Serial Number (i.e., by Date/Id or by DateTime/Id)
 const TrxModel::DataA AccountModel::find_id_trx_aBySN(int64 account_id)
 {
-    auto trx_a = TrxModel::instance().find_or(
-        TrxCol::ACCOUNTID(account_id),
-        TrxCol::TOACCOUNTID(account_id)
+    // CHECK: add ORDERBY (depending on indexing, external sort may be faster)
+    auto trx_a = TrxModel::instance().find_data_a(
+        TableClause::BEGIN_OR(),
+            TrxCol::WHERE_ACCOUNTID(OP_EQ, account_id),
+            TrxCol::WHERE_TOACCOUNTID(OP_EQ, account_id),
+        TableClause::END()
     );
-    std::sort(trx_a.begin(), trx_a.end());
     if (PrefModel::instance().getUseTransDateTime())
-        std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTime());
+        std::sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTimeId());
     else
-        std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDate());
+        std::sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateId());
     return trx_a;
 }
 
 const SchedModel::DataA AccountModel::find_id_sched_a(int64 account_id)
 {
-    return SchedModel::instance().find_or(
-        SchedCol::ACCOUNTID(account_id),
-        SchedCol::TOACCOUNTID(account_id)
+    return SchedModel::instance().find_data_a(
+        TableClause::BEGIN_OR(),
+            SchedCol::WHERE_ACCOUNTID(OP_EQ, account_id),
+            SchedCol::WHERE_TOACCOUNTID(OP_EQ, account_id),
+        TableClause::END()
     );
 }
 
@@ -207,15 +267,18 @@ const AccountData* AccountModel::get_name_data_n(const wxString& name)
     if (account_n)
         return account_n;
 
-    DataA account_a = find(AccountCol::ACCOUNTNAME(name));
-    if (!account_a.empty())
-        account_n = get_id_data_n(account_a[0].m_id);
+    for (int64 account_id : find_id_a(
+        AccountCol::WHERE_ACCOUNTNAME(OP_EQ, name)
+    )) {
+        account_n = get_id_data_n(account_id);
+    }
+
     return account_n;
 }
 
 const AccountModel::DataA AccountModel::find_name_data_a(const wxString& name)
 {
-    return find(AccountCol::ACCOUNTNAME(name));
+    return find_data_a(AccountCol::WHERE_ACCOUNTNAME(OP_EQ, name));
 }
 
 const AccountModel::DataA AccountModel::find_pattern_data_a(
@@ -223,8 +286,8 @@ const AccountModel::DataA AccountModel::find_pattern_data_a(
     bool only_open
 ) {
     DataA account_a;
-    for (auto &account_d : find_all(
-        AccountCol::COL_ID_ACCOUNTNAME
+    for (auto& account_d : find_data_a(
+        TableClause::ORDERBY(AccountCol::NAME_ACCOUNTNAME)
     )) {
         if (only_open && !account_d.is_open())
             continue;
@@ -243,16 +306,21 @@ const AccountData* AccountModel::get_num_data_n(const wxString& num)
     if (account_n)
         return account_n;
 
-    DataA account_a = find(AccountCol::ACCOUNTNUM(num));
-    if (!account_a.empty())
-        account_n = get_id_data_n(account_a[0].m_id);
+    for (int64 account_id : find_id_a(
+        AccountCol::WHERE_ACCOUNTNUM(OP_EQ, num)
+    )) {
+        account_n = get_id_data_n(account_id);
+    }
+
     return account_n;
 }
 
 const wxArrayString AccountModel::find_all_name_a(bool only_open)
 {
     wxArrayString name_a;
-    for (const auto& account_d : find_all(Col::COL_ID_ACCOUNTNAME)) {
+    for (const auto& account_d : find_data_a(
+        TableClause::ORDERBY(Col::NAME_ACCOUNTNAME)
+    )) {
         if (only_open && !account_d.is_open())
             continue;
         if (type_id(account_d) == mmNavigatorItem::TYPE_ID_SHARES)
@@ -267,7 +335,9 @@ const wxArrayString AccountModel::find_all_name_a(bool only_open)
 const std::map<wxString, int64> AccountModel::find_all_name_id_m(bool only_open)
 {
     std::map<wxString, int64> name_id_m;
-    for (const auto& account_d : find_all(Col::COL_ID_ACCOUNTNAME)) {
+    for (const auto& account_d : find_data_a(
+        TableClause::ORDERBY(Col::NAME_ACCOUNTNAME)
+    )) {
         if (only_open && !account_d.is_open())
             continue;
         if (type_id(account_d) == mmNavigatorItem::TYPE_ID_SHARES)
@@ -282,8 +352,8 @@ const std::map<wxString, int64> AccountModel::find_all_name_id_m(bool only_open)
 const wxArrayString AccountModel::find_all_type_a(bool only_open)
 {
     wxArrayString usedTypes;
-    for (auto& account_d : find_all(
-        AccountCol::COL_ID_ACCOUNTTYPE
+    for (auto& account_d : find_data_a(
+        TableClause::ORDERBY(AccountCol::NAME_ACCOUNTTYPE)
     )) {
         if (only_open && !account_d.is_open())
             continue;
@@ -299,21 +369,21 @@ const wxArrayString AccountModel::find_all_type_a(bool only_open)
 int AccountModel::find_money_type_c()
 {
     return
-        find(
-            AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_CASH))
-        ).size() + find(
-            AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_CHECKING))
-        ).size() + find(
-            AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_CREDIT_CARD))
-        ).size() + find(
-            AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_LOAN))
-        ).size() + find(
-            AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_TERM))
-        ).size() + find(
-            AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_ASSET))
-        ).size() + find(
-            AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_SHARES))
-        ).size();
+        find_count(
+            AccountCol::WHERE_ACCOUNTTYPE(OP_EQ, mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_CASH))
+        ) + find_count(
+            AccountCol::WHERE_ACCOUNTTYPE(OP_EQ, mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_CHECKING))
+        ) + find_count(
+            AccountCol::WHERE_ACCOUNTTYPE(OP_EQ, mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_CREDIT_CARD))
+        ) + find_count(
+            AccountCol::WHERE_ACCOUNTTYPE(OP_EQ, mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_LOAN))
+        ) + find_count(
+            AccountCol::WHERE_ACCOUNTTYPE(OP_EQ, mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_TERM))
+        ) + find_count(
+            AccountCol::WHERE_ACCOUNTTYPE(OP_EQ, mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_ASSET))
+        ) + find_count(
+            AccountCol::WHERE_ACCOUNTTYPE(OP_EQ, mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_SHARES))
+        );
 }
 
 const wxString AccountModel::value_number(const Data& account_d, double value, int precision)
@@ -336,8 +406,8 @@ const wxString AccountModel::value_number_currency(const Data& account_d, double
 // FIXME: see comments in mmNavigatorList::DeleteEntry()
 void AccountModel::dangerous_reset_type(wxString old_type)
 {
-    for (auto& account_d : find(
-        AccountCol::ACCOUNTTYPE(old_type)
+    for (auto& account_d : find_data_a(
+        AccountCol::WHERE_ACCOUNTTYPE(OP_EQ, old_type)
     )) {
         AccountData* account_n = unsafe_get_id_data_n(account_d.m_id);
         account_n->m_type_ = "Checking";
@@ -348,8 +418,8 @@ void AccountModel::dangerous_reset_type(wxString old_type)
 // FIXME: see comments in NavigatorDialog::setDefault()
 void AccountModel::dangerous_reset_unknown_types()
 {
-    for (const auto& account_d : find_all(
-        Col::COL_ID_ACCOUNTNAME
+    for (const auto& account_d : find_data_a(
+        TableClause::ORDERBY(Col::NAME_ACCOUNTNAME)
     )) {
         // FIXME: cannot use mmNavigatorList::instance() here.
         // *Model is lower level than the GUI; it must be independent of GUI.

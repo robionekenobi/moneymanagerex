@@ -52,7 +52,6 @@ private:
     RefTypeN m_ref_type;
     int64 m_ref_id = -1;
     std::map<int, wxString> ColName_;
-    wxString m_PathSep = wxFileName::GetPathSeparator();
 
     //wxButton* btnCancel_ = nullptr;
     //wxButton* button_OK_ = nullptr;
@@ -91,30 +90,4 @@ private:
     void OnItemRightClick(wxDataViewEvent& event);
     void OnListItemActivated(wxDataViewEvent& event);
     void OnMagicButton(wxCommandEvent& event);
-};
-
-// TODO: move to AttachmentModel
-class mmAttachmentManage
-{
-private:
-    static wxString m_PathSep;
-
-public:
-    static const wxString InfotablePathSetting();
-    static const wxString GetAttachmentNoteSign();
-    static bool CreateReadmeFile(const wxString& FolderPath);
-    static bool CopyAttachment(const wxString& FileToImport, const wxString& ImportedFile);
-    static bool DeleteAttachment(const wxString& FileToDelete);
-    static bool OpenAttachment(const wxString& FileToOpen);
-
-    static bool DeleteAllAttachments(RefTypeN ref_type, int64 ref_id);
-    static bool RelocateAllAttachments(
-        RefTypeN old_ref_type, int64 old_ref_id,
-        RefTypeN new_ref_type, int64 new_ref_id
-    );
-    static bool CloneAllAttachments(RefTypeN ref_type, int64 src_ref_id, int64 dst_ref_id);
-    static void OpenAttachmentFromPanelIcon(
-        wxWindow* parent,
-        RefTypeN ref_type, int64 ref_id
-    );
 };

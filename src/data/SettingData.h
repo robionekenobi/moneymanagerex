@@ -18,9 +18,10 @@
 
 #pragma once
 
+// SettingData represents a record in table SETTING_V1.
+
 #include "table/SettingTable.h"
 
-// User-friendly representation of a record in table SETTING_V1.
 struct SettingData
 {
     int64    m_id;

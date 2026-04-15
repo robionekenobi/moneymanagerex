@@ -435,8 +435,10 @@ wxString StockPanel::buildPage() const
 const wxString StockPanel::totalShares()
 {
     double total_shares = 0;
-    for (const auto& stock : StockModel::instance().find(StockCol::HELDAT(m_account_id))) {
-        total_shares += stock.m_num_shares;
+    for (const auto& stock_d : StockModel::instance().find_data_a(
+        StockCol::WHERE_HELDAT(OP_EQ, m_account_id))
+    ) {
+        total_shares += stock_d.m_num_shares;
     }
 
     int precision = (total_shares - static_cast<int>(total_shares) != 0) ? 4 : 0;
@@ -528,14 +530,18 @@ bool StockPanel::onlineQuoteRefresh(wxString& msg)
     }
 
     std::map<wxString, double> symbols;
-    StockModel::DataA stock_a = StockModel::instance().find_all();
+    StockModel::DataA stock_a = StockModel::instance().find_data_a(
+        TableClause::ORDERBY(StockCol::s_primary_name)
+    );
     for (const auto& stock_d : stock_a) {
         const wxString symbol = stock_d.m_symbol.Upper();
         if (symbol.IsEmpty()) continue;
         symbols[symbol] = stock_d.m_purchase_value;
     }
 
-    w_refresh_btn->SetBitmapLabel(mmImage::bitmapBundle(mmImage::png::LED_YELLOW, mmImage::bitmapButtonSize));
+    w_refresh_btn->SetBitmapLabel(mmImage::bitmapBundle(
+        mmImage::png::LED_YELLOW, mmImage::bitmapButtonSize
+    ));
     w_details->SetLabelText(_tu("Connecting…"));
 
     std::map<wxString, double > stocks_data;
@@ -550,7 +556,9 @@ bool StockPanel::onlineQuoteRefresh(wxString& msg)
 
     StockHistoryModel::instance().db_savepoint();
     for (auto& stock_d : stock_a) {
-        std::map<wxString, double>::const_iterator it = stocks_data.find(stock_d.m_symbol.Upper());
+        std::map<wxString, double>::const_iterator it = stocks_data.find(
+            stock_d.m_symbol.Upper()
+        );
         if (it == stocks_data.end()) {
             nonYahooSymbols[stock_d.m_symbol.Upper()] = 0;
             continue;

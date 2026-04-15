@@ -41,42 +41,50 @@ public:
     static InfoModel& instance(wxSQLite3Database* db);
     static InfoModel& instance();
 
+// -- override
+
+public:
+    // override TableFactory
+    virtual bool purge_id(int64 id) override {
+        return unsafe_remove_id(id);
+    }
+
 // -- methods
 
 public:
     bool contains(const wxString& key);
 
-    wxString getRaw(const wxString& key, const wxString& defaultValue);
+    auto getRaw(const wxString& key, const wxString& defaultValue) -> wxString;
     void saveRaw(const wxString& key, const wxString& newValue);
 
-    wxString getString(const wxString& key, const wxString& defaultValue);
+    auto getString(const wxString& key, const wxString& defaultValue) -> wxString;
     void saveString(const wxString& key, const wxString& newValue);
 
     bool getBool(const wxString& key, bool defaultValue);
     void saveBool(const wxString& key, bool newValue);
 
-    int getInt(const wxString& key, int defaultValue);
+    int  getInt(const wxString& key, int defaultValue);
     void saveInt(const wxString& key, int newValue);
 
-    int64 getInt64(const wxString& key, int64 defaultValue);
+    auto getInt64(const wxString& key, int64 defaultValue) -> int64;
     void saveInt64(const wxString& key, int64 newValue);
 
-    const wxSize getSize(const wxString& key);
+    auto getSize(const wxString& key) ->  const wxSize;
     void saveSize(const wxString& key, const wxSize& newValue);
 
-    const wxColour getColour(const wxString& key, const wxColour& defaultValue = wxColour(255, 255, 255));
+    auto getColour(const wxString& key, const wxColour& defaultValue = wxColour(255, 255, 255)) ->  const wxColour;
     void saveColour(const wxString& key, const wxColour& newValue);
 
     void setDate(const wxString& key, const mmDate& newValue);
 
-    Document getJdoc(const wxString& key, const wxString& defaultValue);
+    auto getJdoc(const wxString& key, const wxString& defaultValue) -> Document;
     void saveJdoc(const wxString& key, Document& newValue);
     void saveJdoc(const wxString& key, StringBuffer& newValue);
 
-    const wxArrayString getArrayString(const wxString& key, bool sort = false);
+    auto getArrayString(const wxString& key, bool sort = false) -> const wxArrayString;
     void saveArrayString(const wxString& key, const wxArrayString& a);
 
-    int findArrayItem(const wxString& key, const wxString& label);
+    int  findArrayItem(const wxString& key, const wxString& label);
     void updateArrayItem(const wxString& key, int i, const wxString& newValue);
     void prependArrayItem(const wxString& key, const wxString& value, int limit);
     void eraseArrayItem(const wxString& key, int i);
@@ -85,12 +93,12 @@ public:
     bool getOpenCustomDialog(const wxString& refType);
     void saveOpenCustomDialog(const wxString& refType, bool newValue);
 
-    wxSize getCustomDialogSize(const wxString& refType);
+    auto getCustomDialogSize(const wxString& refType) -> wxSize;
     void saveCustomDialogSize(const wxString& refType, const wxSize& newValue);
 
 public:
     bool checkDBVersion();
-    static loop_t to_loop_t();
+    auto to_loop_t() -> loop_t;
 
 public:
     // static support functions

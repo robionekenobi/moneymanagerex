@@ -44,13 +44,29 @@ AttachmentModel& AttachmentModel::instance()
 
 // -- methods
 
+// Delete all attachments linked to a specific object
+bool AttachmentModel::purge_ref_all(RefTypeN ref_type, const int64 ref_id)
+{
+    bool ok = true;
+
+    for (int64 att_id : find_id_a(
+        AttachmentCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n()),
+        AttachmentCol::WHERE_REFID(OP_EQ, ref_id)
+    )) {
+        // TODO: see mmAttachment::delete_ref_all
+        ok = ok && unsafe_remove_id(att_id);
+    }
+
+    return ok;
+}
+
 // Return the number of attachments linked to a specific object
 int AttachmentModel::find_ref_c(RefTypeN ref_type, const int64 ref_id)
 {
-    return AttachmentModel::instance().find(
-        AttachmentCol::REFTYPE(ref_type.key_n()),
-        AttachmentCol::REFID(ref_id)
-    ).size();
+    return AttachmentModel::instance().find_count(
+        AttachmentCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n()),
+        AttachmentCol::WHERE_REFID(OP_EQ, ref_id)
+    );
 }
 
 // Return a dataset with attachments linked to a specific object
@@ -59,7 +75,9 @@ const AttachmentModel::DataA AttachmentModel::find_ref_data_a(
     const int64 ref_id
 ) {
     DataA att_a;
-    for (const Data& att_d : find_all(Col::COL_ID_DESCRIPTION)) {
+    for (const Data& att_d : find_data_a(
+        TableClause::ORDERBY(Col::NAME_DESCRIPTION)
+    )) {
         if (att_d.m_ref_type_n.key_n().Lower().Matches(
             ref_type.key_n().Lower().Append("*")
         ) && att_d.m_ref_id == ref_id)
@@ -89,8 +107,8 @@ std::map<int64, AttachmentModel::DataA> AttachmentModel::find_refType_mRefId(
     RefTypeN ref_type
 ) {
     std::map<int64, AttachmentModel::DataA> refId_dataA_m;
-    for (const auto& att_d : find(
-        AttachmentCol::REFTYPE(ref_type.key_n())
+    for (const auto& att_d : find_data_a(
+        AttachmentCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n())
     )) {
         refId_dataA_m[att_d.m_ref_id].push_back(att_d);
     }
@@ -103,7 +121,9 @@ wxArrayString AttachmentModel::find_all_desc_a()
 {
     wxArrayString desc_a;
     wxString prev_desc;
-    for (const auto& att_d : find_all(Col::COL_ID_DESCRIPTION)) {
+    for (const auto& att_d : find_data_a(
+        TableClause::ORDERBY(Col::NAME_DESCRIPTION)
+    )) {
         if (att_d.m_description != prev_desc) {
             desc_a.Add(att_d.m_description);
             prev_desc = att_d.m_description;

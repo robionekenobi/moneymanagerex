@@ -41,17 +41,14 @@ wxString ForecastReport::getHTMLText()
 {
     // Grab the data
     std::map<wxString, std::pair<double, double>> amount_by_day;
-    TrxModel::DataA trx_a;
-    
-    if (m_date_range && m_date_range->is_with_date()) {
-        trx_a = TrxModel::instance().find(
-            TrxModel::DATE(OP_GE, mmDate(m_date_range->start_date())),
-            TrxModel::DATE(OP_LE, mmDate(m_date_range->end_date()))
+    TrxModel::DataA trx_a = (m_date_range && m_date_range->is_with_date())
+        ? TrxModel::instance().find_data_a(
+            TrxModel::WHERE_DATE(OP_GE, mmDate(m_date_range->start_date())),
+            TrxModel::WHERE_DATE(OP_LE, mmDate(m_date_range->end_date()))
+        )
+        : TrxModel::instance().find_data_a(
+            TableClause::ORDERBY(TrxCol::s_primary_name)
         );
-    }
-    else {
-        trx_a = TrxModel::instance().find_all();
-    }
 
     for (const auto& trx_d : trx_a) {
         if (trx_d.is_transfer() || TrxModel::is_foreignAsTransfer(trx_d))

@@ -18,9 +18,10 @@
 
 #pragma once
 
+// CategoryData represents a record in table CATEGORY_V1.
+
 #include "table/CategoryTable.h"
 
-// User-friendly representation of a record in table CATEGORY_V1.
 struct CategoryData
 {
     int64    m_id;

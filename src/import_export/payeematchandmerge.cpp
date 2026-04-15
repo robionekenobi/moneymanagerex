@@ -62,8 +62,12 @@ bool PayeeMatchAndMerge::MatchPayee(const wxString& payeeName, PayeeMatchMode mo
 
 void PayeeMatchAndMerge::ExactMatch(const wxString& payeeName, std::vector<PayeeMatchResult>& results)
 {
-    PayeeModel::DataA payee_a = PayeeModel::instance().find_all(PayeeCol::COL_ID_PAYEENAME);
-    wxLogDebug("ExactMatch: Checking payeeName='%s' against %zu payees", payeeName, payee_a.size());
+    PayeeModel::DataA payee_a = PayeeModel::instance().find_data_a(
+        TableClause::ORDERBY(PayeeCol::NAME_PAYEENAME)
+    );
+    wxLogDebug("ExactMatch: Checking payeeName='%s' against %zu payees",
+        payeeName, payee_a.size()
+    );
     for (const auto& payee_d : payee_a) {
         wxLogDebug("ExactMatch: Comparing '%s' with '%s'", payeeName, payee_d.m_name);
         if (payee_d.m_name.IsSameAs(payeeName, false)) {
@@ -82,13 +86,13 @@ void PayeeMatchAndMerge::ExactMatch(const wxString& payeeName, std::vector<Payee
     wxLogDebug("ExactMatch: No exact match found for '%s'", payeeName);
 }
 
-
-
-
-void PayeeMatchAndMerge::RegexMatch(const wxString& payeeName, std::vector<PayeeMatchResult>& results)
-{
-    PayeeModel::DataA payee_a = PayeeModel::instance().find_all();
-    for (const auto& payee_d : payee_a) {
+void PayeeMatchAndMerge::RegexMatch(
+    const wxString& payeeName,
+    std::vector<PayeeMatchResult>& results
+) {
+    for (const auto& payee_d : PayeeModel::instance().find_data_a(
+        TableClause::ORDERBY(PayeeCol::s_primary_name)
+    )) {
         if (payee_d.m_pattern.IsEmpty())
             continue;
 
@@ -112,11 +116,13 @@ void PayeeMatchAndMerge::RegexMatch(const wxString& payeeName, std::vector<Payee
     }
 }
 
-
-void PayeeMatchAndMerge::FuzzyMatch(const wxString& payeeName, std::vector<PayeeMatchResult>& results)
-{
-    PayeeModel::DataA payee_a = PayeeModel::instance().find_all(PayeeCol::COL_ID_PAYEENAME);
-    for (const auto& payee_d : payee_a) {
+void PayeeMatchAndMerge::FuzzyMatch(
+    const wxString& payeeName,
+    std::vector<PayeeMatchResult>& results
+) {
+    for (const auto& payee_d : PayeeModel::instance().find_data_a(
+        TableClause::ORDERBY(PayeeCol::NAME_PAYEENAME)
+    )) {
         int distance = CalculateLevenshteinDistance(payeeName, payee_d.m_name);
         int maxLen = std::max(payeeName.Length(), payee_d.m_name.Length());
         if (maxLen == 0)

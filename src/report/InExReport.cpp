@@ -44,11 +44,10 @@ wxString InExReport::getHTMLText()
 {
     // Grab the data
     std::pair<double, double> income_expenses_pair;
-    for (const auto& trx_d : TrxModel::instance().find(
-        TrxModel::DATE(OP_GE, mmDate(m_date_range->start_date())),
-        TrxModel::DATE(OP_LE, mmDate(m_date_range->end_date())),
-        TrxModel::IS_VOID(false),
-        TrxModel::IS_DELETED(false)
+    for (const auto& trx_d : TrxModel::instance().find_data_a(
+        TrxModel::WHERE_DATE(OP_GE, mmDate(m_date_range->start_date())),
+        TrxModel::WHERE_DATE(OP_LE, mmDate(m_date_range->end_date())),
+        TrxModel::WHERE_IS_VALID(true)
     )) {
         // Do not include asset or stock transfers
         if (TrxModel::is_foreignAsTransfer(trx_d))
@@ -147,19 +146,21 @@ wxString mmReportIncomeExpensesMonthly::getHTMLText()
 {
     // Grab the data
     const wxDateTime start_date = m_date_range->start_date();
-    std::map<int, std::pair<double, double> > incomeExpensesStats;
+    std::map<int, std::pair<double, double>> incomeExpensesStats;
     // TODO: init all the map values with 0.0
-    for (const auto& trx_d : TrxModel::instance().find(
-        TrxModel::DATE(OP_GE, mmDate(start_date)),
-        TrxModel::DATE(OP_LE, mmDate(m_date_range->end_date())),
-        TrxModel::IS_VOID(false),
-        TrxModel::IS_DELETED(false)
+    for (const auto& trx_d : TrxModel::instance().find_data_a(
+        TrxModel::WHERE_DATE(OP_GE, mmDate(start_date)),
+        TrxModel::WHERE_DATE(OP_LE, mmDate(m_date_range->end_date())),
+        TrxModel::WHERE_IS_VOID(false),
+        TrxModel::WHERE_IS_DELETED(false)
     )) {
         // Do not include asset or stock transfers
         if (TrxModel::is_foreignAsTransfer(trx_d))
             continue;
 
-        const AccountData* account_n = AccountModel::instance().get_id_data_n(trx_d.m_account_id);
+        const AccountData* account_n = AccountModel::instance().get_id_data_n(
+            trx_d.m_account_id
+        );
         if (m_account_a) {
             if (!account_n || wxNOT_FOUND == m_account_a->Index(account_n->m_name))
                 continue;

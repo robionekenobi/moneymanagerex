@@ -197,15 +197,16 @@ const wxString mmExportTransaction::getTransactionQIF(
         const wxString split_amount = wxString::FromCDouble(valueSplit, 2);
         wxString split_categ = CategoryModel::instance().get_id_fullname(tp_d.m_category_id, ":");
         split_categ.Replace("/", "-");
-        TagLinkModel::DataA splitTags = TagLinkModel::instance().find(
-            TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.key_n()),
-            TagLinkCol::REFID(tp_d.m_id)
+        // TODO: add ORDERBY
+        TagLinkModel::DataA gl_a = TagLinkModel::instance().find_data_a(
+            TagLinkCol::WHERE_REFTYPE(OP_EQ, TrxSplitModel::s_ref_type.key_n()),
+            TagLinkCol::WHERE_REFID(OP_EQ, tp_d.m_id)
         );
-        if (!splitTags.empty()) {
+        if (!gl_a.empty()) {
             split_categ.Append("/");
-            auto numTags = splitTags.size();
+            auto numTags = gl_a.size();
             for (decltype(numTags) i = 0; i < numTags; i++) {
-                const TagData* tag_n = TagModel::instance().get_id_data_n(splitTags[i].m_tag_id);
+                const TagData* tag_n = TagModel::instance().get_id_data_n(gl_a[i].m_tag_id);
                 split_categ.Append((i > 0 ? ":" : "") + tag_n->m_name);
             }
         }
@@ -255,7 +256,9 @@ const wxString mmExportTransaction::getCategoriesQIF()
     wxString buffer_qif = "";
 
     buffer_qif << "!Type:Cat" << "\n";
-    for (const auto& cat_d : CategoryModel::instance().find_all()) {
+    for (const auto& cat_d : CategoryModel::instance().find_data_a(
+        TableClause::ORDERBY(CategoryCol::s_primary_name)
+    )) {
         const wxString& full_name = CategoryModel::instance().get_id_fullname(cat_d.m_id, ":");
         double cat_income = CategoryModel::instance().get_id_income(cat_d.m_id);
         buffer_qif << "N" << full_name << "\n"
@@ -359,13 +362,14 @@ void mmExportTransaction::getCategoriesJSON(PrettyWriter<StringBuffer>& json_wri
 {
     json_writer.Key("CATEGORIES");
     json_writer.StartArray();
-    for (const auto& category : CategoryModel::instance().find_all())
-    {
+    for (const auto& cat_d : CategoryModel::instance().find_data_a(
+        TableClause::ORDERBY(CategoryCol::s_primary_name)
+    )) {
         json_writer.StartObject();
         json_writer.Key("ID");
-        json_writer.Int64(category.m_id.GetValue());
+        json_writer.Int64(cat_d.m_id.GetValue());
         json_writer.Key("NAME");
-        json_writer.String(CategoryModel::instance().get_id_fullname(category.m_id, ":").utf8_str());
+        json_writer.String(CategoryModel::instance().get_id_fullname(cat_d.m_id, ":").utf8_str());
         json_writer.EndObject();
     }
     json_writer.EndArray();
@@ -375,8 +379,7 @@ void mmExportTransaction::getTagsJSON(PrettyWriter<StringBuffer>& json_writer, w
 {
     json_writer.Key("TAGS");
     json_writer.StartArray();
-    for (const auto& tagID : allTags4Export)
-    {
+    for (const auto& tagID : allTags4Export) {
         const TagData* tag_n = TagModel::instance().get_id_data_n(tagID);
         if (tag_n) {
             json_writer.StartObject();
@@ -394,15 +397,16 @@ void mmExportTransaction::getUsedCategoriesJSON(PrettyWriter<StringBuffer>& json
 {
     json_writer.Key("CATEGORIES");
     json_writer.StartArray();
-    for (const auto& category : CategoryModel::instance().find_all())
-    {
-        if (!CategoryModel::instance().is_used(category.m_id))
+    for (const auto& cat_d : CategoryModel::instance().find_data_a(
+        TableClause::ORDERBY(CategoryCol::s_primary_name)
+    )) {
+        if (!CategoryModel::instance().find_id_isUsed(cat_d.m_id, true))
             continue;
         json_writer.StartObject();
         json_writer.Key("ID");
-        json_writer.Int64(category.m_id.GetValue());
+        json_writer.Int64(cat_d.m_id.GetValue());
         json_writer.Key("NAME");
-        json_writer.String(CategoryModel::instance().get_id_fullname(category.m_id, ":").utf8_str());
+        json_writer.String(CategoryModel::instance().get_id_fullname(cat_d.m_id, ":").utf8_str());
         json_writer.EndObject();
     }
     json_writer.EndArray();
@@ -465,24 +469,14 @@ void mmExportTransaction::getTransactionJSON(
         json_writer.EndArray();
     }
 
-    auto fv_a = FieldValueModel::instance().find(
-        FieldValueModel::REFTYPEID(TrxModel::s_ref_type, trx_dx.m_id)
-    );
-    auto f = FieldModel::instance().find(
-        FieldCol::REFTYPE(TrxModel::s_ref_type.key_n())
+    FieldValueModel::DataA fv_a = FieldValueModel::instance().find_data_a(
+        FieldValueModel::WHERE_REFTYPEID(TrxModel::s_ref_type, trx_dx.m_id)
     );
     if (!fv_a.empty()) {
         json_writer.Key("CUSTOM_FIELDS");
         json_writer.StartArray();
         for (const auto& fv_d : fv_a) {
-            // TODO: field_d.m_id is equal to fv_d.m_field_id
-            auto field_a = FieldModel::instance().find(
-                FieldCol::REFTYPE(TrxModel::s_ref_type.key_n()),
-                FieldCol::FIELDID(fv_d.m_field_id)
-            );
-            for (const auto& field_d : field_a) {
-                json_writer.Int64(field_d.m_id.GetValue());
-            }
+            json_writer.Int64(fv_d.m_field_id.GetValue());
         }
         json_writer.EndArray();
     }
@@ -517,8 +511,9 @@ void mmExportTransaction::getAttachmentsJSON(
     json_writer.Key("ATTACHMENTS_DATA");
     json_writer.StartArray();
 
-    AttachmentModel::DataA att_a = AttachmentModel::instance().find_all();
-    for (const auto& att_d : att_a) {
+    for (const auto& att_d : AttachmentModel::instance().find_data_a(
+        TableClause::ORDERBY(AttachmentCol::s_primary_name)
+    )) {
         if (att_d.m_ref_type_n.id_n() != ref_type.id_n())
             continue;
         if (std::find(ref_id_a.begin(), ref_id_a.end(), att_d.m_ref_id) == ref_id_a.end())
@@ -531,6 +526,7 @@ void mmExportTransaction::getAttachmentsJSON(
     json_writer.EndObject();
 }
 
+// TODO: change type of fv_id_a, field_id_a to std::set<int64>
 void mmExportTransaction::getCustomFieldsJSON(
     PrettyWriter<StringBuffer>& json_writer,
     wxArrayInt64& fv_id_a
@@ -543,7 +539,9 @@ void mmExportTransaction::getCustomFieldsJSON(
 
     // Data
     wxArrayInt64 field_id_a;
-    FieldValueModel::DataA fv_a = FieldValueModel::instance().find_all();
+    FieldValueModel::DataA fv_a = FieldValueModel::instance().find_data_a(
+        TableClause::ORDERBY(FieldValueCol::s_primary_name)
+    );
     if (!fv_a.empty()) {
         json_writer.Key("CUSTOM_FIELDS_DATA");
         json_writer.StartArray();
@@ -563,11 +561,10 @@ void mmExportTransaction::getCustomFieldsJSON(
         json_writer.EndArray();
     }
 
-    //Settings
-    FieldModel::DataA field_a = FieldModel::instance().find(
-        FieldCol::REFTYPE(TrxModel::s_ref_type.key_n())
+    // Settings
+    FieldModel::DataA field_a = FieldModel::instance().find_data_a(
+        FieldCol::WHERE_REFTYPE(OP_EQ, TrxModel::s_ref_type.key_n())
     );
-
     if (!field_a.empty()) {
         json_writer.Key("CUSTOM_FIELDS_SETTINGS");
         json_writer.StartArray();

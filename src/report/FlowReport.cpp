@@ -90,42 +90,40 @@ void FlowReport::getTransactions()
     );
 
     // Get initial Balance as of today
-    for (const auto& account : AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().getInvestmentAccountStr()),
-        AccountModel::STATUS(OP_NE, AccountStatus(AccountStatus::e_closed))
+    for (const auto& account_d : AccountModel::instance().find_data_a(
+        AccountCol::WHERE_ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().getInvestmentAccountStr()),
+        AccountModel::WHERE_STATUS(OP_NE, AccountStatus(AccountStatus::e_closed))
     )) {
         if (m_account_a &&
-            std::find(m_account_a->begin(), m_account_a->end(), account.m_name) ==
+            std::find(m_account_a->begin(), m_account_a->end(), account_d.m_name) ==
                 m_account_a->end()
         ) {
             continue;
         }
 
         double convRate = CurrencyHistoryModel::instance().get_id_date_rate(
-            account.m_currency_id
+            account_d.m_currency_id
         );
-        m_balance += account.m_open_balance * convRate;
+        m_balance += account_d.m_open_balance * convRate;
 
-        m_account_id.push_back(account.m_id);
+        m_account_id.push_back(account_d.m_id);
 
-        for (const auto& trx_d : AccountModel::instance().find_id_trx_aBySN(account.m_id)) {
+        for (const auto& trx_d : AccountModel::instance().find_id_trx_aBySN(account_d.m_id)) {
             wxString strDate = trx_d.m_isoDateTime();
             // Do not include asset or stock transfers in income expense calculations.
             if (TrxModel::is_foreignAsTransfer(trx_d) || (strDate > todayString))
                 continue;
-            m_balance += trx_d.account_flow(account.m_id) * convRate;
+            m_balance += trx_d.account_flow(account_d.m_id) * convRate;
         }
     }
 
     // Process all transations posted after today
-    TrxModel::DataA trx_a = TrxModel::instance().find(
-        TrxModel::DATE(OP_GT, mmDate(endOfToday)),
-        TrxModel::DATE(OP_LT, mmDate(endDate)),
-        TrxModel::IS_VOID(false)
-    );
-    for (TrxData& trx_d : trx_a) {
-        if (trx_d.is_deleted())
-            continue;
+    for (TrxData& trx_d : TrxModel::instance().find_data_a(
+        TrxModel::WHERE_DATE(OP_GT, mmDate(endOfToday)),
+        TrxModel::WHERE_DATE(OP_LT, mmDate(endDate)),
+        TrxModel::WHERE_IS_VOID(false),
+        TrxModel::WHERE_IS_DELETED(false)
+    )) {
         bool isAccountFound = std::find(m_account_id.begin(), m_account_id.end(),
             trx_d.m_account_id
         ) != m_account_id.end();
@@ -133,7 +131,7 @@ void FlowReport::getTransactions()
             trx_d.m_to_account_id_n
         ) != m_account_id.end();
         if (!isAccountFound && !isToAccountFound)
-            continue; // skip account
+            continue;
         const auto& tp_a = TrxModel::instance().find_id_tp_a(trx_d.m_id);
         if (tp_a.empty()) {
             trx_d.m_amount = trueAmount(trx_d);
@@ -150,8 +148,8 @@ void FlowReport::getTransactions()
     }
 
     // Gather the recurring transaction list
-    for (const auto& sched_d : SchedModel::instance().find(
-        SchedModel::IS_VOID(false)
+    for (const auto& sched_d : SchedModel::instance().find_data_a(
+        SchedModel::WHERE_IS_VOID(false)
     )) {
         // CHECK: use m_date() instead of m_due_date
         mmDate next_date = sched_d.m_due_date;
@@ -165,7 +163,7 @@ void FlowReport::getTransactions()
             sched_d.m_to_account_id_n
         ) != m_account_id.end();
         if (!isAccountFound && !isToAccountFound)
-            continue; // skip account
+            continue;
 
         Repeat repeat = sched_d.m_repeat;
 

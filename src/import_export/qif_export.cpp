@@ -84,21 +84,17 @@ void mmQIFExportDialog::fillControls()
     selected_accounts_id_.clear();
     accounts_id_.clear();
 
-    AccountModel::DataA all_accounts = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().getInvestmentAccountStr())
-    );
-
-    for (const auto& a : all_accounts)
-    {
-        m_accounts_name.Add(a.m_name);
-        selected_accounts_id_.push_back(a.m_id);
-        accounts_id_.push_back(a.m_id);
-        if (a.m_id == m_account_id)
-            bSelectedAccounts_->SetLabelText(a.m_name);
+    for (const auto& account_d : AccountModel::instance().find_data_a(
+        AccountCol::WHERE_ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().getInvestmentAccountStr())
+    )) {
+        m_accounts_name.Add(account_d.m_name);
+        selected_accounts_id_.push_back(account_d.m_id);
+        accounts_id_.push_back(account_d.m_id);
+        if (account_d.m_id == m_account_id)
+            bSelectedAccounts_->SetLabelText(account_d.m_name);
     }
 
-    if (m_account_id > -1)
-    {
+    if (m_account_id > -1) {
         selected_accounts_id_.clear();
         selected_accounts_id_.push_back(m_account_id);
     }
@@ -260,36 +256,40 @@ void mmQIFExportDialog::OnButtonClear(wxCommandEvent& WXUNUSED(event))
 void mmQIFExportDialog::OnAccountsButton(wxCommandEvent& WXUNUSED(event))
 {
     bSelectedAccounts_->UnsetToolTip();
-    mmMultiChoice s_acc(this, _t("Choose account to export from:")
-        , _t("QIF Export"), m_accounts_name);
-
-    int i = 0;
-    wxArrayInt s;
-    AccountModel::DataA all_accounts = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().getInvestmentAccountStr())
+    mmMultiChoice account_choice(this,
+        _t("Choose account to export from:"),
+        _t("QIF Export"),
+        m_accounts_name
     );
 
-    for (const auto& a : all_accounts)
-    {
-        if (std::find(selected_accounts_id_.begin(), selected_accounts_id_.end(), a.m_id) != selected_accounts_id_.end())
-            s.push_back(i);
+    wxArrayInt index_a;
+
+    int i = 0;
+    for (const auto& account_d : AccountModel::instance().find_data_a(
+        AccountCol::WHERE_ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().getInvestmentAccountStr())
+    )) {
+        if (std::find(selected_accounts_id_.begin(), selected_accounts_id_.end(),
+            account_d.m_id
+        ) != selected_accounts_id_.end())
+            index_a.push_back(i);
         i++;
     }
-    s_acc.SetSelections(s);
+    account_choice.SetSelections(index_a);
 
     selected_accounts_id_.clear();
 
     wxString baloon = "";
     wxArrayInt selected_items;
-    if (s_acc.ShowModal() == wxID_OK)
-    {
-        selected_items = s_acc.GetSelections();
-        for (const auto &entry : selected_items)
-        {
+    if (account_choice.ShowModal() == wxID_OK) {
+        selected_items = account_choice.GetSelections();
+        for (const auto& entry : selected_items) {
             int index = entry;
             const wxString accounts_name = m_accounts_name[index];
-            const auto account = AccountModel::instance().get_name_data_n(accounts_name);
-            if (account) selected_accounts_id_.push_back(account->m_id);
+            const AccountData* account_n = AccountModel::instance().get_name_data_n(
+                accounts_name
+            );
+            if (account_n)
+                selected_accounts_id_.push_back(account_n->m_id);
             baloon += accounts_name + "\n";
         }
     }
@@ -300,14 +300,14 @@ void mmQIFExportDialog::OnAccountsButton(wxCommandEvent& WXUNUSED(event))
     }
     else if (selected_accounts_id_.size() == 1) {
         int64 account_id = accounts_id_[selected_items[0]];
-        const AccountData* account = AccountModel::instance().get_id_data_n(account_id);
-        if (account) bSelectedAccounts_->SetLabelText(account->m_name);
+        const AccountData* account_n = AccountModel::instance().get_id_data_n(account_id);
+        if (account_n)
+            bSelectedAccounts_->SetLabelText(account_n->m_name);
     }
     else if (selected_accounts_id_.size() > 1) {
         bSelectedAccounts_->SetLabelText(wxString::FromUTF8Unchecked("…"));
         mmToolTip(bSelectedAccounts_, baloon);
     }
-
 }
 
 void mmQIFExportDialog::OnFileSearch(wxCommandEvent& WXUNUSED(event))
@@ -317,26 +317,32 @@ void mmQIFExportDialog::OnFileSearch(wxCommandEvent& WXUNUSED(event))
     switch (m_type)
     {
     case QIF:
-        fileName = wxFileSelector(_t("Choose QIF data file to export")
-            , wxEmptyString, fileName, wxEmptyString
-            , _t("QIF Files (*.qif)") + "|*.qif;*.QIF"
-            , wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        fileName = wxFileSelector(
+            _t("Choose QIF data file to export"),
+            wxEmptyString, fileName, wxEmptyString,
+            _t("QIF Files (*.qif)") + "|*.qif;*.QIF",
+            wxFD_SAVE | wxFD_OVERWRITE_PROMPT
+        );
         if (!fileName.IsEmpty())
             correctEmptyFileExt("qif", fileName);
         break;
     case JSON:
-        fileName = wxFileSelector(_t("Choose JSON data file to export")
-            , wxEmptyString, fileName, wxEmptyString
-            , _t("JSON Files (*.json)") + "|*.json;*.JSON"
-            , wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        fileName = wxFileSelector(
+            _t("Choose JSON data file to export"),
+            wxEmptyString, fileName, wxEmptyString,
+            _t("JSON Files (*.json)") + "|*.json;*.JSON",
+            wxFD_SAVE | wxFD_OVERWRITE_PROMPT
+        );
         if (!fileName.IsEmpty())
             correctEmptyFileExt("json", fileName);
         break;
     case CSV:
-        fileName = wxFileSelector(_t("Choose CSV data file to export")
-            , wxEmptyString, fileName, wxEmptyString
-            , _t("CSV Files (*.csv)") + "|*.csv;*.CSV"
-            , wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        fileName = wxFileSelector(
+            _t("Choose CSV data file to export"),
+            wxEmptyString, fileName, wxEmptyString,
+            _t("CSV Files (*.csv)") + "|*.csv;*.CSV",
+            wxFD_SAVE | wxFD_OVERWRITE_PROMPT
+        );
         if (!fileName.IsEmpty())
             correctEmptyFileExt("csv", fileName);
         break;
@@ -352,11 +358,16 @@ void mmQIFExportDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 
     bool bCorrect = false;
     wxString sErrorMsg = "";
-    if (AccountModel::instance().find_all().empty() && accountsCheckBox_->IsChecked())
+    if (accountsCheckBox_->IsChecked() &&
+        AccountModel::instance().find_count() == 0
+    )
         sErrorMsg =_t("No Account available for export");
     else if (selected_accounts_id_.size() < 1 && accountsCheckBox_->IsChecked())
         sErrorMsg =_t("No Accounts selected for export");
-    else if (dateToCheckBox_->IsChecked() && dateFromCheckBox_->IsChecked() && fromDateCtrl_->GetValue() > toDateCtrl_->GetValue())
+    else if (dateToCheckBox_->IsChecked() &&
+        dateFromCheckBox_->IsChecked() &&
+        fromDateCtrl_->GetValue() > toDateCtrl_->GetValue()
+    )
         sErrorMsg =_t("To Date less than From Date");
     else
         bCorrect = true;
@@ -450,16 +461,16 @@ void mmQIFExportDialog::mmExportQIF()
     PrettyWriter<StringBuffer> json_writer(json_buffer);
     json_writer.StartObject();
 
-    //Export categories
+    // Export categories
     if (m_type == QIF && exp_categ) {
         buffer << mmExportTransaction::getCategoriesQIF();
-        numCategories = CategoryModel::instance().find_all().size();
+        numCategories = CategoryModel::instance().find_count();
         sErrorMsg << _t("Categories exported") << "\n";
     }
     else if (m_type == JSON) {
         if (exp_categ) {
             mmExportTransaction::getCategoriesJSON(json_writer);
-            numCategories = CategoryModel::instance().find_all().size();
+            numCategories = CategoryModel::instance().find_count();
         }
         else {
             mmExportTransaction::getUsedCategoriesJSON(json_writer);
@@ -472,8 +483,8 @@ void mmQIFExportDialog::mmExportQIF()
     wxArrayInt64 allAttachments4Export;
     wxArrayInt64 allCustomFields4Export;
     wxArrayInt64 allTags4Export;
-    const auto trx_a = TrxModel::instance().find(
-        TrxModel::IS_VOID(false)
+    const auto trx_a = TrxModel::instance().find_data_a(
+        TrxModel::WHERE_IS_VOID(false)
     );
 
     if (exp_transactions && !trx_a.empty()) {
@@ -483,8 +494,12 @@ void mmQIFExportDialog::mmExportQIF()
         /* Array to store QIF tarts for selected accounts */
         std::map<int64 /*account ID*/, wxString> extraTransfers;
 
-        wxProgressDialog progressDlg(_tu("Please wait…"), _t("Exporting")
-            , 100, this, wxPD_APP_MODAL | wxPD_CAN_ABORT);
+        wxProgressDialog progressDlg(
+            _tu("Please wait…"),
+            _t("Exporting"),
+            100, this,
+            wxPD_APP_MODAL | wxPD_CAN_ABORT
+        );
 
         const auto trxId_tpA_m = TrxSplitModel::instance().find_all_mTrxId();
         const auto trxId_glA_m = TagLinkModel::instance().find_refType_mRefId(
@@ -556,13 +571,13 @@ void mmQIFExportDialog::mmExportQIF()
                     allAttachments4Export.push_back(trx_dx.m_id);
                 }
 
-                for (const auto & fv_d : FieldValueModel::instance().find(
-                    FieldValueModel::REFTYPEID(TrxModel::s_ref_type, trx_dx.m_id)
+                for (int64 fv_id : FieldValueModel::instance().find_id_a(
+                    FieldValueModel::WHERE_REFTYPEID(TrxModel::s_ref_type, trx_dx.m_id)
                 )) {
                     if (std::find(allCustomFields4Export.begin(), allCustomFields4Export.end(),
-                        fv_d.m_id) == allCustomFields4Export.end()
+                        fv_id) == allCustomFields4Export.end()
                     ) {
-                        allCustomFields4Export.push_back(fv_d.m_id);
+                        allCustomFields4Export.push_back(fv_id);
                     }
                 }
 

@@ -83,13 +83,12 @@ const wxString htmlWidgetStocks::getHTMLText()
     double grand_cash_balance = 0;  // Track the grand total of cash balances
 
     wxString output = "";
-    AccountModel::DataA account_a = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_EQ, mmNavigatorList::instance().getInvestmentAccountStr())
+    AccountModel::DataA account_a = AccountModel::instance().find_data_a(
+        AccountCol::WHERE_ACCOUNTTYPE(OP_EQ, mmNavigatorList::instance().getInvestmentAccountStr()),
+        TableClause::ORDERBY(AccountCol::NAME_ACCOUNTNAME)
     );
     if (account_a.empty())
         return output;
-
-    std::stable_sort(account_a.begin(), account_a.end(), AccountData::SorterByName());
 
     output = R"(<div class="shadow">)";
     output += "<table class ='sortable table'><col style='width: 50%'><col style='width: 12.5%'><col style='width: 12.5%'><col style='width: 12.5%'><col style='width: 12.5%'><thead><tr class='active'><th>\n";
@@ -220,19 +219,17 @@ void htmlWidgetTop7Categories::getTopCategoryStats(
 ) const
 {
     // Temporary map
-    std::map<int64 /*category_id*/, double> stat;
+    std::map<int64 /*cat_id*/, double> stat;
 
     const auto trxId_tpA_m = TrxSplitModel::instance().find_all_mTrxId();
-    const auto& trx_a = TrxModel::instance().find(
-        TrxModel::DATE(OP_GE, mmDate(date_range->start_date())),
-        TrxModel::DATE(OP_LE, mmDate(date_range->end_date())),
-        TrxModel::TYPE(OP_NE, TrxType(TrxType::e_transfer)),
-        TrxModel::IS_VOID(false)
-    );
-
-    for (const auto& trx_d : trx_a) {
-        // Do not include asset or stock transfers or deleted transactions in income expense calculations.
-        if (TrxModel::is_foreignAsTransfer(trx_d) || trx_d.is_deleted())
+    for (const auto& trx_d : TrxModel::instance().find_data_a(
+        TrxModel::WHERE_DATE(OP_GE, mmDate(date_range->start_date())),
+        TrxModel::WHERE_DATE(OP_LE, mmDate(date_range->end_date())),
+        TrxModel::WHERE_TYPE(OP_NE, TrxType(TrxType::e_transfer)),
+        TrxModel::WHERE_IS_VALID(true)
+    )) {
+        // Do not include asset or stock transfers in income expense calculations.
+        if (TrxModel::is_foreignAsTransfer(trx_d))
             continue;
 
         bool withdrawal = (trx_d.is_withdrawal());
@@ -241,18 +238,20 @@ void htmlWidgetTop7Categories::getTopCategoryStats(
             trx_d.m_date()
         );
 
-        if (const auto trxId_tpA = trxId_tpA_m.find(trx_d.m_id); trxId_tpA == trxId_tpA_m.end()) {
-            int64 category_id = trx_d.m_category_id_n;
+        if (const auto trxId_tpA_p = trxId_tpA_m.find(trx_d.m_id);
+            trxId_tpA_p == trxId_tpA_m.end()
+        ) {
+            int64 cat_id = trx_d.m_category_id_n;
             if (withdrawal)
-                stat[category_id] -= trx_d.m_amount * convRate;
+                stat[cat_id] -= trx_d.m_amount * convRate;
             else
-                stat[category_id] += trx_d.m_amount * convRate;
+                stat[cat_id] += trx_d.m_amount * convRate;
         }
         else {
-            for (const auto& tp_d : trxId_tpA->second) {
-                int64 category_id = tp_d.m_category_id;
+            for (const auto& tp_d : trxId_tpA_p->second) {
+                int64 cat_id = tp_d.m_category_id;
                 double val = tp_d.m_amount * convRate * (withdrawal ? -1 : 1);
-                stat[category_id] += val;
+                stat[cat_id] += val;
             }
         }
     }
@@ -311,8 +310,8 @@ const wxString htmlWidgetBillsAndDeposits::getHTMLText()
         const AccountData* /* 4: account_n */,
         wxString           /* 5: notes */
     >> sched_info_a;
-    for (const SchedData& sched_d : SchedModel::instance().find_all(
-        SchedCol::COL_ID_TRANSDATE
+    for (const SchedData& sched_d : SchedModel::instance().find_data_a(
+        TableClause::ORDERBY(SchedCol::NAME_TRANSDATE)
     )) {
         mmDate pay_date = sched_d.m_date();
         int pay_days = pay_date.daysSince(today);
@@ -422,15 +421,14 @@ const wxString htmlWidgetIncomeVsExpenses::getHTMLText()
     std::map<int64, std::pair<double, double> > incomeExpensesStats;
 
     // Calculations
-    for (const auto& trx_d : TrxModel::instance().find(
-        TrxModel::DATE(OP_GE, mmDate(date_range.get()->start_date())),
-        TrxModel::DATE(OP_LE, mmDate(date_range.get()->end_date())),
-        TrxModel::TYPE(OP_NE, TrxType(TrxType::e_transfer)),
-        TrxModel::IS_VOID(false)
+    for (const auto& trx_d : TrxModel::instance().find_data_a(
+        TrxModel::WHERE_DATE(OP_GE, mmDate(date_range.get()->start_date())),
+        TrxModel::WHERE_DATE(OP_LE, mmDate(date_range.get()->end_date())),
+        TrxModel::WHERE_TYPE(OP_NE, TrxType(TrxType::e_transfer)),
+        TrxModel::WHERE_IS_VALID(true)
     )) {
-        // Do not include asset or stock transfers or deleted transactions
-        // in income expense calculations.
-        if (TrxModel::is_foreignAsTransfer(trx_d) || trx_d.is_deleted())
+        // Do not include asset or stock transfers in income expense calculations.
+        if (TrxModel::is_foreignAsTransfer(trx_d))
             continue;
 
         double convRate = CurrencyHistoryModel::instance().get_id_date_rate(
@@ -445,10 +443,9 @@ const wxString htmlWidgetIncomeVsExpenses::getHTMLText()
             incomeExpensesStats[idx].second += trx_d.m_amount * convRate;
     }
 
-    for (const auto& account_d : AccountModel::instance().find_all()) {
-        int64 idx = account_d.m_id;
-        tIncome += incomeExpensesStats[idx].first;
-        tExpenses += incomeExpensesStats[idx].second;
+    for (int64 account_id : AccountModel::instance().find_id_a()) {
+        tIncome += incomeExpensesStats[account_id].first;
+        tExpenses += incomeExpensesStats[account_id].second;
     }
 
 
@@ -511,12 +508,15 @@ const wxString htmlWidgetStatistics::getHTMLText()
     TrxModel::DataA trx_a;
     if (PrefModel::instance().getIgnoreFutureTransactionsHomePage()) {
         date_range = new mmCurrentMonthToDate;
-        trx_a = TrxModel::instance().find(
-            TrxModel::DATE(OP_LE, mmDate::today()));
+        trx_a = TrxModel::instance().find_data_a(
+            TrxModel::WHERE_DATE(OP_LE, mmDate::today())
+        );
     }
     else {
         date_range = new mmCurrentMonth;
-        trx_a = TrxModel::instance().find_all();
+        trx_a = TrxModel::instance().find_data_a(
+            TableClause::ORDERBY(TrxCol::s_primary_name)
+        );
     }
     int countFollowUp = 0;
     int total_transactions = 0;
@@ -594,15 +594,12 @@ htmlWidgetGrandTotals::~htmlWidgetGrandTotals()
 
 const wxString htmlWidgetAssets::getHTMLText()
 {
-    AccountModel::DataA asset_account_a = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().getAssetAccountStr())
+    AccountModel::DataA asset_account_a = AccountModel::instance().find_data_a(
+        AccountCol::WHERE_ACCOUNTTYPE(OP_EQ, mmNavigatorList::instance().getAssetAccountStr()),
+        TableClause::ORDERBY(AccountCol::NAME_ACCOUNTNAME)
     );
     if (asset_account_a.empty())
         return wxEmptyString;
-
-    std::stable_sort(asset_account_a.begin(), asset_account_a.end(),
-        AccountData::SorterByName()
-    );
 
     static const int MAX_ASSETS = 10;
     wxString output;
@@ -708,13 +705,15 @@ void htmlWidgetAccounts::get_account_stats()
     TrxModel::DataA trx_a;
     if (PrefModel::instance().getIgnoreFutureTransactionsHomePage()) {
         date_range = new mmCurrentMonthToDate;
-        trx_a = TrxModel::instance().find(
-            TrxModel::DATE(OP_LE, mmDate::today())
+        trx_a = TrxModel::instance().find_data_a(
+            TrxModel::WHERE_DATE(OP_LE, mmDate::today())
         );
     }
     else {
         date_range = new mmCurrentMonth;
-        trx_a = TrxModel::instance().find_all();
+        trx_a = TrxModel::instance().find_data_a(
+            TableClause::ORDERBY(TrxCol::s_primary_name)
+        );
     }
 
     for (const auto& trx_d : trx_a) {
@@ -762,14 +761,14 @@ const wxString htmlWidgetAccounts::displayAccounts(
     wxString body = "";
     double tabBalance = 0.0, tabReconciled = 0.0;
     wxString vAccts = SettingModel::instance().getViewAccounts();
-    auto account_a = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().type_name(type)),
-        AccountModel::STATUS(OP_NE, AccountStatus(AccountStatus::e_closed))
-    );
-    std::stable_sort(account_a.begin(), account_a.end(), AccountData::SorterByName());
-    for (const auto& account_d : account_a) {
-        const CurrencyData* currency = AccountModel::instance().get_data_currency_p(account_d);
-
+    for (const auto& account_d : AccountModel::instance().find_data_a(
+        AccountCol::WHERE_ACCOUNTTYPE(OP_EQ, mmNavigatorList::instance().type_name(type)),
+        AccountModel::WHERE_STATUS(OP_NE, AccountStatus(AccountStatus::e_closed)),
+        TableClause::ORDERBY(AccountCol::NAME_ACCOUNTNAME)
+    )) {
+        const CurrencyData* currency_p = AccountModel::instance().get_data_currency_p(
+            account_d
+        );
         double currency_rate = CurrencyHistoryModel::instance().get_id_date_rate(
             account_d.m_currency_id
         );
@@ -794,10 +793,10 @@ const wxString htmlWidgetAccounts::displayAccounts(
             if (showReconciled) {
                 body += wxString::Format("\n<td class='money' sorttable_customkey='%f' nowrap>%s</td>\n",
                     reconciledBal,
-                    CurrencyModel::instance().toCurrency(reconciledBal, currency)
+                    CurrencyModel::instance().toCurrency(reconciledBal, currency_p)
                 );
             }
-            body += wxString::Format("<td class='money' sorttable_customkey='%f' colspan='2' nowrap>%s</td>\n", bal, CurrencyModel::instance().toCurrency(bal, currency));
+            body += wxString::Format("<td class='money' sorttable_customkey='%f' colspan='2' nowrap>%s</td>\n", bal, CurrencyModel::instance().toCurrency(bal, currency_p));
             body += "</tr>\n";
         }
     }
@@ -857,17 +856,19 @@ const wxString htmlWidgetCurrency::getHtmlText()
 
     std::map<wxString, double> usedRates;
 
-    for (const auto& currency_d : CurrencyModel::instance().find_all()) {
-        if (CurrencyModel::instance().find_id_dep_c(currency_d.m_id) > 0) {
+    for (const auto& currency_d : CurrencyModel::instance().find_data_a(
+        TableClause::ORDERBY(CurrencyCol::s_primary_name)
+    )) {
+        if (!CurrencyModel::instance().find_id_isUsed(currency_d.m_id, true))
+            continue;
 
-            double convertionRate = CurrencyHistoryModel::instance().get_id_date_rate(
-                currency_d.m_id
-            );
-            usedRates[currency_d.m_symbol] = convertionRate;
+        double convertionRate = CurrencyHistoryModel::instance().get_id_date_rate(
+            currency_d.m_id
+        );
+        usedRates[currency_d.m_symbol] = convertionRate;
 
-            if (usedRates.size() >= 10) {
-                break;
-            }
+        if (usedRates.size() >= 10) {
+            break;
         }
     }
 

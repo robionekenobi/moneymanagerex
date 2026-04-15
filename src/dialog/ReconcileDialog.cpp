@@ -367,21 +367,16 @@ void ReconcileDialog::FillControls(bool init)
     // get not reconciled transactions
     wxSharedPtr<mmDateRange> date_range;
     date_range = new mmCurrentMonthToDate;
-    TrxModel::DataA trx_a = TrxModel::instance().find(
-        TrxModel::DATE(OP_LE, mmDate::today()),
-        TrxModel::STATUS(OP_NE, TrxStatus(TrxStatus::e_reconciled)),
-        TrxCol::ACCOUNTID(m_account_n->m_id),
-        TrxModel::IS_DELETED(false)
+    TrxModel::DataA trx_a = TrxModel::instance().find_data_a(
+        TrxModel::WHERE_DATE(OP_LE, mmDate::today()),
+        TrxModel::WHERE_STATUS(OP_NE, TrxStatus(TrxStatus::e_reconciled)),
+        TableClause::BEGIN_OR(),
+            TrxCol::WHERE_ACCOUNTID(OP_EQ, m_account_n->m_id),
+            TrxCol::WHERE_TOACCOUNTID(OP_EQ, m_account_n->m_id),
+        TableClause::END(),
+        TrxModel::WHERE_IS_DELETED(false),
+        TableClause::ORDERBY(TrxCol::NAME_TRANSDATE)
     );
-    TrxModel::DataA all_trans2 = TrxModel::instance().find(  // get transfers
-        TrxModel::DATE(OP_LE, mmDate::today()),
-        TrxModel::STATUS(OP_NE, TrxStatus(TrxStatus::e_reconciled)),
-        TrxCol::TOACCOUNTID(m_account_n->m_id),
-        TrxModel::IS_DELETED(false)
-    );
-
-    trx_a.insert(trx_a.end(), all_trans2.begin(), all_trans2.end());
-    std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTime());
 
     long ritemIndex = -1;
     long litemIndex = -1;
