@@ -90,6 +90,7 @@ protected:
     bool m_only_active = false;
     int m_chart_selection = 0;
     int m_stock_selection = 0;
+    int m_generic_selection = 0;
     wxString m_stock_name = "";
     wxString m_generic_filter = "";
     std::map<wxString, wxString> m_filter_map;
@@ -120,6 +121,7 @@ public:
     void setAccounts(int selection, const wxString& type_name);
     void setChartSelection(int selection);
     void setStockSelection(int selection);
+    void setGenericSelection(int selection);
 
     REPORT_ID getReportId() const;
     const wxString getReportSettings() const;
@@ -130,6 +132,7 @@ public:
     wxString getFilterValue() const;
     int getChartSelection() const;
     int getStockSelection() const;
+    int getGenericSelection() const;
     void setStockName(const wxString& name);
 
     void saveReportSettings();
@@ -159,6 +162,7 @@ inline void ReportBase::setDateSelection(int64 sel) { m_date_selection = sel; }
 inline void ReportBase::setForwardMonths(int sel) { m_forward_months = sel; }
 inline void ReportBase::setChartSelection(int selection) { m_chart_selection = selection; }
 inline void ReportBase::setStockSelection(int selection) { m_stock_selection = selection; }
+inline void ReportBase::setGenericSelection(int selection) { m_generic_selection = selection; }
 inline void ReportBase::setStockName(const wxString& name) { m_stock_name = name; }
 
 
@@ -171,6 +175,7 @@ inline int ReportBase::getForwardMonths() const { return this->m_forward_months;
 inline int ReportBase::getAccountSelection() const { return this->m_account_selection; }
 inline int ReportBase::getChartSelection() const { return this->m_chart_selection; }
 inline int ReportBase::getStockSelection() const { return this->m_stock_selection; }
+inline int ReportBase::getGenericSelection() const { return this->m_generic_selection; }
 inline wxString ReportBase::getFilterValue() const { return this->m_generic_filter; }
 inline std::map<wxString, wxString> ReportBase::getFilterMap() const { return this->m_filter_map; }
 inline std::map<wxString, wxString> ReportBase::getSelectionMap() const { return this->m_selection_map; }
