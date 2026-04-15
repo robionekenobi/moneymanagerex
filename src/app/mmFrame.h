@@ -196,7 +196,6 @@ public:
 
 private:
     static const std::vector<std::pair<mmNavigatorItem::TYPE_ID, wxString>> ACCOUNT_SECTION_TABLE;
-    //static wxArrayString account_section_all();
 
 // -- state
 
@@ -207,6 +206,7 @@ public:
 private:
     std::vector<WebsiteNews> websiteNewsArray_;
     std::vector<TableBase*> m_all_models;
+    std::map<wxString, int> m_grm_icons_map;
 
     // handles to SQLite Database
     wxSharedPtr<wxSQLite3Database> m_db;
@@ -299,6 +299,8 @@ private:
     wxSizer* cleanupHomePanel(bool new_sizer = true);
     void updateHomePagePanel(PanelBase* panel);
     bool openFile(const wxString& fileName, bool openingNew, const wxString &password = "");
+    void loadGrmIconMapping();
+    void applyGrmIconMapping(wxTreeItemId& parent_item);
     void InitializeModelTables();
     bool createDataStore(const wxString& fileName, const wxString &passwd, bool openingNew);
     void createMenu();

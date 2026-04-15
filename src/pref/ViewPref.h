@@ -49,13 +49,14 @@ private:
     void Create();
     void OnHTMLScaleSpin(wxSpinEvent& event);
     void OnThemeManagerSelected(wxCommandEvent&);
+    void OnIconManagerSelected(wxCommandEvent&);
     void OnNavigationConfigSelected(wxCommandEvent&);
     void OnToolbarConfigSelected(wxCommandEvent&);
 
 private:
     wxButton* m_theme_manager = nullptr;
-    //wxButton* m_navigator_cfg;
     wxChoice* m_theme_mode = nullptr;
+    wxButton* m_icon_manager = nullptr;
     wxChoice* m_font_size_chooser = nullptr;
     wxChoice* m_choice_visible = nullptr;
     wxSpinCtrl* m_scale_factor = nullptr;
@@ -76,6 +77,7 @@ private:
     enum
     {
         ID_DIALOG_THEMEMANAGER = wxID_HIGHEST + 100,
+        ID_DIALOG_ICONMANAGER,
         ID_DIALOG_HTML_SCALE,
         ID_DIALOG_NAVIGATOR_CONFIG,
         ID_DIALOG_TOOLBAR_CONFIG

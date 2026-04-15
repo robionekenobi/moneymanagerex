@@ -488,6 +488,12 @@ void mmFrame::resetNavTreeControl()
     wxTreeItemId root = m_nav_tree_ctrl->GetRootItem();
     cleanupNavTreeControl(root);
     m_nav_tree_ctrl->DeleteAllItems();
+    // -Check if image list was changed and update if necessary:
+    if (NavTreeIconImages::instance().isListChanged()) {
+        mmNavigatorList::instance().LoadFromDB();  // reinit index
+        const auto navIconSize = PrefModel::instance().getNavigationIconSize();
+        m_nav_tree_ctrl->SetImages(NavTreeIconImages::instance().getList(navIconSize));
+    }
 }
 
 void mmFrame::cleanupNavTreeControl(wxTreeItemId& item)
@@ -853,7 +859,8 @@ void mmFrame::createControls()
     mmImage::themeMetaColour(m_nav_tree_ctrl, mmImage::COLOR_NAVPANEL_FONT, true);
 
     const auto navIconSize = PrefModel::instance().getNavigationIconSize();
-    m_nav_tree_ctrl->SetImages(mmImage::navtree_bitmapBundle_a(navIconSize));
+    //m_nav_tree_ctrl->SetImages(mmImage::navtree_bitmapBundle_a(navIconSize));
+    m_nav_tree_ctrl->SetImages(NavTreeIconImages::instance().getList(navIconSize));
     m_nav_tree_ctrl->SetIndent(10);
 
     m_nav_tree_ctrl->Connect(
@@ -2647,6 +2654,7 @@ bool mmFrame::openFile(const wxString& fileName, bool openingNew, const wxString
         InfoModel::instance().saveBool("ISUSED", true);
         db_lockInPlace = false;
         mmNavigatorList::instance().LoadFromDB();
+        loadGrmIconMapping();
         autoRepeatTransactionsTimer_.Start(REPEAT_FREQ_TRANS_DELAY_TIME, wxTIMER_ONE_SHOT);
     }
     else
@@ -2677,6 +2685,7 @@ void mmFrame::OnNew(wxCommandEvent& /*event*/)
 
     SetDatabaseFile(fileName, true);
     SettingModel::instance().saveString("LASTFILENAME", fileName);
+    loadGrmIconMapping();
 }
 //----------------------------------------------------------------------------
 
@@ -3339,6 +3348,7 @@ void mmFrame::OnGeneralReportManager(wxCommandEvent& WXUNUSED(event))
         wxTreeItemId selectedItem = m_nav_tree_ctrl->GetSelection();
         GeneralReportManager dlg(this, m_db.get(), selectedItem.IsOk() ? m_nav_tree_ctrl->GetItemText(selectedItem) : "");
         dlg.ShowModal();
+        loadGrmIconMapping();
         RefreshNavigationTree();
     }
 }
@@ -4674,6 +4684,8 @@ void mmFrame::DoUpdateGRMNavigation(wxTreeItemId& parent_item)
         ));
     }
 
+    // Update icons:
+    applyGrmIconMapping(parent_item);
 }
 
 void mmFrame::DoUpdateFilterNavigation(wxTreeItemId& parent_item)
@@ -4735,3 +4747,47 @@ void mmFrame::mmDoHideReportsDialog()
     DoRecreateNavTreeControl();
 }
 
+void mmFrame::loadGrmIconMapping()
+{
+    m_grm_icons_map.clear();
+
+    rapidjson::Document doc;
+    const wxString& json = InfoModel::instance().getString("GRM_REPORT_IMAGE_STATUS", "");
+    doc.Parse(json.c_str());
+    if (!doc.IsObject())
+        return;
+
+    const int prefix_len = static_cast<int>(_t("Reports").Len()) + 1;
+
+    for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
+        std::string p = it->name.GetString();
+        wxString path(p.substr(prefix_len).c_str(), wxConvUTF8);
+        wxString timg = wxString::FromUTF8(it->value.GetString());
+        m_grm_icons_map[path] = NavTreeIconImages::instance().getImgIndexFromStorageString(timg);
+    }
+}
+
+void mmFrame::applyGrmIconMapping(wxTreeItemId& parent_item)
+{
+    for (auto const& x : m_grm_icons_map) {
+        wxLogDebug ("Apply icon '%d' to path '%s'", x.second, x.first);
+
+        std::vector<std::string> parts = GeneralReportManager::splitPath(x.first.ToStdString());
+        wxTreeItemId current = parent_item;
+        if (!parts.empty()) {
+            for (size_t i = 0; i < parts.size(); ++i) {
+                wxTreeItemId next = GeneralReportManager::findChild(m_nav_tree_ctrl, current, parts[i]);
+                if (!next.IsOk()) {
+                    current = wxTreeItemId();
+                    break;
+                }
+                current = next;
+            }
+        }
+
+        if (current.IsOk()) {
+            m_nav_tree_ctrl->SetItemImage(current, x.second);
+            m_nav_tree_ctrl->SetItemImage(current, x.second, wxTreeItemIcon_Selected);
+        }
+    }
+}

@@ -75,6 +75,7 @@ TableClause TableClause::where_op(const wxString& col, OP op)
         case OP_LE:  expr = col + " <= ?"; mult = 1; break;
         case OP_EQN: expr = "IFNULL(" + col + ", ?)" +  " = ?"; mult = 2; break;
         case OP_NEN: expr = "IFNULL(" + col + ", ?)" + " != ?"; mult = 2; break;
+        case OP_LK:  expr = col + " LIKE ?"; mult = 1; break;
     }
     return TableClause(CLAUSE_ID_WHERE, expr, mult);
 }
@@ -194,6 +195,8 @@ TableClause TableClause::merge(const std::vector<const TableClause*>& clause_na)
             // keep the last
             text = clause.m_text;
             is_empty = false;
+            break;
+        default:
             break;
         }
     }

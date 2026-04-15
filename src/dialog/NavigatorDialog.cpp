@@ -1,5 +1,5 @@
 /*******************************************************
- Copyright (C) 2025 Klaus Wich
+ Copyright (C) 2025, 2026 Klaus Wich
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -55,14 +55,7 @@ NavigatorDialog::NavigatorDialog(wxWindow* parent):TreeListDialog(parent, _t("Na
 void NavigatorDialog::createColumns() {
     m_treeList->AppendColumn(_t("Name"), 250);
     m_treeList->AppendColumn(_t("Selection name"));
-
-    // Add imagelist
-    const auto navIconSize = PrefModel::instance().getNavigationIconSize();
-    wxImageList* imageList = new wxImageList(navIconSize, navIconSize);
-    for (const auto& bundle : mmImage::navtree_bitmapBundle_a(navIconSize)) {
-        wxBitmap bitmap = bundle.GetBitmap(wxSize(navIconSize, navIconSize));
-        imageList->Add(bitmap);
-    }
+    wxImageList* imageList = NavTreeIconImages::instance().getImageList();
     m_treeList->SetImageList(imageList);
 
 #ifdef __WXMAC__

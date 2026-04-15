@@ -1,5 +1,5 @@
 /*******************************************************
- Copyright (C) 2025 Klaus Wich
+ Copyright (C) 2025, 2026 Klaus Wich
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -104,21 +104,15 @@ void NavigatorEditDialog::CreateControls()
 
     wxStaticText* iconLabel = new wxStaticText(uiBox, wxID_ANY, _t("Symbol") + ":");
 
-    wxVector<wxBitmapBundle> images = mmImage::navtree_bitmapBundle_a();
     const auto navIconSize = PrefModel::instance().getNavigationIconSize();
-    wxImageList* imageList = new wxImageList(navIconSize, navIconSize);
-    for (const auto& bundle : mmImage::navtree_bitmapBundle_a(navIconSize)) {
-        wxBitmap bitmap = bundle.GetBitmap(wxSize(navIconSize, navIconSize));
-        imageList->Add(bitmap);
-    }
     m_cbIcon = new wxBitmapComboBox(uiBox, wxID_ANY, "",
             wxPoint(navIconSize, navIconSize), wxDefaultSize,
             0, nullptr, wxCB_READONLY | wxCB_DROPDOWN);
     m_cbIcon->SetMinSize(wxSize(3 * navIconSize, -1));
 
-    const int imageCount = imageList->GetImageCount();
-    for (int i = 0; i < imageCount; ++i) {
-        m_cbIcon->Append("", imageList->GetBitmap(i));
+    wxVector<wxBitmapBundle> bitmaps = NavTreeIconImages::instance().getList(navIconSize);
+    for (const auto& bitmap : bitmaps) {
+        m_cbIcon->Append("", bitmap);
     }
 
     uiStyleSizer->Add(iconLabel, g_flagsH);

@@ -155,6 +155,7 @@ public:
     void SetShareAccountStatus(bool state);
     static wxString GetTranslatedName(mmNavigatorItem*);
     static wxString GetTranslatedSelection(mmNavigatorItem*);
+    static int GetDefaultImage(int navTyp);
 
 private:
     void sortEntriesBySeq();

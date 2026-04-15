@@ -1,7 +1,7 @@
 /*******************************************************
 Copyright (C) 2014, 2015, 2021 Nikolay Akimov
 Copyright (C) 2021 Mark Whalley (mark@ipx.co.uk)
-Copyright (C) 2025 Klaus Wich
+Copyright (C) 2025, 2026 Klaus Wich
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,16 +24,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <map>
 #include <array>
 
-#include "base/_defs.h"
 #include <wx/image.h>
 #include <wx/bitmap.h>
 #include <wx/sharedptr.h>
-#include <wx/dir.h>
 #include <wx/zipstrm.h>
 #include <wx/rawbmp.h>
 #include <wx/fs_mem.h>
 #include <wx/mstream.h>
-#include <wx/tokenzr.h>
 
 #include "base/mmPlatform.h"
 #include "base/mmUserColor.h"
@@ -43,7 +40,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "model/SettingModel.h"
 #include "model/PrefModel.h"
 
-// -- constants
+#include "dialog/IconManagerDialog.h"
 
 const int mmImage::bitmapButtonSize = 16;
 const std::vector<std::pair<int, int>> mmImage::sizes = {
@@ -200,7 +197,7 @@ const std::map<int, std::tuple<wxString, wxString, bool>> mmImage::metaDataTrans
     md[COLOR_HTMLPANEL_FORE]   = std::make_tuple("/colors/htmlPanel/foreColor",  "",       false);
     md[COLOR_REPORT_ALTROW]    = std::make_tuple("/colors/reports/altRow",      "#F5F5F5", false);
     md[COLOR_REPORT_CREDIT]    = std::make_tuple("/colors/reports/credit",      "#50B381", false);
-    md[COLOR_REPORT_DEBIT]     = std::make_tuple("/colors/reports/debit",       "#F75E51", false);
+    md[COLOR_REPORT_DEBIT]     = std::make_tuple("/colors/reports/debit",       "#f12121", false);
     md[COLOR_REPORT_DELTA]     = std::make_tuple("/colors/reports/delta",       "#008FFB", false);
     md[COLOR_REPORT_PERF]      = std::make_tuple("/colors/reports/perf",        "#FF6307", false);
     md[COLOR_REPORT_FORECOLOR] = std::make_tuple("/colors/reports/foreColor",   "#373D3F", false);
@@ -223,7 +220,7 @@ const std::map<int, std::tuple<wxString, wxString, bool>> mmImage::metaDataTrans
     md[COLOR_GRM_SPECIAL]      = std::make_tuple("/colors/grm/special",          "#e70870ff", false);
     md[COLOR_TEXTCONTROL]      = std::make_tuple("/colors/textControl",         wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX).GetAsString(wxC2S_HTML_SYNTAX), false);
     md[COLOR_TEXTCONTROL_FONT] = std::make_tuple("/colors/textControlFont",     wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT).GetAsString(wxC2S_HTML_SYNTAX), false);
-    
+
     return md;
 };
 
@@ -518,21 +515,6 @@ void mmImage::reverttoDefaultTheme()
     );
 }
 
-wxVector<wxBitmapBundle> mmImage::navtree_bitmapBundle_a(const int size)
-{
-    int x = (size > 0)
-        ? size
-        : PrefModel::instance().getIconSize();
-
-    wxVector<wxBitmapBundle> images;
-    for (const auto& img : mmImage::navtree_images(x))
-        images.push_back(img.second);
-    for (const auto& img : mmImage::acc_images(x))
-         images.push_back(img.second);
-
-    return images;
-}
-
 void mmImage::loadTheme()
 {
     mmImage::darkMode = (
@@ -667,29 +649,189 @@ const std::vector<wxColour> mmImage::themeMetaColour_a(int ref)
     return colours;
 }
 
-/*const wxBitmap mmImage::mmBitMap(int ref, int size)
-{
-    int idx = mmImage::getIconSizeIdx(size);
-
-    if (idx >= 0)
-        return *programIcons[idx][ref].get();
-
-    // Look for a better size match
-    int bestAvailSize = size;
-    while (idx) {
-        bestAvailSize /= 2;
-        idx = mmImage::getIconSizeIdx(bestAvailSize);
-        if( idx >= 0 )
-            break;
-    }
-
-    wxSize bmpSize(size, size);
-    auto& bundle = mmImage::programIconBundles[idx][ref];
-    return bundle.get()->GetBitmap(bmpSize);
-}*/
-
 const wxBitmapBundle mmImage::bitmapBundle(const int ref, const int defSize)
 {
     const int idx = mmImage::getIconSizeIdx(defSize);
     return *mmImage::programIconBundles[idx][ref];
 }
+
+//----------------------------------------------------------------------------
+// (Nav Tree) Icon  handling
+NavTreeIconImages::NavTreeIconImages()
+{
+    m_changed = false;
+    m_size = 0;
+}
+
+NavTreeIconImages& NavTreeIconImages::instance()
+{
+    return Singleton<NavTreeIconImages>::instance();
+}
+
+wxVector<wxBitmapBundle> NavTreeIconImages::getList(const int size)
+{
+    int x = (size > 0) ? size : PrefModel::instance().getIconSize();
+    wxVector<wxBitmapBundle> bitmaps;
+    for (const auto& img : mmImage::navtree_images(x))
+        bitmaps.push_back(img.second);
+    for (const auto& img : mmImage::acc_images(x))
+         bitmaps.push_back(img.second);
+
+    // Reset maps:
+    m_indexMap = {};
+    m_indexReverseMap = {};
+    wxSize bSize = wxSize(x,x);
+    // Get downloaded icon images:
+    wxFileName resPath = mmPath::getPathUserRaw(mmPath::USERICONS);
+    if (resPath.IsOk()) {
+        wxDir dir(resPath.GetPath());
+        if (dir.IsOpened()) {
+            wxString filename;
+            int bidx = mmImage::acc_img::MAX_ACC_ICON;
+            bool cont = dir.GetFirst(&filename);
+            while (cont) {
+                wxFileName fullPath(resPath.GetPath(), filename);
+                if (fullPath.FileExists()) {
+                    if (fullPath.GetExt().Lower() == "svg") {
+                        wxBitmapBundle bundle = wxBitmapBundle::FromSVGFile(fullPath.GetFullPath(), bSize);
+                        bitmaps.emplace_back(bundle);
+                        m_indexMap[bidx] = filename;
+                        m_indexReverseMap[filename] = bidx++;
+                    }
+                    else {
+                        wxImage image;
+                        if (image.LoadFile(fullPath.GetFullPath())) {
+                            wxImage img = image.Scale(x, x, wxIMAGE_QUALITY_HIGH);
+                            bitmaps.emplace_back(wxBitmap(img));
+                            m_indexMap[bidx] = filename;
+                            m_indexReverseMap[filename] = bidx++;
+                        }
+                    }
+                }
+                cont = dir.GetNext(&filename);
+            }
+        }
+        else {
+            wxLogDebug("Icon directory could not be opened: %s", resPath.GetPath());
+        }
+    }
+
+    m_size = static_cast<int>(bitmaps.size());
+    return (bitmaps);
+}
+
+// Use with care!!, only creates the maps for init
+void NavTreeIconImages::initIndexMap()
+{
+    m_indexMap = {};
+    m_indexReverseMap = {};
+    // Map downloaded icon images:
+    wxFileName resPath = mmPath::getPathUserRaw(mmPath::USERICONS);
+    int bidx = mmImage::acc_img::MAX_ACC_ICON;
+    if (resPath.IsOk()) {
+        wxDir dir(resPath.GetPath());
+        if (dir.IsOpened()) {
+            wxString filename;
+            bool cont = dir.GetFirst(&filename);
+            while (cont) {
+                wxFileName fullPath(resPath.GetPath(), filename);
+                if (fullPath.FileExists()) {
+                    if (fullPath.GetExt().Lower() == "svg") {
+                        m_indexMap[bidx] = filename;
+                        m_indexReverseMap[filename] = bidx++;
+                    }
+                    else {
+                        wxImage image;
+                        if (image.LoadFile(fullPath.GetFullPath())) {
+                            m_indexMap[bidx] = filename;
+                            m_indexReverseMap[filename] = bidx++;
+                        }
+                    }
+                }
+                cont = dir.GetNext(&filename);
+            }
+        }
+        else {
+            wxLogDebug("Icon directory could not be opened: %s", resPath.GetPath());
+        }
+    }
+    m_size = bidx;
+}
+
+wxImageList* NavTreeIconImages::getImageList(const int rsize)
+{
+    int x = (rsize > 0) ? rsize : PrefModel::instance().getNavigationIconSize();
+    wxImageList* imageList = new wxImageList(x, x);
+    wxSize size = (wxSize(x, x));
+
+    for (const auto& img : mmImage::navtree_images(x)) {
+        imageList->Add(img.second.GetBitmap(size));
+    }
+    for (const auto& img : mmImage::acc_images(x)) {
+        imageList->Add(img.second.GetBitmap(size));
+    }
+
+    // Get downloaded icon images:
+    wxFileName resPath = mmPath::getPathUserRaw(mmPath::USERICONS);
+    if (resPath.IsOk()) {
+        wxDir dir(resPath.GetPath());
+        if (dir.IsOpened()) {
+            wxString filename;
+            bool cont = dir.GetFirst(&filename);
+            while (cont) {
+                wxFileName fullPath(resPath.GetPath(), filename);
+                if (fullPath.FileExists()) {
+                    if (fullPath.GetExt().Lower() == "svg") {
+                        wxBitmapBundle bundle = wxBitmapBundle::FromSVGFile(fullPath.GetFullPath(), size);
+                        wxBitmap bmp = bundle.GetBitmap(size);
+                        imageList->Add(bmp.ConvertToImage());
+                    }
+                    else {
+                        wxImage image;
+                        if (image.LoadFile(fullPath.GetFullPath())) {
+                            wxImage img = image.Scale(x, x, wxIMAGE_QUALITY_HIGH);
+                            imageList->Add(img);
+                        }
+                    }
+                }
+                cont = dir.GetNext(&filename);
+            }
+        }
+        else {
+            wxLogDebug("Icon directory could not be opened: %s", resPath.GetPath());
+        }
+    }
+    return imageList;
+}
+
+int NavTreeIconImages::getImgIndex(wxString imgName)
+{
+    return m_indexReverseMap.count(imgName) > 0 ? m_indexReverseMap[imgName] : -1;
+}
+
+int NavTreeIconImages::getImgIndexFromStorageString(wxString strString)
+{
+    int imageIndex;
+    wxString fileid;
+    if (strString.StartsWith("CI:", &fileid)) {
+        imageIndex = NavTreeIconImages::instance().getImgIndex(fileid);
+    }
+    else {
+        imageIndex = wxAtoi(strString);
+    }
+    return imageIndex;
+}
+
+void NavTreeIconImages::setChanged()
+{
+    m_changed = true;
+}
+
+bool NavTreeIconImages::isListChanged()
+{
+    bool result = m_changed;
+    m_changed = false;
+    return result;
+}
+
+//----------------------------------------------------------------------------

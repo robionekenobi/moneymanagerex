@@ -1,5 +1,6 @@
 /*******************************************************
 Copyright (C) 2009 VaDiM
+Copyright (C) 2026 Klaus Wich
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -46,6 +47,7 @@ struct mmPath
         MMEX_LOGO,
         THEMESDIR,
         REPORTS,
+        ICONDIR,
         RES_FILES_MAX
     };
 
@@ -60,12 +62,14 @@ struct mmPath
         SETTINGS = 0,
         DIRECTORY,
         USERTHEMEDIR,
+        USERICONS,
         USER_FILES_MAX
     };
 
     static auto getSettingsFileName() -> const wxString { return "mmexini.db3"; }
     static auto getUserTheme() -> const wxString { return "themes"; }
     static auto getDirectory() -> const wxString { return ""; }
+    static auto getIconDir() -> const wxString { return "icons"; }
     static auto getSettingsPathPortable() -> wxFileName;
     static auto getUserDir(bool create) -> const wxFileName;
     static auto getLogDir(bool create) -> const wxFileName;
@@ -75,6 +79,8 @@ struct mmPath
     static auto getProgramIcon() -> const wxIcon&;
     static auto getPathShared(ESharedFile f) -> const wxString;
     static auto getPathUser(EUserFile f) -> const wxString;
+    static const wxFileName getPathUserRaw(EUserFile f, bool create = false);
+
     static auto getPathAttachment(const wxString& folder) -> const wxString;
     static bool isPortableMode();
     static auto getTempFolder() -> const wxString;

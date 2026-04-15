@@ -1,7 +1,7 @@
 /*******************************************************
 Copyright (C) 2014, 2015 Nikolay Akimov
 Copyright (C) 2021 Mark Whalley (mark@ipx.co.uk)
-Copyright (C) 2025 Klaus Wich
+Copyright (C) 2025, 2026 Klaus Wich
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "base/_defs.h"
 #include <wx/bmpbndl.h>
 #include <wx/window.h>
-#include <wx/imaglist.h>
 #include <wx/arrstr.h>
 
 struct mmImage
@@ -256,15 +255,12 @@ private:
 
 private:
     static auto metaDataTrans() -> const std::map<int, std::tuple<wxString, wxString, bool>>;
-    static auto navtree_images(const int size) -> const std::map<int, wxBitmapBundle>;
-    static auto acc_images(int size) -> const std::map<int, wxBitmapBundle>;
     static int  getIconSizeIdx(const int iconSize);
     static bool processThemes(wxString themeDir, wxString myTheme, bool metaPhase);
     static bool checkThemeContents(wxArrayString* filesinTheme);
     static void reverttoDefaultTheme();
 
 public:
-    static auto navtree_bitmapBundle_a(const int size = 0) -> wxVector<wxBitmapBundle>;
     static void loadTheme();
     static void closeTheme();
     static auto themeMetaString(int ref) -> const wxString;
@@ -274,4 +270,33 @@ public:
     static void themeMetaColour(wxWindow* object, wxColour c, bool foreground = false);
     static auto themeMetaColour_a(int ref) -> const std::vector<wxColour>;
     static auto bitmapBundle(const int ref, const int defSize = -1) -> const wxBitmapBundle;
+    static auto navtree_images(const int size) -> const std::map<int, wxBitmapBundle>;
+    static auto acc_images(int size) -> const std::map<int, wxBitmapBundle>;
 };
+
+
+class NavTreeIconImages
+{
+public:
+    NavTreeIconImages();
+    static NavTreeIconImages& instance();
+    wxVector<wxBitmapBundle> getList(const int size = 0);
+    wxImageList* getImageList(const int size = 0);
+    int getListSize();
+
+    std::map<int, wxString>& getIndexMap();
+    void initIndexMap();
+    int getImgIndex(wxString imgName);
+    int getImgIndexFromStorageString(wxString strString);
+    bool isListChanged();
+    void setChanged();
+
+private:
+    std::map<int, wxString> m_indexMap;
+    std::map<wxString, int> m_indexReverseMap;
+    bool m_changed;
+    int m_size;
+};
+
+inline std::map<int, wxString>& NavTreeIconImages::getIndexMap() { return m_indexMap; };
+inline int NavTreeIconImages::getListSize(){ return m_size; };

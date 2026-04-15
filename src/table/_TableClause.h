@@ -55,6 +55,7 @@ enum OP {
     OP_LE,     // Less or Equal
     OP_EQN,    // EQual to Null or argument
     OP_NEN,    // Not (Equal to Null or argument)
+    OP_LK      // Like
 };
 
 // deprecated

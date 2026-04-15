@@ -126,6 +126,8 @@ StockList::StockList(
     if (!m_stock_a.empty()) {
         EnsureVisible(m_stock_a.size() - 1);
     }
+
+    this->Bind(wxEVT_SIZE, &StockList::onSize, this);
 }
 
 StockList::~StockList()
@@ -514,21 +516,40 @@ int StockList::initVirtualListControl(int64 trx_id)
 {
     /* Clear all the records */
     DeleteAllItems();
-
-    // TODO
-    if (w_panel->m_account_id > -1 ) {
-        m_stock_a = StockModel::instance().find_data_a(
-            StockCol::WHERE_HELDAT(OP_EQ, w_panel->m_account_id),
-            StockCol::WHERE_NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
-        );
+    if (w_panel->m_name_filter_value.IsEmpty()) {
+        // TODO
+        if (w_panel->m_account_id > -1 ) {
+            m_stock_a = StockModel::instance().find_data_a(
+                StockCol::WHERE_HELDAT(OP_EQ, w_panel->m_account_id),
+                StockCol::WHERE_NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
+            );
+        }
+        // create summary
+        else {
+            m_stock_a = StockModel::instance().find_data_a(
+                StockCol::WHERE_NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
+            );
+            if (!m_stock_a.empty())
+                createSummary();
+        }
     }
-    // create summary
     else {
-        m_stock_a = StockModel::instance().find_data_a(
-            StockCol::WHERE_NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
-        );
-        if (!m_stock_a.empty())
-            createSummary();
+        if (w_panel->m_account_id > -1 ) {
+            m_stock_a = StockModel::instance().find_data_a(
+                StockCol::WHERE_HELDAT(OP_EQ, w_panel->m_account_id),
+                StockCol::WHERE_NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0),
+                StockCol::WHERE_STOCKNAME(OP_LK, w_panel->m_name_filter_value)
+            );
+        }
+        // create summary
+        else {
+            m_stock_a = StockModel::instance().find_data_a(
+                StockCol::WHERE_NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0),
+                StockCol::WHERE_STOCKNAME(OP_LK, w_panel->m_name_filter_value)
+            );
+            if (!m_stock_a.empty())
+                createSummary();
+        }
     }
 
     w_panel->updateHeader();
@@ -773,4 +794,42 @@ wxString StockList::getStockInfo(int selectedIndex, bool with_symbol) const
         );
     }
     return info_str;
+}
+
+void StockList::onSize(wxSizeEvent& event)
+{
+    struct colInfo {
+        int id;
+        int width;
+    };
+
+    // get total column width:
+    int twidth = 0;
+    int rwidth = 0;
+    std::vector<colInfo> resizable_ids;
+    for (int i = 0; i < GetColumnCount(); i++) {
+        int col_id = getColId_Nr(i);
+        if (!isHiddenColId(col_id)) {
+            int cw = GetColumnWidth(i);
+            twidth += cw;
+
+            switch (col_id) {
+                case LIST_ID_NAME:
+                case LIST_ID_NOTES:
+                    resizable_ids.push_back({i, cw});
+                    rwidth += cw;
+                    break;
+            }
+        }
+    }
+
+    // calculate and apply diff:
+    int diff = this->GetSize().GetWidth() - twidth;
+    if (abs(diff) > 5) {
+        int diffdelta = diff / resizable_ids.size();
+        for (colInfo col: resizable_ids) {
+            this->SetColumnWidth(col.id, col.width + diffdelta);
+        }
+    }
+    event.Skip();
 }
