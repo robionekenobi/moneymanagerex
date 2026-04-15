@@ -122,18 +122,14 @@ void CurrencyChoiceDialog::fillControls()
 
     w_show_all_cb->SetValue(InfoModel::instance().getBool("SHOW_HIDDEN_CURRENCIES", true));
 
-    const CurrencyData* base_currency_n = CurrencyModel::instance().get_base_data_n();
-    int64 base_currency_id = base_currency_n ? base_currency_n->m_id : -1;
+    int64 base_currency_id = PrefModel::instance().getBaseCurrencyID();
 
     bool only_used = !w_show_all_cb->IsChecked();
     for (const auto& currency_d : CurrencyModel::instance().find_data_a(
         TableClause::ORDERBY(CurrencyCol::NAME_CURRENCYNAME)
     )) {
         int64 currency_id = currency_d.m_id;
-        bool is_used = (
-            currency_id == base_currency_id ||
-            CurrencyModel::instance().find_id_isUsed(currency_d.m_id, true)
-        );
+        bool is_used = CurrencyModel::instance().find_id_isUsed(currency_id, true);
         if (only_used && !is_used)
             continue;
 
@@ -368,9 +364,9 @@ void CurrencyChoiceDialog::OnBtnAdd()
 
 void CurrencyChoiceDialog::OnBtnEdit()
 {
-    const CurrencyData *data_n = CurrencyModel::instance().get_id_data_n(m_currency_id);
-    if (data_n)
-        CurrencyManager(this, data_n).ShowModal();
+    const CurrencyData *currency_n = CurrencyModel::instance().get_id_data_n(m_currency_id);
+    if (currency_n)
+        CurrencyManager(this, currency_n).ShowModal();
     fillControls();
 }
 
@@ -385,16 +381,22 @@ void CurrencyChoiceDialog::OnBtnDelete()
     int selected_index = w_currency_list->GetSelectedRow();
     if (selected_index < 0) return;
 
-    const CurrencyData* data_n = CurrencyModel::instance().get_id_data_n(m_currency_id);
-    if (!data_n) return;
-    if (wxMessageBox(_t("Do you want to delete the selected currency?")
-        , _t("Currency Manager")
-        , wxYES_NO | wxNO_DEFAULT | wxICON_ERROR) == wxYES)
-    {
-        CurrencyModel::instance().purge_id(m_currency_id);
-        m_currency_id = -1;
-        fillControls();
-    }
+    const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(
+        m_currency_id
+    );
+    if (!currency_n)
+        return;
+
+    if (wxMessageBox(
+        _t("Do you want to delete the selected currency?"),
+        _t("Currency Manager"),
+        wxYES_NO | wxNO_DEFAULT | wxICON_ERROR
+    ) != wxYES)
+        return;
+
+    CurrencyModel::instance().purge_id(m_currency_id);
+    m_currency_id = -1;
+    fillControls();
 }
 
 bool CurrencyChoiceDialog::Execute(wxWindow* parent, int64& currencyID)
@@ -698,9 +700,10 @@ void CurrencyChoiceDialog::OnHistoryDelete(wxCommandEvent& WXUNUSED(event))
 
 void CurrencyChoiceDialog::OnHistoryUpdate(wxCommandEvent& WXUNUSED(event))
 {
-    //Abort when trying to set base currency
+    // Abort when trying to set base currency
     if (m_static_dialog)
         return;
+
     const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(m_currency_id);
     if (!currency_n) {
         return mmErrorDialogs::MessageError(this,

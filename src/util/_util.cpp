@@ -877,7 +877,7 @@ bool getOnlineCurrencyRates(wxString& msg, const int64 currency_id, const bool u
     CurrencyModel::instance().db_savepoint();
     CurrencyHistoryModel::instance().db_savepoint();
     for (auto& currency_d : currency_a) {
-        // CHECK: redundant condition; currency_a does not contain unused currencies
+        // CHECK: used_only has wrong name
         if (!used_only && !CurrencyModel::instance().find_id_isUsed(currency_d.m_id, true))
             continue;
 
