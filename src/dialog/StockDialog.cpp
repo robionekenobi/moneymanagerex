@@ -385,15 +385,17 @@ void StockDialog::CreateControls()
 
 void StockDialog::OnQuit(wxCloseEvent& /*event*/)
 {
+    // FIXME
     if (!m_edit)
-        mmAttachment::delete_ref_all(StockModel::s_ref_type, 0);
+        AttachmentModel::instance().purge_ref_all(StockModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 
 void StockDialog::OnCancel(wxCommandEvent& /*event*/)
 {
+    // FIXME
     if (m_stock_id <= 0)
-        mmAttachment::delete_ref_all(StockModel::s_ref_type, 0);
+        AttachmentModel::instance().purge_ref_all(StockModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 

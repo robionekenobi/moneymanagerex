@@ -39,6 +39,7 @@
 #include "model/PayeeModel.h"
 #include "model/CurrencyHistoryModel.h"
 #include "model/PrefModel.h"
+#include "model/AttachmentModel.h"
 
 #include "manager/CategoryManager.h"
 #include "manager/PayeeManager.h"
@@ -762,8 +763,11 @@ void SchedDialog::createControls()
 
 void SchedDialog::OnQuit(wxCloseEvent& WXUNUSED(event))
 {
+    // FIXME
     if (m_enter && m_sched_d.m_id > 0) {
-        mmAttachment::delete_ref_all(SchedModel::s_ref_type, m_sched_d.m_id);
+        AttachmentModel::instance().purge_ref_all(
+            SchedModel::s_ref_type, m_sched_d.m_id
+        );
     }
     EndModal(wxID_CANCEL);
 }
@@ -780,8 +784,11 @@ void SchedDialog::OnCancel(wxCommandEvent& WXUNUSED(event))
     }
 #endif
 
+    // FIXME
     if (m_enter && m_sched_d.m_id > 0) {
-        mmAttachment::delete_ref_all(SchedModel::s_ref_type, m_sched_d.m_id);
+        AttachmentModel::instance().purge_ref_all(
+            SchedModel::s_ref_type, m_sched_d.m_id
+        );
     }
     EndModal(wxID_CANCEL);
 }

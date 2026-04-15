@@ -421,7 +421,7 @@ void TrxShareDialog::OnQuit(wxCloseEvent& WXUNUSED(event))
 {
     // FIXME
     if (!this->m_stock_n)
-        mmAttachment::delete_ref_all(StockModel::s_ref_type, 0);
+        AttachmentModel::instance().purge_ref_all(StockModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 
@@ -429,7 +429,7 @@ void TrxShareDialog::OnCancel(wxCommandEvent& WXUNUSED(event))
 {
     // FIXME
     if (m_stock_id <= 0)
-        mmAttachment::delete_ref_all(StockModel::s_ref_type, 0);
+        AttachmentModel::instance().purge_ref_all(StockModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 

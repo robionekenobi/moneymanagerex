@@ -125,6 +125,9 @@ bool mmAttachment::copyFile(
 
 bool mmAttachment::deleteFile(const wxString& file)
 {
+    if (file.IsEmpty())
+        return true;
+
     if (!wxFileExists(file)) {
         wxString msgStr = wxString() << _t("Attachment not found:") << "\n"
             << "'" << file << "'" << "\n"
@@ -165,26 +168,6 @@ bool mmAttachment::deleteFile(const wxString& file)
         mmDate::today().isoDate() + "_" + wxFileNameFromPath(file);
 
     return wxRenameFile(file, deleted_file);
-}
-
-bool mmAttachment::delete_ref_all(RefTypeN ref_type, int64 ref_id)
-{
-    wxString folder = mmAttachment::getFolder();
-    if (!folder.IsEmpty())
-        folder += ref_type.key_n() + s_path_sep;
-
-    for (const AttachmentData& att_d : AttachmentModel::instance().find_ref_data_a(
-        ref_type, ref_id
-    )) {
-        if (!folder.IsEmpty())
-            mmAttachment::deleteFile(folder + att_d.m_filename);
-        AttachmentModel::instance().purge_id(att_d.m_id);
-    }
-
-    if (ref_type == TrxModel::s_ref_type)
-        TrxModel::instance().save_timestamp(ref_id);
-
-    return true;
 }
 
 bool mmAttachment::relocate_ref_all(

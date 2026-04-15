@@ -225,10 +225,9 @@ void AssetList::onDeleteAsset(wxCommandEvent& /*event*/)
     );
 
     if (msgDlg.ShowModal() == wxID_YES) {
-        const AssetData& asset = w_panel->m_asset_a[m_selected_row];
-        AssetModel::instance().purge_id_dep(asset.m_id);
-        mmAttachment::delete_ref_all(AssetModel::s_ref_type, asset.m_id);
-        AssetModel::instance().purge_id(asset.m_id);
+        const AssetData& asset_d = w_panel->m_asset_a[m_selected_row];
+        AssetModel::instance().purge_id_dep(asset_d.m_id);
+        AssetModel::instance().purge_id(asset_d.m_id);
 
         w_panel->initVirtualListControl();
         m_selected_row = -1;

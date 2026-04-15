@@ -73,7 +73,6 @@ bool PayeeModel::purge_id(int64 payee_id)
     bool ok = true;
 
     db_savepoint();
-    //ok = ok && mmAttachment::delete_ref_all(s_ref_type, payee_id);
     ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, payee_id);
     db_release_savepoint();
 

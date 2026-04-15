@@ -70,10 +70,7 @@ bool StockModel::purge_id(int64 stock_id)
     ) == 1)
         ok = ok && StockHistoryModel::instance().purge_symbol_all(symbol);
 
-    db_savepoint();
-    // TODO: see mmAttachment::delete_ref_all
     ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, stock_id);
-    db_release_savepoint();
 
     ok = ok && unsafe_remove_id(stock_id);
     return ok;

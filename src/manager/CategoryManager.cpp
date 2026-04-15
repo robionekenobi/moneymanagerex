@@ -572,19 +572,9 @@ void CategoryManager::mmDoDeleteSelectedCategory()
 
     if (!trx_id_m.empty()) {
         TrxModel::instance().db_savepoint();
-        TrxSplitModel::instance().db_savepoint();
-        AttachmentModel::instance().db_savepoint();
-        FieldValueModel::instance().db_savepoint();
-
         for (int64 trx_id : trx_id_m) {
-            FieldValueModel::instance().purge_ref_all(TrxModel::s_ref_type, trx_id);
-            mmAttachment::delete_ref_all(TrxModel::s_ref_type, trx_id);
             TrxModel::instance().purge_id(trx_id);
         }
-
-        FieldValueModel::instance().db_release_savepoint();
-        AttachmentModel::instance().db_release_savepoint();
-        TrxSplitModel::instance().db_release_savepoint();
         TrxModel::instance().db_release_savepoint();
     }
 

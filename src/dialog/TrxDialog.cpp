@@ -1380,9 +1380,9 @@ void TrxDialog::OnCancel(wxCommandEvent& WXUNUSED(event))
 #endif
 
     if (m_mode != MODE_EDIT) {
-        // Y_FIXME: temporary records (with id -1) are not stored in database
-        mmAttachment::delete_ref_all(TrxModel::s_ref_type, -1);
+        // FIXME: temporary records (with id -1) are not stored in database
         FieldValueModel::instance().purge_ref_all(TrxModel::s_ref_type, -1);
+        AttachmentModel::instance().purge_ref_all(TrxModel::s_ref_type, -1);
     }
     m_previousDate = wxDateTime(); // invalidate!
     EndModal(wxID_CANCEL);
@@ -1439,8 +1439,8 @@ void TrxDialog::OnQuit(wxCloseEvent& WXUNUSED(event))
 {
     if (m_mode != MODE_EDIT) {
         // FIXME: temporary records (with id -1) are not stored in database
-        mmAttachment::delete_ref_all(TrxModel::s_ref_type, -1);
         FieldValueModel::instance().purge_ref_all(TrxModel::s_ref_type, -1);
+        AttachmentModel::instance().purge_ref_all(TrxModel::s_ref_type, -1);
     }
     EndModal(wxID_CANCEL);
 }

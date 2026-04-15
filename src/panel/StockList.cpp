@@ -344,13 +344,11 @@ void StockList::onDeleteStocks(wxCommandEvent& /*event*/)
         wxYES_NO | wxNO_DEFAULT | wxICON_ERROR
     );
     if (msgDlg.ShowModal() == wxID_YES) {
-        StockModel::instance().purge_id(m_stock_a[m_select_n].m_id);
-        mmAttachment::delete_ref_all(
-            StockModel::s_ref_type, m_stock_a[m_select_n].m_id
-        );
+        int64 stock_id = m_stock_a[m_select_n].m_id;
         TrxLinkModel::instance().Z_purge_ref(
-            StockModel::s_ref_type, m_stock_a[m_select_n].m_id
+            StockModel::s_ref_type, stock_id
         );
+        StockModel::instance().purge_id(stock_id);
         DeleteItem(m_select_n);
         doRefreshItems(-1);
         w_panel->w_frame->RefreshNavigationTree();

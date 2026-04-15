@@ -17,10 +17,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
-#include "base/_defs.h"
-#include <wx/string.h>
-
 #include "AttachmentModel.h"
+
+#include "util/mmAttachment.h"
 
 // -- constructor
 
@@ -42,22 +41,45 @@ AttachmentModel& AttachmentModel::instance()
     return Singleton<AttachmentModel>::instance();
 }
 
+// -- override
+
+bool AttachmentModel::purge_id(int64 att_id)
+{
+    bool ok = true;
+
+    for (const Data& att_d : find_data_a(
+        AttachmentCol::WHERE_ATTACHMENTID(OP_EQ, att_id)
+    )) {
+        ok = ok && mmAttachment::deleteFile(get_data_file(att_d));
+        ok = ok && unsafe_remove_id(att_d.m_id);
+    }
+
+    return ok;
+}
+
 // -- methods
 
-// Delete all attachments linked to a specific object
 bool AttachmentModel::purge_ref_all(RefTypeN ref_type, const int64 ref_id)
 {
     bool ok = true;
 
-    for (int64 att_id : find_id_a(
+    for (const Data& att_d : find_data_a(
         AttachmentCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n()),
         AttachmentCol::WHERE_REFID(OP_EQ, ref_id)
     )) {
-        // TODO: see mmAttachment::delete_ref_all
-        ok = ok && unsafe_remove_id(att_id);
+        ok = ok && mmAttachment::deleteFile(get_data_file(att_d));
+        ok = ok && unsafe_remove_id(att_d.m_id);
     }
 
     return ok;
+}
+
+const wxString AttachmentModel::get_data_file(const AttachmentData& att_d)
+{
+    wxString folder = mmAttachment::getFolder();
+    return !folder.IsEmpty()
+        ? folder + att_d.m_ref_type_n.key_n() + mmAttachment::s_path_sep + att_d.m_filename
+        : "";
 }
 
 // Return the number of attachments linked to a specific object

@@ -1652,9 +1652,6 @@ void mmFrame::OnPopupDeleteAccount(wxCommandEvent& /*event*/)
         return;
 
     AccountModel::instance().purge_id(account_n->m_id);
-    mmAttachment::delete_ref_all(
-        AccountModel::s_ref_type, account_n->m_id
-    );
     DoRecreateNavTreeControl(true);
 }
 //----------------------------------------------------------------------------
@@ -4094,7 +4091,6 @@ void mmFrame::OnDeleteAccount(wxCommandEvent& /*event*/)
             wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION
         );
         if (msgDlg.ShowModal() == wxID_YES) {
-            mmAttachment::delete_ref_all(AccountModel::s_ref_type, account_n->m_id);
             AccountModel::instance().purge_id(account_n->m_id);
         }
     }

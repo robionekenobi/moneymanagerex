@@ -35,7 +35,6 @@ public:
     static bool copyFile(const wxString& src_file, const wxString& dst_file);
     static bool deleteFile(const wxString& file);
 
-    static bool delete_ref_all(RefTypeN ref_type, int64 ref_id);
     static bool relocate_ref_all(
         RefTypeN old_ref_type, int64 old_ref_id,
         RefTypeN new_ref_type, int64 new_ref_id

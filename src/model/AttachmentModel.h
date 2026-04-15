@@ -41,16 +41,14 @@ public:
 
 public:
     // override TableFactory
-    virtual bool purge_id(int64 id) override {
-        return unsafe_remove_id(id);
-    }
+    virtual bool purge_id(int64 id) override;
 
 // -- methods
 
 public:
-    bool purge_id_file(int64 att_id, bool purge_file = false);
-    bool purge_ref_all(RefTypeN ref_type, const int64 ref_id/*, bool purge_file = false*/);
+    bool purge_ref_all(RefTypeN ref_type, const int64 ref_id);
 
+    auto get_data_file(const Data& att_d) -> const wxString;
     int  find_ref_c(RefTypeN ref_type, const int64 ref_id);
     auto find_ref_data_a(RefTypeN ref_type, const int64 ref_id) -> const DataA;
     int  find_ref_last_num(RefTypeN ref_type, const int64 ref_id);

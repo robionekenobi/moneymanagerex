@@ -175,8 +175,7 @@ bool TrxModel::purge_id(int64 trx_id)
 
     ok = ok && TagLinkModel::instance().purge_ref_all(s_ref_type, trx_id);
     ok = ok && FieldValueModel::instance().purge_ref_all(s_ref_type, trx_id);
-    // TODO
-    mmAttachment::delete_ref_all(TrxModel::s_ref_type, trx_id);
+    ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, trx_id);
     ok = ok && unsafe_remove_id(trx_id);
 
     return ok;

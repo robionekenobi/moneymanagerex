@@ -301,8 +301,6 @@ void SchedList::onDeleteBDSeries(wxCommandEvent& WXUNUSED(event))
     if (msgDlg.ShowModal() == wxID_YES) {
         int64 sched_id = w_panel->m_sched_xa[m_select_n].m_id;
         SchedModel::instance().purge_id(sched_id);
-        mmAttachment::delete_ref_all(SchedModel::s_ref_type, sched_id);
-        FieldValueModel::instance().purge_ref_all(SchedModel::s_ref_type, sched_id);
         w_panel->initList();
         refreshVisualList(m_select_n);
     }

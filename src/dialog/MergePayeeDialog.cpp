@@ -185,10 +185,6 @@ void MergePayeeDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 
         if (cbDeleteSourcePayee_->IsChecked()) {
             if (PayeeModel::instance().purge_id(sourcePayeeID_)) {
-                mmAttachment::delete_ref_all(
-                    PayeeModel::s_ref_type,
-                    sourcePayeeID_
-                );
                 mmWebApp::uploadPayee();
             }
             cbSourcePayee_->mmDoReInitialize();

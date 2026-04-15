@@ -77,11 +77,7 @@ bool SchedModel::purge_id(int64 sched_id)
     ok = ok && SchedSplitModel::instance().purge_schedId_all(sched_id);
     ok = ok && TagLinkModel::instance().purge_ref_all(s_ref_type, sched_id);
     ok = ok && FieldValueModel::instance().purge_ref_all(s_ref_type, sched_id);
-
-    // FIXME: see mmAttachment::delete_ref_all
-    db_savepoint();
     ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, sched_id);
-    db_release_savepoint();
 
     ok = ok && unsafe_remove_id(sched_id);
 
@@ -164,10 +160,8 @@ void SchedModel::reschedule_id(int64 sched_id)
     if (!sched_n)
         return;
 
+    // last repetition
     if (sched_n->m_repeat.m_num == 1) {
-        // this was the last repetition
-        // FIXME: delete attachments inside purge_id()
-        mmAttachment::delete_ref_all(s_ref_type, sched_id);
         purge_id(sched_id);
         return;
     }

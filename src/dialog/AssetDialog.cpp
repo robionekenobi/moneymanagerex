@@ -530,7 +530,7 @@ void AssetDialog::OnCancel(wxCommandEvent& /*event*/)
 
     // FIXME: temporary records (with id <= 0) are not stored in database
     if (!m_asset_n)
-        mmAttachment::delete_ref_all(AssetModel::s_ref_type, 0);
+        AttachmentModel::instance().purge_ref_all(AssetModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 
@@ -538,7 +538,7 @@ void AssetDialog::OnQuit(wxCloseEvent& /*event*/)
 {
     // FIXME: temporary records (with id <= 0) are not stored in database
     if (!m_asset_n)
-        mmAttachment::delete_ref_all(AssetModel::s_ref_type, 0);
+        AttachmentModel::instance().purge_ref_all(AssetModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 
