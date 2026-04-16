@@ -177,6 +177,7 @@ void FieldManager::DeleteField()
         wxYES_NO | wxNO_DEFAULT | wxICON_ERROR
     );
     if (DeleteResponse == wxYES) {
+        FieldModel::instance().purge_id_dep(m_field_id);
         FieldModel::instance().purge_id(m_field_id);
         m_field_id = -1;
         fillControls();

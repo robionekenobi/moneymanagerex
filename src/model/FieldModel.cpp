@@ -216,9 +216,6 @@ bool FieldModel::purge_id(int64 field_id)
 {
     bool ok = true;
 
-    // FIXME: Do not remove FieldValue; let the user remove them manually.
-    ok = ok && purge_id_dep(field_id);
-
     ok = ok && unsafe_remove_id(field_id);
 
     return ok;
