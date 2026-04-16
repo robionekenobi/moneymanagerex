@@ -152,7 +152,7 @@ auto TableFactory<T, D>::find_data_a(const Args&... clause_args) -> DataA
         wxString query;
         std::vector<int> index_a;
         this->select_query(query, index_a, clause_args...);
-        wxLogDebug("TableFactory::find_data_a: query: [%s]", query);
+        //wxLogDebug("TableFactory::find_data_a: query: [%s]", query);
 
         wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
         this->bind_stmt(stmt, index_a, 0, clause_args...);
@@ -198,7 +198,7 @@ auto TableFactory<T, D>::find_id_a(const Args&... clause_args) -> std::vector<in
         std::vector<int> index_a;
         TableClauseD clause_id = TableClause::RESULT(Col::s_primary_name);
         this->select_query(query, index_a, clause_id, clause_args...);
-        wxLogDebug("TableFactory::find_id_a: query: [%s]", query);
+        //wxLogDebug("TableFactory::find_id_a: query: [%s]", query);
 
         wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
         this->bind_stmt(stmt, index_a, 0, clause_id, clause_args...);
@@ -244,7 +244,7 @@ auto TableFactory<T, D>::find_count(const Args&... clause_args) -> std::size_t
         std::vector<int> index_a;
         TableClauseD clause_count = TableClause::RESULT("COUNT(*)");
         this->select_query(query, index_a, clause_count, clause_args...);
-        wxLogDebug("TableFactory::find_count: query: [%s]", query);
+        //wxLogDebug("TableFactory::find_count: query: [%s]", query);
 
         wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
         this->bind_stmt(stmt, index_a, 0, clause_count, clause_args...);
@@ -303,7 +303,7 @@ auto TableFactory<T, D>::find_value(
         wxString query;
         std::vector<int> index_a;
         this->select_query(query, index_a, clause_value, clause_args...);
-        wxLogDebug("TableFactory::find_value: query: [%s]", query);
+        //wxLogDebug("TableFactory::find_value: query: [%s]", query);
 
         wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
         this->bind_stmt(stmt, index_a, 0, clause_value, clause_args...);
@@ -355,7 +355,7 @@ auto TableFactory<T, D>::find_count_mGroup(
             TableClause::GROUPBY(group),
             TableClause::ORDERBY(group)
         );
-        wxLogDebug("TableFactory::find_count_mGroup: query: [%s]", query);
+        //wxLogDebug("TableFactory::find_count_mGroup: query: [%s]", query);
 
         wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
         this->bind_stmt(stmt, index_a, 0, clause_group, clause_count, clause_args...);
@@ -420,7 +420,7 @@ auto TableFactory<T, D>::find_value_mGroup(
             TableClause::GROUPBY(group),
             TableClause::ORDERBY(group)
         );
-        wxLogDebug("TableFactory::find_value_mGroup: query: [%s]", query);
+        //wxLogDebug("TableFactory::find_value_mGroup: query: [%s]", query);
 
         wxSQLite3Statement stmt = this->m_db->PrepareStatement(query);
         this->bind_stmt(stmt, index_a, 0, clause_group, clause_value, clause_args...);

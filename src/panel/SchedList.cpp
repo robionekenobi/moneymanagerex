@@ -299,12 +299,13 @@ void SchedList::onDeleteBDSeries(wxCommandEvent& WXUNUSED(event))
         _t("Confirm Deletion"),
         wxYES_NO | wxNO_DEFAULT | wxICON_ERROR
     );
-    if (msgDlg.ShowModal() == wxID_YES) {
-        int64 sched_id = w_panel->m_sched_xa[m_select_n].m_id;
-        SchedModel::instance().purge_id(sched_id);
-        w_panel->initList();
-        refreshVisualList(m_select_n);
-    }
+    if (msgDlg.ShowModal() != wxID_YES)
+        return;
+
+    int64 sched_id = w_panel->m_sched_xa[m_select_n].m_id;
+    SchedModel::instance().purge_id(sched_id);
+    w_panel->initList();
+    refreshVisualList(m_select_n);
 }
 
 void SchedList::onEnterBDTransaction(wxCommandEvent& /*event*/)

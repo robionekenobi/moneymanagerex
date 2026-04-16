@@ -72,7 +72,7 @@ SchedModel& SchedModel::instance()
 
 bool SchedModel::purge_id(int64 sched_id)
 {
-    bool ok;
+    bool ok = true;
     db_savepoint();
 
     ok = ok && SchedSplitModel::instance().purge_schedId_all(sched_id);
