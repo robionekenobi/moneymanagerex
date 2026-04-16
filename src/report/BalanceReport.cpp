@@ -37,6 +37,9 @@ BalanceReport::BalanceReport(BalanceReport::PERIOD_ID period_id) :
         ? REPORT_ID::MonthlySummaryofAccounts
         : REPORT_ID::YearlySummaryofAccounts
     );
+    m_selection_map["name"] = _t("View");
+    m_selection_map["values"] = _t("Account Types") + "," + _t("Accounts");
+    m_selection_map["default"] = _t("Account Types");
 }
 
 std::map<mmDate, double> BalanceReport::loadAccountBalance_mDate(const AccountData& account_d)
@@ -114,9 +117,10 @@ wxString BalanceReport::getHTMLText()
     std::vector<BalanceEntry> date_balanceA_a;
 
     GraphData gd;
+    const bool view_accounts = (getGenericSelection() == 1);
     int acc_size = mmNavigatorList::instance().getNumberOfAccountTypes();
-    // +1 as we add balance to the end;
-    std::vector<GraphSeries> gs_data(acc_size + 1);
+    const auto account_data_a = AccountModel::instance().find_all();
+    const auto asset_data_a = AssetModel::instance().find_all();
 
     std::vector<mmDate> end_date_a;
 
@@ -148,10 +152,15 @@ wxString BalanceReport::getHTMLText()
     mmDate start_date = selected_start_date;
     bool has_included_accounts = false;
     mmDate earliest_open_date = selected_end_date;
+    std::vector<wxString> series_name_a;
+
     // Calculate the report date
-    for (const auto& account_d : AccountModel::instance().find_all()) {
+    for (const auto& account_d : account_data_a) {
         if (m_account_a && wxNOT_FOUND == m_account_a->Index(account_d.m_name))
             continue;
+
+        if (view_accounts)
+            series_name_a.push_back(account_d.m_name);
 
         if (!has_included_accounts || account_d.m_open_date < earliest_open_date) {
             earliest_open_date = account_d.m_open_date;
@@ -175,6 +184,25 @@ wxString BalanceReport::getHTMLText()
             m_stock_xa.push_back(stock_dx);
         }
     }
+
+    const bool include_asset_series = view_accounts && !asset_data_a.empty();
+    if (include_asset_series)
+        series_name_a.push_back(_t("Assets"));
+
+    if (!view_accounts) {
+        for (int i = 0; i < acc_size; ++i)
+            series_name_a.push_back(mmNavigatorList::instance().getAccountTypeName(i));
+    }
+
+    const int series_count = static_cast<int>(series_name_a.size());
+    // +1 as we add total balance series to the end.
+    std::vector<GraphSeries> gs_data(series_count + 1);
+    for (int i = 0; i < series_count; ++i) {
+        gs_data[i].name = series_name_a[i];
+        gs_data[i].type = "column";
+    }
+    gs_data[series_count].name = _t("Balance");
+    gs_data[series_count].type = "line";
 
     // Skip leading periods where selected accounts cannot have any balance yet.
     if (has_included_accounts && start_date < earliest_open_date)
@@ -209,54 +237,76 @@ wxString BalanceReport::getHTMLText()
         date_balanceA.date = end_date;
         double total = 0.0;
 
-        std::vector<double> balance_a(acc_size +1);
+        std::vector<double> balance_a(series_count);
         std::fill(balance_a.begin(), balance_a.end(), 0.0);
-        int idx;
-        for (const auto& account_d : AccountModel::instance().find_all()) {
+        int idx = 0;
+        int type_idx;
+        for (const auto& account_d : account_data_a) {
             if (m_account_a && wxNOT_FOUND == m_account_a->Index(account_d.m_name))
                 continue;
 
-            idx = mmNavigatorList::instance().getAccountTypeIdx(account_d.m_type_);
-            if (idx == -1) {
-                idx = mmNavigatorList::instance().getAccountTypeIdx(mmNavigatorItem::TYPE_ID_CHECKING);
-            }
-            if (idx > -1) {
+            if (view_accounts) {
                 double rate = getCurrencyDateRate(account_d.m_currency_id, end_date);
                 std::pair<double, double> dailybal = getBalance(&account_d, end_date);
-                balance_a[idx] += dailybal.first * rate;
+                balance_a[idx] = dailybal.first * rate;
                 if (AccountModel::type_id(account_d) == mmNavigatorItem::TYPE_ID_INVESTMENT) {
                     balance_a[idx] += dailybal.second * rate;
+                }
+                idx++;
+            }
+            else {
+                type_idx = mmNavigatorList::instance().getAccountTypeIdx(account_d.m_type_);
+                if (type_idx == -1) {
+                    type_idx = mmNavigatorList::instance().getAccountTypeIdx(mmNavigatorItem::TYPE_ID_CHECKING);
+                }
+                if (type_idx > -1) {
+                    double rate = getCurrencyDateRate(account_d.m_currency_id, end_date);
+                    std::pair<double, double> dailybal = getBalance(&account_d, end_date);
+                    balance_a[type_idx] += dailybal.first * rate;
+                    if (AccountModel::type_id(account_d) == mmNavigatorItem::TYPE_ID_INVESTMENT) {
+                        balance_a[type_idx] += dailybal.second * rate;
+                    }
                 }
             }
         }
 
-        idx = mmNavigatorList::instance().getAccountTypeIdx(mmNavigatorItem::TYPE_ID_ASSET);
-        if (idx > -1) {
-            for (const auto& asset_d : AssetModel::instance().find_all()) {
-                double rate = getCurrencyDateRate(asset_d.m_currency_id_n, end_date);
-                balance_a[idx] += AssetModel::instance().get_data_value_date(
-                    asset_d, end_date
-                ).second * rate;
+        if (view_accounts) {
+            if (include_asset_series) {
+                double asset_balance = 0.0;
+                for (const auto& asset_d : asset_data_a) {
+                    double rate = getCurrencyDateRate(asset_d.m_currency_id_n, end_date);
+                    asset_balance += AssetModel::instance().get_data_value_date(
+                        asset_d, end_date
+                    ).second * rate;
+                }
+                balance_a[idx] = asset_balance;
+            }
+        }
+        else {
+            type_idx = mmNavigatorList::instance().getAccountTypeIdx(mmNavigatorItem::TYPE_ID_ASSET);
+            if (type_idx > -1) {
+                for (const auto& asset_d : asset_data_a) {
+                    double rate = getCurrencyDateRate(asset_d.m_currency_id_n, end_date);
+                    balance_a[type_idx] += AssetModel::instance().get_data_value_date(
+                        asset_d, end_date
+                    ).second * rate;
+                }
             }
         }
 
         int k = -1;
-        for (int i = 0; i < acc_size; ++i) {
+        for (int i = 0; i < series_count; ++i) {
             date_balanceA.balance_a.push_back(balance_a[i]);
             gs_data[++k].values.push_back(balance_a[i]);
             total += balance_a[i];
-            gs_data[k].name = mmNavigatorList::instance().getAccountTypeName(i);
-            gs_data[k].type = "column";
         }
         date_balanceA.balance_a.push_back(total);
         date_balanceA_a.push_back(date_balanceA);
         gs_data[++k].values.push_back(total);
-        gs_data[k].name = _t("Balance");
-        gs_data[k].type = "line";
     }
 
     std::vector<bool> is_visible_a;
-    for (int i = 0; i <  acc_size; i++) {
+    for (int i = 0; i < series_count; i++) {
         bool av;
         for (double value : gs_data[i].values) {
             av = false;
@@ -272,7 +322,7 @@ wxString BalanceReport::getHTMLText()
 
     // Chart
     if (getChartSelection() == 0) {
-        for (int i = 0; i <  (acc_size + 1); ++i) {
+        for (int i = 0; i <  (series_count + 1); ++i) {
             if (is_visible_a[i]) {
                 gd.series.push_back(gs_data[i]);
             }
@@ -304,7 +354,7 @@ wxString BalanceReport::getHTMLText()
                 hb.startTableRow();
                 {
                     hb.addTableHeaderCell(_t("Date"));
-                    for (int i = 0; i < acc_size + 1; i++) {
+                    for (int i = 0; i < series_count + 1; i++) {
                         if (is_visible_a[i])
                             hb.addTableHeaderCell(gs_data[i].name, "text-right");
                     }
@@ -322,7 +372,7 @@ wxString BalanceReport::getHTMLText()
                         hb.addTableCellMonth(dateTime.GetMonth(), dateTime.GetYear());
                     else
                         hb.addTableCell(wxString::Format("%d", dateTime.GetYear()));
-                    for (int i = 0; i < acc_size + 1; i++) {
+                    for (int i = 0; i < series_count + 1; i++) {
                         if (is_visible_a[i])
                             hb.addMoneyCell(date_balanceA.balance_a[i]);
                     }
