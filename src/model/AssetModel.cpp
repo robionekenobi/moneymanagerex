@@ -99,11 +99,6 @@ bool AssetModel::purge_id(int64 asset_id)
 
 // -- methods
 
-bool AssetModel::purge_id_dep(int64 asset_id)
-{
-    return TrxLinkModel::instance().Z_purge_ref(s_ref_type, asset_id);
-}
-
 const wxString AssetModel::get_id_name(int64 asset_id)
 {
     const Data* asset_n = get_idN_data_n(asset_id);

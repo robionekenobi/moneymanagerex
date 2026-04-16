@@ -150,49 +150,46 @@ void MergePayeeDialog::OnCancel(wxCommandEvent& WXUNUSED(event))
 
 void MergePayeeDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 {
-    const auto& source_payee_name = cbSourcePayee_->GetValue();
-    const auto& destination_payee_name = cbDestPayee_->GetValue();
-    const wxString& info = wxString::Format(_t("From %1$s to %2$s")
-        , source_payee_name
-        , destination_payee_name);
+    const wxString& info = wxString::Format(_t("From %1$s to %2$s"),
+        cbSourcePayee_->GetValue(),
+        cbDestPayee_->GetValue()
+    );
+    if (wxMessageBox(
+        _t("Please Confirm:") + "\n" + info,
+        _t("Merge payees confirmation"),
+        wxOK | wxCANCEL | wxICON_INFORMATION
+    ) != wxOK)
+        return;
 
-    int ans = wxMessageBox(_t("Please Confirm:") + "\n" + info
-        , _t("Merge payees confirmation")
-        , wxOK | wxCANCEL | wxICON_INFORMATION);
-
-    if (ans == wxOK) {
-        TrxModel::instance().db_savepoint();
-        TrxModel::DataA trx_a = TrxModel::instance().find_data_a(
-            TrxCol::WHERE_PAYEEID(OP_EQ, sourcePayeeID_)
-        );
-        for (TrxData& trx_d : trx_a) {
-            trx_d.m_payee_id_n = destPayeeID_;
-        }
-        TrxModel::instance().save_trx_a(trx_a);
-        m_changed_records += trx_a.size();
-        TrxModel::instance().db_release_savepoint();
-
-        SchedModel::instance().db_savepoint();
-        SchedModel::DataA sched_a = SchedModel::instance().find_data_a(
-            SchedCol::WHERE_PAYEEID(OP_EQ, sourcePayeeID_)
-        );
-        for (SchedData& sched_d : sched_a) {
-            sched_d.m_payee_id_n = destPayeeID_;
-        }
-        SchedModel::instance().save_data_a(sched_a);
-        m_changed_records += sched_a.size();
-        SchedModel::instance().db_release_savepoint();
-
-        if (cbDeleteSourcePayee_->IsChecked()) {
-            if (PayeeModel::instance().purge_id(sourcePayeeID_)) {
-                mmWebApp::uploadPayee();
-            }
-            cbSourcePayee_->mmDoReInitialize();
-            cbDestPayee_->mmDoReInitialize();
-        }
-
-        IsOkOk();
+    TrxModel::instance().db_savepoint();
+    for (TrxData& trx_d : TrxModel::instance().find_data_a(
+        TrxCol::WHERE_PAYEEID(OP_EQ, sourcePayeeID_)
+    )) {
+        trx_d.m_payee_id_n = destPayeeID_;
+        TrxModel::instance().save_trx_n(trx_d);
+        m_changed_records++;
     }
+    TrxModel::instance().db_release_savepoint();
+
+    SchedModel::instance().db_savepoint();
+    for (SchedData& sched_d : SchedModel::instance().find_data_a(
+        SchedCol::WHERE_PAYEEID(OP_EQ, sourcePayeeID_)
+    )) {
+        sched_d.m_payee_id_n = destPayeeID_;
+        SchedModel::instance().save_data_n(sched_d);
+        m_changed_records++;
+    }
+    SchedModel::instance().db_release_savepoint();
+
+    if (cbDeleteSourcePayee_->IsChecked()) {
+        if (PayeeModel::instance().purge_id(sourcePayeeID_)) {
+            mmWebApp::uploadPayee();
+        }
+        cbSourcePayee_->mmDoReInitialize();
+        cbDestPayee_->mmDoReInitialize();
+    }
+
+    IsOkOk();
 }
 
 void MergePayeeDialog::IsOkOk()
