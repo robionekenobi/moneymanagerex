@@ -38,7 +38,7 @@ BalanceReport::BalanceReport(BalanceReport::PERIOD_ID period_id) :
         : REPORT_ID::YearlySummaryofAccounts
     );
     m_selection_map["name"] = _t("View");
-    m_selection_map["values"] = _t("Account Types,Accounts");
+    m_selection_map["values"] = _t("Account Types") + "," + _t("Accounts");
     m_selection_map["default"] = _t("Account Types");
 }
 
