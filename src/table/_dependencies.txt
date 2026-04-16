@@ -42,27 +42,28 @@ q  > U a     c p
 qp >         c
 gl >             g
 fv >               f
-b  >         c       bp
+b  >         c
 
    | owns | where
 ---+------+------
 u  < uh   | CURRENCYID=u.CURRENCYID
-a  < d    | REFID=a.ACCOUNTID           REFTYPE=BankAccount
-e  < d    | REFID=e.ASSETID             REFTYPE=Asset
-s  < d    | REFID=s.STOCKID             REFTYPE=Stock
-p  < d    | REFID=p.PAYEEID             REFTYPE=Payee
+a  < d    | REFID=a.ACCOUNTID            REFTYPE=BankAccount
+e  < d    | REFID=e.ASSETID              REFTYPE=Asset
+s  < d    | REFID=s.STOCKID              REFTYPE=Stock
+p  < d    | REFID=p.PAYEEID              REFTYPE=Payee
 t  < tp   | TRANSID=t.TRANSID
 t  < tl   | CHECKINGACCOUNTID=t.TRANSID
 t  < ts   | CHECKINGACCOUNTID=t.TRANSID
-t  < gl   | REFID=t.TRANSID             REFTYPE=Transaction
+t  < gl   | REFID=t.TRANSID              REFTYPE=Transaction
 t  < fv   | REFID=+t.TRANSID
-t  < d    | REFID=t.TRANSID             REFTYPE=Transaction
-tp < gl   | REFID=tp.SPLITTRANSID       REFTYPE=TransactionSplit
+t  < d    | REFID=t.TRANSID              REFTYPE=Transaction
+tp < gl   | REFID=tp.SPLITTRANSID        REFTYPE=TransactionSplit
 q  < qp   | TRANSID=1.BDID
-q  < gl   | REFID=q.BDID                REFTYPE=RecurringTransaction
+q  < gl   | REFID=q.BDID                 REFTYPE=RecurringTransaction
 q  < fv   | REFID=-q.BDID
-q  < d    | REFID=q.BDID                REFTYPE=RecurringTransaction
-qp < gl   | REFID=qp.SPLITTRANSID       REFTYPE=RecurringTransactionSplit
+q  < d    | REFID=q.BDID                 REFTYPE=RecurringTransaction
+qp < gl   | REFID=qp.SPLITTRANSID        REFTYPE=RecurringTransactionSplit
+bp < b    | BUDGETYEARID=bp.BUDGETYEARID
 
    | is used by (capital letter means indirectly)
 ---+---------------------------------------------
@@ -74,7 +75,6 @@ c  <         c p t tp    q qp       b
 p  <             t       q
 g  <                          gl
 f  <                             fv
-bp <                                b
 
    | is owned by
 ---+------------
@@ -86,4 +86,5 @@ qp >                q
 gl >           t tp q qp
 fv >           t    q
 d  >   a e s p t    q
+b  >                     bp
 

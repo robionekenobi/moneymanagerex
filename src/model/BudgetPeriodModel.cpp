@@ -40,28 +40,7 @@ BudgetPeriodModel& BudgetPeriodModel::instance()
 
 // -- override
 
-bool BudgetPeriodModel::find_id_isUsed(int64 bp_id, [[maybe_unused]] bool ignore_deleted)
-{
-    return BudgetModel::instance().find_count(
-        BudgetCol::WHERE_BUDGETYEARID(OP_EQ, bp_id)
-    ) > 0;
-}
-
 bool BudgetPeriodModel::purge_id(int64 bp_id)
-{
-    bool ok = true;
-
-    // FIXME: Do not remove budget; let the user do it manually.
-    ok = ok && purge_id_dep(bp_id);
-
-    ok = ok && unsafe_remove_id(bp_id);
-
-    return ok;
-}
-
-// -- methods
-
-bool BudgetPeriodModel::purge_id_dep(int64 bp_id)
 {
     bool ok = true;
     db_savepoint();
@@ -72,9 +51,13 @@ bool BudgetPeriodModel::purge_id_dep(int64 bp_id)
         ok = ok && BudgetModel::instance().purge_id(budget_id);
     }
 
+    ok = ok && unsafe_remove_id(bp_id);
+
     db_release_savepoint();
     return ok;
 }
+
+// -- methods
 
 const wxString BudgetPeriodModel::get_id_name_n(int64 bp_id)
 {
