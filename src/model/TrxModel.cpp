@@ -394,11 +394,11 @@ TrxModel::DataExt::DataExt(
     m_account_w_id_n(-1), m_account_d_id_n(-1), m_amount_w(0), m_amount_d(0),
     SN(0), m_account_flow(0), m_account_balance(0)
 {
-    if (const auto it = trxId_tpA_m.find(this->id()); it != trxId_tpA_m.end())
-        m_tp_a = it->second;
+    if (const auto id_tpA = trxId_tpA_m.find(m_id); id_tpA != trxId_tpA_m.end())
+        m_tp_a = id_tpA->second;
 
-    if (const auto tag_it = trxId_glA_m.find(this->id()); tag_it != trxId_glA_m.end())
-        m_gl_a = tag_it->second;
+    if (const auto id_glA = trxId_glA_m.find(m_id); id_glA != trxId_glA_m.end())
+        m_gl_a = id_glA->second;
 
     fill_data();
 }

@@ -2023,8 +2023,8 @@ void JournalList::onEditTrx(wxCommandEvent& /*event*/)
         }
     }
     else {
-        SchedDialog dlg(this, journal_key.sid(), false, false);
-        if ( dlg.ShowModal() == wxID_OK )
+        SchedDialog dlg(this, SchedDialog::MODE_UPDATE, journal_key.sid());
+        if (dlg.ShowModal() == wxID_OK)
             refreshVisualList();
     }
     m_top_item_n = GetTopItem() + GetCountPerPage() - 1;
@@ -2152,16 +2152,16 @@ void JournalList::onOrganizeAttachments(wxCommandEvent& /*event*/)
 
 void JournalList::onCreateReoccurance(wxCommandEvent& /*event*/)
 {
-     // we only support a single transaction
     if (GetSelectedItemCount() != 1)
         return;
+
     setSelectKeyA();
     JournalKey journal_key = m_select_key_a[0];
 
     if (journal_key.is_realized()) {
-        SchedDialog dlg(this, 0, false, false);
-        dlg.SetDialogParameters(journal_key.rid());
-        if (dlg.ShowModal() == wxID_OK)
+        SchedDialog sched_dlg(this, SchedDialog::MODE_ADD, -1);
+        sched_dlg.setDialogParameters(journal_key.rid());
+        if (sched_dlg.ShowModal() == wxID_OK)
             wxMessageBox(_t("Scheduled transaction saved."));
     }
 }
@@ -2400,7 +2400,7 @@ void JournalList::onEnterSched(wxCommandEvent& WXUNUSED(event))
     setSelectKeyA();
     JournalKey journal_key = m_select_key_a[0];
     if (journal_key.m_repeat_id == 1) {
-        SchedDialog dlg(this, journal_key.sid(), false, true);
+        SchedDialog dlg(this, SchedDialog::MODE_ENTER, journal_key.sid());
         if ( dlg.ShowModal() == wxID_OK ) {
             refreshVisualList();
         }

@@ -47,21 +47,23 @@ private:
         MENU_DELETE_ATTACHMENT,
     };
 
+// -- state
+
 private:
-    int64 m_attachment_id = -1;
+    std::map<int, wxString> m_col_name_m;
     RefTypeN m_ref_type;
     int64 m_ref_id = -1;
-    std::map<int, wxString> ColName_;
+    int64 m_attachment_id = -1;
 
-    //wxButton* btnCancel_ = nullptr;
-    //wxButton* button_OK_ = nullptr;
-    wxDataViewListCtrl* attachmentListBox_ = nullptr;
+    wxDataViewListCtrl* w_list = nullptr;
 
     #ifdef _DEBUG
-        bool debug_ = true;
+        bool m_debug = true;
     #else
-        bool debug_ = false;
+        bool m_debug = false;
     #endif
+
+// -- constructor
 
 public:
     AttachmentDialog() {}
@@ -73,10 +75,13 @@ public:
     );
 
 private:
-    void Create(wxWindow* parent, const wxString& name);
-    void CreateControls();
+    void create(wxWindow* parent, const wxString& name);
+    void createControls();
     void fillControls();
 
+// -- methods
+
+private:
     void AddAttachment(wxString Path = "");
     void OpenAttachment();
     void EditAttachment();
@@ -84,6 +89,9 @@ private:
     void OnCancel(wxCommandEvent& /*event*/);
     void OnOk(wxCommandEvent& /*event*/);
 
+// -- event handlers
+
+private:
     void OnDropFiles(wxDropFilesEvent& event);
     void OnListItemSelected(wxDataViewEvent& event);
     void OnMenuSelected(wxCommandEvent& event);

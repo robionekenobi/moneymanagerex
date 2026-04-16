@@ -47,6 +47,14 @@ class SchedDialog : public wxDialog
 
 // -- static
 
+public:
+    enum MODE
+    {
+        MODE_ADD = 0,
+        MODE_UPDATE,
+        MODE_ENTER,
+    };
+
 private:
     enum
     {
@@ -96,14 +104,12 @@ private:
 // -- state
 
 private:
+    MODE m_mode;
     SchedData m_sched_d = SchedData();
     int64 m_sched_id;
     std::vector<Split> m_split_a;
     wxArrayInt64 m_tag_id_a;
     bool m_is_transfer = false;
-    bool m_is_new = false;
-    bool m_is_duplicate = false;
-    bool m_enter = false;
     bool m_mode_suggested = false;
     bool m_mode_automated = false;
     bool m_advanced = false;
@@ -143,13 +149,21 @@ private:
     mmTagTextCtrl*      w_tag_text          = nullptr;
 
 public:
+    bool is_new() { return (m_mode == MODE_ADD && m_sched_d.m_id <= 0); }
+    bool is_dup() { return (m_mode == MODE_ADD && m_sched_d.m_id > 0); }
+    bool is_edit() { return (m_mode == MODE_UPDATE); }
+    bool is_enter() { return (m_mode == MODE_ENTER); }
     auto GetTransID() -> int64 { return m_sched_id; }
 
 // -- constructor
 
 public:
     SchedDialog() {}
-    SchedDialog(wxWindow* parent, int64 bdD, bool duplicate, bool enterOccur);
+    SchedDialog(
+        wxWindow* parent_win,
+        MODE mode,
+        int64 sched_id
+    );
     ~SchedDialog();
 
 private:
@@ -165,44 +179,44 @@ private:
     void createControls();
     void dataToControls();
 
-// methods
+// -- methods
 
 public:
-    void SetDialogHeader(const wxString& header);
-    void SetDialogParameters(int64 trx_id);
+    void setDialogHeader(const wxString& header);
+    void setDialogParameters(int64 trx_id);
 
 private:
+    auto getRepeatFreq() -> RepeatFreq;
     void updateControlsForTransType();
-    void SetAmountCurrencies(int64 accountID, int64 toAccountID);
+    void setAmountCurrencies(int64 account_id, int64 to_account_id);
     void setTooltips();
     void setCategoryLabel();
-    void SetTransferControls(bool transfers = false);
-    void SetAdvancedTransferControls(bool advanced = false);
-    void SetSplitControls(bool split = false);
+    void setTransferControls(bool is_transfer = false);
+    void setAdvancedTransferControls(bool advanced = false);
+    void setSplitControls(bool split = false);
     void setRepeatDetails();
-    auto getRepeatFreq() -> RepeatFreq;
     void activateSplitTransactionsDlg();
 
 // -- event handlers
 
 private:
-    void OnQuit(                        wxCloseEvent&      event);
-    void OnOk(                          wxCommandEvent&    event);
-    void OnCancel(                      wxCommandEvent&    event);
-    void OnCategs(                      wxCommandEvent&    event);
-    void OnPayee(                       wxCommandEvent&    event);
-    void OnTypeChanged(                 wxCommandEvent&    event);
-    void OnAttachments(                 wxCommandEvent&    event);
-    void OnComboKey(                    wxKeyEvent&        event);
-    void OnAccountUpdated(              wxCommandEvent&    event);
-    void OnAutoExecutionUserAckChecked( wxCommandEvent&    event);
-    void OnAutoExecutionSilentChecked(  wxCommandEvent&    event);
-    void OnFocusChange(                 wxChildFocusEvent& event);
-    void OnCalculator(                  wxCommandEvent&    event);
-    void OnAdvanceChecked(              wxCommandEvent&    event);
-    void OnFrequentUsedNotes(           wxCommandEvent&    event);
-    void OnNoteSelected(                wxCommandEvent&    event);
-    void OnRepeatTypeChanged(           wxCommandEvent&    event);
-    void OnsetPrevOrNextRepeatDate(     wxCommandEvent&    event);
-    void OnMoreFields(                  wxCommandEvent&    event);
+    void onQuit(                        wxCloseEvent&      event);
+    void onOk(                          wxCommandEvent&    event);
+    void onCancel(                      wxCommandEvent&    event);
+    void onCategs(                      wxCommandEvent&    event);
+    void onPayee(                       wxCommandEvent&    event);
+    void onTypeChanged(                 wxCommandEvent&    event);
+    void onAttachments(                 wxCommandEvent&    event);
+    void onComboKey(                    wxKeyEvent&        event);
+    void onAccountUpdated(              wxCommandEvent&    event);
+    void onAutoExecutionUserAckChecked( wxCommandEvent&    event);
+    void onAutoExecutionSilentChecked(  wxCommandEvent&    event);
+    void onFocusChange(                 wxChildFocusEvent& event);
+    void onCalculator(                  wxCommandEvent&    event);
+    void onAdvanceChecked(              wxCommandEvent&    event);
+    void onFrequentUsedNotes(           wxCommandEvent&    event);
+    void onNoteSelected(                wxCommandEvent&    event);
+    void onRepeatTypeChanged(           wxCommandEvent&    event);
+    void onsetPrevOrNextRepeatDate(     wxCommandEvent&    event);
+    void onMoreFields(                  wxCommandEvent&    event);
 };

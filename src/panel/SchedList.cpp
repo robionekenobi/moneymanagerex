@@ -262,7 +262,7 @@ void SchedList::OnListKeyDown(wxListEvent& event)
 
 void SchedList::onNewBDSeries(wxCommandEvent& /*event*/)
 {
-    SchedDialog dlg(this, 0, false, false);
+    SchedDialog dlg(this, SchedDialog::MODE_ADD, -1);
     if (dlg.ShowModal() == wxID_OK)
         refreshVisualList(w_panel->initList(dlg.GetTransID()));
 }
@@ -272,16 +272,17 @@ void SchedList::onEditBDSeries(wxCommandEvent& /*event*/)
     if (m_select_n == -1)
         return;
 
-    SchedDialog dlg(this, w_panel->m_sched_xa[m_select_n].m_id, false, false);
+    SchedDialog dlg(this, SchedDialog::MODE_UPDATE, w_panel->m_sched_xa[m_select_n].m_id);
     if (dlg.ShowModal() == wxID_OK)
         refreshVisualList(w_panel->initList(dlg.GetTransID()));
 }
 
 void SchedList::onDuplicateBDSeries(wxCommandEvent& /*event*/)
 {
-    if (m_select_n == -1) return;
+    if (m_select_n == -1)
+        return;
 
-    SchedDialog dlg(this, w_panel->m_sched_xa[m_select_n].m_id, true, false);
+    SchedDialog dlg(this, SchedDialog::MODE_ADD, w_panel->m_sched_xa[m_select_n].m_id);
     if (dlg.ShowModal() == wxID_OK)
         refreshVisualList(w_panel->initList(dlg.GetTransID()));
 }
@@ -311,12 +312,12 @@ void SchedList::onEnterBDTransaction(wxCommandEvent& /*event*/)
     if (m_select_n == -1)
         return;
 
-    int64 id = w_panel->m_sched_xa[m_select_n].m_id;
-    SchedDialog dlg(this, id, false, true);
-    if ( dlg.ShowModal() == wxID_OK ) {
+    int64 sched_id = w_panel->m_sched_xa[m_select_n].m_id;
+    SchedDialog dlg(this, SchedDialog::MODE_ENTER, sched_id);
+    if (dlg.ShowModal() == wxID_OK ) {
         if (++m_select_n < long(w_panel->m_sched_xa.size()))
-            id = w_panel->m_sched_xa[m_select_n].m_id;
-        refreshVisualList(w_panel->initList(id));
+            sched_id = w_panel->m_sched_xa[m_select_n].m_id;
+        refreshVisualList(w_panel->initList(sched_id));
     }
 }
 
@@ -360,7 +361,7 @@ void SchedList::OnListItemActivated(wxListEvent& WXUNUSED(event))
     if (m_select_n == -1)
         return;
 
-    SchedDialog dlg(this, w_panel->m_sched_xa[m_select_n].m_id, false, false);
+    SchedDialog dlg(this, SchedDialog::MODE_UPDATE, w_panel->m_sched_xa[m_select_n].m_id);
     if (dlg.ShowModal() == wxID_OK)
         refreshVisualList(w_panel->initList(dlg.GetTransID()));
 }

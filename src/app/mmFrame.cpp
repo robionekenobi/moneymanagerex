@@ -627,9 +627,9 @@ void mmFrame::OnAutoRepeatTransactionsTimer(wxTimerEvent& /*event*/)
         if (sched_d.m_repeat.m_mode.id() == RepeatMode::e_suggested) {
             if (is_allowed) {
                 continueExecution = true;
-                SchedDialog repeatTransactionsDlg(this, sched_d.m_id, false, true);
-                repeatTransactionsDlg.SetDialogHeader(_t("Auto Repeat Transactions"));
-                if (repeatTransactionsDlg.ShowModal() == wxID_OK) {
+                SchedDialog sched_dlg(this, SchedDialog::MODE_ENTER, sched_d.m_id);
+                sched_dlg.setDialogHeader(_t("Auto Repeat Transactions"));
+                if (sched_dlg.ShowModal() == wxID_OK) {
                     refreshPanelData();
                 }
                 else {
