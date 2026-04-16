@@ -108,7 +108,7 @@ bool SchedModel::is_data_allowed(const Data& sched_d)
     if (sched_d.is_deposit())
         return true;
 
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(
         sched_d.m_account_id
     );
     if (account_n->m_min_balance == 0 && account_n->m_credit_limit == 0)
@@ -156,7 +156,7 @@ bool SchedModel::is_data_allowed(const Data& sched_d)
 
 void SchedModel::reschedule_id(int64 sched_id)
 {
-    Data* sched_n = unsafe_get_id_data_n(sched_id);
+    Data* sched_n = unsafe_get_idN_data_n(sched_id);
     if (!sched_n)
         return;
 
@@ -188,7 +188,7 @@ SchedModel::DataExt::DataExt(const Data& sched_d) :
     if (!m_gl_a.empty()) {
         wxArrayString tag_name_a;
         for (const auto& gl_d : m_gl_a)
-            tag_name_a.Add(TagModel::instance().get_id_data_n(gl_d.m_tag_id)->m_name);
+            tag_name_a.Add(TagModel::instance().get_idN_data_n(gl_d.m_tag_id)->m_name);
         // Sort TAGNAMES
         tag_name_a.Sort();
         for (const auto& tag_name : tag_name_a)

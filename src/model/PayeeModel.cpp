@@ -85,7 +85,7 @@ bool PayeeModel::purge_id(int64 payee_id)
 
 const wxString PayeeModel::get_id_name(int64 payee_id)
 {
-    const Data* payee_n = get_id_data_n(payee_id);
+    const Data* payee_n = get_idN_data_n(payee_id);
     if (payee_n)
         return payee_n->m_name;
     else
@@ -103,7 +103,7 @@ const PayeeData* PayeeModel::get_name_data_n(const wxString& name)
     for (int64 payee_id : find_id_a(
         PayeeCol::WHERE_PAYEENAME(OP_EQ, name)
     )) {
-        payee_n = get_id_data_n(payee_id);
+        payee_n = get_idN_data_n(payee_id);
         break;
     }
 

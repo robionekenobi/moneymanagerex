@@ -85,13 +85,13 @@ bool StockModel::purge_id_dep(int64 stock_id)
 
 const wxString StockModel::get_id_name(int64 stock_id)
 {
-    const Data* stock_n = get_id_data_n(stock_id);
+    const Data* stock_n = get_idN_data_n(stock_id);
     return stock_n ? stock_n->m_name : _t("Stock Error");
 }
 
 const wxString StockModel::get_id_symbol(int64 stock_id)
 {
-    const Data* stock_n = get_id_data_n(stock_id);
+    const Data* stock_n = get_idN_data_n(stock_id);
     return stock_n ? stock_n->m_symbol : "";
 }
 
@@ -164,7 +164,7 @@ double StockModel::calculate_account_balance(const AccountData& account_d, const
             s_ref_type, stock_d.m_id
         );
         for (const TrxLinkModel::Data& tl_d : tl_a) {
-            const TrxData* trx_n = TrxModel::instance().get_id_data_n(
+            const TrxData* trx_n = TrxModel::instance().get_idN_data_n(
                 tl_d.m_trx_id
             );
             if (trx_n && trx_n->m_id > 0 &&
@@ -208,7 +208,7 @@ double StockModel::calculate_realized_gain(const Data& stock_d, bool to_base_cur
     for (const auto& tl_d : TrxLinkModel::instance().find_ref_data_a(
         s_ref_type, stock_d.m_id
     )) {
-        const TrxData* trx_n = TrxModel::instance().get_id_data_n(
+        const TrxData* trx_n = TrxModel::instance().get_idN_data_n(
             tl_d.m_trx_id
         );
         if (trx_n && trx_n->m_id > 0 &&
@@ -287,7 +287,7 @@ double StockModel::calculate_unrealiazed_gain(const Data& stock_d, bool to_base_
 
         TrxModel::DataA trx_a;
         for (const auto& tl_d : tl_a) {
-            const TrxData* trx_d = TrxModel::instance().get_id_data_n(
+            const TrxData* trx_d = TrxModel::instance().get_idN_data_n(
                 tl_d.m_trx_id
             );
             if (trx_d && trx_d->m_id > 0 &&
@@ -375,7 +375,7 @@ void StockModel::update_data_position(StockData* stock_n)
     mmDate min_trx_date = mmDate::today();
     TrxModel::DataA trx_a;
     for (const auto& tl_d : tl_a) {
-        const TrxData* trx_n = TrxModel::instance().get_id_data_n(tl_d.m_trx_id);
+        const TrxData* trx_n = TrxModel::instance().get_idN_data_n(tl_d.m_trx_id);
         if (trx_n && trx_n->m_id > 0 && trx_n->is_valid()) {
             trx_a.push_back(*trx_n);
         }

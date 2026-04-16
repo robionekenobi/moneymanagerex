@@ -349,7 +349,7 @@ void TagManager::OnDelete(wxCommandEvent& WXUNUSED(event))
                 trx_id_m.insert(gl_d.m_ref_id);
             }
             else if (gl_d.m_ref_type == TrxSplitModel::s_ref_type) {
-                const TrxSplitData* tp_n = TrxSplitModel::instance().get_id_data_n(
+                const TrxSplitData* tp_n = TrxSplitModel::instance().get_idN_data_n(
                     gl_d.m_ref_id
                 );
                 trx_id_m.insert(tp_n->m_trx_id);

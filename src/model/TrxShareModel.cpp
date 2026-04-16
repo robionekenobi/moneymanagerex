@@ -66,12 +66,12 @@ int64 TrxShareModel::get_trxId_id(const int64 trx_id)
 
 TrxShareData* TrxShareModel::unsafe_get_trxId_data_n(const int64 trx_id)
 {
-    return unsafe_get_id_data_n(get_trxId_id(trx_id));
+    return unsafe_get_idN_data_n(get_trxId_id(trx_id));
 }
 
 const TrxShareData* TrxShareModel::get_trxId_data_n(const int64 trx_id)
 {
-    return get_id_data_n(get_trxId_id(trx_id));
+    return get_idN_data_n(get_trxId_id(trx_id));
 }
 
 // Create a Share record if it does not exist.

@@ -273,9 +273,9 @@ wxString SchedPanel::getItem(long item, int col_id)
         }
         else
             return value;
-        const AccountData* account = AccountModel::instance().get_id_data_n(accountid);
+        const AccountData* account = AccountModel::instance().get_idN_data_n(accountid);
         const CurrencyData* currency = account ?
-            CurrencyModel::instance().get_id_data_n(account->m_currency_id) : nullptr;
+            CurrencyModel::instance().get_idN_data_n(account->m_currency_id) : nullptr;
         if (currency)
             value = CurrencyModel::instance().toCurrency(transamount, currency);
         if (!value.IsEmpty() && sched_dx.is_void())
@@ -294,9 +294,9 @@ wxString SchedPanel::getItem(long item, int col_id)
         }
         else
             return value;
-        const AccountData* account = AccountModel::instance().get_id_data_n(accountid);
+        const AccountData* account = AccountModel::instance().get_idN_data_n(accountid);
         const CurrencyData* currency = account ?
-            CurrencyModel::instance().get_id_data_n(account->m_currency_id) : nullptr;
+            CurrencyModel::instance().get_idN_data_n(account->m_currency_id) : nullptr;
         if (currency)
             value = CurrencyModel::instance().toCurrency(transamount, currency);
         if (!value.IsEmpty() && sched_dx.is_void())

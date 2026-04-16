@@ -234,7 +234,7 @@ void htmlWidgetTop7Categories::getTopCategoryStats(
 
         bool withdrawal = (trx_d.is_withdrawal());
         double convRate = CurrencyHistoryModel::instance().get_id_date_rate(
-            AccountModel::instance().get_id_data_n(trx_d.m_account_id)->m_currency_id,
+            AccountModel::instance().get_idN_data_n(trx_d.m_account_id)->m_currency_id,
             trx_d.m_date()
         );
 
@@ -333,12 +333,12 @@ const wxString htmlWidgetBillsAndDeposits::getHTMLText()
                 -due_days
             );
 
-        const auto* account_n = AccountModel::instance().get_id_data_n(sched_d.m_account_id);
+        const auto* account_n = AccountModel::instance().get_idN_data_n(sched_d.m_account_id);
         wxString account_name_n = account_n ? account_n->m_name : "";
 
         wxString payee_name_n = "";
         if (sched_d.is_transfer()) {
-            const AccountData* to_account_n = AccountModel::instance().get_id_data_n(
+            const AccountData* to_account_n = AccountModel::instance().get_idN_data_n(
                 sched_d.m_to_account_id_n
             );
             if (to_account_n)
@@ -346,7 +346,7 @@ const wxString htmlWidgetBillsAndDeposits::getHTMLText()
             payee_name_n += " &larr; " + account_name_n;
         }
         else {
-            const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(
+            const PayeeData* payee_n = PayeeModel::instance().get_idN_data_n(
                 sched_d.m_payee_id_n
             );
             payee_name_n = account_name_n;
@@ -432,7 +432,7 @@ const wxString htmlWidgetIncomeVsExpenses::getHTMLText()
             continue;
 
         double convRate = CurrencyHistoryModel::instance().get_id_date_rate(
-            AccountModel::instance().get_id_data_n(trx_d.m_account_id)->m_currency_id,
+            AccountModel::instance().get_idN_data_n(trx_d.m_account_id)->m_currency_id,
             trx_d.m_date()
         );
 

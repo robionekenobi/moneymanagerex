@@ -47,7 +47,7 @@ ReconcileDialog::ReconcileDialog(
     m_account_n = account_n;
     w_journal = journal_panel_n;
     m_reconciledBalance = journal_panel_n->todayReconciledBalance();
-    m_currency_n = CurrencyModel::instance().get_id_data_n(account_n->m_currency_id);
+    m_currency_n = CurrencyModel::instance().get_idN_data_n(account_n->m_currency_id);
     m_ignore  = false;
     this->SetFont(parent_win->GetFont());
 
@@ -705,7 +705,7 @@ void ReconcileDialog::newTransaction()
         if (i != wxID_CANCEL) {
             w_journal->refreshList();
             int64 transid = dlg.GetTransactionID();
-            const TrxData* trx = TrxModel::instance().get_id_data_n(transid);
+            const TrxData* trx = TrxModel::instance().get_idN_data_n(transid);
             addTransaction2List(trx);
         }
     } while (i == wxID_NEW);
@@ -747,7 +747,7 @@ void ReconcileDialog::editTransaction(wxListCtrl* list, long item)
     TrxDialog dlg(this, trx_id, JournalKey(-1, trx_id));
     if (dlg.ShowModal() == wxID_OK) {
         w_journal->refreshList();
-        const TrxData* trx_n = TrxModel::instance().get_id_data_n(trx_id);
+        const TrxData* trx_n = TrxModel::instance().get_idN_data_n(trx_id);
         setListItemData(trx_n, list, item);
         long idx = getListIndexByDate(trx_n, list);
         if (idx != item) {
@@ -761,7 +761,7 @@ long ReconcileDialog::getListIndexByDate(const TrxData* trx_n, wxListCtrl* list)
     long idx = -1;
     for (long i = 0; i < list->GetItemCount(); ++i) {
         int64 other_id = m_itemDataMap[list->GetItemData(i)];
-        const TrxData* other_trx_n = TrxModel::instance().get_id_data_n(other_id);
+        const TrxData* other_trx_n = TrxModel::instance().get_idN_data_n(other_id);
         if (trx_n->m_date() < other_trx_n->m_date()) {
             idx = i;
             break;
@@ -918,7 +918,7 @@ void ReconcileDialog::applyColumnSettings()
 void ReconcileDialog::OnClose(wxCommandEvent& event)
 {
     auto saveItem = [](int64 id, bool state, bool final) {
-        TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(id);
+        TrxData* trx_n = TrxModel::instance().unsafe_get_idN_data_n(id);
         if (state) {
             trx_n->m_status = TrxStatus(final
                 ? TrxStatus::e_reconciled

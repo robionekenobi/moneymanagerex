@@ -80,7 +80,7 @@ TrxShareDialog::TrxShareDialog(
     m_dialog_heading(_t("Edit Share Transaction"))
 {
     if (m_tl_n) {
-        m_stock_n = StockModel::instance().unsafe_get_id_data_n(
+        m_stock_n = StockModel::instance().unsafe_get_idN_data_n(
             m_tl_n->m_ref_id
         );
         if (m_tl_n->m_ref_type == StockModel::s_ref_type) {
@@ -208,7 +208,7 @@ void TrxShareDialog::DataToControls()
             m_share_lot_ctrl->SetValue(m_ts_n->m_lot);
 
             if (m_tl_n) {
-                TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(m_tl_n->m_trx_id);
+                TrxData* trx_n = TrxModel::instance().unsafe_get_idN_data_n(m_tl_n->m_trx_id);
                 if (trx_n) {
                     m_transaction_panel->TransactionDate(
                         trx_n->m_datetime.dateTime()
@@ -544,7 +544,7 @@ void TrxShareDialog::OnDeductibleSplit(wxCommandEvent&)
             CategoryData new_cat_d = CategoryData();
             new_cat_d.m_name = _("Investment");
             CategoryModel::instance().add_data_n(new_cat_d);
-            cat_n = CategoryModel::instance().get_id_data_n(new_cat_d.m_id);
+            cat_n = CategoryModel::instance().get_idN_data_n(new_cat_d.m_id);
         }
         m_local_deductible_splits.push_back({
             cat_n->m_id, commission, "", wxArrayInt64()

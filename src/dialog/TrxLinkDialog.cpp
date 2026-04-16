@@ -337,7 +337,7 @@ void TrxLinkDialog::SetLastPayeeAndCategory(const int64 account_id)
         TableClause::ORDERBY(TrxCol::NAME_TRANSID, true),
         TableClause::LIMIT(1)
     )) {
-        const PayeeData* last_payee_n = PayeeModel::instance().get_id_data_n(
+        const PayeeData* last_payee_n = PayeeModel::instance().get_idN_data_n(
             trx_d.m_payee_id_n
         );
         if (last_payee_n) {
@@ -377,7 +377,7 @@ void TrxLinkDialog::OnTransPayeeButton(wxCommandEvent& WXUNUSED(event))
         return;
 
     m_payee_id = dlg.getPayeeId();
-    const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(m_payee_id);
+    const PayeeData* payee_n = PayeeModel::instance().get_idN_data_n(m_payee_id);
     if (!payee_n)
         return;
 
@@ -485,7 +485,7 @@ void TrxLinkDialog::SetTransactionStatus(const int trans_status_enum)
 void TrxLinkDialog::SetTransactionPayee(const int64 payeeid)
 {
     m_payee_id = payeeid;
-    const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(m_payee_id);
+    const PayeeData* payee_n = PayeeModel::instance().get_idN_data_n(m_payee_id);
     if (payee_n)
         w_payee_btn->SetLabelText(payee_n->m_name);
 }
@@ -503,7 +503,7 @@ void TrxLinkDialog::SetTransactionAccount(const wxString& trans_account)
         w_account_btn->SetLabelText(account->m_name);
         m_account_id = account->m_id;
         SetLastPayeeAndCategory(m_account_id);
-        const CurrencyData* currency = CurrencyModel::instance().get_id_data_n(account->m_currency_id);
+        const CurrencyData* currency = CurrencyModel::instance().get_idN_data_n(account->m_currency_id);
         w_amount_text->SetCurrency(currency);
         w_currency_btn->SetLabelText(currency->m_symbol);
     }
@@ -530,7 +530,7 @@ int64 TrxLinkDialog::SaveChecking()
     double initial_amount = 0;
     w_amount_text->checkValue(initial_amount);
 
-    const AccountData* account = AccountModel::instance().get_id_data_n(m_account_id);
+    const AccountData* account = AccountModel::instance().get_idN_data_n(m_account_id);
     wxDateTime trx_datetime = w_date_picker->GetValue();
     if (mmDate(trx_datetime) < account->m_open_date) {
         mmErrorDialogs::ToolTip4Object(w_account_btn,

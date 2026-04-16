@@ -110,7 +110,7 @@ bool CurrencyModel::purge_id(int64 currency_id)
 const CurrencyData* CurrencyModel::get_base_data_n()
 {
     int64 currency_id = PrefModel::instance().getBaseCurrencyID();
-    return get_id_data_n(currency_id);
+    return get_idN_data_n(currency_id);
 }
 
 bool CurrencyModel::get_base_symbol(wxString& symbol)
@@ -135,7 +135,7 @@ const CurrencyData* CurrencyModel::get_symbol_data_n(const wxString& symbol)
     for (int64 currency_id : CurrencyModel::instance().find_id_a(
         CurrencyCol::WHERE_CURRENCY_SYMBOL(OP_EQ, symbol)
     )) {
-        currency_n = get_id_data_n(currency_id);
+        currency_n = get_idN_data_n(currency_id);
     }
 
     return currency_n;
@@ -392,7 +392,7 @@ void CurrencyModel::resetBaseConversionRates()
 
 int CurrencyModel::precision(int64 account_id)
 {
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(account_id);
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(account_id);
     if (account_n) {
         return AccountModel::instance().get_data_currency_p(*account_n)->precision();
     }

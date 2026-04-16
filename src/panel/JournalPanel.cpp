@@ -174,7 +174,7 @@ JournalPanel::JournalPanel(
 {
     if (isAccount()) {
         m_account_id = m_account_group_id;
-        m_account_n = AccountModel::instance().get_id_data_n(m_account_id);
+        m_account_n = AccountModel::instance().get_idN_data_n(m_account_id);
         m_currency_n = AccountModel::instance().get_data_currency_p(*m_account_n);
     }
     else if (isGroup()) {
@@ -468,7 +468,7 @@ void JournalPanel::loadAccount(int64 account_id)
     m_account_group_id = account_id;
     m_account_id = account_id;
     m_account_id_m = {};
-    m_account_n = AccountModel::instance().get_id_data_n(m_account_id);
+    m_account_n = AccountModel::instance().get_idN_data_n(m_account_id);
     m_currency_n = AccountModel::instance().get_data_currency_p(*m_account_n);
     m_use_account_specific_filter = PrefModel::instance().getUsePerAccountFilter();
 

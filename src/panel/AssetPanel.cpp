@@ -566,7 +566,7 @@ void AssetPanel::loadAssetTransactions(wxListCtrl* listCtrl, int64 asset_id)
 
     int row = 0;
     for (const auto& tl_d : tl_a) {
-        const TrxData* trx_n = TrxModel::instance().get_id_data_n(tl_d.m_trx_id);
+        const TrxData* trx_n = TrxModel::instance().get_idN_data_n(tl_d.m_trx_id);
         if (!trx_n)
             continue;
 
@@ -589,7 +589,7 @@ void AssetPanel::bindAssetListEvents(wxListCtrl* listCtrl)
 {
     listCtrl->Bind(wxEVT_LIST_ITEM_ACTIVATED, [listCtrl, this](wxListEvent& event) {
         long index = event.GetIndex();
-        TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(event.GetData());
+        TrxData* trx_n = TrxModel::instance().unsafe_get_idN_data_n(event.GetData());
         if (!trx_n)
             return;
 
@@ -602,8 +602,8 @@ void AssetPanel::bindAssetListEvents(wxListCtrl* listCtrl)
 
         // FIXME: change type to int64
         listCtrl->SortItems([](wxIntPtr item1, wxIntPtr item2, wxIntPtr) -> int {
-            auto date1 = TrxModel::instance().get_id_data_n(item1)->m_datetime;
-            auto date2 = TrxModel::instance().get_id_data_n(item2)->m_datetime;
+            auto date1 = TrxModel::instance().get_idN_data_n(item1)->m_datetime;
+            auto date2 = TrxModel::instance().get_idN_data_n(item2)->m_datetime;
             return (date1 < date2) ? -1 : (date1 > date2) ? 1 : 0;
         }, 0);
     });
@@ -653,9 +653,9 @@ void AssetPanel::gotoAssetAccount(const int selected_index)
             AssetModel::s_ref_type, asset_n->m_id
         );
         for (const auto& _tl_a : tl_a) {
-            const TrxData* trx_n = TrxModel::instance().get_id_data_n(_tl_a.m_trx_id);
+            const TrxData* trx_n = TrxModel::instance().get_idN_data_n(_tl_a.m_trx_id);
             if (trx_n) {
-                account_n = AccountModel::instance().get_id_data_n(trx_n->m_account_id);
+                account_n = AccountModel::instance().get_idN_data_n(trx_n->m_account_id);
                 setAccountParameters(account_n);
             }
         }

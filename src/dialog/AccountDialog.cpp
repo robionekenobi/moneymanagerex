@@ -77,7 +77,7 @@ AccountDialog::AccountDialog(AccountData* account, wxWindow* parent) :
 {
     m_images = NavTreeIconImages::instance().getList();
     m_currencyID = m_account_n->m_currency_id;
-    [[maybe_unused]] const CurrencyData* currency = CurrencyModel::instance().get_id_data_n(m_currencyID);
+    [[maybe_unused]] const CurrencyData* currency = CurrencyModel::instance().get_idN_data_n(m_currencyID);
     wxASSERT(currency);
 
     this->SetFont(parent->GetFont());
@@ -402,7 +402,7 @@ void AccountDialog::OnAccountStatus(wxCommandEvent& /*event*/)
 void AccountDialog::OnCurrency(wxCommandEvent& /*event*/)
 {
     if (CurrencyChoiceDialog::Execute(this, m_currencyID)) {
-        const CurrencyData* currency = CurrencyModel::instance().get_id_data_n(m_currencyID);
+        const CurrencyData* currency = CurrencyModel::instance().get_idN_data_n(m_currencyID);
         wxButton* bn = static_cast<wxButton*>(FindWindow(ID_DIALOG_NEWACCT_BUTTON_CURRENCY));
         bn->SetLabelText(currency->m_name);
 
@@ -586,7 +586,7 @@ void AccountDialog::OnOk(wxCommandEvent& /*event*/)
             return mmErrorDialogs::MessageInvalid(this, _t("Account Name "));
     }
 
-    const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(m_currencyID);
+    const CurrencyData* currency_n = CurrencyModel::instance().get_idN_data_n(m_currencyID);
     if (!currency_n)
         return mmErrorDialogs::MessageInvalid(this, _t("Currency"));
 

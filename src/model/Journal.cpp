@@ -182,7 +182,7 @@ void Journal::setEmptyData(Journal::Data& journal_d, int64 account_id)
 bool Journal::setJournalData(Journal::Data& journal_d, JournalKey journal_key)
 {
     if (journal_key.is_realized()) {
-        const TrxData *trx_n = TrxModel::instance().get_id_data_n(journal_key.rid());
+        const TrxData *trx_n = TrxModel::instance().get_idN_data_n(journal_key.rid());
         if (!trx_n)
             return false;
         journal_d.m_id              = trx_n->m_id;
@@ -205,7 +205,7 @@ bool Journal::setJournalData(Journal::Data& journal_d, JournalKey journal_key)
         journal_d.m_deleted_utc_n   = trx_n->m_deleted_utc_n;
     }
     else {
-        const SchedData *sched_n = SchedModel::instance().get_id_data_n(journal_key.sid());
+        const SchedData *sched_n = SchedModel::instance().get_idN_data_n(journal_key.sid());
         if (!sched_n)
             return false;
         journal_d.m_id              = -1;
@@ -240,14 +240,14 @@ const TrxSplitModel::DataA Journal::split(Journal::Data& journal_d)
 Journal::Data Journal::get_id_data(JournalKey journal_key)
 {
     return journal_key.is_realized()
-        ? Journal::Data(*TrxModel::instance().get_id_data_n(journal_key.rid()))
-        : Journal::Data(*SchedModel::instance().get_id_data_n(journal_key.sid()));
+        ? Journal::Data(*TrxModel::instance().get_idN_data_n(journal_key.rid()))
+        : Journal::Data(*SchedModel::instance().get_idN_data_n(journal_key.sid()));
 }
 
 Journal::DataExt Journal::get_id_data_x(JournalKey journal_key)
 {
     return journal_key.is_realized()
-        ? Journal::DataExt(*TrxModel::instance().get_id_data_n(journal_key.rid()))
-        : Journal::DataExt(*SchedModel::instance().get_id_data_n(journal_key.sid()));
+        ? Journal::DataExt(*TrxModel::instance().get_idN_data_n(journal_key.rid()))
+        : Journal::DataExt(*SchedModel::instance().get_idN_data_n(journal_key.sid()));
 }
 

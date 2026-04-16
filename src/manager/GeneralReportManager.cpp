@@ -764,7 +764,7 @@ void GeneralReportManager::OnUpdateReport(wxCommandEvent& WXUNUSED(event))
     if (!iData) return;
 
     int64 id = iData->get_report_id();
-    ReportData* report_n = ReportModel::instance().unsafe_get_id_data_n(id);
+    ReportData* report_n = ReportModel::instance().unsafe_get_idN_data_n(id);
     if (!report_n)
         return;
 
@@ -803,7 +803,7 @@ void GeneralReportManager::OnRun(wxCommandEvent& WXUNUSED(event))
 
     int64 id = iData->get_report_id();
     m_selectedGroup = iData->get_group_name();
-    const ReportData* report_n = ReportModel::instance().get_id_data_n(id);
+    const ReportData* report_n = ReportModel::instance().get_idN_data_n(id);
     if (!report_n)
         return;
 
@@ -836,7 +836,7 @@ void GeneralReportManager::OnContextMenu(wxContextMenuEvent& event)
     m_treeCtrl->SelectItem(id);
     MyTreeItemData *iData = dynamic_cast<MyTreeItemData*>(m_treeCtrl->GetItemData(id));
     int64 report_id = iData ? iData->get_report_id() : -1;
-    const ReportData* report_n = ReportModel::instance().get_id_data_n(report_id);
+    const ReportData* report_n = ReportModel::instance().get_idN_data_n(report_id);
 
     wxMenu* samplesMenu = new wxMenu;
     samplesMenu->Append(ID_NEW_SAMPLE_ASSETS, _tu("Assets…"));
@@ -929,7 +929,7 @@ void GeneralReportManager::OnSelChanged(wxTreeEvent& event)
     int64 id = iData->get_report_id();
     m_selectedGroup = iData->get_group_name();
 
-    const ReportData* report_n = ReportModel::instance().get_id_data_n(id);
+    const ReportData* report_n = ReportModel::instance().get_idN_data_n(id);
     if (!report_n) {
         for (size_t n = editors_notebook->GetPageCount() - 1; n >= 1; n--)
             editors_notebook->DeletePage(n);
@@ -975,7 +975,7 @@ void GeneralReportManager::OnSelChanged(wxTreeEvent& event)
 
 void GeneralReportManager::renameReport(int64 id)
 {
-    ReportData * report_n = ReportModel::instance().unsafe_get_id_data_n(id);
+    ReportData * report_n = ReportModel::instance().unsafe_get_idN_data_n(id);
     if (!report_n)
         return;
 
@@ -997,7 +997,7 @@ void GeneralReportManager::renameReport(int64 id)
 #ifdef MMEX_USE_REPORT_SYNC
 bool GeneralReportManager::syncReport(int64 id)
 {
-    const ReportData * report_n = ReportModel::instance().get_id_data_n(id);
+    const ReportData * report_n = ReportModel::instance().get_idN_data_n(id);
     if (report_n) {
         wxString msg = wxString() << _("Pull Report Title:")
             << "\n"
@@ -1014,7 +1014,7 @@ bool GeneralReportManager::syncReport(int64 id)
 
 bool GeneralReportManager::deleteReport(int64 id)
 {
-    const ReportData* report_n = ReportModel::instance().get_id_data_n(id);
+    const ReportData* report_n = ReportModel::instance().get_idN_data_n(id);
     if (report_n) {
         wxString msg = wxString() << _t("Delete the Report Title:")
             << "\n\n"
@@ -1033,7 +1033,7 @@ bool GeneralReportManager::deleteReport(int64 id)
 
 void GeneralReportManager::changeReportState(int64 id)
 {
-    ReportData* report_n = ReportModel::instance().unsafe_get_id_data_n(id);
+    ReportData* report_n = ReportModel::instance().unsafe_get_idN_data_n(id);
     if (report_n) {
         report_n->m_active = !report_n->m_active;
         ReportModel::instance().unsafe_update_data_n(report_n);
@@ -1042,7 +1042,7 @@ void GeneralReportManager::changeReportState(int64 id)
 
 void GeneralReportManager::duplicateReport(int64 id)
 {
-    const ReportData* report_n = ReportModel::instance().get_id_data_n(id);
+    const ReportData* report_n = ReportModel::instance().get_idN_data_n(id);
     if (!report_n)
         return;
 
@@ -1071,7 +1071,7 @@ void GeneralReportManager::duplicateReport(int64 id)
 
 bool GeneralReportManager::changeReportGroup(int64 id, bool ungroup)
 {
-    ReportData * report_n = ReportModel::instance().unsafe_get_id_data_n(id);
+    ReportData * report_n = ReportModel::instance().unsafe_get_idN_data_n(id);
     if (report_n) {
         if (ungroup) {
             report_n->m_group_name = "";
@@ -1262,7 +1262,7 @@ void GeneralReportManager::OnExportReport(wxCommandEvent& WXUNUSED(event))
         return;
 
     int64 report_id = iData->get_report_id();
-    const ReportData* report_n = ReportModel::instance().get_id_data_n(report_id);
+    const ReportData* report_n = ReportModel::instance().get_idN_data_n(report_id);
     if (!report_n)
         return;
 

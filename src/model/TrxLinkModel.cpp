@@ -91,7 +91,7 @@ const TrxLinkData* TrxLinkModel::get_trx_data_n(int64 trx_id)
     for (int64 tl_id : find_id_a(
         TrxLinkCol::WHERE_CHECKINGACCOUNTID(OP_EQ, trx_id)
     )) {
-        return get_id_data_n(tl_id);
+        return get_idN_data_n(tl_id);
     }
 
     return nullptr;
@@ -137,7 +137,7 @@ void TrxLinkModel::update_asset_value(AssetData* asset_n)
     );
     double new_value = 0;
     for (const auto& tl_d : tl_a) {
-        const TrxData* trx_n = TrxModel::instance().get_id_data_n(tl_d.m_trx_id);
+        const TrxData* trx_n = TrxModel::instance().get_idN_data_n(tl_d.m_trx_id);
         if (!trx_n || !trx_n->is_valid())
             continue;
 
@@ -177,11 +177,11 @@ void TrxLinkModel::save_record(
 
     // set the checking entry to recognise it as a foreign transaction
     // set the checking type as AS_INCOME_EXPENSE = 32701 or AS_TRANSFER
-    TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(trx_id);
+    TrxData* trx_n = TrxModel::instance().unsafe_get_idN_data_n(trx_id);
     // FIXME
     // trx_n->m_to_account_id_n = checking_type;
     TrxModel::instance().unsafe_save_trx_n(trx_n);
-    //TrxLinkModel::instance().get_id_data_n(new_tl_d.m_id);
+    //TrxLinkModel::instance().get_idN_data_n(new_tl_d.m_id);
 }
 
 // Create the translink record as Asset

@@ -162,7 +162,7 @@ public:
     SchedDialog(
         wxWindow* parent_win,
         MODE mode,
-        int64 sched_id
+        int64 sched_id_n
     );
     ~SchedDialog();
 

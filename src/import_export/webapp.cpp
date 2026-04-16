@@ -273,7 +273,7 @@ bool mmWebApp::uploadPayee()
     for (const auto& payee_d : PayeeModel::instance().find_data_a(
         TableClause::ORDERBY(PayeeCol::NAME_PAYEENAME)
     )) {
-        const CategoryData* cat_n = CategoryModel::instance().get_id_data_n(
+        const CategoryData* cat_n = CategoryModel::instance().get_idN_data_n(
             payee_d.m_category_id_n
         );
         if (!cat_n) {
@@ -285,7 +285,7 @@ bool mmWebApp::uploadPayee()
             subcat_name = "None";
         }
         else {
-            const CategoryData* parent_cat_n = CategoryModel::instance().get_id_data_n(
+            const CategoryData* parent_cat_n = CategoryModel::instance().get_idN_data_n(
                 cat_n->m_parent_id_n
             );
             if (parent_cat_n && parent_cat_n->m_parent_id_n == -1) {

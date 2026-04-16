@@ -81,20 +81,18 @@ wxEND_EVENT_TABLE()
 SchedDialog::SchedDialog(
     wxWindow* parent_win,
     SchedDialog::MODE mode,
-    int64 sched_id
-    //bool duplicate,
-    //bool enter
+    int64 sched_id_n
 ) :
     m_mode(mode)
 {
-    const SchedData* sched_n = SchedModel::instance().get_id_data_n(
-        sched_id
-    );
+    const SchedData* sched_n;
+    if (sched_id_n > 0)
+        sched_n = SchedModel::instance().get_idN_data_n(sched_id_n);
 
     if (sched_n) {
         m_sched_d = *sched_n;
 
-        for (const auto& qp_d : SchedModel::instance().find_id_qp_a(sched_id)) {
+        for (const auto& qp_d : SchedModel::instance().find_id_qp_a(m_sched_d.m_id)) {
             wxArrayInt64 split_tag_id_a;
             for (const auto& gl_d : SchedSplitModel::instance().find_id_gl_a(qp_d.m_id))
                 split_tag_id_a.push_back(gl_d.m_tag_id);
@@ -103,7 +101,7 @@ SchedDialog::SchedDialog(
             });
         }
 
-        for (const auto& gl_d : SchedModel::instance().find_id_gl_a(sched_id)) {
+        for (const auto& gl_d : SchedModel::instance().find_id_gl_a(m_sched_d.m_id)) {
             m_tag_id_a.push_back(gl_d.m_tag_id);
         }
 
@@ -112,7 +110,7 @@ SchedDialog::SchedDialog(
         // If duplicate, clone the attachments and set the temporary ref_id to 0.
         if (is_dup() && InfoModel::instance().getBool("ATTACHMENTSDUPLICATE", false)) {
             mmAttachment::clone_ref_all(
-                SchedModel::s_ref_type, sched_id, 0
+                SchedModel::s_ref_type, m_sched_d.m_id, 0
             );
         }
     }
@@ -670,7 +668,7 @@ void SchedDialog::dataToControls()
     w_type_choice->SetSelection(m_sched_d.m_type.id());
     updateControlsForTransType();
 
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(
         m_sched_d.m_account_id
     );
     w_account_text->ChangeValue(account_n ? account_n->m_name : "");
@@ -735,7 +733,7 @@ void SchedDialog::setDialogHeader(const wxString& header)
 
 void SchedDialog::setDialogParameters(int64 trx_id)
 {
-    const TrxData* trx_n = TrxModel::instance().get_id_data_n(trx_id);
+    const TrxData* trx_n = TrxModel::instance().get_idN_data_n(trx_id);
     TrxModel::DataExt trx_dx(*trx_n);
 
     m_mode = MODE_ADD;
@@ -891,7 +889,7 @@ void SchedDialog::setTooltips()
 {
     if (!this->m_split_a.empty()) {
         const CurrencyData* currency = CurrencyModel::instance().get_base_data_n();
-        const AccountData* account = AccountModel::instance().get_id_data_n(m_sched_d.m_account_id);
+        const AccountData* account = AccountModel::instance().get_idN_data_n(m_sched_d.m_account_id);
         if (account) {
             currency = AccountModel::instance().get_data_currency_p(*account);
         }
@@ -949,21 +947,21 @@ void SchedDialog::setCategoryLabel()
 
 void SchedDialog::setAmountCurrencies(int64 account_id, int64 to_account_id)
 {
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(
         account_id
     );
     if (account_n) {
-        const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(
+        const CurrencyData* currency_n = CurrencyModel::instance().get_idN_data_n(
             account_n->m_currency_id
         );
         w_amount_text->SetCurrency(currency_n);
     }
 
-    const AccountData* to_account_n = AccountModel::instance().get_id_data_n(
+    const AccountData* to_account_n = AccountModel::instance().get_idN_data_n(
         to_account_id
     );
     if (to_account_n) {
-        const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(
+        const CurrencyData* currency_n = CurrencyModel::instance().get_idN_data_n(
             to_account_n->m_currency_id
         );
         w_to_amount_text->SetCurrency(currency_n);
@@ -1093,7 +1091,7 @@ void SchedDialog::onCancel(wxCommandEvent& WXUNUSED(event))
 
 void SchedDialog::onPayee(wxCommandEvent& WXUNUSED(event))
 {
-    const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(
+    const PayeeData* payee_n = PayeeModel::instance().get_idN_data_n(
         w_payee_text->mmGetId()
     );
     if (!payee_n || !is_new())
@@ -1139,7 +1137,7 @@ void SchedDialog::onComboKey(wxKeyEvent& event)
                 if (dlg.getRefreshRequested())
                     w_payee_text->mmDoReInitialize();
                 int64 payee_id = dlg.getPayeeId();
-                const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(payee_id);
+                const PayeeData* payee_n = PayeeModel::instance().get_idN_data_n(payee_id);
                 if (payee_n) {
                     w_payee_text->ChangeValue(payee_n->m_name);
                     w_payee_text->SelectAll();
@@ -1283,7 +1281,7 @@ void SchedDialog::onOk(wxCommandEvent& WXUNUSED(event))
                 PayeeData new_payee_d = PayeeData();
                 new_payee_d.m_name = payee_name;
                 PayeeModel::instance().add_data_n(new_payee_d);
-                payee_n = PayeeModel::instance().get_id_data_n(new_payee_d.m_id);
+                payee_n = PayeeModel::instance().get_idN_data_n(new_payee_d.m_id);
                 mmWebApp::uploadPayee();
             }
             else
@@ -1314,10 +1312,10 @@ void SchedDialog::onOk(wxCommandEvent& WXUNUSED(event))
     if (!w_fv_dialog->ValidateCustomValues())
         return;
 
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(
         m_sched_d.m_account_id
     );
-    const AccountData* to_account_n = AccountModel::instance().get_id_data_n(
+    const AccountData* to_account_n = AccountModel::instance().get_idN_data_n(
         m_sched_d.m_to_account_id_n
     );
 
@@ -1635,7 +1633,7 @@ void SchedDialog::onMoreFields(wxCommandEvent& WXUNUSED(event))
 void SchedDialog::onAccountUpdated(wxCommandEvent& WXUNUSED(event))
 {
     int64 account_id = w_account_text->mmGetId();
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(
         account_id
     );
     if (!account_n)

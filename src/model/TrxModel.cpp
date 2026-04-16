@@ -160,13 +160,13 @@ bool TrxModel::purge_id(int64 trx_id)
     )) {
         TrxLinkModel::instance().purge_id(tl_d.m_id);
         if (tl_d.m_ref_type == AssetModel::s_ref_type) {
-            AssetData* asset_n = AssetModel::instance().unsafe_get_id_data_n(
+            AssetData* asset_n = AssetModel::instance().unsafe_get_idN_data_n(
                 tl_d.m_ref_id
             );
             TrxLinkModel::instance().update_asset_value(asset_n);
         }
         else if (tl_d.m_ref_type == StockModel::s_ref_type) {
-            StockData* stock_n = StockModel::instance().unsafe_get_id_data_n(
+            StockData* stock_n = StockModel::instance().unsafe_get_idN_data_n(
                 tl_d.m_ref_id
             );
             StockModel::instance().update_data_position(stock_n);
@@ -185,7 +185,7 @@ bool TrxModel::purge_id(int64 trx_id)
 
 void TrxModel::save_timestamp(int64 trx_id)
 {
-    Data* trx_n = unsafe_get_id_data_n(trx_id);
+    Data* trx_n = unsafe_get_idN_data_n(trx_id);
     if (trx_n) {
         trx_n->m_updated_utc_n = mmDateTime::now().fromLocalToUtc();
         unsafe_update_data_n(trx_n);
@@ -362,7 +362,7 @@ void TrxModel::setEmptyData(Data& dst_trx_d, int64 account_id)
 bool TrxModel::is_locked(const Data& trx_d)
 {
     // FIXME: check if m_to_account_id_n is locked
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(trx_d.m_account_id);
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(trx_d.m_account_id);
     return account_n && account_n->is_locked_for(trx_d.m_date());
 }
 
@@ -428,7 +428,7 @@ void TrxModel::DataExt::fill_data()
     if (!m_gl_a.empty()) {
         wxArrayString tag_name_a;
         for (const auto& gl_d : m_gl_a)
-            tag_name_a.Add(TagModel::instance().get_id_data_n(gl_d.m_tag_id)->m_name);
+            tag_name_a.Add(TagModel::instance().get_idN_data_n(gl_d.m_tag_id)->m_name);
         // Sort TAGNAMES
         tag_name_a.Sort(CaseInsensitiveCmp);
         for (const auto& tag_name : tag_name_a)
@@ -471,9 +471,9 @@ const wxString TrxModel::DataExt::get_currency_code(int64 account_id) const
         else
             account_id = this->m_to_account_id_n;
     }
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(account_id);
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(account_id);
     int64 currency_id = account_n ? account_n->m_currency_id: -1;
-    const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(currency_id);
+    const CurrencyData* currency_n = CurrencyModel::instance().get_idN_data_n(currency_id);
     return currency_n ? currency_n->m_symbol : "";
 }
 
@@ -485,7 +485,7 @@ const wxString TrxModel::DataExt::get_account_name(int64 account_id) const
         return ACCOUNTNAME;
     }
     else {
-        const AccountData* account_n = AccountModel::instance().get_id_data_n(
+        const AccountData* account_n = AccountModel::instance().get_idN_data_n(
             m_to_account_id_n
         );
         return account_n ? account_n->m_name : "";

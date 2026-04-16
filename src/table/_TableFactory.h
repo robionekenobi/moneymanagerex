@@ -48,9 +48,9 @@ public:
 
 public:
     // Methods starting with 'find_' bypass the cache; other methods use the cache.
-    auto unsafe_get_id_data_n(const int64 id) -> Data*;
-    auto get_id_data_n(const int64 id) -> const Data*;
-    auto get_id_data_n(wxLongLong_t id) -> const Data* { return get_id_data_n(int64(id)); }
+    auto unsafe_get_idN_data_n(const int64 idN) -> Data*;
+    auto get_idN_data_n(const int64 idN) -> const Data*;
+    auto get_idN_data_n(wxLongLong_t idN) -> const Data* { return get_idN_data_n(int64(idN)); }
     auto add_data_n(Data& data) -> const Data*;
     bool add_data_a(DataA& data);
     auto unsafe_update_data_n(Data* data) -> Data*;

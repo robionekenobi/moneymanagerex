@@ -84,7 +84,7 @@ const TagData* TagModel::get_name_data_n(const wxString& name)
     for (int64 tag_id : find_id_a(
         TagCol::WHERE_TAGNAME(OP_EQ, name)
     )) {
-        tag_n = get_id_data_n(tag_id);
+        tag_n = get_idN_data_n(tag_id);
     }
 
     return tag_n;

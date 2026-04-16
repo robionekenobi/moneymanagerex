@@ -151,7 +151,7 @@ bool AccountModel::purge_id_dep(int64 account_id)
 
 const CurrencyData* AccountModel::get_data_currency_p(const Data& account_d)
 {
-    const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(
+    const CurrencyData* currency_n = CurrencyModel::instance().get_idN_data_n(
         account_d.m_currency_id
     );
     if (currency_n)
@@ -213,7 +213,7 @@ std::pair<double, double> AccountModel::get_data_investment_balance(const Data& 
 // Get the Data name of a given id
 const wxString AccountModel::get_id_name(int64 account_id)
 {
-    const Data* account_n = get_id_data_n(account_id);
+    const Data* account_n = get_idN_data_n(account_id);
     if (account_n)
         return account_n->m_name;
     else
@@ -223,7 +223,7 @@ const wxString AccountModel::get_id_name(int64 account_id)
 // Get the currency of a given account id, or the base currency
 const CurrencyData* AccountModel::get_id_currency_p(int64 account_id)
 {
-    const Data* account_n = get_id_data_n(account_id);
+    const Data* account_n = get_idN_data_n(account_id);
     if (account_n)
         return AccountModel::get_data_currency_p(*account_n);
     else {
@@ -270,7 +270,7 @@ const AccountData* AccountModel::get_name_data_n(const wxString& name)
     for (int64 account_id : find_id_a(
         AccountCol::WHERE_ACCOUNTNAME(OP_EQ, name)
     )) {
-        account_n = get_id_data_n(account_id);
+        account_n = get_idN_data_n(account_id);
     }
 
     return account_n;
@@ -309,7 +309,7 @@ const AccountData* AccountModel::get_num_data_n(const wxString& num)
     for (int64 account_id : find_id_a(
         AccountCol::WHERE_ACCOUNTNUM(OP_EQ, num)
     )) {
-        account_n = get_id_data_n(account_id);
+        account_n = get_idN_data_n(account_id);
     }
 
     return account_n;
@@ -409,7 +409,7 @@ void AccountModel::dangerous_reset_type(wxString old_type)
     for (auto& account_d : find_data_a(
         AccountCol::WHERE_ACCOUNTTYPE(OP_EQ, old_type)
     )) {
-        AccountData* account_n = unsafe_get_id_data_n(account_d.m_id);
+        AccountData* account_n = unsafe_get_idN_data_n(account_d.m_id);
         account_n->m_type_ = "Checking";
         unsafe_save_data_n(account_n);
     }

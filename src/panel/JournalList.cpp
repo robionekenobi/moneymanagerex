@@ -872,11 +872,11 @@ const wxString JournalList::getItem(long item, int col_id) const
     switch (col_id) {
     case LIST_ID_WITHDRAWAL:
         if (!w_panel->isAccount()) {
-            const AccountData* account = AccountModel::instance().get_id_data_n(
+            const AccountData* account = AccountModel::instance().get_idN_data_n(
                 journal_dx.m_account_w_id_n
             );
             const CurrencyData* currency = account ?
-                CurrencyModel::instance().get_id_data_n(account->m_currency_id) : nullptr;
+                CurrencyModel::instance().get_idN_data_n(account->m_currency_id) : nullptr;
             if (currency)
                 value = CurrencyModel::instance().toCurrency(journal_dx.m_amount_w, currency);
         }
@@ -891,11 +891,11 @@ const wxString JournalList::getItem(long item, int col_id) const
         return value;
     case LIST_ID_DEPOSIT:
         if (!w_panel->isAccount()) {
-            const AccountData* account = AccountModel::instance().get_id_data_n(
+            const AccountData* account = AccountModel::instance().get_idN_data_n(
                 journal_dx.m_account_d_id_n
             );
             const CurrencyData* currency = account ?
-                CurrencyModel::instance().get_id_data_n(account->m_currency_id) : nullptr;
+                CurrencyModel::instance().get_idN_data_n(account->m_currency_id) : nullptr;
             if (currency)
                 value = CurrencyModel::instance().toCurrency(journal_dx.m_amount_d, currency);
         }
@@ -1116,7 +1116,7 @@ void JournalList::deleteTransactionsByStatus(std::optional<TrxStatus> status_n)
             TrxModel::instance().purge_id(journal_dx.m_id);
         }
         else {
-            TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(
+            TrxData* trx_n = TrxModel::instance().unsafe_get_idN_data_n(
                 journal_dx.m_id
             );
             trx_n->m_deleted_utc_n = mmDateTime::now().fromLocalToUtc();
@@ -1135,11 +1135,11 @@ void JournalList::deleteTransactionsByStatus(std::optional<TrxStatus> status_n)
         for (const auto& i : assetStockAccts) {
             if (i.first == AssetModel::s_ref_type)
                 TrxLinkModel::instance().update_asset_value(
-                    AssetModel::instance().unsafe_get_id_data_n(i.second)
+                    AssetModel::instance().unsafe_get_idN_data_n(i.second)
                 );
             else if (i.first == StockModel::s_ref_type)
                 StockModel::instance().update_data_position(
-                    StockModel::instance().unsafe_get_id_data_n(i.second)
+                    StockModel::instance().unsafe_get_idN_data_n(i.second)
                 );
         }
     }
@@ -1155,14 +1155,14 @@ bool JournalList::checkForClosedAccounts()
     int closedTrx = 0;
     for (const auto& journal_key : m_select_key_a) {
         Journal::Data journal_d = Journal::get_id_data(journal_key);
-        const AccountData* account_n = AccountModel::instance().get_id_data_n(
+        const AccountData* account_n = AccountModel::instance().get_idN_data_n(
             journal_d.m_account_id
         );
         if (account_n && account_n->is_closed()) {
             closedTrx++;
             continue;
         }
-        const AccountData* to_account_n = AccountModel::instance().get_id_data_n(
+        const AccountData* to_account_n = AccountModel::instance().get_idN_data_n(
             journal_d.m_to_account_id_n
         );
         if (to_account_n && to_account_n->is_closed())
@@ -1190,7 +1190,7 @@ bool JournalList::checkForClosedAccounts()
 
 bool JournalList::checkTransactionLocked(int64 account_id, mmDate date)
 {
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(
         account_id
     );
     if (!account_n->is_locked_for(date))
@@ -1469,11 +1469,11 @@ void JournalList::onMouseRightClick(wxMouseEvent& event)
             break;
         case LIST_ID_WITHDRAWAL: {
             columnIsAmount = true;
-            const AccountData* account_n = AccountModel::instance().get_id_data_n(
+            const AccountData* account_n = AccountModel::instance().get_idN_data_n(
                 m_journal_xa[row].m_account_w_id_n
             );
             const CurrencyData* currency_n = account_n
-                ? CurrencyModel::instance().get_id_data_n(account_n->m_currency_id)
+                ? CurrencyModel::instance().get_idN_data_n(account_n->m_currency_id)
                 : nullptr;
             if (currency_n) {
                 m_copy_text = CurrencyModel::instance().toString(
@@ -1488,11 +1488,11 @@ void JournalList::onMouseRightClick(wxMouseEvent& event)
         }
         case LIST_ID_DEPOSIT: {
             columnIsAmount = true;
-            const AccountData* account_n = AccountModel::instance().get_id_data_n(
+            const AccountData* account_n = AccountModel::instance().get_idN_data_n(
                 m_journal_xa[row].m_account_d_id_n
             );
             const CurrencyData* currency_n = account_n
-                ? CurrencyModel::instance().get_id_data_n(account_n->m_currency_id)
+                ? CurrencyModel::instance().get_idN_data_n(account_n->m_currency_id)
                 : nullptr;
             if (currency_n) {
                 m_copy_text = CurrencyModel::instance().toString(
@@ -1819,7 +1819,7 @@ void JournalList::onDeleteTrx(wxCommandEvent& WXUNUSED(event))
         for (const auto& journal_key : m_select_key_a) {
             if (!journal_key.is_realized())
                 continue;
-            TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(journal_key.rid());
+            TrxData* trx_n = TrxModel::instance().unsafe_get_idN_data_n(journal_key.rid());
 
             if (checkTransactionLocked(trx_n->m_account_id, trx_n->m_date()))
                 continue;
@@ -1854,11 +1854,11 @@ void JournalList::onDeleteTrx(wxCommandEvent& WXUNUSED(event))
             for (const auto& i : assetStockAccts) {
                 if (i.first == AssetModel::s_ref_type)
                     TrxLinkModel::instance().update_asset_value(
-                        AssetModel::instance().unsafe_get_id_data_n(i.second)
+                        AssetModel::instance().unsafe_get_idN_data_n(i.second)
                     );
                 else if (i.first == StockModel::s_ref_type)
                     StockModel::instance().update_data_position(
-                        StockModel::instance().unsafe_get_id_data_n(i.second)
+                        StockModel::instance().unsafe_get_idN_data_n(i.second)
                     );
             }
         }
@@ -1896,7 +1896,7 @@ void JournalList::onRestoreTrx(wxCommandEvent& WXUNUSED(event))
         std::set<std::pair<RefTypeN, int64>> assetStockAccts;
         for (const auto& journal_key : m_select_key_a) {
             if (journal_key.is_realized()) {
-                TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(journal_key.rid());
+                TrxData* trx_n = TrxModel::instance().unsafe_get_idN_data_n(journal_key.rid());
                 trx_n->m_deleted_utc_n = mmDateTimeN();
                 TrxModel::instance().unsafe_save_trx_n(trx_n);
                 for (const TrxLinkData& tl_d : TrxLinkModel::instance().find_data_a(
@@ -1912,11 +1912,11 @@ void JournalList::onRestoreTrx(wxCommandEvent& WXUNUSED(event))
             for (const auto& i : assetStockAccts) {
                 if (i.first == AssetModel::s_ref_type)
                     TrxLinkModel::instance().update_asset_value(
-                        AssetModel::instance().unsafe_get_id_data_n(i.second)
+                        AssetModel::instance().unsafe_get_idN_data_n(i.second)
                     );
                 else if (i.first == StockModel::s_ref_type)
                     StockModel::instance().update_data_position(
-                        StockModel::instance().unsafe_get_id_data_n(i.second)
+                        StockModel::instance().unsafe_get_idN_data_n(i.second)
                     );
             }
         }
@@ -1938,7 +1938,7 @@ void JournalList::onRestoreViewedTrx(wxCommandEvent&)
         for (const auto& journal_dx : this->m_journal_xa) {
             if (!journal_dx.key().is_realized())
                 continue;
-            TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(journal_dx.m_id);
+            TrxData* trx_n = TrxModel::instance().unsafe_get_idN_data_n(journal_dx.m_id);
             trx_n->m_deleted_utc_n = mmDateTimeN();
             TrxModel::instance().unsafe_save_trx_n(trx_n);
             for (const TrxLinkData& tl_d : TrxLinkModel::instance().find_data_a(
@@ -1952,11 +1952,11 @@ void JournalList::onRestoreViewedTrx(wxCommandEvent&)
             for (const auto& i : assetStockAccts) {
                 if (i.first == AssetModel::s_ref_type)
                     TrxLinkModel::instance().update_asset_value(
-                        AssetModel::instance().unsafe_get_id_data_n(i.second)
+                        AssetModel::instance().unsafe_get_idN_data_n(i.second)
                     );
                 else if (i.first == StockModel::s_ref_type)
                     StockModel::instance().update_data_position(
-                        StockModel::instance().unsafe_get_id_data_n(i.second)
+                        StockModel::instance().unsafe_get_idN_data_n(i.second)
                     );
             }
         }
@@ -1992,7 +1992,7 @@ void JournalList::onEditTrx(wxCommandEvent& /*event*/)
     JournalKey journal_key = m_select_key_a[0];
     if (journal_key.is_realized()) {
         int64 trx_id = journal_key.rid();
-        TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(trx_id);
+        TrxData* trx_n = TrxModel::instance().unsafe_get_idN_data_n(trx_id);
         if (checkTransactionLocked(trx_n->m_account_id, trx_n->m_date()))
             return;
 
@@ -2073,7 +2073,7 @@ void JournalList::onMoveTrx(wxCommandEvent& /*event*/)
             TrxModel::instance().db_savepoint();
             for (const auto& journal_key : m_select_key_a) {
                 if (journal_key.is_realized()) {
-                    TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(journal_key.rid());
+                    TrxData* trx_n = TrxModel::instance().unsafe_get_idN_data_n(journal_key.rid());
                     if (checkTransactionLocked(trx_n->m_account_id, trx_n->m_date()) ||
                         TrxModel::is_foreign(*trx_n) ||
                         trx_n->is_transfer() ||
@@ -2232,7 +2232,7 @@ void JournalList::onMarkTrx(wxCommandEvent& event)
     for (int row = 0; row < GetItemCount(); row++) {
         if (GetItemState(row, wxLIST_STATE_SELECTED) != wxLIST_STATE_SELECTED)
             continue;
-        const AccountData* account_n = AccountModel::instance().get_id_data_n(
+        const AccountData* account_n = AccountModel::instance().get_idN_data_n(
             m_journal_xa[row].m_account_id
         );
         if (account_n->is_locked_for(m_journal_xa[row].m_date()))
@@ -2361,7 +2361,7 @@ void JournalList::onPaste(wxCommandEvent& WXUNUSED(event))
     m_paste_key_a.clear();    // make sure the list is empty before we paste
     for (const auto& journal_key : m_copy_key_a) {
         if (journal_key.is_realized()) {
-            const TrxData* trx_d = TrxModel::instance().get_id_data_n(journal_key.rid());
+            const TrxData* trx_d = TrxModel::instance().get_idN_data_n(journal_key.rid());
             if (TrxModel::is_foreign(*trx_d))
                 continue;
             pasteTrx(trx_d);
@@ -2434,7 +2434,7 @@ void JournalList::onSetUserColour(wxCommandEvent& event)
     SchedModel::instance().db_savepoint();
     for (const auto& journal_key : m_select_key_a) {
         if (journal_key.is_realized()) {
-            const TrxData* tran = TrxModel::instance().get_id_data_n(journal_key.rid());
+            const TrxData* tran = TrxModel::instance().get_idN_data_n(journal_key.rid());
             if (tran) {
                 TrxData tran_d = *tran;
                 tran_d.m_color = user_color_id;
@@ -2442,7 +2442,7 @@ void JournalList::onSetUserColour(wxCommandEvent& event)
             }
         }
         else {
-            SchedData* sched_n = SchedModel::instance().unsafe_get_id_data_n(journal_key.sid());
+            SchedData* sched_n = SchedModel::instance().unsafe_get_idN_data_n(journal_key.sid());
             if (sched_n) {
                 sched_n->m_color = user_color_id;
                 SchedModel::instance().unsafe_update_data_n(sched_n);

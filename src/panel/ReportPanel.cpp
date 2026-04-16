@@ -408,7 +408,7 @@ void ReportPanel::createControls()
                 TableClause::ORDERBY(StockCol::NAME_STOCKNAME),
                 TableClause::ORDERBY(StockCol::NAME_STOCKID)
             )) {
-                const AccountModel::Data* account_n = AccountModel::instance().get_id_data_n(
+                const AccountModel::Data* account_n = AccountModel::instance().get_idN_data_n(
                     stock_d.m_account_id_n
                 );
                 if (account_n->is_open()) {
@@ -794,7 +794,7 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
             std::vector<int64> sub_id_a;
             // include all sub categories
             if (sub_id == -2) {
-                const CategoryData* cat_n = CategoryModel::instance().get_id_data_n(cat_id);
+                const CategoryData* cat_n = CategoryModel::instance().get_idN_data_n(cat_id);
                 for (const auto& sub_d : CategoryModel::instance().find_data_subtree_a(*cat_n)) {
                     sub_id_a.push_back(sub_d.m_id);
                 }
@@ -816,9 +816,9 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
     else if (uri.StartsWith("trxid:", &sData)) {
         long long transID = -1;
         if (sData.ToLongLong(&transID)) {
-            const TrxData* trx_n = TrxModel::instance().get_id_data_n(transID);
+            const TrxData* trx_n = TrxModel::instance().get_idN_data_n(transID);
             if (trx_n && trx_n->m_id > -1) {
-                const AccountData* account_n = AccountModel::instance().get_id_data_n(
+                const AccountData* account_n = AccountModel::instance().get_idN_data_n(
                     trx_n->m_account_id
                 );
                 if (account_n) {
@@ -833,7 +833,7 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
     else if (uri.StartsWith("trx:", &sData)) {
         long long transId = -1;
         if (sData.ToLongLong(&transId)) {
-            TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(transId);
+            TrxData* trx_n = TrxModel::instance().unsafe_get_idN_data_n(transId);
             if (trx_n && trx_n->m_id > -1) {
                 if (TrxModel::is_foreign(*trx_n)) {
                     const TrxLinkData* tl_n = TrxLinkModel::instance().get_trx_data_n(transId);

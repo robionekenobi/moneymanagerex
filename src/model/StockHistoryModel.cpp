@@ -77,7 +77,7 @@ const StockHistoryData* StockHistoryModel::get_key_data_n(
         StockHistoryCol::WHERE_SYMBOL(OP_EQ, symbol),
         StockHistoryModel::WHERE_DATE(OP_EQ, date)
     )) {
-        sh_n = get_id_data_n(sh_id);
+        sh_n = get_idN_data_n(sh_id);
     }
 
     return sh_n;

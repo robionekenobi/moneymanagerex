@@ -78,7 +78,7 @@ AssetDialog::AssetDialog(
 {
     if (tl_d) {
         m_dialog_heading = _t("Edit Asset Transaction");
-        m_asset_n = AssetModel::instance().unsafe_get_id_data_n(tl_d->m_ref_id);
+        m_asset_n = AssetModel::instance().unsafe_get_idN_data_n(tl_d->m_ref_id);
     }
 
     Create(parent, wxID_ANY, m_dialog_heading);

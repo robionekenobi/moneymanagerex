@@ -76,7 +76,7 @@ bool BudgetPeriodModel::purge_id_dep(int64 bp_id)
 
 const wxString BudgetPeriodModel::get_id_name_n(int64 bp_id)
 {
-    const Data* bp_n = get_id_data_n(bp_id);
+    const Data* bp_n = get_idN_data_n(bp_id);
     return bp_n ? bp_n->m_name : "";
 }
 

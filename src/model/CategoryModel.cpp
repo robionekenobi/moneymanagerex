@@ -117,7 +117,8 @@ bool CategoryModel::get_id_active(int64 cat_id)
     // root category (id -1) is always active
     if (cat_id <= 0)
         return true;
-    const Data* cat_n = get_id_data_n(cat_id);
+
+    const Data* cat_n = get_idN_data_n(cat_id);
     return (cat_n && cat_n->m_active);
 }
 
@@ -135,7 +136,7 @@ const wxString CategoryModel::get_data_fullname(
 
     wxString fullname = cat_n->m_name;
     while (cat_n->m_parent_id_n > 0) {
-        cat_n = get_id_data_n(cat_n->m_parent_id_n);
+        cat_n = get_idN_data_n(cat_n->m_parent_id_n);
         fullname = cat_n->m_name + delimiter + fullname;
     }
 
@@ -144,7 +145,7 @@ const wxString CategoryModel::get_data_fullname(
 
 const wxString CategoryModel::get_id_fullname(int64 cat_id, wxString delimiter)
 {
-    return get_data_fullname(get_id_data_n(cat_id), delimiter);
+    return get_data_fullname(get_idN_data_n(cat_id), delimiter);
 }
 
 double CategoryModel::get_id_income(int64 cat_id)
@@ -199,7 +200,7 @@ const CategoryData* CategoryModel::get_key_data_n(const wxString& name, const in
         CategoryCol::WHERE_CATEGNAME(OP_EQ, name),
         CategoryCol::WHERE_PARENTID(OP_EQ, parentid)
     )) {
-        cat_n = get_id_data_n(cat_id);
+        cat_n = get_idN_data_n(cat_id);
     }
 
     return cat_n;
@@ -215,9 +216,9 @@ const CategoryData* CategoryModel::get_name2_data_n(
     )) {
         if (cat_d.m_parent_id_n <= 0)
             continue;
-        const Data* parent_n = get_id_data_n(cat_d.m_parent_id_n);
+        const Data* parent_n = get_idN_data_n(cat_d.m_parent_id_n);
         if (parent_n->m_name.Lower() == parent_name.Lower()) {
-            return get_id_data_n(cat_d.m_id);
+            return get_idN_data_n(cat_d.m_id);
         }
     }
     return nullptr;
@@ -309,7 +310,7 @@ void CategoryModel::getCategoryStats(
         TrxModel::WHERE_IS_VALID(true)
     )) {
         if (account_name_a_n) {
-            const AccountData* account_n = AccountModel::instance().get_id_data_n(
+            const AccountData* account_n = AccountModel::instance().get_idN_data_n(
                 trx_d.m_account_id
             );
             if (account_name_a_n->Index(account_n->m_name) == wxNOT_FOUND)
@@ -317,7 +318,7 @@ void CategoryModel::getCategoryStats(
         }
 
         const double convRate = CurrencyHistoryModel::instance().get_id_date_rate(
-            AccountModel::instance().get_id_data_n(trx_d.m_account_id)->m_currency_id,
+            AccountModel::instance().get_idN_data_n(trx_d.m_account_id)->m_currency_id,
             trx_d.m_date()
         );
 

@@ -256,7 +256,7 @@ void AttachmentDialog::AddAttachment(wxString file_path)
 
 void AttachmentDialog::OpenAttachment()
 {
-    const AttachmentData* att_n = AttachmentModel::instance().get_id_data_n(
+    const AttachmentData* att_n = AttachmentModel::instance().get_idN_data_n(
         m_attachment_id
     );
     if (!att_n)
@@ -268,7 +268,7 @@ void AttachmentDialog::OpenAttachment()
 
 void AttachmentDialog::EditAttachment()
 {
-    AttachmentData *att_n = AttachmentModel::instance().unsafe_get_id_data_n(
+    AttachmentData *att_n = AttachmentModel::instance().unsafe_get_idN_data_n(
         m_attachment_id
     );
     if (!att_n)
@@ -300,7 +300,7 @@ void AttachmentDialog::EditAttachment()
 
 void AttachmentDialog::DeleteAttachment()
 {
-    const AttachmentData* att_n = AttachmentModel::instance().get_id_data_n(
+    const AttachmentData* att_n = AttachmentModel::instance().get_idN_data_n(
         m_attachment_id
     );
     if (!att_n)
@@ -346,7 +346,7 @@ void AttachmentDialog::OnListItemSelected(wxDataViewEvent& event)
 
 void AttachmentDialog::OnListItemActivated(wxDataViewEvent& WXUNUSED(event))
 {
-    const AttachmentData* att_n = AttachmentModel::instance().get_id_data_n(
+    const AttachmentData* att_n = AttachmentModel::instance().get_idN_data_n(
         m_attachment_id
     );
     if (!att_n)
@@ -379,7 +379,7 @@ void AttachmentDialog::OnItemRightClick(wxDataViewEvent& event)
     wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, wxID_ANY) ;
     evt.SetEventObject( this );
 
-    const AttachmentData* att_n = AttachmentModel::instance().get_id_data_n(m_attachment_id);
+    const AttachmentData* att_n = AttachmentModel::instance().get_idN_data_n(m_attachment_id);
 
     wxMenu* mainMenu = new wxMenu;
     if (att_n)

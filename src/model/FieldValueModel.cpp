@@ -97,7 +97,7 @@ const FieldValueData* FieldValueModel::get_key_data_n(
         FieldValueCol::WHERE_FIELDID(OP_EQ, field_id),
         FieldValueModel::WHERE_REFTYPEID(ref_type, ref_id)
     )) {
-        return get_id_data_n(fv_id);
+        return get_idN_data_n(fv_id);
     }
 
     return nullptr;

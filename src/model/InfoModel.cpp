@@ -71,7 +71,7 @@ void InfoModel::saveRaw(const wxString& key, const wxString& newValue)
         for (int64 info_id : find_id_a(
             InfoCol::WHERE_INFONAME(OP_EQ, key)
         )) {
-            info_n = get_id_data_n(info_id);
+            info_n = get_idN_data_n(info_id);
             break;
         }
     }
@@ -320,7 +320,7 @@ void InfoModel::prependArrayItem(const wxString& key, const wxString& value, int
         for (int64 info_id : find_id_a(
             InfoCol::WHERE_INFONAME(OP_EQ, key)
         )) {
-            info_n = get_id_data_n(info_id);
+            info_n = get_idN_data_n(info_id);
         }
     }
 

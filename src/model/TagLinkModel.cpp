@@ -75,7 +75,7 @@ const TagLinkData* TagLinkModel::get_key_data_n(int64 tag_id, RefTypeN ref_type,
         TagLinkCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n()),
         TagLinkCol::WHERE_REFID(OP_EQ, ref_id)
     )) {
-        gl_n = get_id_data_n(gl_id);
+        gl_n = get_idN_data_n(gl_id);
     }
 
     return gl_n;
@@ -88,7 +88,7 @@ std::map<wxString, int64> TagLinkModel::find_ref_mTagName(RefTypeN ref_type, int
         TagLinkCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n()),
         TagLinkCol::WHERE_REFID(OP_EQ, ref_id)
     )) {
-        const TagData* tag_n = TagModel::instance().get_id_data_n(
+        const TagData* tag_n = TagModel::instance().get_idN_data_n(
             gl_d.m_tag_id
         );
         tag_name_id_m[tag_n->m_name] = gl_d.m_tag_id;
@@ -152,7 +152,7 @@ int TagLinkModel::update(RefTypeN ref_type, int64 ref_id, const DataA& src_gl_a)
             TrxModel::instance().save_timestamp(ref_id);
         else if (ref_type == TrxSplitModel::s_ref_type)
             TrxModel::instance().save_timestamp(
-                TrxSplitModel::instance().get_id_data_n(ref_id)->m_trx_id
+                TrxSplitModel::instance().get_idN_data_n(ref_id)->m_trx_id
             );
     }
 

@@ -155,7 +155,7 @@ void FieldManager::AddField()
 
 void FieldManager::EditField()
 {
-    FieldData *field_n = FieldModel::instance().unsafe_get_id_data_n(m_field_id);
+    FieldData *field_n = FieldModel::instance().unsafe_get_idN_data_n(m_field_id);
     if (!field_n)
         return;
 
@@ -167,7 +167,7 @@ void FieldManager::EditField()
 
 void FieldManager::DeleteField()
 {
-    const FieldData *field_n = FieldModel::instance().get_id_data_n(m_field_id);
+    const FieldData *field_n = FieldModel::instance().get_idN_data_n(m_field_id);
     if (!field_n)
         return;
 
@@ -185,7 +185,7 @@ void FieldManager::DeleteField()
 
 void FieldManager::UpdateField()
 {
-    const FieldData* field_n = FieldModel::instance().get_id_data_n(m_field_id);
+    const FieldData* field_n = FieldModel::instance().get_idN_data_n(m_field_id);
     if (!field_n)
         return;
 
@@ -270,7 +270,7 @@ void FieldManager::OnItemRightClick(wxDataViewEvent& event)
     wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, wxID_ANY) ;
     evt.SetEventObject( this );
 
-    const FieldData *field_n = FieldModel::instance().get_id_data_n(m_field_id);
+    const FieldData *field_n = FieldModel::instance().get_idN_data_n(m_field_id);
 
     wxMenu* mainMenu = new wxMenu;
     if (field_n)

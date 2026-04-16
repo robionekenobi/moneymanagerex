@@ -826,7 +826,7 @@ int PrefModel::AccountImageId(const int64 account_id, const bool def, const bool
     AccountStatus acctStatus = AccountStatus(AccountStatus::e_open);
     mmNavigatorItem::TYPE_ID acctType = mmNavigatorItem::TYPE_ID_CHECKING;
 
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(account_id);
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(account_id);
     if (account_n) {
         acctType = AccountModel::type_id(*account_n);
         acctStatus = account_n->m_status;

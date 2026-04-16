@@ -52,7 +52,7 @@ double FlowReport::trueAmount(const TrxData& trx_d)
     ) != m_account_id.end();
     if (!(isAccountFound && isToAccountFound)) {
         const double convRate = CurrencyHistoryModel::instance().get_id_date_rate(
-            AccountModel::instance().get_id_data_n(trx_d.m_account_id)->m_currency_id,
+            AccountModel::instance().get_idN_data_n(trx_d.m_account_id)->m_currency_id,
             trx_d.m_date()
         );
         switch (trx_d.m_type.id()) {
@@ -67,7 +67,7 @@ double FlowReport::trueAmount(const TrxData& trx_d)
                 amount = -trx_d.m_amount * convRate;
             else {
                 const double toConvRate = CurrencyHistoryModel::instance().get_id_date_rate(
-                    AccountModel::instance().get_id_data_n(trx_d.m_to_account_id_n)->m_currency_id,
+                    AccountModel::instance().get_idN_data_n(trx_d.m_to_account_id_n)->m_currency_id,
                     trx_d.m_date()
                 );
                 amount = +trx_d.m_to_amount * toConvRate;

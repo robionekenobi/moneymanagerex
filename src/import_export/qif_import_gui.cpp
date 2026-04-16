@@ -76,7 +76,7 @@ mmQIFImportDialog::mmQIFImportDialog(
 {
     decimal_ = CurrencyModel::instance().get_base_data_n()->m_decimal_point;
     payeeIsNotes_ = false;
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(account_id);
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(account_id);
     if (account_n)
         m_accountNameStr = account_n->m_name;
 
@@ -812,7 +812,7 @@ void mmQIFImportDialog::refreshTabs(int tabs)
                 ? acc.second.at(QIF_ID_AccountType) : "";
 
             if (account) {
-                const CurrencyData *currency_n = CurrencyModel::instance().get_id_data_n(account->m_currency_id);
+                const CurrencyData *currency_n = CurrencyModel::instance().get_idN_data_n(account->m_currency_id);
                 if (currency_n && currency_n->m_symbol == currencySymbol)
                     status = _t("OK");
                 else
@@ -1147,10 +1147,10 @@ void mmQIFImportDialog::OnOk(wxCommandEvent& WXUNUSED(event))
                 if (dateToCheckBox_->IsChecked() && strDate > end_date)
                     continue;
 
-                AccountData* account = AccountModel::instance().unsafe_get_id_data_n(
+                AccountData* account = AccountModel::instance().unsafe_get_idN_data_n(
                     trx_d.m_account_id
                 );
-                AccountData* toAccount = AccountModel::instance().unsafe_get_id_data_n(
+                AccountData* toAccount = AccountModel::instance().unsafe_get_idN_data_n(
                     trx_d.m_to_account_id_n
                 );
 
@@ -1185,7 +1185,7 @@ void mmQIFImportDialog::OnOk(wxCommandEvent& WXUNUSED(event))
                             TagData new_tag_d = TagData();
                             new_tag_d.m_name = tagname;
                             TagModel::instance().add_data_n(new_tag_d);
-                            tag_n = TagModel::instance().get_id_data_n(new_tag_d.m_id);
+                            tag_n = TagModel::instance().get_idN_data_n(new_tag_d.m_id);
                         }
                         TagLinkData gl_d = TagLinkData();
                         gl_d.m_tag_id   = tag_n->m_id;
@@ -1557,7 +1557,7 @@ bool mmQIFImportDialog::completeTransaction(
                         TagData new_tag_d = TagData();
                         new_tag_d.m_name = tagname;
                         TagModel::instance().add_data_n(new_tag_d);
-                        tag_n = TagModel::instance().get_id_data_n(new_tag_d.m_id);
+                        tag_n = TagModel::instance().get_idN_data_n(new_tag_d.m_id);
                     }
                     TagLinkData gl_d = TagLinkData();
                     gl_d.m_tag_id   = tag_n->m_id;
@@ -1580,7 +1580,7 @@ bool mmQIFImportDialog::completeTransaction(
             : ""
         );
         if (categStr.empty()) {
-            const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(trx_n->m_payee_id_n);
+            const PayeeData* payee_n = PayeeModel::instance().get_idN_data_n(trx_n->m_payee_id_n);
             if (payee_n) {
                 trx_n->m_category_id_n = payee_n->m_category_id_n;
             }
@@ -1754,7 +1754,7 @@ void mmQIFImportDialog::getOrCreateCategories()
                     new_cat_d.m_name        = categStr;
                     new_cat_d.m_parent_id_n = parentID;
                     CategoryModel::instance().add_data_n(new_cat_d);
-                    cat_n = CategoryModel::instance().get_id_data_n(new_cat_d.m_id);
+                    cat_n = CategoryModel::instance().get_idN_data_n(new_cat_d.m_id);
                 }
                 temp.Add(categStr + wxString::Format(":%lld", parentID));
             }

@@ -50,7 +50,7 @@ void TrxReport::displayTotals(const std::map<int64, double>& total, std::map<int
 {
     double grand_total = 0;
     for (const auto& [curr_id, curr_total]: total) {
-        const CurrencyData* curr = CurrencyModel::instance().get_id_data_n(curr_id);
+        const CurrencyData* curr = CurrencyModel::instance().get_idN_data_n(curr_id);
         const bool isBaseCurr = (curr->m_symbol == CurrencyModel::instance().get_base_data_n()->m_symbol);
         grand_total += total_in_base_curr[curr_id];
         if (total.size() > 1 || !isBaseCurr) {
@@ -102,7 +102,7 @@ wxString TrxReport::getHTMLText()
         accounts_label.clear();
         allAccounts = false;
         for (const auto& acc : selected_accounts) {
-            const AccountData* a = AccountModel::instance().get_id_data_n(acc);
+            const AccountData* a = AccountModel::instance().get_idN_data_n(acc);
             accounts_label += (accounts_label.empty() ? "" : ", ") + a->m_name;
         }
     }
@@ -328,7 +328,7 @@ table {
                         hb.addTableCell(wxGetTranslation(trx_dx.m_type.name()));
                 }
 
-                const AccountData* account_n = AccountModel::instance().get_id_data_n(trx_dx.m_account_id);
+                const AccountData* account_n = AccountModel::instance().get_idN_data_n(trx_dx.m_account_id);
 
                 if (account_n) {
                     const CurrencyData* currency_n = AccountModel::instance().get_data_currency_p(*account_n);

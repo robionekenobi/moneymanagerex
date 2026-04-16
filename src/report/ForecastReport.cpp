@@ -54,7 +54,7 @@ wxString ForecastReport::getHTMLText()
         if (trx_d.is_transfer() || TrxModel::is_foreignAsTransfer(trx_d))
             continue;
         const double convRate = CurrencyHistoryModel::instance().get_id_date_rate(
-            AccountModel::instance().get_id_data_n(trx_d.m_account_id)->m_currency_id,
+            AccountModel::instance().get_idN_data_n(trx_d.m_account_id)->m_currency_id,
             trx_d.m_date()
         );
         // FIXME: use only the date part

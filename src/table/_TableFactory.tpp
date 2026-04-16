@@ -30,32 +30,32 @@ const wxString TableFactory<T, D>::DataA::to_json() const
     return json_buffer.GetString();
 }
 
-// If id exists in database, return a pointer to a Data record owned by cache.
-// Return nullptr if id does not exist in database, or in case of error.
-// Assertion: if id exists in cache, then it also exists in database.
-// If id exists in cache, return a pointer in cache, without search in database.
-// Otherwise, if id exists in database, add it in cache.
+// If idN exists in database, return a pointer to a Data record owned by cache.
+// Return nullptr if idN does not exist in database, or in case of error.
+// Assertion: if idN exists in cache, then it also exists in database.
+// If idN exists in cache, return a pointer in cache, without search in database.
+// Otherwise, if idN exists in database, add it in cache.
 // The returned pointer can modify the record in cache.
 // This call can be combined with unsafe_update_data_n() for efficiency.
 template<typename T, typename D>
-auto TableFactory<T, D>::unsafe_get_id_data_n(const int64 id) -> Data*
+auto TableFactory<T, D>::unsafe_get_idN_data_n(const int64 idN) -> Data*
 {
-    if (id <= 0)
+    if (idN <= 0)
         return nullptr;
 
-    Data* data_n = m_cache.unsafe_get(id);
+    Data* data_n = m_cache.unsafe_get(idN);
     if (data_n)
         return data_n;
 
     wxString where = wxString::Format(" WHERE %s = ?", Col::s_primary_name.utf8_str());
     try {
         wxSQLite3Statement stmt = this->m_db->PrepareStatement(this->m_select_query + where);
-        stmt.Bind(1, id);
+        stmt.Bind(1, idN);
         wxSQLite3ResultSet q = stmt.ExecuteQuery();
 
         if (q.NextRow()) {
-            m_cache.add(id, Data(q));
-            data_n = m_cache.unsafe_get(id);
+            m_cache.add(idN, Data(q));
+            data_n = m_cache.unsafe_get(idN);
         }
 
         stmt.Finalize();
@@ -70,12 +70,12 @@ auto TableFactory<T, D>::unsafe_get_id_data_n(const int64 id) -> Data*
     return data_n;
 }
 
-// Same as unsafe_get_id_data_n(const int64), except that
+// Same as unsafe_get_idN_data_n(const int64), except that
 // the returned pointer cannot modify the record in cache.
 template<typename T, typename D>
-auto TableFactory<T, D>::get_id_data_n(const int64 id) -> const Data*
+auto TableFactory<T, D>::get_idN_data_n(const int64 idN) -> const Data*
 {
-    return unsafe_get_id_data_n(id);
+    return unsafe_get_idN_data_n(idN);
 }
 
 // Add a new Data record in database and in cache.
@@ -131,7 +131,7 @@ bool TableFactory<T, D>::add_data_a(DataA& data_a)
 // Update an existing Data record in database with the value already in cache.
 // data shall be a valid (not nullptr) pointer into cache.
 // Return data, or nullptr in case of error.
-// This call can be combined with unsafe_get_id_data_n() for efficiency.
+// This call can be combined with unsafe_get_idN_data_n() for efficiency.
 template<typename T, typename D>
 auto TableFactory<T, D>::unsafe_update_data_n(Data* data) -> Data*
 {

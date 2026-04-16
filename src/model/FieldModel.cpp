@@ -272,7 +272,7 @@ const FieldData* FieldModel::get_udfc_data_n(RefTypeN ref_type, const wxString& 
             json_doc["UDFC"].IsString() &&
             json_doc["UDFC"].GetString() == udfc
         ) {
-            return get_id_data_n(field_d.m_id);
+            return get_idN_data_n(field_d.m_id);
         }
     }
     return nullptr;

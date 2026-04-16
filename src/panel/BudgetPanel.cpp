@@ -311,7 +311,7 @@ bool BudgetPanel::displayEntryAllowed(int64 cat_id, int64 subcat_id)
         is_visible = true;
 
     if (cat_id > 0) {
-        const CategoryData* cat_n = CategoryModel::instance().get_id_data_n(cat_id);
+        const CategoryData* cat_n = CategoryModel::instance().get_idN_data_n(cat_id);
         m_level_visible_mCatId[cat_id].second = is_visible;
         for (const auto& subcat_d : CategoryModel::instance().find_data_subtree_a(*cat_n)) {
             is_visible = is_visible || displayEntryAllowed(subcat_d.m_id, -1);
@@ -547,7 +547,7 @@ wxString BudgetPanel::getItem(long item, int col_id)
     case BudgetList::LIST_ID_ICON:
         return " ";
     case BudgetList::LIST_ID_CATEGORY: {
-        const CategoryData* cat_n = CategoryModel::instance().get_id_data_n(
+        const CategoryData* cat_n = CategoryModel::instance().get_idN_data_n(
             m_catId_subcatId_a[item].first > 0
                 ? m_catId_subcatId_a[item].first
                 : m_catId_subcatId_a[item].second

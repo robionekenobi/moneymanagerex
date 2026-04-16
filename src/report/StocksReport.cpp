@@ -135,7 +135,7 @@ wxString StocksReport::getHTMLText()
             hb.endThead();
 
             for (const auto& acct : m_stocks) {
-                const AccountData* account_n = AccountModel::instance().get_id_data_n(acct.id);
+                const AccountData* account_n = AccountModel::instance().get_idN_data_n(acct.id);
                 const CurrencyData* currency_p = AccountModel::instance().get_data_currency_p(*account_n);
 
                 hb.startThead();
@@ -277,7 +277,7 @@ wxString mmReportChartStocks::getHTMLText()
     /*for (const auto& stock_d : StockModel::instance().find_data_a(
         TableClause::ORDERBY(StockCol::NAME_SYMBOL)
     )) {
-        const AccountData* account_n = AccountModel::instance().get_id_data_n(
+        const AccountData* account_n = AccountModel::instance().get_idN_data_n(
             stock_d.m_account_id_n
         );
         if (!account_n->is_open())
@@ -303,7 +303,7 @@ wxString mmReportChartStocks::getHTMLText()
         if (symbols.Index(stock_d.SYMBOL) != wxNOT_FOUND) continue;
     */
     if (found) {
-        const AccountModel::Data* account_n = AccountModel::instance().get_id_data_n(
+        const AccountModel::Data* account_n = AccountModel::instance().get_idN_data_n(
             stock_d.m_account_id_n
         );
         symbols.Add(stock_d.m_symbol);

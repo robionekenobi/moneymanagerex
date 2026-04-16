@@ -169,7 +169,7 @@ SplitDialog::SplitDialog(wxWindow* parent
     , row_num_(static_cast<int>(split.size()))
     , is_view_only_(is_view_only)
 {
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(accountID);
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(accountID);
     m_currency_n = account_n
         ? AccountModel::instance().get_data_currency_p(*account_n)
         : CurrencyModel::instance().get_base_data_n();

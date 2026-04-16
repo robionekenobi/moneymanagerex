@@ -93,7 +93,7 @@ const CurrencyHistoryData* CurrencyHistoryModel::get_key_data_n(
         CurrencyHistoryCol::WHERE_CURRENCYID(OP_EQ, currency_id),
         CurrencyHistoryModel::WHERE_DATE(OP_EQ, date)
     )) {
-        uh_n = get_id_data_n(uh_id);
+        uh_n = get_idN_data_n(uh_id);
         break;
     }
 
@@ -107,7 +107,7 @@ double CurrencyHistoryModel::get_id_date_rate(int64 currency_id_n, const mmDate&
     )
         return 1.0;
 
-    const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(currency_id_n);
+    const CurrencyData* currency_n = CurrencyModel::instance().get_idN_data_n(currency_id_n);
     if (!PrefModel::instance().getUseCurrencyHistory())
         return currency_n->m_base_conv_rate;
 
@@ -171,7 +171,7 @@ double CurrencyHistoryModel::get_id_last_rate(int64 currency_id)
         }
     }
 
-    const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(
+    const CurrencyData* currency_n = CurrencyModel::instance().get_idN_data_n(
         currency_id
     );
     return currency_n->m_base_conv_rate;

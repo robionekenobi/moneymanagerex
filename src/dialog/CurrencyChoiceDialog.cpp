@@ -364,7 +364,7 @@ void CurrencyChoiceDialog::OnBtnAdd()
 
 void CurrencyChoiceDialog::OnBtnEdit()
 {
-    const CurrencyData *currency_n = CurrencyModel::instance().get_id_data_n(m_currency_id);
+    const CurrencyData *currency_n = CurrencyModel::instance().get_idN_data_n(m_currency_id);
     if (currency_n)
         CurrencyManager(this, currency_n).ShowModal();
     fillControls();
@@ -381,7 +381,7 @@ void CurrencyChoiceDialog::OnBtnDelete()
     int selected_index = w_currency_list->GetSelectedRow();
     if (selected_index < 0) return;
 
-    const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(
+    const CurrencyData* currency_n = CurrencyModel::instance().get_idN_data_n(
         m_currency_id
     );
     if (!currency_n)
@@ -440,7 +440,7 @@ void CurrencyChoiceDialog::OnListItemSelected(wxDataViewEvent& event)
     if (is_selected) {
         wxDataViewItem item = event.GetItem();
         m_currency_id = static_cast<int64>(w_currency_list->GetItemData(item));
-        const CurrencyData* data_n = CurrencyModel::instance().get_id_data_n(m_currency_id);
+        const CurrencyData* data_n = CurrencyModel::instance().get_idN_data_n(m_currency_id);
         if (data_n) {
 
             // prevent user deleting currencies when editing accounts.
@@ -453,7 +453,7 @@ void CurrencyChoiceDialog::OnListItemSelected(wxDataViewEvent& event)
                     w_value_text->Enable(m_currency_id != baseCurrencyID);
                     w_value_text->SetValue(
                         0,
-                        CurrencyModel::instance().get_id_data_n(m_currency_id),
+                        CurrencyModel::instance().get_idN_data_n(m_currency_id),
                         6
                     );
                 }
@@ -580,7 +580,7 @@ void CurrencyChoiceDialog::OnItemRightClick(wxDataViewEvent& event)
     mainMenu->Enable(MENU_ITEM1, baseCurrencyID != m_currency_id && is_selected);
     mainMenu->Enable(MENU_ITEM2, baseCurrencyID != m_currency_id && is_selected);
 
-    const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(
+    const CurrencyData* currency_n = CurrencyModel::instance().get_idN_data_n(
         m_currency_id
     );
     if (currency_n) {
@@ -626,7 +626,7 @@ void CurrencyChoiceDialog::ShowCurrencyHistory()
         w_delete_btn->Enable();
     }
 
-    const CurrencyData* currency = CurrencyModel::instance().get_id_data_n(m_currency_id);
+    const CurrencyData* currency = CurrencyModel::instance().get_idN_data_n(m_currency_id);
     CurrencyHistoryModel::DataA uh_a = CurrencyHistoryModel::instance().find_data_a(
         CurrencyHistoryCol::WHERE_CURRENCYID(OP_EQ, m_currency_id),
         TableClause::ORDERBY(CurrencyHistoryCol::NAME_CURRDATE, true)
@@ -665,7 +665,7 @@ void CurrencyChoiceDialog::OnHistoryAdd(wxCommandEvent& /*event*/)
     wxString currentPriceStr = w_value_text->GetValue().Trim();
     if (!CurrencyModel::instance().fromString(
         currentPriceStr, dPrice,
-        CurrencyModel::instance().get_id_data_n(m_currency_id)
+        CurrencyModel::instance().get_idN_data_n(m_currency_id)
     ) || dPrice < 0.0)
         return mmErrorDialogs::ToolTip4Object(w_value_text, _t("Invalid Entry"), _t("Amount"));
     CurrencyHistoryModel::instance().save_record(
@@ -704,7 +704,7 @@ void CurrencyChoiceDialog::OnHistoryUpdate(wxCommandEvent& WXUNUSED(event))
     if (m_static_dialog)
         return;
 
-    const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(m_currency_id);
+    const CurrencyData* currency_n = CurrencyModel::instance().get_idN_data_n(m_currency_id);
     if (!currency_n) {
         return mmErrorDialogs::MessageError(this,
             _t("No currency selected!"),
@@ -829,7 +829,7 @@ void CurrencyChoiceDialog::OnHistorySelected(wxListEvent& event)
 {
     long selectedIndex = event.GetIndex();
     int64 histId = w_history_list->GetItemData(selectedIndex);
-    CurrencyHistoryData* ch_n = CurrencyHistoryModel::instance().unsafe_get_id_data_n(
+    CurrencyHistoryData* ch_n = CurrencyHistoryModel::instance().unsafe_get_idN_data_n(
         histId
     );
 

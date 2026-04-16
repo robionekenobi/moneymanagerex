@@ -107,7 +107,7 @@ bool AssetModel::purge_id_dep(int64 asset_id)
 
 const wxString AssetModel::get_id_name(int64 asset_id)
 {
-    const Data* asset_n = get_id_data_n(asset_id);
+    const Data* asset_n = get_idN_data_n(asset_id);
     if (asset_n)
         return asset_n->m_name;
     else
@@ -147,7 +147,7 @@ const std::pair<double, double> AssetModel::get_data_value_date(
 
     TrxModel::DataA trx_a;
     for (const auto& tl_d : tl_a) {
-        const TrxData* trx_n = TrxModel::instance().get_id_data_n(tl_d.m_trx_id);
+        const TrxData* trx_n = TrxModel::instance().get_idN_data_n(tl_d.m_trx_id);
         if (trx_n &&
             // FIXME: ignore Void transactions
             !trx_n->is_deleted() &&
@@ -163,7 +163,7 @@ const std::pair<double, double> AssetModel::get_data_value_date(
         mmDateN last_n = mmDateN();
         for (const auto& trx_d : trx_a) {
             mmDate trx_date = trx_d.m_date();
-            const AccountData* account_n = AccountModel::instance().get_id_data_n(
+            const AccountData* account_n = AccountModel::instance().get_idN_data_n(
                 trx_d.m_account_id
             );
             int64 currency_id_n = account_n ? account_n->m_currency_id : -1;

@@ -157,7 +157,7 @@ const ReportData* ReportModel::get_name_data_n(const wxString& name)
     for (int64 report_id : find_id_a(
         ReportCol::WHERE_REPORTNAME(OP_EQ, name)
     )) {
-        report_n = get_id_data_n(report_id);
+        report_n = get_idN_data_n(report_id);
     }
 
     return report_n;

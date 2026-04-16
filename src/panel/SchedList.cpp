@@ -421,7 +421,7 @@ void SchedList::OnSetUserColour(wxCommandEvent& event)
 
     SchedModel::instance().db_savepoint();
 
-    SchedData* sched_n = SchedModel::instance().unsafe_get_id_data_n(id);
+    SchedData* sched_n = SchedModel::instance().unsafe_get_idN_data_n(id);
     if (sched_n) {
         sched_n->m_color = user_color_id;
         SchedModel::instance().unsafe_update_data_n(sched_n);

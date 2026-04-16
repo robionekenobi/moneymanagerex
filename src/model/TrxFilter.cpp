@@ -232,7 +232,7 @@ table {
         else
             hb.addTableCell(wxGetTranslation(trx_dx.m_type.name()));
 
-        const AccountData* account_n = AccountModel::instance().get_id_data_n(
+        const AccountData* account_n = AccountModel::instance().get_idN_data_n(
             trx_dx.m_account_id
         );
         if (account_n) {

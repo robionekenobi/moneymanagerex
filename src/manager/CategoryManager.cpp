@@ -457,7 +457,7 @@ void CategoryManager::OnEndDrag(wxTreeEvent& event)
     if (cat_id == -1 || cat_id == m_dragSourceCATEGID)
         return;
 
-    CategoryData* src_cat_n = CategoryModel::instance().unsafe_get_id_data_n(m_dragSourceCATEGID);
+    CategoryData* src_cat_n = CategoryModel::instance().unsafe_get_idN_data_n(m_dragSourceCATEGID);
 
     if (cat_id == src_cat_n->m_parent_id_n)
         return;
@@ -541,7 +541,7 @@ void CategoryManager::mmDoDeleteSelectedCategory()
 
     std::set<int64> cat_id_m;
     cat_id_m.insert(m_categ_id);
-    const CategoryData* cat_n = CategoryModel::instance().get_id_data_n(m_categ_id);
+    const CategoryData* cat_n = CategoryModel::instance().get_idN_data_n(m_categ_id);
     for (const auto& sub_d : CategoryModel::instance().find_data_subtree_a(*cat_n)) {
         cat_id_m.insert(sub_d.m_id);
     }
@@ -714,7 +714,7 @@ wxTreeItemId CategoryManager::getTreeItemFor(
 
 void CategoryManager::setTreeSelection(int64 cat_id)
 {
-    const CategoryData* cat_n = CategoryModel::instance().get_id_data_n(cat_id);
+    const CategoryData* cat_n = CategoryModel::instance().get_idN_data_n(cat_id);
     if (cat_n) {
         setTreeSelection(cat_n->m_name, cat_n->m_parent_id_n);
     }
@@ -783,7 +783,7 @@ void CategoryManager::OnMenuSelected(wxCommandEvent& event)
 {
     int id = event.GetId();
 
-    CategoryData* cat_n = CategoryModel::instance().unsafe_get_id_data_n(m_categ_id);
+    CategoryData* cat_n = CategoryModel::instance().unsafe_get_idN_data_n(m_categ_id);
     switch (id)
     {
     case MENU_ITEM_EDIT: {

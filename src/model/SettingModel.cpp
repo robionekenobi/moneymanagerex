@@ -67,7 +67,7 @@ void SettingModel::saveRaw(const wxString& key, const wxString& newValue)
         for (int64 setting_id : find_id_a(
             SettingCol::WHERE_SETTINGNAME(OP_EQ, key)
         )) {
-            setting_n = get_id_data_n(setting_id);
+            setting_n = get_idN_data_n(setting_id);
         }
     }
 
@@ -227,7 +227,7 @@ void SettingModel::prependArrayItem(const wxString& key, const wxString& value, 
         for (int64 setting_id : find_id_a(
             SettingCol::WHERE_SETTINGNAME(OP_EQ, key)
         )) {
-            setting_n = get_id_data_n(setting_id);
+            setting_n = get_idN_data_n(setting_id);
         }
     }
 
