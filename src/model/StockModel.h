@@ -57,7 +57,6 @@ public:
 public:
     bool purge_id_dep(int64 stock_id);
 
-public:
     auto get_id_name(int64 stock_id) -> const wxString;
     auto get_id_symbol(int64 stock_id) -> const wxString;
     auto find_last_hist_date(const Data& stock_d) -> mmDate;

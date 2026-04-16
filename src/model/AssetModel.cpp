@@ -99,6 +99,26 @@ bool AssetModel::purge_id(int64 asset_id)
 
 // -- methods
 
+bool AssetModel::purge_id_dep(int64 asset_id)
+{
+    bool ok = true;
+    db_savepoint();
+
+    for (const TrxLinkData& tl_d : TrxLinkModel::instance().find_data_a(
+        TrxLinkCol::WHERE_LINKTYPE(OP_EQ, AssetModel::s_ref_type.key_n()),
+        TrxLinkCol::WHERE_LINKRECORDID(OP_EQ, asset_id)
+    )) {
+        // Remove the link before the transaction,
+        // otherwise update_asset_value() is called.
+        ok = ok && TrxLinkModel::instance().purge_id(tl_d.m_id);
+        // TODO: check if transaction is_foreign()
+        ok = ok && TrxModel::instance().purge_id(tl_d.m_trx_id);
+    }
+
+    db_release_savepoint();
+    return ok;
+}
+
 const wxString AssetModel::get_id_name(int64 asset_id)
 {
     const Data* asset_n = get_idN_data_n(asset_id);

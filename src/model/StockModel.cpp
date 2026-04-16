@@ -52,27 +52,30 @@ StockModel& StockModel::instance()
 // -- override
 
 // FIXME
-bool StockModel::find_id_isUsed(int64 id, bool ignore_deleted)
+bool StockModel::find_id_isUsed(int64 stock_id, [[maybe_unused]] bool ignore_deleted)
 {
-    return false;
+    // FIXME: use ignore_deleted
+    return TrxLinkModel::instance().find_count(
+        TrxLinkCol::WHERE_LINKTYPE(OP_EQ, s_ref_type.key_n()),
+        TrxLinkCol::WHERE_LINKRECORDID(OP_EQ, stock_id)
+    );
 }
 
-// Remove the Data record from memory and the database.
-// Delete also all stock history
 bool StockModel::purge_id(int64 stock_id)
 {
     bool ok = true;
     db_savepoint();
 
-    // TODO: move out of purge_id()
     const wxString symbol = get_id_symbol(stock_id);
-    if (find_count(
-        StockCol::WHERE_SYMBOL(OP_EQ, symbol)
-    ) == 1)
-        ok = ok && StockHistoryModel::instance().purge_symbol_all(symbol);
 
     ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, stock_id);
     ok = ok && unsafe_remove_id(stock_id);
+
+    if (find_count(
+        StockCol::WHERE_SYMBOL(OP_EQ, symbol)
+    ) == 0) {
+        ok = ok && StockHistoryModel::instance().purge_symbol_all(symbol);
+    }
 
     db_release_savepoint();
     return ok;
@@ -82,7 +85,23 @@ bool StockModel::purge_id(int64 stock_id)
 
 bool StockModel::purge_id_dep(int64 stock_id)
 {
-    return TrxLinkModel::instance().Z_purge_ref(s_ref_type, stock_id);
+    bool ok = true;
+    db_savepoint();
+
+    for (const TrxLinkData& tl_d : TrxLinkModel::instance().find_data_a(
+        TrxLinkCol::WHERE_LINKTYPE(OP_EQ, StockModel::s_ref_type.key_n()),
+        TrxLinkCol::WHERE_LINKRECORDID(OP_EQ, stock_id)
+    )) {
+        // Remove the link before the transaction,
+        // otherwise update_data_position() is called.
+        ok = ok && TrxLinkModel::instance().purge_id(tl_d.m_id);
+        // TODO: check if transaction is_foreign()
+        // TrxShareData records are removed together with the transaction
+        ok = ok && TrxModel::instance().purge_id(tl_d.m_trx_id);
+    }
+
+    db_release_savepoint();
+    return ok;
 }
 
 const wxString StockModel::get_id_name(int64 stock_id)

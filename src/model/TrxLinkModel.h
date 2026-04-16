@@ -69,7 +69,6 @@ public:
 
 public:
     bool purge_trxId_all(const int64 trx_id);
-    bool Z_purge_ref(RefTypeN ref_type, int64 ref_id);
 
     auto get_trx_data_n(int64 trx_id) -> const Data*;
     auto find_ref_data_a(RefTypeN ref_type, int64 ref_id) -> DataA;

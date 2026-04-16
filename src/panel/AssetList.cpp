@@ -227,16 +227,7 @@ void AssetList::onDeleteAsset(wxCommandEvent& /*event*/)
         return;
 
     int64 asset_id = w_panel->m_asset_a[m_selected_row].m_id;
-    for (const TrxLinkData& tl_d : TrxLinkModel::instance().find_data_a(
-        TrxLinkCol::WHERE_LINKTYPE(OP_EQ, AssetModel::s_ref_type.key_n()),
-        TrxLinkCol::WHERE_LINKRECORDID(OP_EQ, asset_id)
-    )) {
-        // Remove the link before the transaction,
-        // otherwise update_asset_value() is called.
-        TrxLinkModel::instance().purge_id(tl_d.m_id);
-        // TODO: check if transaction is_foreign()
-        TrxModel::instance().purge_id(tl_d.m_trx_id);
-    }
+    AssetModel::instance().purge_id_dep(asset_id);
     AssetModel::instance().purge_id(asset_id);
 
     w_panel->initVirtualListControl();

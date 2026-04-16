@@ -60,6 +60,8 @@ public:
 // -- methods
 
 public:
+    bool purge_id_dep(int64 asset_id);
+
     // lookup for given Data
     auto get_data_value_date(const Data& asset_d, const mmDate& date) -> const std::pair<double, double>;
     auto get_data_value(const Data& asset_d) -> const std::pair<double, double>;

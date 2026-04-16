@@ -72,19 +72,6 @@ bool TrxLinkModel::purge_trxId_all(const int64 trx_id)
     return ok;
 }
 
-// Remove all records associated with the Translink list
-bool TrxLinkModel::Z_purge_ref(RefTypeN ref_type, int64 ref_id)
-{
-    bool ok = true;
-
-    // FIXME: purge tl_d
-    for (const Data& tl_d : find_ref_data_a(ref_type, ref_id)) {
-        ok = ok && TrxModel::instance().purge_id(tl_d.m_trx_id);
-    }
-
-    return ok;
-}
-
 // Return the link record for the checking account
 // Equivalent SQL statements:
 //     select * from TRANSLINK_V1 where CHECKINGACCOUNTID = checking_id;

@@ -343,16 +343,16 @@ void StockList::onDeleteStocks(wxCommandEvent& /*event*/)
         _t("Confirm Stock Investment Deletion"),
         wxYES_NO | wxNO_DEFAULT | wxICON_ERROR
     );
-    if (msgDlg.ShowModal() == wxID_YES) {
-        int64 stock_id = m_stock_a[m_select_n].m_id;
-        TrxLinkModel::instance().Z_purge_ref(
-            StockModel::s_ref_type, stock_id
-        );
-        StockModel::instance().purge_id(stock_id);
-        DeleteItem(m_select_n);
-        doRefreshItems(-1);
-        w_panel->w_frame->RefreshNavigationTree();
-    }
+    if (msgDlg.ShowModal() != wxID_YES)
+        return;
+
+    int64 stock_id = m_stock_a[m_select_n].m_id;
+    StockModel::instance().purge_id_dep(stock_id);
+    StockModel::instance().purge_id(stock_id);
+
+    DeleteItem(m_select_n);
+    doRefreshItems(-1);
+    w_panel->w_frame->RefreshNavigationTree();
 }
 
 void StockList::onMoveStocks(wxCommandEvent& /*event*/)
