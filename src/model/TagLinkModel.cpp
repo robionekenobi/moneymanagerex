@@ -47,16 +47,16 @@ TagLinkModel& TagLinkModel::instance()
 bool TagLinkModel::purge_ref_all(RefTypeN ref_type, int64 ref_id)
 {
     bool ok = true;
-
     db_savepoint();
+
     for (int64 gl_id : find_id_a(
         TagLinkCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n()),
         TagLinkCol::WHERE_REFID(OP_EQ, ref_id)
     )) {
         ok = ok && purge_id(gl_id);
     }
-    db_release_savepoint();
 
+    db_release_savepoint();
     return ok;
 }
 
@@ -136,7 +136,7 @@ int TagLinkModel::update(RefTypeN ref_type, int64 ref_id, const DataA& src_gl_a)
             save_timestamp = save_timestamp || !match;
         }
 
-        instance().purge_id(old_gl_d.m_id);
+        purge_id(old_gl_d.m_id);
     }
 
     for (const auto& src_gl_d : src_gl_a) {

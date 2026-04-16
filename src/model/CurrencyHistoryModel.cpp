@@ -52,15 +52,15 @@ CurrencyHistoryModel& CurrencyHistoryModel::instance()
 bool CurrencyHistoryModel::purge_currencyId_all(int64 currency_id)
 {
     bool ok = true;
-
     db_savepoint();
+
     for (int64 uh_id : find_id_a(
         CurrencyHistoryCol::WHERE_CURRENCYID(OP_EQ, currency_id)
     )) {
         ok = ok && purge_id(uh_id);
     }
-    db_release_savepoint();
 
+    db_release_savepoint();
     return ok;
 }
 
@@ -68,13 +68,13 @@ bool CurrencyHistoryModel::purge_currencyId_all(int64 currency_id)
 bool CurrencyHistoryModel::purge_all()
 {
     bool ok = true;
-
     db_savepoint();
+
     for (int64 uh_id : find_id_a()) {
         ok = ok && purge_id(uh_id);
     }
-    db_release_savepoint();
 
+    db_release_savepoint();
     return ok;
 }
 

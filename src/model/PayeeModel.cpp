@@ -71,13 +71,12 @@ bool PayeeModel::find_id_isUsed(int64 payee_id, bool ignore_deleted)
 bool PayeeModel::purge_id(int64 payee_id)
 {
     bool ok = true;
-
     db_savepoint();
-    ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, payee_id);
-    db_release_savepoint();
 
+    ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, payee_id);
     ok = ok && unsafe_remove_id(payee_id);
 
+    db_release_savepoint();
     return ok;
 }
 

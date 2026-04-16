@@ -46,6 +46,7 @@ TrxShareModel& TrxShareModel::instance()
 bool TrxShareModel::purge_trxId_all(const int64 trx_id)
 {
     bool ok = true;
+    db_savepoint();
 
     for (int64 ts_id : find_id_a(
         TrxShareCol::WHERE_CHECKINGACCOUNTID(OP_EQ, trx_id)
@@ -53,6 +54,7 @@ bool TrxShareModel::purge_trxId_all(const int64 trx_id)
         ok = ok && purge_id(ts_id);
     }
 
+    db_release_savepoint();
     return ok;
 }
 

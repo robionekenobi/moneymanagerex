@@ -51,8 +51,12 @@ SchedSplitModel& SchedSplitModel::instance()
 bool SchedSplitModel::purge_id(int64 qp_id)
 {
     bool ok = true;
+    db_savepoint();
+
     ok = ok && TagLinkModel::instance().purge_ref_all(s_ref_type, qp_id);
     ok = ok && unsafe_remove_id(qp_id);
+
+    db_release_savepoint();
     return ok;
 }
 
@@ -61,6 +65,7 @@ bool SchedSplitModel::purge_id(int64 qp_id)
 bool SchedSplitModel::purge_schedId_all(const int64 sched_id)
 {
     bool ok = true;
+    db_savepoint();
 
     for (int64 qp_id : find_id_a(
         SchedSplitCol::WHERE_TRANSID(OP_EQ, sched_id)
@@ -68,6 +73,7 @@ bool SchedSplitModel::purge_schedId_all(const int64 sched_id)
         ok = ok && purge_id(qp_id);
     }
 
+    db_release_savepoint();
     return ok;
 }
 
@@ -100,12 +106,13 @@ std::map<int64, SchedSplitModel::DataA> SchedSplitModel::find_all_mSchedId()
 
 int SchedSplitModel::update(int64 dst_sched_id, DataA& src_qp_a)
 {
-
-    for (const auto& qp_d : find_data_a(
+    db_savepoint();
+    for (int64 qp_id : find_id_a(
         SchedSplitCol::WHERE_TRANSID(OP_EQ, dst_sched_id)
     )) {
-        instance().purge_id(qp_d.m_id);
+        purge_id(qp_id);
     }
+    db_release_savepoint();
 
     if (!src_qp_a.empty()) {
         DataA new_qp_a;
@@ -117,12 +124,13 @@ int SchedSplitModel::update(int64 dst_sched_id, DataA& src_qp_a)
             new_qp_d.m_notes       = src_qp_d.m_notes;
             new_qp_a.push_back(new_qp_d);
         }
-        instance().save_data_a(new_qp_a);
+        save_data_a(new_qp_a);
 
         // Send back the new m_id which is needed to update taglinks
         // CHECK: src_qp_a.at(i).m_sched_id is not updated
         for (int i = 0; i < static_cast<int>(src_qp_a.size()); i++)
             src_qp_a.at(i).m_id = new_qp_a.at(i).m_id;
     }
+
     return src_qp_a.size();
 }

@@ -151,6 +151,7 @@ TrxModel& TrxModel::instance()
 bool TrxModel::purge_id(int64 trx_id)
 {
     bool ok = true;
+    db_savepoint();
 
     ok = ok && TrxSplitModel::instance().purge_trxId_all(trx_id);
     ok = ok && TrxShareModel::instance().purge_trxId_all(trx_id);
@@ -178,6 +179,7 @@ bool TrxModel::purge_id(int64 trx_id)
     ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, trx_id);
     ok = ok && unsafe_remove_id(trx_id);
 
+    db_release_savepoint();
     return ok;
 }
 

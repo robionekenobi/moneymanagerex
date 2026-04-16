@@ -95,12 +95,12 @@ bool CurrencyModel::find_id_isUsed(int64 currency_id, bool ignore_closed)
 bool CurrencyModel::purge_id(int64 currency_id)
 {
     bool ok = true;
-
     db_savepoint();
+
     ok = ok && CurrencyHistoryModel::instance().purge_currencyId_all(currency_id);
     ok = ok && unsafe_remove_id(currency_id);
-    db_release_savepoint();
 
+    db_release_savepoint();
     return ok;
 }
 

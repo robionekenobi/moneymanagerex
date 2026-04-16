@@ -51,8 +51,12 @@ TrxSplitModel& TrxSplitModel::instance()
 bool TrxSplitModel::purge_id(int64 tp_id)
 {
     bool ok = true;
+    db_savepoint();
+
     ok = ok && TagLinkModel::instance().purge_ref_all(s_ref_type, tp_id);
     ok = ok && unsafe_remove_id(tp_id);
+
+    db_release_savepoint();
     return ok;
 }
 
@@ -61,6 +65,7 @@ bool TrxSplitModel::purge_id(int64 tp_id)
 bool TrxSplitModel::purge_trxId_all(const int64 trx_id)
 {
     bool ok = true;
+    db_savepoint();
 
     for (int64 tp_id : find_id_a(
         TrxSplitCol::WHERE_TRANSID(OP_EQ, trx_id)
@@ -68,6 +73,7 @@ bool TrxSplitModel::purge_trxId_all(const int64 trx_id)
         ok = ok && purge_id(tp_id);
     }
 
+    db_release_savepoint();
     return ok;
 }
 

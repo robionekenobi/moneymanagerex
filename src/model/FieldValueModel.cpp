@@ -62,30 +62,30 @@ std::size_t FieldValueModel::find_fieldId_c(int64 field_id)
 bool FieldValueModel::purge_fieldId_all(int64 field_id)
 {
     bool ok = true;
-
     db_savepoint();
+
     for (int64 fv_id : find_id_a(
         FieldValueCol::WHERE_FIELDID(OP_EQ, field_id)
     )) {
         ok = ok && purge_id(fv_id);
     }
-    db_release_savepoint();
 
+    db_release_savepoint();
     return ok;
 }
 
 bool FieldValueModel::purge_ref_all(RefTypeN ref_type, int64 ref_id)
 {
     bool ok = true;
-
     db_savepoint();
+
     for (int64 fv_id : find_id_a(
         FieldValueModel::WHERE_REFTYPEID(ref_type, ref_id)
     )) {
         ok = ok && purge_id(fv_id);
     }
-    db_release_savepoint();
 
+    db_release_savepoint();
     return ok;
 }
 

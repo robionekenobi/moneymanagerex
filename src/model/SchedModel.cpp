@@ -73,14 +73,15 @@ SchedModel& SchedModel::instance()
 bool SchedModel::purge_id(int64 sched_id)
 {
     bool ok;
+    db_savepoint();
 
     ok = ok && SchedSplitModel::instance().purge_schedId_all(sched_id);
     ok = ok && TagLinkModel::instance().purge_ref_all(s_ref_type, sched_id);
     ok = ok && FieldValueModel::instance().purge_ref_all(s_ref_type, sched_id);
     ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, sched_id);
-
     ok = ok && unsafe_remove_id(sched_id);
 
+    db_release_savepoint();
     return ok;
 }
 

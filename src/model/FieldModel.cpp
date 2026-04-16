@@ -229,15 +229,15 @@ bool FieldModel::purge_id(int64 field_id)
 bool FieldModel::purge_id_dep(int64 field_id)
 {
     bool ok = true;
-
     db_savepoint();
+
     for (int64 fv_id : FieldValueModel::instance().find_id_a(
         FieldValueCol::WHERE_FIELDID(OP_EQ, field_id)
     )) {
         ok = ok && FieldValueModel::instance().purge_id(fv_id);
     }
-    db_release_savepoint();
 
+    db_release_savepoint();
     return ok;
 }
 

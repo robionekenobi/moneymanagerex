@@ -60,6 +60,7 @@ TrxLinkModel& TrxLinkModel::instance()
 bool TrxLinkModel::purge_trxId_all(const int64 trx_id)
 {
     bool ok = true;
+    db_savepoint();
 
     for (int64 tl_id : find_id_a(
         TrxLinkCol::WHERE_CHECKINGACCOUNTID(OP_EQ, trx_id)
@@ -67,6 +68,7 @@ bool TrxLinkModel::purge_trxId_all(const int64 trx_id)
         ok = ok && purge_id(tl_id);
     }
 
+    db_release_savepoint();
     return ok;
 }
 

@@ -46,6 +46,7 @@ AttachmentModel& AttachmentModel::instance()
 bool AttachmentModel::purge_id(int64 att_id)
 {
     bool ok = true;
+    db_savepoint();
 
     for (const Data& att_d : find_data_a(
         AttachmentCol::WHERE_ATTACHMENTID(OP_EQ, att_id)
@@ -54,6 +55,7 @@ bool AttachmentModel::purge_id(int64 att_id)
         ok = ok && unsafe_remove_id(att_d.m_id);
     }
 
+    db_release_savepoint();
     return ok;
 }
 
@@ -62,6 +64,7 @@ bool AttachmentModel::purge_id(int64 att_id)
 bool AttachmentModel::purge_ref_all(RefTypeN ref_type, const int64 ref_id)
 {
     bool ok = true;
+    db_savepoint();
 
     for (const Data& att_d : find_data_a(
         AttachmentCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n()),
@@ -71,6 +74,7 @@ bool AttachmentModel::purge_ref_all(RefTypeN ref_type, const int64 ref_id)
         ok = ok && unsafe_remove_id(att_d.m_id);
     }
 
+    db_release_savepoint();
     return ok;
 }
 

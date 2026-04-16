@@ -62,6 +62,7 @@ bool StockModel::find_id_isUsed(int64 id, bool ignore_deleted)
 bool StockModel::purge_id(int64 stock_id)
 {
     bool ok = true;
+    db_savepoint();
 
     // TODO: move out of purge_id()
     const wxString symbol = get_id_symbol(stock_id);
@@ -71,8 +72,9 @@ bool StockModel::purge_id(int64 stock_id)
         ok = ok && StockHistoryModel::instance().purge_symbol_all(symbol);
 
     ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, stock_id);
-
     ok = ok && unsafe_remove_id(stock_id);
+
+    db_release_savepoint();
     return ok;
 }
 

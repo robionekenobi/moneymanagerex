@@ -98,16 +98,15 @@ bool AccountModel::find_id_isUsed(int64 account_id, bool ignore_deleted)
 bool AccountModel::purge_id(int64 account_id)
 {
     bool ok = true;
+    db_savepoint();
 
     // FIXME: Do not remove dependencies; move to GUI and ask for permission.
     ok = ok && purge_id_dep(account_id);
 
-    db_savepoint();
     ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, account_id);
-    db_release_savepoint();
-
     ok = ok && unsafe_remove_id(account_id);
 
+    db_release_savepoint();
     return ok;
 }
 
@@ -116,7 +115,6 @@ bool AccountModel::purge_id(int64 account_id)
 bool AccountModel::purge_id_dep(int64 account_id)
 {
     bool ok = true;
-
     db_savepoint();
 
     for (int64 stock_id : StockModel::instance().find_id_a(
@@ -145,7 +143,6 @@ bool AccountModel::purge_id_dep(int64 account_id)
     }
 
     db_release_savepoint();
-
     return ok;
 }
 

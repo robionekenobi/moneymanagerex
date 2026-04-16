@@ -50,15 +50,15 @@ StockHistoryModel& StockHistoryModel::instance()
 bool StockHistoryModel::purge_symbol_all(const wxString& symbol)
 {
     bool ok = true;
-
     db_savepoint();
+
     for (int64 sh_id : find_id_a(
         StockHistoryCol::WHERE_SYMBOL(OP_EQ, symbol)
     )) {
         ok = ok && purge_id(sh_id);
     }
-    db_release_savepoint();
 
+    db_release_savepoint();
     return ok;
 }
 

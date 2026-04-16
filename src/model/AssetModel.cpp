@@ -88,13 +88,12 @@ bool AssetModel::find_id_isUsed(int64 asset_id, [[maybe_unused]] bool ignore_del
 bool AssetModel::purge_id(int64 asset_id)
 {
     bool ok = true;
-
     db_savepoint();
-    ok = ok && AttachmentModel::instance().purge_ref_all(AssetModel::s_ref_type, asset_id);
-    db_release_savepoint();
 
+    ok = ok && AttachmentModel::instance().purge_ref_all(AssetModel::s_ref_type, asset_id);
     ok = ok && unsafe_remove_id(asset_id);
 
+    db_release_savepoint();
     return ok;
 }
 

@@ -64,6 +64,7 @@ bool BudgetPeriodModel::purge_id(int64 bp_id)
 bool BudgetPeriodModel::purge_id_dep(int64 bp_id)
 {
     bool ok = true;
+    db_savepoint();
 
     for (int64 budget_id : BudgetModel::instance().find_id_a(
         BudgetCol::WHERE_BUDGETYEARID(OP_EQ, bp_id)
@@ -71,6 +72,7 @@ bool BudgetPeriodModel::purge_id_dep(int64 bp_id)
         ok = ok && BudgetModel::instance().purge_id(budget_id);
     }
 
+    db_release_savepoint();
     return ok;
 }
 
