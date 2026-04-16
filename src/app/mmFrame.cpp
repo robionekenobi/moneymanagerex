@@ -1495,9 +1495,14 @@ void mmFrame::OnPopupEditAccount(wxCommandEvent& /*event*/)
     if (!account)
         return;
 
+    JournalPanel* cp = wxDynamicCast(panelCurrent_, JournalPanel);
     AccountDialog dlg(account, this);
     if (dlg.ShowModal() == wxID_OK)
+    {
         RefreshNavigationTree();
+        cp->refreshList();
+    }
+
 }
 //----------------------------------------------------------------------------
 
