@@ -1245,145 +1245,94 @@
     </p>
 
 
-    <h4>Finestra di dialogo Riconciliazione</h4>
-    
-    <p>
-        Per una riconciliazione pratica e veloce, MMEX mette a disposizione
-        una finestra di dialogo dedicata alla riconciliazione.
-    </p>
-    
-    <p>
-        È possibile aprirla dal menu contestuale del conto nel Navigatore
-        facendo clic con il tasto destro:
-    </p>
-    
-    <p>
-        <img class="shadow" alt="Menu contestuale del conto nel Navigatore"
-             src="../it_IT/transactions/reconcilecontextmenu.png">
-    </p>
-    
-    <br>
-    
-    <p>
-        In alternativa, è possibile aprirla direttamente dalla vista del conto
-        tramite l’apposito pulsante:
-    </p>
-    
-    <p>
-        <img class="shadow" alt="Pulsante Riconciliazione"
-             src="../it_IT/transactions/reconcilebutton.png">
-    </p>
-    
-    <br>
-    
-    <p>
-        La finestra mostra tutte le transazioni in sospeso fino alla data corrente,
-        ordinate in due colonne separate per <strong>Prelievi</strong> e <strong>Depositi</strong>:
-    </p>
-    
-    <p>
-        <img class="shadow" alt="Finestra di dialogo Riconciliazione"
-             src="../it_IT/transactions/reconciledialog.png">
-    </p>
-    
+   
+    <h3>Riconciliazione e Bilanciamento delle Transazioni</h3>
     <aside class="sticky tips">
-        Una transazione può essere selezionata o deselezionata per la riconciliazione
-        anche premendo il tasto <kbd class="key">SPAZIO</kbd>.<br>
-        Con i tasti <kbd class="key">&#8595;</kbd> e <kbd class="key">&#8593;</kbd>
-        è possibile spostarsi tra le voci dell’elenco.<br>
-        Con i tasti <kbd class="key">&#8594;</kbd> e <kbd class="key">&#8592;</kbd>
-        è possibile passare da una lista all’altra.
+        Per contrassegnare una transazione come riconciliata nella vista del conto, basta selezionare
+        la transazione e premere il tasto <kbd><kbd>R</kbd></kbd>. Per contrassegnare una
+        transazione come non riconciliata, basta selezionare la
+        transazione e premere il tasto <kbd><kbd>U</kbd></kbd>.
     </aside>
-    
+    <dl>
+        <dt>Transazioni non riconciliate</dt>
+        <dd>Questo significa che non sono state verificate con
+            l'estratto conto dell'istituto finanziario.</dd>
+        <dt>Transazioni riconciliate</dt>
+        <dd>Una transazione può essere considerata riconciliata quando i dettagli
+            della transazione corrispondono a quelli dell'istituto finanziario.</dd>
+    </dl>
+    <p>
+        In MMEX, le transazioni riconciliate e non riconciliate vengono mostrate con
+        icone differenti. Quando i dettagli bancari non vengono controllati rispetto a un estratto conto,
+        l'utente può scegliere di impostare come predefinito lo stato Riconciliata
+        durante la creazione delle transazioni nelle Impostazioni.
+    </p>
+
+    <h4>Finestra di dialogo di riconciliazione</h4>
+    <p>Per una riconciliazione più comoda, è disponibile una finestra di dialogo dedicata.</p>
+
+    <h5>Apertura della finestra di dialogo</h5>
+    <p>Può essere aperta sia dal menu contestuale del navigatore, facendo clic con il tasto destro sul conto:</p>
+    <p><img class="shadow" alt='Menu contestuale del conto nel navigatore' src='../en_US/transactions/reconcilecontextmenu.png'></p>
+    <br>
+    <p>Oppure direttamente nella vista del conto tramite il pulsante dedicato:</p>
+    <p><img class="shadow" alt='Pulsante Riconcilia' src='../en_US/transactions/reconcilebutton.png'></p>
+    <br>
+
+    <h5>Finestra di dialogo</h5>
+    <p>La finestra mostra tutte le transazioni in sospeso fino alla data corrente, ordinate in due colonne: una per i prelievi (pagamenti, inclusi i trasferimenti) e una per i depositi, inclusi i trasferimenti in entrata:</p>
+    <p><img class="shadow" alt='Finestra di dialogo di riconciliazione' src='../en_US/transactions/reconciledialog.png'></p>
+
+    <aside class="sticky tips">
+        Una transazione può essere selezionata o deselezionata per la riconciliazione anche con il tasto <kbd class="key">SPAZIO</kbd>.<br> Con i tasti <kbd class="key">&#8595;</kbd> e <kbd class="key">&#8593;</kbd>
+        è possibile selezionare gli elementi dell'elenco,<br>con i tasti <kbd class="key">&#8594;</kbd> e <kbd class="key">&#8592;</kbd> si passa da un elenco all'altro.
+    </aside>
+
     <ul>
-        <li>
-            Nel campo <kbd>Chiusura estratto conto</kbd> è possibile inserire
-            il saldo finale dell’ultimo estratto conto.
-        </li>
-        <li>
-            Il campo <kbd>Differenza</kbd> mostra la differenza tra il saldo riconciliato
-            e il valore inserito in <kbd>Chiusura estratto conto</kbd>.
-        </li>
-        <li>
-            I trasferimenti in entrata sono contrassegnati dal simbolo <kbd>&lt;</kbd>,
-            quelli in uscita dal simbolo <kbd>&gt;</kbd>.
-        </li>
-    
+        <li>Nel campo <kbd>Saldo finale estratto conto</kbd> può essere inserito l'importo finale dell'ultimo estratto conto.</li>
+        <li>Il campo <kbd>Differenza</kbd> mostra la differenza tra il saldo riconciliato e il valore di <kbd>Saldo finale estratto conto</kbd>.</li>
+        <li>I trasferimenti in entrata sono preceduti da <kbd>'&lt;'</kbd>, quelli in uscita da <kbd>'&gt;'</kbd>.</li>
         <br>
-    
-        <li>
-            Una transazione non selezionata può essere inclusa nella riconciliazione
-            con un clic del mouse.
-            Facendo clic su una transazione già selezionata, questa viene esclusa
-            dalla riconciliazione.
-        </li>
-        <li>
-            Con <kbd><samp>Seleziona tutto</samp></kbd> tutte le transazioni non selezionate
-            vengono contrassegnate; se invece sono già tutte selezionate,
-            verranno deselezionate.
-        </li>
-    
+        <li>Una transazione non selezionata viene scelta con un clic sinistro del mouse ed inclusa nella riconciliazione. Un clic del mouse su una transazione già selezionata la rimuove dalla riconciliazione.</li>
+        <li>Con <kbd><samp>Inverti tutto</samp></kbd> vengono selezionate tutte le transazioni non contrassegnate oppure, se tutte sono già selezionate, vengono deselezionate tutte.</li>
         <br>
-    
-        <li>
-            Con <kbd><samp>Modifica</samp></kbd> (oppure con il clic destro del mouse)
-            è possibile modificare la transazione selezionata senza interrompere
-            la procedura di riconciliazione.
-        </li>
-        <li>
-            Con <kbd><samp>Nuova</samp></kbd> (oppure con il clic destro del mouse
-            in un’area vuota dell’elenco) è possibile aggiungere
-            eventuali transazioni mancanti.
-        </li>
-    
+        <li>Con <kbd><samp>Modifica</samp></kbd> (oppure con un clic destro del mouse) la transazione selezionata può essere modificata senza interrompere la riconciliazione.</li>
+        <li>Con <kbd><samp>Nuova</samp></kbd> (oppure con un clic destro del mouse in un'area vuota dell'elenco) possono essere aggiunte le transazioni mancanti.</li>
         <br>
-    
-        <li>
-            Con <kbd><samp>Riconcilia</samp></kbd> tutte le transazioni selezionate
-            vengono impostate allo stato <strong>“Riconciliata”</strong>
-            e la finestra viene chiusa.
-        </li>
-        <li>
-            Con <kbd><samp>Riconcilia più tardi</samp></kbd> tutte le transazioni selezionate
-            vengono impostate allo stato <strong>“Segna per follow-up”</strong>
-            e la finestra viene chiusa.
-        </li>
+        <li>Con <kbd><samp>Riconcilia</samp></kbd> tutte le transazioni contrassegnate verranno impostate nello stato <b>"Riconciliata"</b> e la finestra verrà chiusa.</li>
+        <li>Con <kbd><samp>Riconcilia più tardi</samp></kbd> tutte le transazioni contrassegnate verranno impostate nello stato <b>"Da verificare"</b> e la finestra verrà chiusa.</li>
     </ul>
 
 
-    
-    
-    <h3>Riconciliazione e saldo delle transazioni</h3>
-    <aside class="sticky tips">
-        Per contrassegnare una transazione come riconciliata, basta selezionare la transazione e cliccare il tasto <kbd><kbd>R</kbd></kbd>. Per contrassegnare una transazione come non riconciliata, basta selezionarla e cliccare il tasto <kbd><kbd>U</kbd></kbd>.
-    </aside>
-    <dl>
-        <dt>Transazioni non confermate</dt>
-        <dd>Questo significa che non sono state verificate con la dichiarazione dall'istituzione finanziaria.</dd>
-        <dt>Transazioni confermate</dt>
-        <dd>Una transazione è considerabile riconciliata quando i suoi dettagli corrisponono a quelli dall'istituzione finanziaria.</dd>
-    </dl>
-    <p>
-        In MMEX; le transazioni riconciliate e non riconciliate sono indicate da icone differenti. Quando i dettagli bancari non sono controllati rispetto alla dichiarazione di una banca, l'utente può selezionarli per impostare il valore predefinito a Riconciliata creando le transazioni nelle impostazioni.
-    </p>
+    <h5>Impostazioni della finestra di dialogo</h5>
+    Con il pulsante delle impostazioni nell'angolo in alto a destra, la visualizzazione della finestra di riconciliazione può essere configurata:
+    <p><img class="shadow" alt='Impostazioni della finestra di dialogo di riconciliazione' src='../en_US/transactions/reconcilesettings.png'></p>
+    <p>Queste opzioni vengono memorizzate e riapplicate alla successiva apertura.</p>
+    <p>Per impostazione predefinita, le transazioni "annullate" non vengono mostrate nella finestra.</p>
 
-    <h3>Contrassegnare le transazioni per il follow-up</h3>
+
+
+    <h3>Contrassegnare le transazioni per verifica successiva</h3>
     <aside class="sticky tips">
-        Per contrassegnare una transazione come richiedente follow-up, basta selezionarla e cliccare il tasto <kbd class="key">F</kbd>.
+        Per contrassegnare una transazione come da verificare successivamente, basta
+        selezionare la transazione e premere il tasto <kbd class="key">F</kbd>.
     </aside>
     <p>
-        Alcune transazioni potrebbero avere alcuni problemi che desideri seguire. Contrassegnale con lo stato di flag per proseguimento. Questo è indicato in MMEX con un'icona differente.
+        Alcune transazioni potrebbero presentare problemi che desideri
+        controllare in seguito. Contrassegnale con lo stato "Da verificare".
+        In MMEX questo viene indicato con un'icona diversa.
     </p>
 
     <h3>Colori personalizzati</h3>
     <p>
-        L'utente può specificare 7 colori personalizzati nella sezione colori della finestra delle impostazioni.
-        Ne pannello di controllo/termine, premere <kbd><kbd>Ctrl</kbd>+<kbd>1</kbd></kbd> tramite <kbd><kbd>Ctrl</kbd>+<kbd>7</kbd></kbd> imposta il colore della voce della transazioni al colore personalizzato specificato dall'utnete.
-        Premere <kbd><kbd>Ctrl</kbd>+<kbd>0</kbd></kbd> lo modificherà nuovamente al colore della transazione predefinito di mmex.
+        L'utente può specificare 7 colori personalizzati nella sezione Colori transazione
+        del pannello Vista nelle Impostazioni.
+        Nel pannello del conto, premendo <kbd><kbd>Ctrl</kbd>+<kbd>1</kbd></kbd>
+        fino a <kbd><kbd>Ctrl</kbd>+<kbd>7</kbd></kbd> viene impostato il colore della transazione
+        sul colore personalizzato definito dall'utente.
+        Premendo <kbd><kbd>Ctrl</kbd>+<kbd>0</kbd></kbd> il colore verrà riportato
+        al colore predefinito delle transazioni di MMEX.
     </p>
-
-
-
 
 
 
@@ -2736,68 +2685,90 @@ PBanca del Beneficiario del Mutuo
 	<!--                Impostazioni di MMEX                     -->
 	<!-- ======================================================= -->
 	<h2 id="settings">Impostazioni di MMEX</h2>
-
+    <aside class="sticky notes">
+    Alcune impostazioni richiedono, dopo una modifica, il riavvio del programma per diventare effettive.
+    </aside>
     <p>
         Puoi modificare dei comportamenti in esecuzione di MMEX modificando le impostazioni nella Finestra delle Impostazioni.
     </p>
     <p>
-        Accedi dal menu con <kbd><samp>Strumenti</samp> &rarr;
-        <samp>Impostazioni</samp></kbd>.
+        È accessibile dal menu con <kbd><samp>Strumenti</samp> →
+        <samp>Impostazioni…</samp></kbd> oppure dalla barra degli strumenti.
+    </p>
+    <p>
+    La finestra di dialogo è divisa in pannelli, che strutturano le impostazioni e possono essere richiamati tramite i simboli sul lato sinistro.
     </p>
 
     <h3>Pannello Generale</h3>
+    <h4>Visualizzazione intestazione</h4>
     <dl>
-        <dt>Nome Utente</dt>
-        <dd>Questo campo è usato come titolo sulla Pagina Home e sui Resoconti.</dd>
-        <dd>Lasciare vuoto questo campo rimuoverà i titoli della Pagina Home e del Rapporto.</dd>
-        <dt>Valuta di Base</dt>
-        <dd>L'impostazione della valuta di base è usata per impostare la valuta del database. I conti individuali useranno questa come predefinita, ma è modificabile se sono richieste valute differenti.</dd>
-        <dt>Formato della Data</dt>
-        <dd>L'impostazione del formato della data è usato per controllare come dovrebbero esser mostrate le date <s>e anche come le date dovrebbero esser analizzate importando i file QIF e CSV.</s></dd>
-        <dt>Anno Finanziario</dt>
-        <dd>Imposta il Giorno e il Mese d'inizio per un periodo dell'Anno Finanziario, in contrapposizione a un anno del calendario. Questo è usato nei Budget e nei Resoconti.</dd>
-        <dt>Usa data Originale&hellip;</dt>
-        <dd>Attivalo per usare la data della data di transazione usando incolla la transazione nella vista del conto.</dd>
-        <dt>Usa Suono della Transazione&hellip;</dt>
-        <dd>Attivalo per riprodurre un suono quando è inserita una transazione.</dd>
+        <dt>Nome utente</dt>
+        <dd>Questo campo viene utilizzato come titolo nella Dashboard e nei Resoconti.</dd>
+    
+        <dd>Lasciando vuoto questo campo, verranno rimossi i titoli della Dashboard e dei
+            Resoconti.</dd>
     </dl>
-
-    <h3>Visualizza Pannello impostazioni</h3>
+    
+    <h4>Lingua dell'interfaccia utente</h4>
+    Consente di selezionare la lingua dell'interfaccia utente, richiede il riavvio del programma!
+    
+    <h4>Formato data</h4>
+    L'impostazione del formato data viene utilizzata per controllare il modo in cui vengono visualizzate le date.
+    
+    <h4>Valuta</h4>
+        <dl>
+            <dt>Valuta base</dt>
+            <dd>L'impostazione della valuta base viene utilizzata per impostare la
+                valuta del database. I singoli conti utilizzeranno
+                questa come predefinita, ma può essere cambiata se sono richieste valute differenti.</dd>
+        </dl>
+    
+    <h4>Anno finanziario</h4>
+    Imposta il giorno e il mese di inizio di un periodo di Anno Finanziario, in alternativa all'anno solare. Questo viene utilizzato in
+    Budget e Resoconti.
+    
+    
+    <h3>Pannello Vista</h3>
+    Queste impostazioni controllano l'aspetto di MMEX. È suddiviso in diverse sezioni:
+    
+    <h4>Vista</h4>
     <dl>
-        <dt>Transazioni Visibili</dt>
-        <dd>Questo determina quali transazioni sono viste come predefinite nella Vista del Conto.</dd>
+        <dt>Conti visibili</dt>
+        <dd>Determina quali conti, in base al loro stato, sono visibili nel navigatore.</dd>
+    
+        <dt>Separatore categorie</dt>
+        <dd>Determina come vengono delimitate le sottocategorie.</dd>
+    
+        <dt>Non usare colori per le transazioni future</dt>
+        <dd>Disabilita l'uso dei colori specifici delle transazioni che hanno una data nel futuro.</dd>
+    
+        <dt>Enfatizza le transazioni non riconciliate</dt>
+        <dd>Tutte le transazioni che non si trovano nello stato riconciliato vengono evidenziate. Questo consente una panoramica più rapida.</dd>
+    
+        <dt>Mostra tooltip</dt>
+        <dd>Abilita i tooltip in tutti i controlli.</dd>
+    
+        <dt>Mostra suggerimenti finanziari</dt>
+        <dd>Abilita suggerimenti finanziari selezionati casualmente nella vista transazioni.</dd>
+    </dl>
+    
+    
+    <h4>Interfaccia utente</h4>
+    <dl>
+        <dt>Modello di stile</dt>
+        <dd>Richiama il gestore dei temi per selezionare un tema per MMEX.</dd>
+    
+        <dt>Tema</dt>
+        <dd>Consente di passare tra temi chiari e scuri.</dd>
+    
         <dt>Fattore di scala HTML</dt>
-        <dd>Questo imposterà la dimensione del font in uso sulla Pagina Home e nei Resoconti.</dd>
-        <dt>Colori dell'Utente</dt>
-        <dd>Consente all'utente di modificare i colori in MMEX affinché si adattino al suo stile.</dd>
-    </dl>
-
-    <h3>Pannello di Rete</h3>
-    <dl>
-        <dt>Impostazioni della WebApp</dt>
-        <dd>Imposta URL e GUID dell'installazione della tua WebApp per consentire la sincronizzazione dei dati. I parametri si possono trovare nella pagina della Guida della WebApp.</dd>
-    </dl>
-
-    <h3>Altri Pannelli</h3>
-    <dl>
-        <dt>Pagina Web della Quotazione di Borsa</dt>
-        <dd>Quest'URL è usato dal pulsante Ricarica sulla pagina degli Investimenti Azionari. Quest'URL è anche usato dalla finestra Nuovo/Modifica Titolo, per mostrare la pagina web per i titoli elencati.
-            Yahoo Finance è il predefinito. In alternativa, sono utilizzabili altri siti se necessario.</dd>
-        <dt>Impostazioni della Finestra Nuova Transazione</dt>
-        <dd>Modifica le impostazioni predefinite per la Finestra Nuove/Modifica Transazioni</dd>
-        <dt>Backup del Database</dt>
-        <dd>Imposta come sono eseguiti i backup all'avvio di MMEX.
-            <dl>
-                <dt>Crea un nuovo backup all'Avvio di MMEX</dt>
-                <dd>Questo copia il database in un nuovo file con la data odierna, all'Avvio di MMEX.</dd>
-                <dd>Il file non sarà sovrascritto al riavvio di MMEX. Quando ci sono più di 4 file di backup, il file meno recente è eliminato.</dd>
-                <dt>Backup del database all'uscita</dt>
-                <dd>Quando MMEX si arresta, il database esistente sarà copiato a un file del database di backup per quel giorno quando le modifiche al database sono state rilevate. Quando sono effettuate modifiche lo stesso giorno, il backup esistente è sovrascritto. Quando ci sono più di 4 file di backup, il file meno recente è eliminato.</dd>
-            </dl>
-        </dd>
-        <dt>Delimitatore CSV</dt>
-        <dd>Questo è usato come carattere delimitante recuperando i file CSV. Questo è utile per modificare dal predefinito <kbd>,</kbd> avendo a che fare con valute che usano <kbd>,</kbd> per denotare i punti decimali negli importi.</dd>
-    </dl>
+        <dd>Imposta la scala del carattere utilizzata nella dashboard e nei resoconti.</dd>
+    
+        <dt>Dimensione carattere</dt>
+        <dd>Imposta la dimensione del carattere utilizzata nella dashboard e nei resoconti.</dd>
+    
+        <dt>Dimensione icone Barra strumenti/Navigatore/Altro</dt>
+            per una visualizzazione individuale dei conti o dei resoconti</dd>
 
     <!--Frequently Asked Questions-->
 	<!-- ====================== Section 22 ===================== -->

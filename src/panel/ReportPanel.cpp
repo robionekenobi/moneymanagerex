@@ -483,6 +483,10 @@ void ReportPanel::createControls()
                 int idx = w_selection_choice->FindString(removeQuotes(map["default"]));
                 w_selection_choice->SetSelection(idx != wxNOT_FOUND ? idx : 0);
             }
+            int sel = m_rb->getGenericSelection();
+            if (sel >= 0 && static_cast<unsigned int>(sel) < w_selection_choice->GetCount()) {
+                w_selection_choice->SetSelection(sel);
+            }
             itemBoxSizerHeader->Add(w_selection_choice, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
             itemBoxSizerHeader->AddSpacer(30);
         }
@@ -720,6 +724,10 @@ bool ReportPanel::saveReportText()
             id_str = obj->GetData();
         int64 id = std::stoll(id_str.ToStdString());
         m_rb->setDateSelection(id);
+    }
+
+    if ((m_rb->getParameters() & ReportBase::M_GENERIC_SELECTION) && w_selection_choice) {
+        m_rb->setGenericSelection(w_selection_choice->GetSelection());
     }
 
     StringBuffer json_buffer;

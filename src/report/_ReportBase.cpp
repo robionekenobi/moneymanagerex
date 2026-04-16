@@ -53,8 +53,8 @@ void ReportBase::setReportParameters(ReportBase::REPORT_ID report_id)
 
     switch (report_id) {
     case MyUsage:                     m_parameters = M_DATE_RANGE | M_CHART; break;
-    case MonthlySummaryofAccounts:    m_parameters = M_DATE_RANGE | M_ACCOUNT | M_CHART; break;
-    case YearlySummaryofAccounts:     m_parameters = M_DATE_RANGE | M_ACCOUNT | M_CHART; break;
+    case MonthlySummaryofAccounts:    m_parameters = M_DATE_RANGE | M_ACCOUNT | M_CHART | M_GENERIC_SELECTION; break;
+    case YearlySummaryofAccounts:     m_parameters = M_DATE_RANGE | M_ACCOUNT | M_CHART | M_GENERIC_SELECTION; break;
     case WheretheMoneyGoes:           m_parameters = M_DATE_RANGE | M_ACCOUNT | M_CHART; break;
     case WheretheMoneyComesFrom:      m_parameters = M_DATE_RANGE | M_ACCOUNT | M_CHART; break;
     case CategoriesSummary:           m_parameters = M_DATE_RANGE | M_ACCOUNT | M_CHART; break;
@@ -92,10 +92,16 @@ void ReportBase::setAccounts(int selection, const wxString& type_name)
     // Select Accounts
     case 1: {
         wxArrayString account_name_a;
-        for (const auto& account_d : AccountModel::instance().find_data_a(
+        const bool exclude_share_accounts =
+            m_report_id == REPORT_ID::MonthlySummaryofAccounts ||
+            m_report_id == REPORT_ID::YearlySummaryofAccounts;
+        for (const AccountData& account_d : AccountModel::instance().find_data_a(
             TableClause::ORDERBY(AccountCol::NAME_ACCOUNTNAME)
         )) {
             if (m_only_active && !account_d.is_open())
+                continue;
+            if (exclude_share_accounts &&
+                AccountModel::type_id(account_d) == mmNavigatorItem::TYPE_ID_SHARES)
                 continue;
             account_name_a.Add(account_d.m_name);
         }
@@ -221,6 +227,13 @@ void ReportBase::saveReportSettings()
         json_writer.String(m_generic_filter.utf8_str());
     }
 
+    if (m_parameters & M_GENERIC_SELECTION)
+    {
+        isActive = true;
+        json_writer.Key("GENERIC_SELECTION");
+        json_writer.Int(m_generic_selection);
+    }
+
     json_writer.EndObject();
 
     if (isActive) {
@@ -259,6 +272,10 @@ void ReportBase::restoreReportSettings()
 
     if (j_doc.HasMember("GENERIC_FILTER") && j_doc["GENERIC_FILTER"].IsString()) {
         m_generic_filter = j_doc["GENERIC_FILTER"].GetString();
+    }
+
+    if (j_doc.HasMember("GENERIC_SELECTION") && j_doc["GENERIC_SELECTION"].IsInt()) {
+        m_generic_selection = j_doc["GENERIC_SELECTION"].GetInt();
     }
 
     m_account_selection = -1;
