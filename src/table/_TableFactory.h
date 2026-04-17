@@ -177,7 +177,7 @@ auto TableFactory<T, D>::find_data_a(const Args&... clause_args) -> DataA
 template<typename T, typename D>
 auto TableFactory<T, D>::find_data_a() -> DataA
 {
-    return find_data_a(TableClause::VOID());
+    return find_data_a(TableClause::EMPTY());
 }
 
 // Return the results of the following query:
@@ -223,7 +223,7 @@ auto TableFactory<T, D>::find_id_a(const Args&... clause_args) -> std::vector<in
 template<typename T, typename D>
 auto TableFactory<T, D>::find_id_a() -> std::vector<int64>
 {
-    return find_id_a(TableClause::VOID());
+    return find_id_a(TableClause::EMPTY());
 }
 
 // Return the results of the following query:
@@ -268,7 +268,7 @@ auto TableFactory<T, D>::find_count(const Args&... clause_args) -> std::size_t
 template<typename T, typename D>
 auto TableFactory<T, D>::find_count() -> std::size_t
 {
-    return find_count(TableClause::VOID());
+    return find_count(TableClause::EMPTY());
 }
 
 // Return the results of the following query:

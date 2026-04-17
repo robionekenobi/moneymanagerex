@@ -39,10 +39,10 @@
 // clause is the logical operator which combines the following _WHERE terms
 // (until the next close _PAREN clause), while the text in a close _PAREN is empty.
 //
-// A clause of type _VOID always has empty text, and it is ignored, i.e.,
+// A clause of type _EMPTY always has empty text, and it is ignored, i.e.,
 // when inserted in a clause arguments list it behaves as if it did not exist.
 // A clause with empty text and of any type other than _PAREN is equivalent to
-// a _VOID clause. Void clauses cannot be used where a non-void clause is expected.
+// a _EMPTY clause. Void clauses cannot be used where a non-void clause is expected.
 
 // OP represents an SQLite operator.
 // It is used in TableClause::WHERE() to construct a _WHERE clause.
@@ -88,7 +88,7 @@ public:
         CLAUSE_ID_GROUP,  // m_text: result
         CLAUSE_ID_ORDER,  // m_text: result (| ASC | DESC)
         CLAUSE_ID_LIMIT,  // m_text: integer (| "OFFSET" integer)
-        CLAUSE_ID_VOID,   // m_text: ""
+        CLAUSE_ID_EMPTY,  // m_text: ""
     };
 
     static CLAUSE_ID collate_id(CLAUSE_ID id) {
@@ -119,7 +119,7 @@ public:
     static auto GROUPBY(const wxString& result) -> TableClauseD;
     static auto ORDERBY(const wxString& result, bool desc = false) -> TableClauseD;
     static auto LIMIT(int limit, int offset = 0) -> TableClauseD;
-    static auto VOID() -> TableClauseD;
+    static auto EMPTY() -> TableClauseD;
 
     template<typename V>
     static auto WHERE(const wxString& col, OP op, const V& value) -> TableClauseV<V>;

@@ -43,7 +43,7 @@ TableClauseD AccountModel::WHERE_IGNORE_CLOSED(bool value)
         ? TableClause::eval(AccountModel::WHERE_STATUS(
             OP_NE, AccountStatus(AccountStatus::e_closed)
         ))
-        : TableClause::VOID();
+        : TableClause::EMPTY();
 }
 
 // -- constructor

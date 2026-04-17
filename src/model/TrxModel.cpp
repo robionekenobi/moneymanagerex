@@ -91,7 +91,7 @@ TableClauseD TrxModel::WHERE_IGNORE_DELETED(bool value)
 {
     return value
         ? TableClause::eval(WHERE_IS_DELETED(false))
-        : TableClause::VOID();
+        : TableClause::EMPTY();
 }
 
 void TrxModel::copy_from_trx(Data *this_n, const Data& other_d)

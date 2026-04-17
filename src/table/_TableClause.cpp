@@ -55,8 +55,8 @@ TableClauseD TableClause::LIMIT(int limit, int offset) {
     );
 }
 
-TableClauseD TableClause::VOID() {
-    return TableClauseD(CLAUSE_ID_VOID, "");
+TableClauseD TableClause::EMPTY() {
+    return TableClauseD(CLAUSE_ID_EMPTY, "");
 }
 
 // -- methods
@@ -128,11 +128,11 @@ TableClause TableClause::merge(const std::vector<const TableClause*>& clause_na)
 {
     if (clause_na.empty()) {
         wxLogError("TableClause::merge: clause_na is empty");
-        return TableClause::VOID();
+        return TableClause::EMPTY();
     }
     if (clause_na[0]->is_void()) {
         wxLogError("TableClause::merge: clause_na[0] is void");
-        return TableClause::VOID();
+        return TableClause::EMPTY();
     }
 
     CLAUSE_ID id = collate_id(clause_na[0]->m_id);

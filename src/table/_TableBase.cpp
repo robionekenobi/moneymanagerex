@@ -79,7 +79,7 @@ void TableBase::select_query(
         wxString query;
         std::vector<int> index_a;
         bool is_empty = true;
-    } state_a[TableClause::CLAUSE_ID_VOID];
+    } state_a[TableClause::CLAUSE_ID_EMPTY];
 
     // stack of logical operators, used in WHERE and PAREN clauses
     std::vector<wxString> op_a;
@@ -158,7 +158,7 @@ void TableBase::select_query(
     }
 
     // update query, index_a
-    for (int id = 0; id < TableClause::CLAUSE_ID_VOID; ++id) {
+    for (int id = 0; id < TableClause::CLAUSE_ID_EMPTY; ++id) {
         if (TableClause::collate_id(static_cast<TableClause::CLAUSE_ID>(id)) != id)
             continue;
 

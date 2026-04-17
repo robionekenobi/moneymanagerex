@@ -51,7 +51,7 @@ TableClauseD AssetModel::WHERE_IGNORE_CLOSED(bool value)
 {
     return value
         ? TableClause::eval(WHERE_STATUS(OP_NE, AssetStatus(AssetStatus::e_closed)))
-        : TableClause::VOID();
+        : TableClause::EMPTY();
 }
 
 // -- constructor
