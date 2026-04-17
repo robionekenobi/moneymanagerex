@@ -20,13 +20,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "base/_defs.h"
 #include <wx/spinctrl.h>
-#include "base/paths.h"
 #include "util/_util.h"
 
 #include "model/PrefModel.h"
 #include "model/TrxModel.h"
 
 #include "OtherPref.h"
+#include <base/mmPlatform.h>
+#include <util/mmPath.h>
 
 /*******************************************************/
 wxBEGIN_EVENT_TABLE(OtherPref, wxPanel)
@@ -203,8 +204,8 @@ void OtherPref::Create()
     wxBoxSizer* importDefinedSizer = new wxBoxSizer(wxHORIZONTAL);
     importStaticBoxSizer->Add(importDefinedSizer, wxSizerFlags(g_flagsExpand).Proportion(0));
 
-    const wxString importFolder = InfoModel::instance().getString("IMPORTFOLDER:" + mmPlatformType(), ".");
-    m_old_path = mmex::getPathImport(importFolder);
+    const wxString importFolder = InfoModel::instance().getString("IMPORTFOLDER:" + mmPlatform::platformType(), ".");
+    m_old_path = mmPath::getPathImport(importFolder);
 
     wxArrayString list2;
     list2.Add(ATTACHMENTS_FOLDER_DOCUMENTS);
@@ -224,7 +225,7 @@ void OtherPref::Create()
     importDefinedSizer->Add(importsFolderButton, g_flagsH);
 
     m_import_preview = new wxStaticText(misc_panel, wxID_STATIC
-        , _("Real path:") + "\n" + mmex::getPathImport(importFolder));
+        , _("Real path:") + "\n" + mmPath::getPathImport(importFolder));
     m_import_preview->SetFont(this->GetFont().Smaller());
     importStaticBoxSizer->Add(m_import_preview, g_flagsV);
 
@@ -270,7 +271,7 @@ void OtherPref::Create()
 
 void OtherPref::OnImportButton(wxCommandEvent& WXUNUSED(event))
 {
-    wxString ImportFolder = mmex::getPathImport(m_import_path->GetValue());
+    wxString ImportFolder = mmPath::getPathImport(m_import_path->GetValue());
 
     wxDirDialog dlg(this, _("Choose folder to set as import"), ImportFolder, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
 
@@ -283,7 +284,7 @@ void OtherPref::OnImportButton(wxCommandEvent& WXUNUSED(event))
 
 void OtherPref::OnImportPathChanged(wxCommandEvent& WXUNUSED(event))
 {
-    wxString ImportFolder = mmex::getPathImport(m_import_path->GetValue().Trim());
+    wxString ImportFolder = mmPath::getPathImport(m_import_path->GetValue().Trim());
     m_import_preview->SetLabelText(_("Real path:") + "\n" + ImportFolder);
     Fit();
 }
@@ -334,7 +335,7 @@ bool OtherPref::SaveSettings()
     const wxString& delim = st->GetValue();
     if (!delim.IsEmpty()) InfoModel::instance().saveString("DELIMITER", delim);
 
-    InfoModel::instance().saveString("IMPORTFOLDER:" + mmPlatformType(), m_import_path->GetValue().Trim());
+    InfoModel::instance().saveString("IMPORTFOLDER:" + mmPlatform::platformType(), m_import_path->GetValue().Trim());
     
     return true;
 }

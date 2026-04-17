@@ -213,7 +213,7 @@ void GeneralPref::create()
     w_currency_sizer->AddSpacer(15);
     { // Currency History Details
         wxBoxSizer* currencyBaseSizer2 = new wxBoxSizer(wxHORIZONTAL);
-        m_currencyStaticBoxSizer->Add(currencyBaseSizer2, wxSizerFlags(g_flagsV).Border(wxLEFT, 0));
+        w_currency_sizer->Add(currencyBaseSizer2, wxSizerFlags(g_flagsV).Border(wxLEFT, 0));
 
         w_uh_cb = new wxCheckBox(currencyStaticBox, wxID_ANY,
             _t("Use historical currency"),

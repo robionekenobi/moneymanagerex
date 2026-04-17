@@ -694,7 +694,7 @@ wxVector<wxBitmapBundle> NavTreeIconImages::getList(const int size)
                 if (fullPath.FileExists()) {
                     if (fullPath.GetExt().Lower() == "svg") {
                         wxBitmapBundle bundle = wxBitmapBundle::FromSVGFile(fullPath.GetFullPath(), bSize);
-                        bitmaps.emplace_back(bundle);
+                        bitmaps.push_back(bundle);
                         m_indexMap[bidx] = filename;
                         m_indexReverseMap[filename] = bidx++;
                     }
@@ -702,7 +702,7 @@ wxVector<wxBitmapBundle> NavTreeIconImages::getList(const int size)
                         wxImage image;
                         if (image.LoadFile(fullPath.GetFullPath())) {
                             wxImage img = image.Scale(x, x, wxIMAGE_QUALITY_HIGH);
-                            bitmaps.emplace_back(wxBitmap(img));
+                            bitmaps.push_back(wxBitmap(img));
                             m_indexMap[bidx] = filename;
                             m_indexReverseMap[filename] = bidx++;
                         }

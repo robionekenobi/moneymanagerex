@@ -223,6 +223,37 @@ const wxFileName mmPath::getPathUserRaw(EUserFile f, bool create)
     return fname;
 }
 
+/*
+This function transforms mnemonic pathes to real one
+For example %USERPROFILE%\MyBudget will be transformed to C:\Users\James\MyBudget
+*/
+const wxString mmPath::getPathImport(const wxString& importFolder)
+{
+    if (importFolder == wxEmptyString)
+        return wxEmptyString;
+
+    wxString ImportFolder = importFolder;
+    const wxString sep = wxFileName::GetPathSeparator();
+    const wxString LastDBPath = SettingModel::instance().getLastDbPath();
+    const wxString& LastDBFolder = wxFileName::FileName(LastDBPath).GetPath() + sep;
+    const wxString& UserFolder = mmPath::getUserDir(false).GetPath() + sep;
+
+    if (importFolder.StartsWith(ATTACHMENTS_FOLDER_USERPROFILE, &ImportFolder))
+        ImportFolder.Prepend(wxGetHomeDir() + sep);
+    else if (importFolder.StartsWith(ATTACHMENTS_FOLDER_DOCUMENTS, &ImportFolder))
+        ImportFolder.Prepend(wxStandardPaths::Get().GetDocumentsDir() + sep);
+    else if (importFolder.StartsWith(ATTACHMENTS_FOLDER_DATABASE, &ImportFolder))
+        ImportFolder.Prepend(LastDBFolder);
+    else if (importFolder.StartsWith(ATTACHMENTS_FOLDER_APPDATA, &ImportFolder))
+        ImportFolder.Prepend(UserFolder);
+
+    if (ImportFolder.Last() != sep)
+        ImportFolder.Append(sep);
+
+    return ImportFolder;
+}
+
+
 // This function transforms mnemonic paths to real one
 // For example %USERPROFILE%\MyBudget will be transformed to C:\Users\James\MyBudget
 const wxString mmPath::getPathAttachment(const wxString& folder)

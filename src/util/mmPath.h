@@ -81,6 +81,7 @@ struct mmPath
     static auto getPathUser(EUserFile f) -> const wxString;
     static const wxFileName getPathUserRaw(EUserFile f, bool create = false);
 
+    static auto getPathImport(const wxString& importFolder) -> const wxString;
     static auto getPathAttachment(const wxString& folder) -> const wxString;
     static bool isPortableMode();
     static auto getTempFolder() -> const wxString;

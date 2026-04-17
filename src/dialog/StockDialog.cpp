@@ -39,6 +39,7 @@
 #include "AttachmentDialog.h"
 #include "AccountDialog.h"
 #include "TrxShareDialog.h"
+#include <base/mmPlatform.h>
 
 using namespace rapidjson;
 
@@ -562,11 +563,11 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
         return;
 
     wxString _fileName = "";
-    const wxString stockSymbol = m_stock_symbol_ctrl->GetValue().Trim();
+    const wxString stockSymbol = m_stock_n->m_symbol.Trim();
     if (!stockSymbol.IsEmpty())
     {
         _fileName = stockSymbol;
-        const wxString& importPath = InfoModel::instance().getString("IMPORTFOLDER:" + mmPlatformType(), ".");
+        const wxString& importPath = InfoModel::instance().getString("IMPORTFOLDER:" + mmPlatform::platformType(), ".");
         _fileName = wxString::Format("%s\\%s.csv", importPath, stockSymbol);
 
         wxFileName csv_file(_fileName);
@@ -718,9 +719,10 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
         if (lp != cp)
         {
             m_stock_n->m_current_price = histData.at(0).m_price;
-            m_current_price_ctrl->SetValue(m_stock_n->m_current_price, PrefModel::instance().getSharePrecision());
+            w_current_price_text->SetValue(m_stock_n->m_current_price, PrefModel::instance().getSharePrecision());
             StockModel::instance().unsafe_save_data_n(m_stock_n);
-            m_value_investment->SetLabelText(AccountModel::instance().value_number_currency(
+            w_value_label->SetLabelText(
+                AccountModel::instance().value_number_currency(
                 *account_n, StockModel::instance().calculate_account_balance(*account_n, mmDate::today())
             ));
             StockModel::instance().update_symbol_current_price(m_stock_n->m_symbol, m_stock_n->m_current_price);
