@@ -39,19 +39,21 @@
 wxIMPLEMENT_DYNAMIC_CLASS(AttachmentDialog, wxDialog);
 
 wxBEGIN_EVENT_TABLE( AttachmentDialog, wxDialog )
-    EVT_BUTTON(wxID_CANCEL,                  AttachmentDialog::OnCancel)
-    EVT_BUTTON(wxID_OK,                      AttachmentDialog::OnOk)
-    EVT_BUTTON(wxID_APPLY,                   AttachmentDialog::OnMagicButton)
-    EVT_DATAVIEW_SELECTION_CHANGED(wxID_ANY, AttachmentDialog::OnListItemSelected)
-    EVT_DATAVIEW_ITEM_CONTEXT_MENU(wxID_ANY, AttachmentDialog::OnItemRightClick)
-    EVT_DATAVIEW_ITEM_ACTIVATED(wxID_ANY,    AttachmentDialog::OnListItemActivated)
+    EVT_BUTTON(wxID_CANCEL,                  AttachmentDialog::onCancel)
+    EVT_BUTTON(wxID_OK,                      AttachmentDialog::onOk)
+    EVT_BUTTON(wxID_APPLY,                   AttachmentDialog::onMagicButton)
+    EVT_DATAVIEW_SELECTION_CHANGED(wxID_ANY, AttachmentDialog::onListItemSelected)
+    EVT_DATAVIEW_ITEM_CONTEXT_MENU(wxID_ANY, AttachmentDialog::onItemRightClick)
+    EVT_DATAVIEW_ITEM_ACTIVATED(wxID_ANY,    AttachmentDialog::onListItemActivated)
     EVT_MENU_RANGE(
         MENU_NEW_ATTACHMENT,
-        MENU_DELETE_ATTACHMENT,              AttachmentDialog::OnMenuSelected)
+        MENU_DELETE_ATTACHMENT,              AttachmentDialog::onMenuSelected)
 wxEND_EVENT_TABLE()
 
+// -- constructor
+
 AttachmentDialog::AttachmentDialog(
-    wxWindow* parent,
+    wxWindow* parent_win,
     RefTypeN ref_type,
     int64 ref_id,
     const wxString& name
@@ -64,7 +66,7 @@ AttachmentDialog::AttachmentDialog(
     m_col_name_m[ATTACHMENT_DESCRIPTION] = _t("Description");
     m_col_name_m[ATTACHMENT_FILENAME] = _t("File");
 
-    create(parent, name);
+    create(parent_win, name);
     mmThemeAutoColour(this);
 
     const wxString folder = mmAttachment::getFolder();
@@ -83,15 +85,17 @@ AttachmentDialog::AttachmentDialog(
     }
 }
 
-void AttachmentDialog::create(wxWindow* parent, const wxString& name)
+void AttachmentDialog::create(wxWindow* parent_win, const wxString& name)
 {
     SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
     long style = wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER;
 
     wxString windowTitle;
+    // Note: m_ref_id is equal to 0 for new references without id.
     if (m_ref_id > 0) {
         wxString ref_name;
-        switch (m_ref_type.id_n()) {
+        switch (m_ref_type.id_n())
+        {
         case RefTypeN::e_stock:
             ref_name = StockModel::instance().get_id_name(m_ref_id);
             break;
@@ -117,21 +121,25 @@ void AttachmentDialog::create(wxWindow* parent, const wxString& name)
             windowTitle = wxString::Format(_t("Attachment Manager | %1$s | %2$s"),
                 wxGetTranslation(m_ref_type.name_n()), ref_name
             );
-    } else
+    }
+    else {
         windowTitle = wxString::Format(_t("Attachment Manager | New %s"),
             wxGetTranslation(m_ref_type.name_n())
         );
+    }
 
     if (!wxDialog::Create(
-        parent, wxID_ANY, windowTitle,
+        parent_win, wxID_ANY, windowTitle,
         wxDefaultPosition, wxDefaultSize, style, name
     ))
         return;
 
     createControls();
     fillControls();
+
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
+    // CHECK: called twice
     fillControls();
     SetIcon(mmPath::getProgramIcon());
     Centre();
@@ -149,8 +157,12 @@ void AttachmentDialog::createControls()
         w_list->AppendTextColumn(m_col_name_m[ATTACHMENT_ID], wxDATAVIEW_CELL_INERT, 30);
     w_list->AppendTextColumn(m_col_name_m[ATTACHMENT_DESCRIPTION], wxDATAVIEW_CELL_INERT, 150);
     w_list->AppendTextColumn(m_col_name_m[ATTACHMENT_FILENAME], wxDATAVIEW_CELL_INERT, 300);
+
     w_list->DragAcceptFiles(true);
-    w_list->Connect(wxEVT_DROP_FILES, wxDropFilesEventHandler(AttachmentDialog::OnDropFiles), nullptr, this);
+    w_list->Connect(wxEVT_DROP_FILES,
+        wxDropFilesEventHandler(AttachmentDialog::onDropFiles),
+        nullptr, this
+    );
     mainBoxSizer->Add(w_list, wxSizerFlags(g_flagsExpand).Border(wxALL, 10));
 
     wxPanel* buttons_panel = new wxPanel(this, wxID_ANY);
@@ -158,15 +170,20 @@ void AttachmentDialog::createControls()
     wxStdDialogButtonSizer* buttons_sizer = new wxStdDialogButtonSizer;
     buttons_panel->SetSizer(buttons_sizer);
 
-    wxButton* buttonOK = new wxButton(buttons_panel, wxID_OK, _t("&OK "));
-    wxButton* btnCancel = new wxButton(buttons_panel, wxID_CANCEL, wxGetTranslation(g_CancelLabel));
-    buttons_sizer->Add(buttonOK, g_flagsH);
-    buttons_sizer->Add(btnCancel, g_flagsH);
+    buttons_sizer->Add(
+        new wxButton(buttons_panel, wxID_OK, _t("&OK ")),
+        g_flagsH
+    );
+    buttons_sizer->Add(
+        new wxButton(buttons_panel, wxID_CANCEL, wxGetTranslation(g_CancelLabel)),
+        g_flagsH
+    );
 
-    wxBitmapButton* magicButton = new wxBitmapButton(buttons_panel
-        , wxID_APPLY, mmImage::bitmapBundle(mmImage::png::MORE_OPTIONS, mmImage::bitmapButtonSize));
-    mmToolTip(magicButton, _t("Other tools"));
-    buttons_sizer->Add(magicButton, g_flagsH);
+    wxBitmapButton* magic_btn = new wxBitmapButton(buttons_panel, wxID_APPLY,
+        mmImage::bitmapBundle(mmImage::png::MORE_OPTIONS, mmImage::bitmapButtonSize)
+    );
+    mmToolTip(magic_btn, _t("Other tools"));
+    buttons_sizer->Add(magic_btn, g_flagsH);
 
     Center();
     this->SetSizer(mainBoxSizer);
@@ -176,46 +193,46 @@ void AttachmentDialog::fillControls()
 {    
     w_list->DeleteAllItems();
 
-    AttachmentModel::DataA att_a = AttachmentModel::instance().find_ref_data_a(
+    for (const auto& att_d : AttachmentModel::instance().find_ref_data_a(
         m_ref_type, m_ref_id
-    );
-    if (att_a.empty())
-        return;
-
-    int64 firstInTheListAttachentID = -1;
-    for (const auto& att_d : att_a) {
-        if (firstInTheListAttachentID == -1)
-            firstInTheListAttachentID = att_d.m_id;
+    )) {
         wxVector<wxVariant> data;
         if (m_debug)
             data.push_back(wxVariant(wxString::Format("%lld", att_d.m_id)));
         data.push_back(wxVariant(att_d.m_description));
-        data.push_back(wxVariant(att_d.m_ref_type_n.key_n() + mmAttachment::s_path_sep + att_d.m_filename));
+        data.push_back(wxVariant(
+            att_d.m_ref_type_n.key_n() + mmAttachment::s_path_sep + att_d.m_filename
+        ));
         w_list->AppendItem(data, static_cast<wxUIntPtr>(att_d.m_id.GetValue()));
-    }
 
-    m_attachment_id = firstInTheListAttachentID;
+        // Set m_attachment_id to first id in results
+        if (m_attachment_id == -1) {
+            m_attachment_id = att_d.m_id;
+        }
+    }
 }
 
-void AttachmentDialog::AddAttachment(wxString file_path)
+// -- methods
+
+void AttachmentDialog::addAttachment(wxString file)
 {
-    if (file_path.empty()) {
-        file_path = wxFileSelector(
+    if (file.empty()) {
+        file = wxFileSelector(
             _t("Import attachment:"),
             wxEmptyString, wxEmptyString, wxEmptyString,
             "All Files |*.*",
             wxFD_FILE_MUST_EXIST
         );
-        if (file_path.empty())
+        if (file.empty())
             return;
     }
 
-    const wxString file_name = wxFileName(file_path).GetName();
-    const wxString file_ext = wxFileName(file_path).GetExt().MakeLower();
-    
+    const wxString file_name = wxFileName(file).GetName();
+    const wxString file_ext = wxFileName(file).GetExt().MakeLower();
+
     mmDialogComboBoxAutocomplete dlg(this,
         _t("Enter a description for the new attachment:") +
-            wxString::Format("\n(%s)", file_path),
+            wxString::Format("\n(%s)", file),
         _t("Attachment Manager: Add Attachment"),
         file_name,
         AttachmentModel::instance().find_all_desc_a()
@@ -227,23 +244,25 @@ void AttachmentDialog::AddAttachment(wxString file_path)
     const wxString desc = dlg.getText();
 
     const wxString folder = mmAttachment::getFolder();
-    int last_num = AttachmentModel::instance().find_ref_last_num(m_ref_type, m_ref_id);
+    int last_num = AttachmentModel::instance().find_ref_last_num(
+        m_ref_type, m_ref_id
+    );
 
-    wxString importedFileName = wxString::Format("%s_%lld_Attach%i",
+    wxString new_file_name = wxString::Format("%s_%lld_Attach%i",
         m_ref_type.key_n(), m_ref_id, last_num + 1
     );
     if (!file_ext.empty())
-        importedFileName += "." + file_ext;
+        new_file_name += "." + file_ext;
 
     if (mmAttachment::copyFile(
-        file_path,
-        folder + m_ref_type.key_n() + mmAttachment::s_path_sep + importedFileName
+        file,
+        folder + m_ref_type.key_n() + mmAttachment::s_path_sep + new_file_name
     )) {
         AttachmentData new_att_d = AttachmentData();
         new_att_d.m_ref_type_n  = m_ref_type;
         new_att_d.m_ref_id      = m_ref_id;
         new_att_d.m_description = desc;
-        new_att_d.m_filename    = importedFileName;
+        new_att_d.m_filename    = new_file_name;
         AttachmentModel::instance().add_data_n(new_att_d);
         m_attachment_id = new_att_d.m_id;
 
@@ -254,7 +273,7 @@ void AttachmentDialog::AddAttachment(wxString file_path)
     fillControls();
 }
 
-void AttachmentDialog::OpenAttachment()
+void AttachmentDialog::openAttachment()
 {
     const AttachmentData* att_n = AttachmentModel::instance().get_idN_data_n(
         m_attachment_id
@@ -266,7 +285,7 @@ void AttachmentDialog::OpenAttachment()
     mmAttachment::openFile(file);
 }
 
-void AttachmentDialog::EditAttachment()
+void AttachmentDialog::editAttachment()
 {
     AttachmentData *att_n = AttachmentModel::instance().unsafe_get_idN_data_n(
         m_attachment_id
@@ -280,7 +299,6 @@ void AttachmentDialog::EditAttachment()
         att_n->m_description,
         AttachmentModel::instance().find_all_desc_a()
     );
-
     if (dlg.ShowModal() != wxID_OK)
         return;
 
@@ -290,7 +308,6 @@ void AttachmentDialog::EditAttachment()
 
     att_n->m_description = desc;
     AttachmentModel::instance().unsafe_update_data_n(att_n);
-    m_attachment_id = att_n->id();
 
     if (att_n->m_ref_type_n == TrxModel::s_ref_type)
         TrxModel::instance().save_timestamp(att_n->m_ref_id);
@@ -298,7 +315,7 @@ void AttachmentDialog::EditAttachment()
     fillControls();
 }
 
-void AttachmentDialog::DeleteAttachment()
+void AttachmentDialog::deleteAttachment()
 {
     const AttachmentData* att_n = AttachmentModel::instance().get_idN_data_n(
         m_attachment_id
@@ -323,19 +340,32 @@ void AttachmentDialog::DeleteAttachment()
     fillControls();
 }
 
-void AttachmentDialog::OnDropFiles(wxDropFilesEvent& event)
+// -- event handlers
+
+void AttachmentDialog::onOk(wxCommandEvent& WXUNUSED(event))
 {
-    if (event.GetNumberOfFiles() > 0) {
-        wxString* file_a = event.GetFiles();
-        for (int i = 0; i < event.GetNumberOfFiles(); i++) {
-            wxString file = file_a[i];
-            if (wxFileExists(file))
-                AddAttachment(file);
-        }
+    EndModal(wxID_OK);
+}
+
+void AttachmentDialog::onCancel(wxCommandEvent& WXUNUSED(event))
+{
+    EndModal(wxID_CANCEL);
+}
+
+void AttachmentDialog::onDropFiles(wxDropFilesEvent& event)
+{
+    if (event.GetNumberOfFiles() <= 0)
+        return;
+
+    wxString* file_a = event.GetFiles();
+    for (int i = 0; i < event.GetNumberOfFiles(); i++) {
+        wxString file = file_a[i];
+        if (wxFileExists(file))
+            addAttachment(file);
     }
 }
 
-void AttachmentDialog::OnListItemSelected(wxDataViewEvent& event)
+void AttachmentDialog::onListItemSelected(wxDataViewEvent& event)
 {
     wxDataViewItem item = event.GetItem();
     int selected_index = w_list->ItemToRow(item);
@@ -344,7 +374,7 @@ void AttachmentDialog::OnListItemSelected(wxDataViewEvent& event)
         m_attachment_id = static_cast<int64>(w_list->GetItemData(item));
 }
 
-void AttachmentDialog::OnListItemActivated(wxDataViewEvent& WXUNUSED(event))
+void AttachmentDialog::onListItemActivated(wxDataViewEvent& WXUNUSED(event))
 {
     const AttachmentData* att_n = AttachmentModel::instance().get_idN_data_n(
         m_attachment_id
@@ -356,30 +386,32 @@ void AttachmentDialog::OnListItemActivated(wxDataViewEvent& WXUNUSED(event))
     mmAttachment::openFile(file);
 }
 
-void AttachmentDialog::OnMenuSelected(wxCommandEvent& event)
+void AttachmentDialog::onMenuSelected(wxCommandEvent& event)
 {
     switch(event.GetId())
     {
-        case MENU_NEW_ATTACHMENT: AddAttachment(); break;
-        case MENU_OPEN_ATTACHMENT: OpenAttachment(); break;
-        case MENU_EDIT_ATTACHMENT: EditAttachment(); break;
-        case MENU_DELETE_ATTACHMENT: DeleteAttachment(); break;
-        default: break;
+    case MENU_NEW_ATTACHMENT:    addAttachment();    break;
+    case MENU_OPEN_ATTACHMENT:   openAttachment();   break;
+    case MENU_EDIT_ATTACHMENT:   editAttachment();   break;
+    case MENU_DELETE_ATTACHMENT: deleteAttachment(); break;
+    default:                                         break;
     }
 }
 
-void AttachmentDialog::OnMagicButton(wxCommandEvent& WXUNUSED(event))
+void AttachmentDialog::onMagicButton(wxCommandEvent& WXUNUSED(event))
 {
     wxDataViewEvent evt;
-    OnItemRightClick(evt);
+    onItemRightClick(evt);
 }
 
-void AttachmentDialog::OnItemRightClick(wxDataViewEvent& event)
+void AttachmentDialog::onItemRightClick(wxDataViewEvent& event)
 {
-    wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, wxID_ANY) ;
-    evt.SetEventObject( this );
+    wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, wxID_ANY);
+    evt.SetEventObject(this);
 
-    const AttachmentData* att_n = AttachmentModel::instance().get_idN_data_n(m_attachment_id);
+    const AttachmentData* att_n = AttachmentModel::instance().get_idN_data_n(
+        m_attachment_id
+    );
 
     wxMenu* mainMenu = new wxMenu;
     if (att_n)
@@ -406,14 +438,4 @@ void AttachmentDialog::OnItemRightClick(wxDataViewEvent& event)
     PopupMenu(mainMenu);
     delete mainMenu;
     event.Skip();
-}
-
-void AttachmentDialog::OnCancel(wxCommandEvent& /*event*/)
-{
-    EndModal(wxID_CANCEL);
-}
-
-void AttachmentDialog::OnOk(wxCommandEvent& /*event*/)
-{
-    EndModal(wxID_OK);
 }

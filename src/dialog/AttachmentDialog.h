@@ -68,34 +68,34 @@ private:
 public:
     AttachmentDialog() {}
     AttachmentDialog(
-        wxWindow* parent,
+        wxWindow* parent_win,
         RefTypeN ref_type,
         int64 ref_id,
         const wxString& name = "AttachmentDialog"
     );
 
 private:
-    void create(wxWindow* parent, const wxString& name);
+    void create(wxWindow* parent_win, const wxString& name);
     void createControls();
     void fillControls();
 
 // -- methods
 
 private:
-    void AddAttachment(wxString Path = "");
-    void OpenAttachment();
-    void EditAttachment();
-    void DeleteAttachment();
-    void OnCancel(wxCommandEvent& /*event*/);
-    void OnOk(wxCommandEvent& /*event*/);
+    void addAttachment(wxString Path = "");
+    void openAttachment();
+    void editAttachment();
+    void deleteAttachment();
 
 // -- event handlers
 
 private:
-    void OnDropFiles(wxDropFilesEvent& event);
-    void OnListItemSelected(wxDataViewEvent& event);
-    void OnMenuSelected(wxCommandEvent& event);
-    void OnItemRightClick(wxDataViewEvent& event);
-    void OnListItemActivated(wxDataViewEvent& event);
-    void OnMagicButton(wxCommandEvent& event);
+    void onOk(                wxCommandEvent&   event);
+    void onCancel(            wxCommandEvent&   event);
+    void onDropFiles(         wxDropFilesEvent& event);
+    void onListItemSelected(  wxDataViewEvent&  event);
+    void onMenuSelected(      wxCommandEvent&   event);
+    void onMagicButton(       wxCommandEvent&   event);
+    void onItemRightClick(    wxDataViewEvent&  event);
+    void onListItemActivated( wxDataViewEvent&  event);
 };
