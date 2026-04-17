@@ -251,9 +251,8 @@ int StockPanel::addStockTransaction(int selectedIndex)
     StockData* stock = &w_list->m_stock_a[selectedIndex];
     TrxShareDialog dlg(this, stock);
     int result = dlg.ShowModal();
-    if (result == wxID_OK)
-    {
-        w_list->doRefreshItems(dlg.m_stock_id);
+    if (result == wxID_OK) {
+        w_list->doRefreshItems(dlg.stock_id());
         updateExtraStocksData(selectedIndex);
     }
     return result;

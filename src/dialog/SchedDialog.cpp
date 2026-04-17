@@ -1181,10 +1181,8 @@ void SchedDialog::onComboKey(wxKeyEvent& event)
 void SchedDialog::onAttachments(wxCommandEvent& WXUNUSED(event))
 {
     // If new or duplicate, set the temporary ref_id to 0.
-    AttachmentDialog dlg(this,
-        SchedModel::s_ref_type,
-        m_mode == MODE_ADD ? 0 : m_sched_d.m_id
-    );
+    int64 ref_id = (m_mode == MODE_ADD) ? 0 : m_sched_d.m_id;
+    AttachmentDialog dlg(this, SchedModel::s_ref_type, ref_id);
     dlg.ShowModal();
 }
 

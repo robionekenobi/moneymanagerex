@@ -22,7 +22,6 @@
 
 #include <queue>
 
-#include "util/mmAttachment.h"
 #include "util/_util.h"
 
 #include "AccountModel.h"

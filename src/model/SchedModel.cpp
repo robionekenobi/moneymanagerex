@@ -20,7 +20,6 @@
 
 #include "SchedModel.h"
 
-#include "util/mmAttachment.h"
 #include "AccountModel.h"
 #include "AttachmentModel.h"
 #include "CategoryModel.h"
