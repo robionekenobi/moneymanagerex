@@ -684,8 +684,9 @@ void CurrencyChoiceDialog::OnHistoryDelete(wxCommandEvent& WXUNUSED(event))
     if (w_history_list->GetSelectedItemCount() <= 0) return;
 
     CurrencyHistoryModel::instance().db_savepoint();
+    long item = -1;
     for (;;) {
-        long item = w_history_list->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+        item = w_history_list->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
         if (item == -1)
             break;
         CurrencyHistoryModel::instance().purge_id(

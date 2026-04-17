@@ -941,8 +941,9 @@ void StockDialog::OnHistoryDeleteButton(wxCommandEvent& /*event*/)
         return;
 
     StockHistoryModel::instance().db_savepoint();
+    long item = -1;
     for (;;) {
-        long item = w_price_list->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+        item = w_price_list->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
         if (item == -1)
             break;
         StockHistoryModel::instance().purge_id(

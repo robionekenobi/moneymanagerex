@@ -85,7 +85,7 @@ SchedDialog::SchedDialog(
 ) :
     m_mode(mode)
 {
-    const SchedData* sched_n;
+    const SchedData* sched_n = nullptr;
     if (sched_id_n > 0)
         sched_n = SchedModel::instance().get_idN_data_n(sched_id_n);
 
