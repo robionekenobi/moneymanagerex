@@ -327,8 +327,9 @@ void StockList::onNewStocks(wxCommandEvent& /*event*/)
 {
     StockDialog dlg(this, nullptr, w_panel->m_account_id);
     dlg.ShowModal();
-    if (StockModel::instance().get_idN_data_n(dlg.m_stock_id)) {
-        doRefreshItems(dlg.m_stock_id);
+    int64 stock_id = dlg.stock_id();
+    if (StockModel::instance().get_idN_data_n(stock_id)) {
+        doRefreshItems(stock_id);
         w_panel->w_frame->RefreshNavigationTree();
     }
 }

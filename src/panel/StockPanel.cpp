@@ -712,10 +712,10 @@ void StockPanel::enableEditDeleteButtons(bool en)
 
 void StockPanel::call_dialog(int selectedIndex)
 {
-    StockData* stock = &w_list->m_stock_a[selectedIndex];
-    StockDialog dlg(this, stock, m_account_id);
+    StockData* stock_n = &w_list->m_stock_a[selectedIndex];
+    StockDialog dlg(this, stock_n, m_account_id);
     dlg.ShowModal();
-    w_list->doRefreshItems(dlg.m_stock_id);
+    w_list->doRefreshItems(dlg.stock_id());
 }
 
 void StockPanel::displayAccountDetails(int64 account_id)

@@ -500,6 +500,7 @@ void AssetDialog::onOk(wxCommandEvent& /*event*/)
             m_asset_n->m_id
         );
 
+        // FIXME: Avoid premature clone of attachments.
         mmAttachment::relocate_ref_all(
             AssetModel::s_ref_type, 0,
             AssetModel::s_ref_type, m_asset_n->m_id
