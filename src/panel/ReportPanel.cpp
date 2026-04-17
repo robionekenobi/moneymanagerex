@@ -846,16 +846,14 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
                 if (TrxModel::is_foreign(*trx_n)) {
                     const TrxLinkData* tl_n = TrxLinkModel::instance().get_trx_data_n(transId);
                     if (tl_n && tl_n->m_ref_type == StockModel::s_ref_type) {
-                        TrxLinkData tl_d = *tl_n;
-                        TrxShareDialog dlg(w_frame, &tl_d, trx_n);
+                        TrxShareDialog dlg(w_frame, tl_n, trx_n);
                         if (dlg.ShowModal() == wxID_OK) {
                             m_rb->getHTMLText();
                             saveReportText();
                         }
                     }
                     else if (tl_n && tl_n->m_ref_type == AssetModel::s_ref_type) {
-                        TrxLinkData tl_d = *tl_n;
-                        AssetDialog dlg(w_frame, &tl_d, trx_n);
+                        AssetDialog dlg(w_frame, tl_n, trx_n);
                         if (dlg.ShowModal() == wxID_OK) {
                             m_rb->getHTMLText();
                             saveReportText();

@@ -97,7 +97,7 @@ private:
     void copySelectedRowsToClipboard(wxListCtrl* listCtrl);
     void gotoAssetAccount(const int selected_index);
     void updateExtraAssetData(int selIndex);
-    int  initVirtualListControl(int64 trx_id = -1);
+    int  initVirtualListControl(int64 asset_id = -1);
     auto getItem(long item, int col_id) -> wxString;
 
     // Event handlers

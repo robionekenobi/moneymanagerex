@@ -438,7 +438,10 @@ void TrxShareDialog::OnStockPriceButton(wxCommandEvent& WXUNUSED(event))
     const wxString stockSymbol = m_stock_symbol_ctrl->GetValue().Trim();
 
     if (!stockSymbol.IsEmpty()) {
-        const wxString& stockURL = InfoModel::instance().getString("STOCKURL", mmex::weblink::DefStockUrl);
+        const wxString& stockURL = InfoModel::instance().getString(
+            "STOCKURL",
+            mmex::weblink::DefStockUrl
+        );
         const wxString& httpString = wxString::Format(stockURL, stockSymbol);
         wxLaunchDefaultBrowser(httpString);
     }

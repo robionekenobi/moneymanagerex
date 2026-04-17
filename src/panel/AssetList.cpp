@@ -191,21 +191,21 @@ void AssetList::onNewAsset(wxCommandEvent& /*event*/)
     }
 }
 
-void AssetList::doRefreshItems(int64 trx_id)
+void AssetList::doRefreshItems(int64 asset_id)
 {
-    int selectedIndex = w_panel->initVirtualListControl(trx_id);
+    int selectedIndex = w_panel->initVirtualListControl(asset_id);
 
     long cnt = static_cast<long>(w_panel->m_asset_a.size());
 
     if (selectedIndex >= cnt || selectedIndex < 0)
         selectedIndex = getSortAsc() ? cnt - 1 : 0;
 
-    if (cnt>0)
+    if (cnt > 0)
         RefreshItems(0, cnt > 0 ? --cnt : 0);
     else
         selectedIndex = -1;
 
-    if (selectedIndex >= 0 && cnt>0) {
+    if (selectedIndex >= 0 && cnt > 0) {
         SetItemState(selectedIndex, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
         SetItemState(selectedIndex, wxLIST_STATE_FOCUSED, wxLIST_STATE_FOCUSED);
         EnsureVisible(selectedIndex);

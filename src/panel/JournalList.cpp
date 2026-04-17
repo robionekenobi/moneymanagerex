@@ -2001,14 +2001,12 @@ void JournalList::onEditTrx(wxCommandEvent& /*event*/)
         ) > 0) {
             const TrxLinkData* tl_n = TrxLinkModel::instance().get_trx_data_n(trx_id);
             if (tl_n && tl_n->m_ref_type == StockModel::s_ref_type) {
-                TrxLinkData tl_d = *tl_n;
-                TrxShareDialog dlg(this, &tl_d, trx_n);
+                TrxShareDialog dlg(this, tl_n, trx_n);
                 if (dlg.ShowModal() == wxID_OK)
                     refreshVisualList();
             }
             else if (tl_n && tl_n->m_ref_type == AssetModel::s_ref_type) {
-                TrxLinkData tl_d = *tl_n;
-                AssetDialog dlg(this, &tl_d, trx_n);
+                AssetDialog dlg(this, tl_n, trx_n);
                 if (dlg.ShowModal() == wxID_OK)
                     refreshVisualList();
             }
