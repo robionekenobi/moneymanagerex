@@ -1485,24 +1485,20 @@ void mmFrame::OnReconcileAccount(wxCommandEvent& WXUNUSED(event))
 }
 
 //----------------------------------------------------------------------------
-void mmFrame::OnPopupEditAccount(wxCommandEvent& /*event*/)
+void mmFrame::OnPopupEditAccount(wxCommandEvent& WXUNUSED(event))
 {
     if (!selectedItemData_)
         return;
 
     int64 id = selectedItemData_->getId();
     AccountData* account = AccountModel::instance().unsafe_get_id_data_n(id);
-    if (!account)
-        return;
-
-    JournalPanel* cp = wxDynamicCast(panelCurrent_, JournalPanel);
-    AccountDialog dlg(account, this);
-    if (dlg.ShowModal() == wxID_OK)
-    {
-        RefreshNavigationTree();
-        cp->refreshList();
+    if (account) {
+        AccountDialog dlg(account, this);
+        if (dlg.ShowModal() == wxID_OK) {
+            RefreshNavigationTree();
+            refreshPanelData();
+        }
     }
-
 }
 //----------------------------------------------------------------------------
 
