@@ -136,9 +136,8 @@ void TrxFilterDialog::mmDoInitVariables()
 {
     m_use_date_filter = isReportMode_; //|| PrefModel::instance().getUsePerAccountFilter();
 
-    m_custom_fields = new mmCustomDataTransaction(this,
-        TrxModel::s_ref_type,
-        0,
+    m_custom_fields = new FieldValueDialog(this,
+        TrxModel::s_ref_type, 0,
         ID_CUSTOMFIELDS + (isReportMode_ ? 100 : 0)
     );
 

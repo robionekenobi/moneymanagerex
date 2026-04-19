@@ -104,8 +104,8 @@ void TrxModel::copy_from_trx(Data *this_n, const Data& other_d)
     this_n->m_category_id_n   = other_d.m_category_id_n;
     this_n->m_amount          = other_d.m_amount;
     this_n->m_to_amount       = other_d.m_to_amount;
-    this_n->m_notes           = other_d.m_notes;
     this_n->m_number          = other_d.m_number;
+    this_n->m_notes           = other_d.m_notes;
     this_n->m_followup_id     = other_d.m_followup_id;
     this_n->m_color           = other_d.m_color;
 }
@@ -329,41 +329,47 @@ void TrxModel::getFrequentUsedNotes(std::vector<wxString>& frequentNotes, int64 
 
 void TrxModel::setEmptyData(Data& dst_trx_d, int64 account_id)
 {
-    dst_trx_d.m_id = -1;
-    dst_trx_d.m_payee_id_n = -1;
-    mmDateTime now_dateTime = mmDateTime::now();
-    mmDateTimeN max_dateTime = mmDateTimeN();
-    if (PrefModel::instance().getTransDateDefault() != PrefModel::NONE) {
-        for (const auto& trx_d : instance().find_data_a(
+    bool useTime = PrefModel::instance().getUseTransDateTime();
+
+    mmDateTime dateTime = mmDateTime::now(useTime);
+    if (PrefModel::instance().getTransDateDefault() == PrefModel::LASTUSED) {
+        // TODO: use find_value(TableClause::MAX(TrxCol::NAME_TRANSDATE), ...)
+        for (const Data& trx_d : find_data_a(
+            TrxModel::WHERE_DATE(OP_LE, mmDate::today()),
             TableClause::BEGIN_OR(),
                 TrxCol::WHERE_ACCOUNTID(OP_EQ, account_id),
                 TrxCol::WHERE_TOACCOUNTID(OP_EQ, account_id),
-            TableClause::END()
+            TableClause::END(),
+            TrxModel::WHERE_IS_DELETED(false),
+            TableClause::ORDERBY(TrxCol::NAME_TRANSDATE, true),
+            TableClause::LIMIT(1)
         )) {
-            if (trx_d.is_deleted() || trx_d.m_datetime > now_dateTime)
-                continue;
-            if (!max_dateTime.has_value() || max_dateTime.value() < trx_d.m_datetime) {
-                max_dateTime = trx_d.m_datetime;
-            }
+            dateTime = trx_d.m_datetime.withTime(useTime);
         }
     }
 
-    dst_trx_d.m_datetime      = max_dateTime.value_or(now_dateTime);
-    dst_trx_d.m_type          = TrxType(TrxType::e_withdrawal);
-    dst_trx_d.m_status        = TrxStatus(PrefModel::instance().getTransStatusReconciled());
-    dst_trx_d.m_account_id    = account_id;
-    dst_trx_d.m_category_id_n = -1;
-    dst_trx_d.m_amount        = 0;
-    dst_trx_d.m_to_amount     = 0;
-    dst_trx_d.m_number        = "";
-    dst_trx_d.m_followup_id   = -1;
-    dst_trx_d.m_color         = -1;
+    dst_trx_d.m_id              = -1;
+    dst_trx_d.m_datetime        = dateTime;
+    dst_trx_d.m_type            = TrxType();
+    dst_trx_d.m_status          = PrefModel::instance().getTrxStatus();
+    dst_trx_d.m_account_id      = account_id;
+    dst_trx_d.m_to_account_id_n = -1;
+    dst_trx_d.m_payee_id_n      = -1;
+    dst_trx_d.m_category_id_n   = -1;
+    dst_trx_d.m_amount          = 0.0;
+    dst_trx_d.m_to_amount       = 0.0;
+    dst_trx_d.m_number          = "";
+    dst_trx_d.m_notes           = "";
+    dst_trx_d.m_followup_id     = -1;
+    dst_trx_d.m_color           = -1;
 }
 
 bool TrxModel::is_locked(const Data& trx_d)
 {
     // FIXME: check if m_to_account_id_n is locked
-    const AccountData* account_n = AccountModel::instance().get_idN_data_n(trx_d.m_account_id);
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(
+        trx_d.m_account_id
+    );
     return account_n && account_n->is_locked_for(trx_d.m_date());
 }
 

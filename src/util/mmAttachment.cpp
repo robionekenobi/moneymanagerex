@@ -171,70 +171,74 @@ bool mmAttachment::deleteFile(const wxString& file)
 }
 
 bool mmAttachment::relocate_ref_all(
-    RefTypeN old_ref_type, int64 old_ref_id,
-    RefTypeN new_ref_type, int64 new_ref_id
+    RefTypeN src_ref_type, int64 src_ref_id,
+    RefTypeN dst_ref_type, int64 dst_ref_id
 ) {
     AttachmentModel::DataA att_a = AttachmentModel::instance().find_data_a(
-        AttachmentCol::WHERE_REFTYPE(OP_EQ, old_ref_type.key_n()),
-        AttachmentCol::WHERE_REFID(OP_EQ, old_ref_id)
+        AttachmentCol::WHERE_REFTYPE(OP_EQ, src_ref_type.key_n()),
+        AttachmentCol::WHERE_REFID(OP_EQ, src_ref_id)
     );
 
     if (att_a.size() == 0)
         return false;
 
-    const wxString old_folder = mmAttachment::getFolder() + old_ref_type.key_n() + s_path_sep;
-    const wxString new_folder = mmAttachment::getFolder() + new_ref_type.key_n() + s_path_sep;
+    const wxString old_folder = mmAttachment::getFolder() + src_ref_type.key_n() + s_path_sep;
+    const wxString new_folder = mmAttachment::getFolder() + dst_ref_type.key_n() + s_path_sep;
 
     for (AttachmentData& att_d : att_a) {
         wxString newFileName = att_d.m_filename;
         newFileName.Replace(
             att_d.m_ref_type_n.key_n() + "_" + wxString::Format("%lld", att_d.m_ref_id),
-            new_ref_type.key_n() + "_" + wxString::Format("%lld", new_ref_id)
+            dst_ref_type.key_n() + "_" + wxString::Format("%lld", dst_ref_id)
         );
         wxRenameFile(
             old_folder + att_d.m_filename,
             new_folder + newFileName
         );
-        att_d.m_ref_type_n = new_ref_type;
-        att_d.m_ref_id     = new_ref_id;
+        att_d.m_ref_type_n = dst_ref_type;
+        att_d.m_ref_id     = dst_ref_id;
         att_d.m_filename   = newFileName;
     }
     AttachmentModel::instance().save_data_a(att_a);
 
-    if (old_ref_type == TrxModel::s_ref_type)
-        TrxModel::instance().save_timestamp(old_ref_id);
-    if (new_ref_type == TrxModel::s_ref_type)
-        TrxModel::instance().save_timestamp(new_ref_id);
+    if (src_ref_type == TrxModel::s_ref_type)
+        TrxModel::instance().save_timestamp(src_ref_id);
+    if (dst_ref_type == TrxModel::s_ref_type)
+        TrxModel::instance().save_timestamp(dst_ref_id);
 
     return true;
 }
 
 bool mmAttachment::clone_ref_all(
-    RefTypeN ref_type,
-    int64 src_ref_id,
-    int64 dst_ref_id
+    RefTypeN src_ref_type, int64 src_ref_id,
+    RefTypeN dst_ref_type, int64 dst_ref_id
 ) {
-    const wxString folder = mmAttachment::getFolder() + ref_type.key_n() + s_path_sep;
+    const wxString folder = mmAttachment::getFolder();
 
     for (const AttachmentData& src_att_d : AttachmentModel::instance().find_data_a(
-        AttachmentCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n()),
+        AttachmentCol::WHERE_REFTYPE(OP_EQ, src_ref_type.key_n()),
         AttachmentCol::WHERE_REFID(OP_EQ, src_ref_id)
     )) {
-        wxString dst_filename = src_att_d.m_filename;
+        const wxString src_filename = src_att_d.m_filename;
+        wxString dst_filename = src_filename;
         dst_filename.Replace(
-            src_att_d.m_ref_type_n.key_n() + "_" + wxString::Format("%lld", src_att_d.m_ref_id),
-            src_att_d.m_ref_type_n.key_n() + "_" + wxString::Format("%lld", dst_ref_id)
+            src_ref_type.key_n() + "_" + wxString::Format("%lld", src_ref_id),
+            dst_ref_type.key_n() + "_" + wxString::Format("%lld", dst_ref_id)
         );
-        wxCopyFile(folder + src_att_d.m_filename, folder + dst_filename);
+        wxCopyFile(
+            folder + src_ref_type.key_n() + s_path_sep + src_filename,
+            folder + dst_ref_type.key_n() + s_path_sep + dst_filename
+        );
+
         AttachmentData new_att_d = AttachmentData();
-        new_att_d.m_ref_type_n  = ref_type;
+        new_att_d.m_ref_type_n  = dst_ref_type;
         new_att_d.m_ref_id      = dst_ref_id;
         new_att_d.m_filename    = dst_filename;
         new_att_d.m_description = src_att_d.m_description;
         AttachmentModel::instance().add_data_n(new_att_d);
     }
 
-    if (ref_type == TrxModel::s_ref_type)
+    if (dst_ref_type == TrxModel::s_ref_type)
         TrxModel::instance().save_timestamp(dst_ref_id);
 
     return true;

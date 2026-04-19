@@ -186,7 +186,7 @@ void PrefModel::load(bool include_infotable)
     //  This is item 1 (0-indexed) in the list.
     loadTransCategoryNone();
     loadTransCategoryTransferNone();
-    loadTransStatusReconciled();
+    loadTrxStatus();
     loadTransDateDefault();
     loadSendUsageStats();
     loadCheckNews();
@@ -592,7 +592,10 @@ void PrefModel::saveTransCategoryNone(const int value)
 
 void PrefModel::loadTransCategoryTransferNone()
 {
-    m_trans_category_transfer_none = SettingModel::instance().getInt("TRANSACTION_CATEGORY_TRANSFER_NONE", PrefModel::LASTUSED);
+    m_trans_category_transfer_none = SettingModel::instance().getInt(
+        "TRANSACTION_CATEGORY_TRANSFER_NONE",
+        PrefModel::LASTUSED
+    );
 }
 void PrefModel::saveTransCategoryTransferNone(const int value)
 {
@@ -600,19 +603,25 @@ void PrefModel::saveTransCategoryTransferNone(const int value)
     m_trans_category_transfer_none = value;
 }
 
-void PrefModel::loadTransStatusReconciled()
+void PrefModel::loadTrxStatus()
 {
-    m_trans_status_reconciled = SettingModel::instance().getInt("TRANSACTION_STATUS_RECONCILED", PrefModel::NONE);
+    m_trx_status = TrxStatus(SettingModel::instance().getInt(
+        "TRANSACTION_STATUS_RECONCILED",
+        TrxStatus().id()
+    ));
 }
-void PrefModel::saveTransStatusReconciled(const int value)
+void PrefModel::saveTrxStatus(const TrxStatus value)
 {
-    SettingModel::instance().saveInt("TRANSACTION_STATUS_RECONCILED", value);
-    m_trans_status_reconciled = value;
+    SettingModel::instance().saveInt("TRANSACTION_STATUS_RECONCILED", value.id());
+    m_trx_status = value;
 }
 
 void PrefModel::loadTransDateDefault()
 {
-    m_trans_date_default = SettingModel::instance().getInt("TRANSACTION_DATE_DEFAULT", PrefModel::NONE);
+    m_trans_date_default = SettingModel::instance().getInt(
+        "TRANSACTION_DATE_DEFAULT",
+        PrefModel::NONE
+    );
 }
 void PrefModel::saveTransDateDefault(const int value)
 {

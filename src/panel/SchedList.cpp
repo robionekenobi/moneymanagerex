@@ -264,7 +264,7 @@ void SchedList::onNewBDSeries(wxCommandEvent& /*event*/)
 {
     SchedDialog dlg(this, SchedDialog::MODE_ADD, -1);
     if (dlg.ShowModal() == wxID_OK)
-        refreshVisualList(w_panel->initList(dlg.GetTransID()));
+        refreshVisualList(w_panel->initList(dlg.sched_id()));
 }
 
 void SchedList::onEditBDSeries(wxCommandEvent& /*event*/)
@@ -274,7 +274,7 @@ void SchedList::onEditBDSeries(wxCommandEvent& /*event*/)
 
     SchedDialog dlg(this, SchedDialog::MODE_UPDATE, w_panel->m_sched_xa[m_select_n].m_id);
     if (dlg.ShowModal() == wxID_OK)
-        refreshVisualList(w_panel->initList(dlg.GetTransID()));
+        refreshVisualList(w_panel->initList(dlg.sched_id()));
 }
 
 void SchedList::onDuplicateBDSeries(wxCommandEvent& /*event*/)
@@ -284,7 +284,7 @@ void SchedList::onDuplicateBDSeries(wxCommandEvent& /*event*/)
 
     SchedDialog dlg(this, SchedDialog::MODE_ADD, w_panel->m_sched_xa[m_select_n].m_id);
     if (dlg.ShowModal() == wxID_OK)
-        refreshVisualList(w_panel->initList(dlg.GetTransID()));
+        refreshVisualList(w_panel->initList(dlg.sched_id()));
 }
 
 void SchedList::onDeleteBDSeries(wxCommandEvent& WXUNUSED(event))
@@ -364,7 +364,7 @@ void SchedList::OnListItemActivated(wxListEvent& WXUNUSED(event))
 
     SchedDialog dlg(this, SchedDialog::MODE_UPDATE, w_panel->m_sched_xa[m_select_n].m_id);
     if (dlg.ShowModal() == wxID_OK)
-        refreshVisualList(w_panel->initList(dlg.GetTransID()));
+        refreshVisualList(w_panel->initList(dlg.sched_id()));
 }
 
 wxListItemAttr* SchedList::OnGetItemAttr(long item) const

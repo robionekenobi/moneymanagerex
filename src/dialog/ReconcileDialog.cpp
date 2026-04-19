@@ -698,13 +698,13 @@ void ReconcileDialog::showHideColumn(bool show, int col, int cs) {
 
 void ReconcileDialog::newTransaction()
 {
-    TrxDialog dlg(this, m_account_n->m_id, {0, false}, false, TrxType(TrxType::e_withdrawal));
+    TrxDialog dlg(this, JournalKey(), false, m_account_n->m_id, TrxType());
     int i = wxID_CANCEL;
     do {
         i = dlg.ShowModal();
         if (i != wxID_CANCEL) {
             w_journal->refreshList();
-            int64 transid = dlg.GetTransactionID();
+            int64 transid = dlg.trx_id();
             const TrxData* trx = TrxModel::instance().get_idN_data_n(transid);
             addTransaction2List(trx);
         }
@@ -744,7 +744,7 @@ void ReconcileDialog::OnEdit(wxCommandEvent& WXUNUSED(event))
 void ReconcileDialog::editTransaction(wxListCtrl* list, long item)
 {
     int64 trx_id = m_itemDataMap[list->GetItemData(item)];
-    TrxDialog dlg(this, trx_id, JournalKey(-1, trx_id));
+    TrxDialog dlg(this, JournalKey(-1, trx_id));
     if (dlg.ShowModal() == wxID_OK) {
         w_journal->refreshList();
         const TrxData* trx_n = TrxModel::instance().get_idN_data_n(trx_id);

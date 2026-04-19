@@ -125,11 +125,14 @@ void FieldDialog::CreateControls()
 
     itemFlexGridSizer6->Add(new wxStaticText(itemPanel5, wxID_STATIC, _t("Attribute of")), g_flagsH);
     m_itemReference = new wxChoice(itemPanel5, wxID_HIGHEST);
-    for (int type_id = 0; type_id < RefTypeN::size; ++type_id) {
-        if (RefTypeN::field_id_n(type_id) != type_id)
+    for (int ref_type_id = 0; ref_type_id < RefTypeN::size; ++ref_type_id) {
+        if (RefTypeN::field_id_n(ref_type_id) != ref_type_id)
             continue;
-        wxString name = RefTypeN(type_id).name_n();
-        m_itemReference->Append(wxGetTranslation(name), new wxStringClientData(name));
+        wxString ref_type_name = RefTypeN(ref_type_id).name_n();
+        m_itemReference->Append(
+            wxGetTranslation(ref_type_name),
+            new wxStringClientData(ref_type_name)
+        );
     }
     mmToolTip(m_itemReference, _t("Select the item that the custom field is associated with"));
     itemFlexGridSizer6->Add(m_itemReference, g_flagsExpand);

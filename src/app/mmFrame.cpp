@@ -3274,16 +3274,19 @@ void mmFrame::OnNewTransaction(wxCommandEvent& event)
     if (!m_db)
         return;
 
-    if (AccountModel::instance().find_all_name_a().empty()) return;
-    TrxDialog dlg(this, gotoAccountID_, {0, false});
+    if (AccountModel::instance().find_all_name_a().empty())
+        return;
+    TrxDialog dlg(this, JournalKey(), false, gotoAccountID_);
 
     int i = dlg.ShowModal();
     if (i == wxID_CANCEL)
         return;
 
-    gotoAccountID_ = dlg.GetAccountID();
-    gotoTransID_ = JournalKey(-1, dlg.GetTransactionID());
-    const AccountData * account_n = AccountModel::instance().get_idN_data_n(gotoAccountID_);
+    gotoAccountID_ = dlg.trx_account_id();
+    gotoTransID_ = JournalKey(-1, dlg.trx_id());
+    const AccountData * account_n = AccountModel::instance().get_idN_data_n(
+        gotoAccountID_
+    );
     if (account_n) {
         createCheckingPage(gotoAccountID_);
         selectNavTreeItem(account_n->m_name);

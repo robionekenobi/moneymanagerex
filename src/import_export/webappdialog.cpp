@@ -288,32 +288,27 @@ bool mmWebAppDialog::ImportWebTr(int64 WebTrID, bool open)
     mmWebApp::TrxWebData WebTrToImport;
     bool bFound = false;
 
-    for (const auto &webTr : WebAppTransactions_)
-    {
-        if (webTr.ID == WebTrID)
-        {
+    for (const auto& webTr : WebAppTransactions_) {
+        if (webTr.ID == WebTrID) {
             bFound = true;
             WebTrToImport = webTr;
-            int64 InsertedTransactionID = mmWebApp::insertNewTrx(WebTrToImport);
-            if (InsertedTransactionID > 0)
-            {
-                if (open)
-                {
-                    //fillControls(); //TODO: Delete transaction from view
-                    TrxDialog EditTransactionDialog(this, 1, JournalKey(-1, InsertedTransactionID));
-                    EditTransactionDialog.ShowModal();
+            int64 trx_id = mmWebApp::insertNewTrx(WebTrToImport);
+            if (trx_id > 0) {
+                if (open) {
+                    // fillControls(); //TODO: Delete transaction from view
+                    // CHECK: account_id = 1
+                    TrxDialog trx_dlg(this, JournalKey(-1, trx_id), false, 1);
+                    trx_dlg.ShowModal();
                 }
                 refreshRequested_ = true;
             }
-            else
-            {
+            else {
                 bFound = false;
             }
             break;
         }
     }
-    if (!bFound)
-    {
+    if (!bFound) {
         wxString msgStr = wxString() << _t("Unable to insert transaction in MMEX database") << "\n";
         wxMessageBox(msgStr, _t("WebApp communication error"), wxICON_ERROR);
     }

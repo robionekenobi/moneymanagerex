@@ -105,12 +105,12 @@ SchedDialog::SchedDialog(
             m_tag_id_a.push_back(gl_d.m_tag_id);
         }
 
-        // FIXME: Avoid premature clone of attachments.
-        // FIXME: Cleanup cloned attachments.
+        // TODO: Avoid premature clone of attachments.
         // If duplicate, clone the attachments and set the temporary ref_id to 0.
         if (is_dup() && InfoModel::instance().getBool("ATTACHMENTSDUPLICATE", false)) {
             mmAttachment::clone_ref_all(
-                SchedModel::s_ref_type, m_sched_d.m_id, 0
+                SchedModel::s_ref_type, m_sched_d.m_id,
+                SchedModel::s_ref_type, 0
             );
         }
     }
@@ -122,7 +122,7 @@ SchedDialog::SchedDialog(
 
     m_is_transfer = m_sched_d.is_transfer();
 
-    w_fv_dialog = new mmCustomDataTransaction(this,
+    w_fv_dialog = new FieldValueDialog(this,
         SchedModel::s_ref_type, m_sched_d.m_id,
         ID_CUSTOMFIELDS
     );
@@ -341,7 +341,7 @@ void SchedDialog::createControls()
             new wxStringClientData(status_name)
         );
     }
-    w_status_choice->SetSelection(PrefModel::instance().getTransStatusReconciled());
+    w_status_choice->SetSelection(PrefModel::instance().getTrxStatus().id());
     mmToolTip(w_status_choice, _t("Specify the status for the transaction"));
 
     transPanelSizer->Add(new wxStaticText(this, wxID_STATIC, _t("Status")), g_flagsH);
@@ -1444,7 +1444,7 @@ void SchedDialog::onOk(wxCommandEvent& WXUNUSED(event))
         // Custom Data
         w_fv_dialog->SaveCustomValues(SchedModel::s_ref_type, m_sched_id);
 
-        // FIXME: Avoid premature clone; clone instead of relocate here.
+        // TODO: Avoid premature clone; clone instead of relocate here.
         if (m_mode == MODE_ADD) {
             mmAttachment::relocate_ref_all(
                 SchedModel::s_ref_type, 0,
@@ -1454,6 +1454,7 @@ void SchedDialog::onOk(wxCommandEvent& WXUNUSED(event))
 
         m_mode = MODE_UPDATE;
     }
+    // Enter
     else {
         if (!SchedModel::instance().is_data_allowed(m_sched_d))
             return;

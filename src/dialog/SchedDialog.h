@@ -153,7 +153,7 @@ public:
     bool is_dup() { return (m_mode == MODE_ADD && m_sched_d.m_id > 0); }
     bool is_edit() { return (m_mode == MODE_UPDATE); }
     bool is_enter() { return (m_mode == MODE_ENTER); }
-    auto GetTransID() -> int64 { return m_sched_id; }
+    auto sched_id() -> int64 { return m_sched_id; }
 
 // -- constructor
 

@@ -44,6 +44,13 @@ public:
     mmChoiceId id() const { return m_id; }
     const wxString key() const { return AccountStatus::s_choice_a.get_key(m_id); }
     const wxString name() const { return AccountStatus::s_choice_a.get_name(m_id); }
+
+    bool operator== (const AccountStatus& other) const {
+        return id() == other.id();
+    }
+    bool operator!= (const AccountStatus& other) const {
+        return id() != other.id();
+    }
 };
 
 struct AccountFavorite
@@ -70,6 +77,13 @@ public:
 
     mmChoiceId id() const { return m_id; }
     const wxString key() const { return AccountFavorite::s_choice_a.get_key(m_id); }
+
+    bool operator== (const AccountFavorite& other) const {
+        return id() == other.id();
+    }
+    bool operator!= (const AccountFavorite& other) const {
+        return id() != other.id();
+    }
 };
 
 struct AssetType
@@ -100,6 +114,13 @@ public:
     mmChoiceId id() const { return m_id; }
     const wxString key() const { return AssetType::s_choice_a.get_key(m_id); }
     const wxString name() const { return AssetType::s_choice_a.get_name(m_id); }
+
+    bool operator== (const AssetType& other) const {
+        return id() == other.id();
+    }
+    bool operator!= (const AssetType& other) const {
+        return id() != other.id();
+    }
 };
 
 struct AssetStatus
@@ -125,6 +146,13 @@ public:
     mmChoiceId id() const { return m_id; }
     const wxString key() const { return AssetStatus::s_choice_a.get_key(m_id); }
     const wxString name() const { return AssetStatus::s_choice_a.get_name(m_id); }
+
+    bool operator== (const AssetStatus& other) const {
+        return id() == other.id();
+    }
+    bool operator!= (const AssetStatus& other) const {
+        return id() != other.id();
+    }
 };
 
 struct AssetChange
@@ -151,6 +179,13 @@ public:
     mmChoiceId id() const { return m_id; }
     const wxString key() const { return AssetChange::s_choice_a.get_key(m_id); }
     const wxString name() const { return AssetChange::s_choice_a.get_name(m_id); }
+
+    bool operator== (const AssetChange& other) const {
+        return id() == other.id();
+    }
+    bool operator!= (const AssetChange& other) const {
+        return id() != other.id();
+    }
 };
 
 struct AssetChangeMode
@@ -176,6 +211,13 @@ public:
     mmChoiceId id() const { return m_id; }
     const wxString key() const { return AssetChangeMode::s_choice_a.get_key(m_id); }
     const wxString name() const { return AssetChangeMode::s_choice_a.get_name(m_id); }
+
+    bool operator== (const AssetChangeMode& other) const {
+        return id() == other.id();
+    }
+    bool operator!= (const AssetChangeMode& other) const {
+        return id() != other.id();
+    }
 };
 
 struct BudgetFreq
@@ -215,6 +257,13 @@ public:
     double times_per_month() const {
         return double(times_per_year()) / 12.0;
     }
+
+    bool operator== (const BudgetFreq& other) const {
+        return id() == other.id();
+    }
+    bool operator!= (const BudgetFreq& other) const {
+        return id() != other.id();
+    }
 };
 
 struct CurrencyType
@@ -240,6 +289,13 @@ public:
     mmChoiceId id() const { return m_id; }
     const wxString key() const { return CurrencyType::s_choice_a.get_key(m_id); }
     const wxString name() const { return CurrencyType::s_choice_a.get_name(m_id); }
+
+    bool operator== (const CurrencyType& other) const {
+        return id() == other.id();
+    }
+    bool operator!= (const CurrencyType& other) const {
+        return id() != other.id();
+    }
 };
 
 struct FieldTypeN
@@ -276,6 +332,13 @@ public:
     const wxString name_n() const {
         return has_value() ? FieldTypeN::s_choice_a.get_name(m_id_n) : "";
     }
+
+    bool operator== (const FieldTypeN& other) const {
+        return id_n() == other.id_n();
+    }
+    bool operator!= (const FieldTypeN& other) const {
+        return id_n() != other.id_n();
+    }
 };
 
 struct TrxType
@@ -308,6 +371,13 @@ public:
         };
         return trade_name_a[m_id];
     }
+
+    bool operator== (const TrxType& other) const {
+        return id() == other.id();
+    }
+    bool operator!= (const TrxType& other) const {
+        return id() != other.id();
+    }
 };
 
 struct TrxStatus
@@ -336,6 +406,13 @@ public:
     mmChoiceId id() const { return m_id; }
     const wxString key() const { return TrxStatus::s_choice_a.get_key(m_id); }
     const wxString name() const { return TrxStatus::s_choice_a.get_name(m_id); }
+
+    bool operator== (const TrxStatus& other) const {
+        return id() == other.id();
+    }
+    bool operator!= (const TrxStatus& other) const {
+        return id() != other.id();
+    }
 };
 
 struct RepeatMode
@@ -363,6 +440,13 @@ public:
     mmChoiceId id() const { return m_id; }
     int code() const { return RepeatMode::s_choice_a.get_code(m_id); }
     const wxString name() const { return RepeatMode::s_choice_a.get_name(m_id); }
+
+    bool operator== (const RepeatMode& other) const {
+        return id() == other.id();
+    }
+    bool operator!= (const RepeatMode& other) const {
+        return id() != other.id();
+    }
 };
 
 struct RepeatFreq
@@ -409,6 +493,13 @@ public:
     bool is_every_x() const { return m_id >= e_every_x_days && m_id <= e_every_x_months; }
     bool has_x() const { return m_id >= e_in_x_days && m_id <= e_every_x_months; }
     bool has_num() const { return !is_once() && !has_x(); }
+
+    bool operator== (const RepeatFreq& other) const {
+        return id() == other.id();
+    }
+    bool operator!= (const RepeatFreq& other) const {
+        return id() != other.id();
+    }
 };
 
 struct RefTypeN
@@ -462,6 +553,9 @@ public:
     bool operator== (const RefTypeN& other) const {
         return id_n() == other.id_n();
     }
+    bool operator!= (const RefTypeN& other) const {
+        return id_n() != other.id_n();
+    }
     bool operator< (const RefTypeN& other) const {
         return id_n() < other.id_n();
     }
@@ -492,4 +586,11 @@ public:
     mmChoiceId id() const { return m_id; }
     int code() const { return UpdateType::s_choice_a.get_code(m_id); }
     const wxString name() const { return UpdateType::s_choice_a.get_name(m_id); }
+
+    bool operator== (const UpdateType& other) const {
+        return id() == other.id();
+    }
+    bool operator!= (const UpdateType& other) const {
+        return id() != other.id();
+    }
 };

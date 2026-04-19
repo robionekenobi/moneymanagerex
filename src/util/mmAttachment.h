@@ -36,10 +36,13 @@ public:
     static bool deleteFile(const wxString& file);
 
     static bool relocate_ref_all(
-        RefTypeN old_ref_type, int64 old_ref_id,
-        RefTypeN new_ref_type, int64 new_ref_id
+        RefTypeN src_ref_type, int64 src_ref_id,
+        RefTypeN new_ref_type, int64 dst_ref_id
     );
-    static bool clone_ref_all(RefTypeN ref_type, int64 src_ref_id, int64 dst_ref_id);
+    static bool clone_ref_all(
+        RefTypeN src_ref_type, int64 src_ref_id,
+        RefTypeN dst_ref_type, int64 dst_ref_id
+    );
     static void openFromPanelIcon(
         wxWindow* parent,
         RefTypeN ref_type, int64 ref_id

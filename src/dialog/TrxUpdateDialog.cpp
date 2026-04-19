@@ -88,8 +88,9 @@ TrxUpdateDialog::TrxUpdateDialog(
             m_hasNonTransfers = true;
     }
 
-    m_custom_fields = new mmCustomDataTransaction(this,
-        TrxModel::s_ref_type, 0, ID_CUSTOMFIELDS
+    m_custom_fields = new FieldValueDialog(this,
+        TrxModel::s_ref_type, 0,
+        ID_CUSTOMFIELDS
     );
 
     this->SetFont(parent->GetFont());

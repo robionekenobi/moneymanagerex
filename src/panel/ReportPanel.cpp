@@ -861,7 +861,7 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
                     }
                 }
                 else {
-                    TrxDialog dlg(w_frame, -1, JournalKey(-1, transId));
+                    TrxDialog dlg(w_frame, JournalKey(-1, transId));
                     if (dlg.ShowModal() != wxID_CANCEL) {
                         m_rb->getHTMLText();
                         saveReportText();

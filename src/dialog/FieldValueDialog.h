@@ -43,21 +43,20 @@ private:
     FieldModel::DataA m_field_a;
     std::map<wxWindowID, wxString> m_data_changed;
 
-    wxWindowID   m_init_control_id = wxID_ANY;
-    wxDialog*    m_dialog          = nullptr;
-    wxStaticBox* m_static_box      = nullptr;
+    wxWindowID   m_base_id = wxID_ANY;
+    wxDialog*    w_dlg     = nullptr;
+    wxStaticBox* w_box     = nullptr;
 
 public:
     void ResetRefID() { m_ref_id = -1; }
     auto GetCustomFieldsCount() const -> size_t { return m_field_a.size(); }
-    auto GetBaseID() const -> wxWindowID { return m_init_control_id; }
-    void SetBaseID(wxWindowID id) { m_init_control_id = id; }
 
 // -- constructor
 
 public:
     FieldValueDialog();
-    FieldValueDialog(wxDialog* dialog, RefTypeN ref_type, int64 ref_id);
+    FieldValueDialog(wxDialog* dlg, RefTypeN ref_type, int64 ref_id);
+    FieldValueDialog(wxDialog* dlg, RefTypeN ref_type, int64 ref_id, wxWindowID base_id);
     ~FieldValueDialog();
 
 // -- methods
@@ -97,12 +96,4 @@ private:
     void OnSingleChoice(       wxCommandEvent& event);
     void OnRadioButtonChanged( wxCommandEvent& event);
     void OnCheckBoxActivated(  wxCommandEvent& event);
-};
-
-class mmCustomDataTransaction : public FieldValueDialog
-{
-public:
-    mmCustomDataTransaction(
-        wxDialog* dialog, RefTypeN ref_type, int64 ref_id, wxWindowID base_id
-    );
 };
