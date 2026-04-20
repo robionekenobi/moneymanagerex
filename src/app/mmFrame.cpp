@@ -2678,7 +2678,8 @@ void mmFrame::OnOpen(wxCommandEvent& /*event*/)
     autoRepeatTransactionsTimer_.Stop();
     wxString fileName = wxFileSelector(
         _t("Choose database file to open"),
-        wxEmptyString, wxEmptyString, wxEmptyString,
+        SettingModel::instance().getString("LAST_FILE_OPEN_PATH", wxEmptyString),
+        wxEmptyString, wxEmptyString,
         _t("MMEX Database") + " (*.mmb)|*.mmb|" + _t("Encrypted MMEX Database") + " (*.emb)|*.emb",
         wxFD_FILE_MUST_EXIST | wxFD_OPEN,
         this
@@ -2687,6 +2688,7 @@ void mmFrame::OnOpen(wxCommandEvent& /*event*/)
     if (!fileName.empty()) {
         SetDatabaseFile(fileName);
         saveSettings();
+        SettingModel::instance().saveString("LAST_FILE_OPEN_PATH", wxFileName(fileName).GetPath());
         if (m_db) {
             autocleanDeletedTransactions();
             if (!StockModel::instance().find_all().empty() &&
@@ -2908,7 +2910,7 @@ void mmFrame::OnSaveAs(wxCommandEvent& /*event*/)
 
     wxFileDialog dlg(this,
         _t("Save database file as"),
-        wxEmptyString,
+        SettingModel::instance().getString("LAST_FILE_OPEN_PATH", wxEmptyString),
         wxEmptyString,
         _t("MMEX Database")+" (*.mmb)|*.mmb|"+_t("Encrypted MMEX Database")+" (*.emb)|*.emb",
         wxFD_SAVE | wxFD_OVERWRITE_PROMPT
