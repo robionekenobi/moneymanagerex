@@ -50,24 +50,59 @@ TrxSplitModel& TrxSplitModel::instance()
 
 bool TrxSplitModel::purge_id(int64 tp_id)
 {
-    TagLinkModel::instance().purge_ref(s_ref_type, tp_id);
-    return unsafe_remove_id(tp_id);
+    bool ok = true;
+    db_savepoint();
+
+    ok = ok && TagLinkModel::instance().purge_ref_all(s_ref_type, tp_id);
+    ok = ok && unsafe_remove_id(tp_id);
+
+    db_release_savepoint();
+    return ok;
 }
 
 // -- methods
 
+bool TrxSplitModel::purge_trxId_all(const int64 trx_id)
+{
+    bool ok = true;
+    db_savepoint();
+
+    for (int64 tp_id : find_id_a(
+        TrxSplitCol::WHERE_TRANSID(OP_EQ, trx_id)
+    )) {
+        ok = ok && purge_id(tp_id);
+    }
+
+    db_release_savepoint();
+    return ok;
+}
+
+// This function is called by find_id_isUsed(), in the slow branch
+// (when ignore_deleted is true), to check if a trx_id is not deleted.
+std::size_t TrxSplitModel::find_id_count(int64 tp_id, bool ignore_deleted)
+{
+    for (const TrxSplitData& tp_d : find_data_a(
+        TrxSplitCol::WHERE_SPLITTRANSID(OP_EQ, tp_id)
+    )) {
+        return TrxModel::instance().find_id_count(tp_d.m_trx_id, ignore_deleted);
+    }
+    return 0;
+}
+
 const TagLinkModel::DataA TrxSplitModel::find_id_gl_a(int64 tp_id)
 {
-    return TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.key_n()),
-        TagLinkCol::REFID(tp_id)
+    return TagLinkModel::instance().find_data_a(
+        TagLinkCol::WHERE_REFTYPE(OP_EQ, TrxSplitModel::s_ref_type.key_n()),
+        TagLinkCol::WHERE_REFID(OP_EQ, tp_id)
     );
 }
 
 std::map<int64, TrxSplitModel::DataA> TrxSplitModel::find_all_mTrxId()
 {
     std::map<int64, DataA> trxId_dataA_m;
-    for (const auto& tp_d : find_all()) {
+    for (const auto& tp_d : find_data_a(
+        TableClause::ORDERBY(Col::s_primary_name)
+    )) {
         trxId_dataA_m[tp_d.m_trx_id].push_back(tp_d);
     }
     return trxId_dataA_m;
@@ -115,7 +150,9 @@ int TrxSplitModel::update_trx(int64 trx_id, DataA& src_tp_a)
     bool save_timestamp = false;
     std::map<int, int64> row_id_map;
 
-    DataA old_tp_a = find(TrxSplitCol::TRANSID(trx_id));
+    DataA old_tp_a = find_data_a(
+        TrxSplitCol::WHERE_TRANSID(OP_EQ, trx_id)
+    );
     if (old_tp_a.size() != src_tp_a.size())
         save_timestamp = true;
 

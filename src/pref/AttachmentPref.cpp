@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "base/mmPlatform.h"
 #include "util/mmPath.h"
+#include "util/mmAttachment.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
@@ -234,41 +235,47 @@ void AttachmentPref::OnAttachmentsSubfolderChanged(wxCommandEvent& event)
 
 bool AttachmentPref::SaveSettings()
 {
-    const wxString attachmentsFolder = mmPath::getPathAttachment(m_attachments_path->GetValue().Trim());
+    const wxString attachmentsFolder = mmPath::getPathAttachment(
+        m_attachments_path->GetValue().Trim()
+    );
 
-    if (attachmentsFolder != wxEmptyString)
-    {
-        if (!wxDirExists(attachmentsFolder))
-        {
-            if (!wxMkdir(attachmentsFolder))
-            {
+    if (attachmentsFolder != wxEmptyString) {
+        if (!wxDirExists(attachmentsFolder)) {
+            if (!wxMkdir(attachmentsFolder)) {
                 return false;
             }
         }
 
-        if (!mmAttachmentManage::CreateReadmeFile(attachmentsFolder))
-        {
-            mmErrorDialogs::MessageError(this, _t("Attachments folder it's not writable!"), _t("Attachments folder"));
+        if (!mmAttachment::createReadmeFile(attachmentsFolder)) {
+            mmErrorDialogs::MessageError(this,
+                _t("Attachments folder it's not writable!"),
+                _t("Attachments folder")
+            );
             return false;
         }
 
         wxString attachmentsFolderOld = mmPath::getPathAttachment(m_old_path);
-        if (attachmentsFolder != m_old_path && wxDirExists(attachmentsFolderOld))
-        {
+        if (attachmentsFolder != m_old_path && wxDirExists(attachmentsFolderOld)) {
             int MoveResponse = wxMessageBox(
                 wxString::Format("%s\n", _t("Attachments path has been changed!"))
                 + ("Do you want to move all attachments to the new location?")
                 , _t("Attachments folder migration")
                 , wxYES_NO | wxYES_DEFAULT | wxICON_WARNING);
-            if (MoveResponse == wxYES)
-            {
-                if (!wxRenameFile(attachmentsFolderOld, attachmentsFolder))
-                    wxMessageBox(
+            if (MoveResponse == wxYES &&
+                !wxRenameFile(attachmentsFolderOld, attachmentsFolder)
+            ) {
+                wxMessageBox(
                     wxString::Format("%s\n\n", _t("An error occurred while moving the attachments folder. Please move it manually.")) +
-                    wxString::Format("%s: %s\n", _t("Origin"), mmPath::getPathAttachment(m_old_path)) +
-                    wxString::Format("%s: %s", _t("Destination"), attachmentsFolder)
-                    , _t("Attachments folder migration")
-                    , wxICON_ERROR);
+                    wxString::Format("%s: %s\n",
+                        _t("Origin"),
+                        mmPath::getPathAttachment(m_old_path)
+                    ) + wxString::Format("%s: %s",
+                        _t("Destination"),
+                        attachmentsFolder
+                    ),
+                    _t("Attachments folder migration"),
+                    wxICON_ERROR
+                );
             }
             m_old_path = attachmentsFolder;
         }

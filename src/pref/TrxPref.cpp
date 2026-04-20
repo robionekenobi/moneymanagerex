@@ -57,7 +57,9 @@ void TrxPref::Create()
     homePanelSizer0->Add(home_panel, wxSizerFlags(g_flagsExpand).Proportion(0));
 
     // New transaction dialog settings
-    wxStaticBox* transSettingsStaticBox = new wxStaticBox(home_panel, wxID_STATIC, _t("New Transaction"));
+    wxStaticBox* transSettingsStaticBox = new wxStaticBox(home_panel, wxID_STATIC,
+        _t("New Transaction")
+    );
 
     wxStaticBoxSizer* transSettingsStaticBoxSizer = new wxStaticBoxSizer(transSettingsStaticBox, wxVERTICAL);
     homePanelSizer->Add(transSettingsStaticBoxSizer, wxSizerFlags(g_flagsExpand).Proportion(0));
@@ -66,27 +68,34 @@ void TrxPref::Create()
     default_values.Add(_t("None"));
     default_values.Add(_t("Last Used"));
 
-    wxChoice* defaultCategoryTransferChoice = new wxChoice(transSettingsStaticBox
-        , ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_TRANSFER
-        , wxDefaultPosition, wxDefaultSize, default_values);
+    wxChoice* defaultCategoryTransferChoice = new wxChoice(transSettingsStaticBox,
+        ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_TRANSFER,
+        wxDefaultPosition, wxDefaultSize,
+        default_values
+    );
     defaultCategoryTransferChoice->SetSelection(PrefModel::instance().getTransCategoryTransferNone());
 
-    wxChoice* defaultDateChoice = new wxChoice(transSettingsStaticBox
-        , ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_DATE
-        , wxDefaultPosition, wxDefaultSize, default_values);
+    wxChoice* defaultDateChoice = new wxChoice(transSettingsStaticBox,
+        ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_DATE,
+        wxDefaultPosition, wxDefaultSize,
+        default_values
+    );
     defaultDateChoice->SetSelection(PrefModel::instance().getTransDateDefault());
 
     default_values.Add(_t("Unused"));
-    wxChoice* defaultPayeeChoice = new wxChoice(transSettingsStaticBox
-        , ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_PAYEE
-        , wxDefaultPosition, wxDefaultSize, default_values);
+    wxChoice* defaultPayeeChoice = new wxChoice(transSettingsStaticBox,
+        ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_PAYEE,
+        wxDefaultPosition, wxDefaultSize,
+        default_values);
     defaultPayeeChoice->SetSelection(PrefModel::instance().getTransPayeeNone());
 
     default_values[1] = (_t("Last used for payee"));
     default_values.Add(_t("Use default for payee"));
-    wxChoice* defaultCategoryNonTransferChoice = new wxChoice(transSettingsStaticBox
-        , ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_NONTRANSFER
-        , wxDefaultPosition, wxDefaultSize, default_values);
+    wxChoice* defaultCategoryNonTransferChoice = new wxChoice(transSettingsStaticBox,
+        ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_NONTRANSFER,
+        wxDefaultPosition, wxDefaultSize,
+        default_values
+    );
     defaultCategoryNonTransferChoice->SetSelection(PrefModel::instance().getTransCategoryNone());
 
     wxChoice* default_status = new wxChoice(transSettingsStaticBox,
@@ -99,7 +108,7 @@ void TrxPref::Create()
             new wxStringClientData(status_name)
         );
     }
-    default_status->SetSelection(PrefModel::instance().getTransStatusReconciled());
+    default_status->SetSelection(PrefModel::instance().getTrxStatus().id());
 
     wxFlexGridSizer* newTransflexGridSizer = new wxFlexGridSizer(0, 2, 0, 0);
     newTransflexGridSizer->AddGrowableCol(1, 0);
@@ -151,7 +160,9 @@ void TrxPref::Create()
     soundBaseSizer->Add(m_use_sound, g_flagsV);
 
     // Transaction/Budget options
-    wxStaticBox* trxBox = new wxStaticBox(home_panel, wxID_STATIC, _t("Transaction/Budget"));
+    wxStaticBox* trxBox = new wxStaticBox(home_panel, wxID_STATIC,
+        _t("Transaction/Budget")
+    );
     wxStaticBoxSizer* trxSizer = new wxStaticBoxSizer(trxBox, wxVERTICAL);
     homePanelSizer->Add(trxSizer, wxSizerFlags(g_flagsExpand).Proportion(0));
 
@@ -336,19 +347,29 @@ bool TrxPref::SaveSettings()
     InfoModel::instance().saveColour("USER_COLOR6", mmUserColor::s_color6);
     InfoModel::instance().saveColour("USER_COLOR7", mmUserColor::s_color7);
 
-    wxChoice* itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_PAYEE));
+    wxChoice* itemChoice = static_cast<wxChoice*>(
+        FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_PAYEE)
+    );
     PrefModel::instance().saveTransPayeeNone(itemChoice->GetSelection());
 
-    itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_NONTRANSFER));
+    itemChoice = static_cast<wxChoice*>(
+        FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_NONTRANSFER)
+    );
     PrefModel::instance().saveTransCategoryNone(itemChoice->GetSelection());
 
-    itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_TRANSFER));
+    itemChoice = static_cast<wxChoice*>(
+        FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_CATEGORY_TRANSFER)
+    );
     PrefModel::instance().saveTransCategoryTransferNone(itemChoice->GetSelection());
 
-    itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_STATUS));
-    PrefModel::instance().saveTransStatusReconciled(itemChoice->GetSelection());
+    itemChoice = static_cast<wxChoice*>(
+        FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_STATUS)
+    );
+    PrefModel::instance().saveTrxStatus(TrxStatus(itemChoice->GetSelection()));
 
-    itemChoice = static_cast<wxChoice*>(FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_DATE));
+    itemChoice = static_cast<wxChoice*>(
+        FindWindow(ID_DIALOG_OPTIONS_DEFAULT_TRANSACTION_DATE)
+    );
     PrefModel::instance().saveTransDateDefault(itemChoice->GetSelection());
 
     return true;

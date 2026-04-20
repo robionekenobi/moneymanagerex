@@ -53,8 +53,8 @@ void  StocksReport::refreshData()
     DataHolder line;
     AccountHolder account_holder;
 
-    for (const auto& account_d : AccountModel::instance().find_all(
-        AccountCol::COL_ID_ACCOUNTNAME
+    for (const AccountData& account_d : AccountModel::instance().find_data_a(
+        TableClause::ORDERBY(AccountCol::NAME_ACCOUNTNAME)
     )) {
         if (AccountModel::type_id(account_d) != mmNavigatorItem::TYPE_ID_INVESTMENT)
             continue;
@@ -68,12 +68,14 @@ void  StocksReport::refreshData()
         account_holder.total = AccountModel::instance().get_data_investment_balance(account_d).first;
         account_holder.data.clear();
 
-        for (const auto& stock_d : StockModel::instance().find(
-            StockCol::HELDAT(account_d.m_id)
+        for (const auto& stock_d : StockModel::instance().find_data_a(
+            StockCol::WHERE_HELDAT(OP_EQ, account_d.m_id)
         )) {
-            const CurrencyData* currency_n = AccountModel::instance().get_data_currency_p(account_d);
+            const CurrencyData* currency_p = AccountModel::instance().get_data_currency_p(
+                account_d
+            );
             const double today_rate = CurrencyHistoryModel::instance().get_id_date_rate(
-                currency_n->m_id
+                currency_p->m_id
             );
             m_stock_balance += today_rate * stock_d.current_value();
             line.realgainloss = StockModel::instance().calculate_realized_gain(stock_d);
@@ -133,7 +135,7 @@ wxString StocksReport::getHTMLText()
             hb.endThead();
 
             for (const auto& acct : m_stocks) {
-                const AccountData* account_n = AccountModel::instance().get_id_data_n(acct.id);
+                const AccountData* account_n = AccountModel::instance().get_idN_data_n(acct.id);
                 const CurrencyData* currency_p = AccountModel::instance().get_data_currency_p(*account_n);
 
                 hb.startThead();
@@ -272,44 +274,46 @@ wxString mmReportChartStocks::getHTMLText()
 
     wxTimeSpan dist;
     wxArrayString symbols;
-    /*for (const auto& stock_d : StockModel::instance().find_all(
-        StockCol::COL_ID_SYMBOL
+    /*for (const auto& stock_d : StockModel::instance().find_data_a(
+        TableClause::ORDERBY(StockCol::NAME_SYMBOL)
     )) {
-        const AccountData* account = AccountModel::instance().get_id_data_n(
+        const AccountData* account_n = AccountModel::instance().get_idN_data_n(
             stock_d.m_account_id_n
         );
-        if (!account->is_open())
+        if (!account_n->is_open())
             continue;
         if (symbols.Index(stock_d.m_symbol) != wxNOT_FOUND)
             continue;
 
         symbols.Add(stock_d.m_symbol);
-    */
-    StockModel::Data stock;
-    bool found = false;
-    for (StockModel::Data stock_d : StockModel::instance().find_all()) {
-        if (stock_d.m_name == m_stock_name) {
-            stock = stock_d;
-            found = true;
-            break;
-        }
     }
-    /*for (const auto& stock : StockModel::instance().all(StockModel::COL_SYMBOL))
-    {
-        AccountModel::Data* account = AccountModel::instance().get_id(stock.HELDAT);
+    */
+    StockModel::Data stock_d;
+    bool found = false;
+    for (StockModel::Data search_stock_d : StockModel::instance().find_data_a(
+        StockCol::WHERE_STOCKNAME(OP_EQ, m_stock_name)
+    )) {
+        stock_d = search_stock_d;
+        found = true;
+        break;
+    }
+    /*for (const auto& stock_d : StockModel::instance().all(StockModel::COL_SYMBOL)) {
+        AccountModel::Data* account = AccountModel::instance().get_id(stock_d.HELDAT);
         if (AccountModel::status_id(account) != AccountModel::STATUS_ID_OPEN) continue;
-        if (symbols.Index(stock.SYMBOL) != wxNOT_FOUND) continue;
+        if (symbols.Index(stock_d.SYMBOL) != wxNOT_FOUND) continue;
     */
     if (found) {
-        const AccountModel::Data* account = AccountModel::instance().get_id_data_n(stock.m_account_id_n);
-        symbols.Add(stock.m_symbol);
-        int dataCount = 0, freq = 1;
-        auto sh_a = StockHistoryModel::instance().find(
-            StockHistoryCol::SYMBOL(stock.m_symbol),
-            StockHistoryModel::DATE(OP_GE, m_date_range->start_date()),
-            StockHistoryModel::DATE(OP_LE, m_date_range->end_date())
+        const AccountModel::Data* account_n = AccountModel::instance().get_idN_data_n(
+            stock_d.m_account_id_n
         );
-        std::stable_sort(sh_a.begin(), sh_a.end(), StockHistoryData::SorterByDATE());
+        symbols.Add(stock_d.m_symbol);
+        int dataCount = 0, freq = 1;
+        auto sh_a = StockHistoryModel::instance().find_data_a(
+            StockHistoryCol::WHERE_SYMBOL(OP_EQ, stock_d.m_symbol),
+            StockHistoryModel::WHERE_DATE(OP_GE, m_date_range->start_date()),
+            StockHistoryModel::WHERE_DATE(OP_LE, m_date_range->end_date()),
+            TableClause::ORDERBY(StockHistoryCol::NAME_DATE)
+        );
 
         //bool showGridLines = (sh_a.size() <= 366);
         //bool pointDot = (sh_a.size() <= 30);
@@ -331,7 +335,7 @@ wxString mmReportChartStocks::getHTMLText()
 
         if (!gd.series.empty()) {
             hb.addHeader(1, wxString::Format("%s / %s - (%s)",
-                stock.m_symbol, stock.m_name, account->m_name
+                stock_d.m_symbol, stock_d.m_name, account_n->m_name
             ));
             gd.type = GraphData::LINE_DATETIME;
             hb.addChart(gd);

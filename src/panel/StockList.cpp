@@ -25,14 +25,15 @@
 #include "base/_constants.h"
 #include "util/mmImage.h"
 #include "util/mmSingleChoice.h"
+#include "util/mmAttachment.h"
 #include "util/_util.h"
 #include "util/_simple.h"
 
 #include "model/_all.h"
 
-#include "dialog/AttachmentDialog.h"
 #include "dialog/StockDialog.h"
 #include "dialog/TrxShareDialog.h"
+#include "dialog/AttachmentDialog.h"
 
 enum {
     IDC_PANEL_STOCKS_LISTCTRL = wxID_HIGHEST + 1900,
@@ -261,7 +262,7 @@ wxString StockList::OnGetItemText(long item, long col_nr) const
         if (AttachmentModel::instance().find_ref_c(
             StockModel::s_ref_type, m_stock_a[item].m_id
         )) {
-            full_notes.Prepend(mmAttachmentManage::GetAttachmentNoteSign());
+            full_notes.Prepend(mmAttachment::getMarker());
         }
         return full_notes;
     }
@@ -326,8 +327,9 @@ void StockList::onNewStocks(wxCommandEvent& /*event*/)
 {
     StockDialog dlg(this, nullptr, w_panel->m_account_id);
     dlg.ShowModal();
-    if (StockModel::instance().get_id_data_n(dlg.m_stock_id)) {
-        doRefreshItems(dlg.m_stock_id);
+    int64 stock_id = dlg.stock_id();
+    if (StockModel::instance().get_idN_data_n(stock_id)) {
+        doRefreshItems(stock_id);
         w_panel->w_frame->RefreshNavigationTree();
     }
 }
@@ -342,18 +344,16 @@ void StockList::onDeleteStocks(wxCommandEvent& /*event*/)
         _t("Confirm Stock Investment Deletion"),
         wxYES_NO | wxNO_DEFAULT | wxICON_ERROR
     );
-    if (msgDlg.ShowModal() == wxID_YES) {
-        StockModel::instance().purge_id(m_stock_a[m_select_n].m_id);
-        mmAttachmentManage::DeleteAllAttachments(
-            StockModel::s_ref_type, m_stock_a[m_select_n].m_id
-        );
-        TrxLinkModel::instance().purge_ref(
-            StockModel::s_ref_type, m_stock_a[m_select_n].m_id
-        );
-        DeleteItem(m_select_n);
-        doRefreshItems(-1);
-        w_panel->w_frame->RefreshNavigationTree();
-    }
+    if (msgDlg.ShowModal() != wxID_YES)
+        return;
+
+    int64 stock_id = m_stock_a[m_select_n].m_id;
+    StockModel::instance().purge_id_dep(stock_id);
+    StockModel::instance().purge_id(stock_id);
+
+    DeleteItem(m_select_n);
+    doRefreshItems(-1);
+    w_panel->w_frame->RefreshNavigationTree();
 }
 
 void StockList::onMoveStocks(wxCommandEvent& /*event*/)
@@ -361,20 +361,22 @@ void StockList::onMoveStocks(wxCommandEvent& /*event*/)
     if (m_select_n == -1)
         return;
 
-    const auto& account_a = AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(mmNavigatorList::instance().getInvestmentAccountStr())
+    const auto& account_a = AccountModel::instance().find_data_a(
+        AccountCol::WHERE_ACCOUNTTYPE(OP_EQ, mmNavigatorList::instance().getInvestmentAccountStr())
     );
     if (account_a.empty())
         return;
 
-    const AccountData* from_account_n = AccountModel::instance().get_id_data_n(
+    const AccountData* from_account_n = AccountModel::instance().get_idN_data_n(
         w_panel->m_account_id
     );
     wxString headerMsg = wxString::Format(_t("Moving Transaction from %s to"),
         from_account_n->m_name
     );
-    mmSingleChoice scd(this, _t("Select the destination Account "),
-        headerMsg, account_a
+    mmSingleChoice scd(this,
+        _t("Select the destination Account "),
+        headerMsg,
+        account_a
     );
 
     int64 to_account_id_n = -1;
@@ -385,7 +387,7 @@ void StockList::onMoveStocks(wxCommandEvent& /*event*/)
     }
 
     if (to_account_id_n != -1 ) {
-        StockData* stock_n = StockModel::instance().unsafe_get_id_data_n(
+        StockData* stock_n = StockModel::instance().unsafe_get_idN_data_n(
             m_stock_a[m_select_n].m_id
         );
         stock_n->m_account_id_n = to_account_id_n;
@@ -443,7 +445,7 @@ void StockList::onOpenAttachment(wxCommandEvent& /*event*/)
         return;
 
     int64 ref_id = m_stock_a[m_select_n].m_id;
-    mmAttachmentManage::OpenAttachmentFromPanelIcon(this, StockModel::s_ref_type, ref_id);
+    mmAttachment::openFromPanelIcon(this, StockModel::s_ref_type, ref_id);
     doRefreshItems(ref_id);
 }
 
@@ -516,14 +518,15 @@ int StockList::initVirtualListControl(int64 trx_id)
     if (w_panel->m_name_filter_value.IsEmpty()) {
         // TODO
         if (w_panel->m_account_id > -1 ) {
-            m_stock_a = StockModel::instance().find(
-                StockCol::HELDAT(w_panel->m_account_id),
-                StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
+            m_stock_a = StockModel::instance().find_data_a(
+                StockCol::WHERE_HELDAT(OP_EQ, w_panel->m_account_id),
+                StockCol::WHERE_NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
             );
         }
-        else { // create summary
-            m_stock_a = StockModel::instance().find(
-                StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
+        // create summary
+        else {
+            m_stock_a = StockModel::instance().find_data_a(
+                StockCol::WHERE_NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0)
             );
             if (!m_stock_a.empty())
                 createSummary();
@@ -531,16 +534,17 @@ int StockList::initVirtualListControl(int64 trx_id)
     }
     else {
         if (w_panel->m_account_id > -1 ) {
-            m_stock_a = StockModel::instance().find(
-                StockCol::HELDAT(w_panel->m_account_id),
-                StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0),
-                StockCol::STOCKNAME(OP_LK, w_panel->m_name_filter_value)
+            m_stock_a = StockModel::instance().find_data_a(
+                StockCol::WHERE_HELDAT(OP_EQ, w_panel->m_account_id),
+                StockCol::WHERE_NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0),
+                StockCol::WHERE_STOCKNAME(OP_LK, w_panel->m_name_filter_value)
             );
         }
-        else { // create summary
-            m_stock_a = StockModel::instance().find(
-                StockCol::NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0),
-                StockCol::STOCKNAME(OP_LK, w_panel->m_name_filter_value)
+        // create summary
+        else {
+            m_stock_a = StockModel::instance().find_data_a(
+                StockCol::WHERE_NUMSHARES(w_panel->getFilter() ? OP_GT : OP_GE, 0.0),
+                StockCol::WHERE_STOCKNAME(OP_LK, w_panel->m_name_filter_value)
             );
             if (!m_stock_a.empty())
                 createSummary();
@@ -742,8 +746,8 @@ wxString StockList::getStockInfo(int selectedIndex, bool with_symbol) const
     int    symbol_pur_m = 0;
     double symbol_pur_n = 0;
     double symbol_pur_v = 0;
-    for (const auto& symbol_stock_d: StockModel::instance().find(
-        StockCol::SYMBOL(stock_d.m_symbol)
+    for (const auto& symbol_stock_d: StockModel::instance().find_data_a(
+        StockCol::WHERE_SYMBOL(OP_EQ, stock_d.m_symbol)
     )) {
         symbol_pur_m += 1;
         symbol_pur_n += symbol_stock_d.m_num_shares;

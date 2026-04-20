@@ -18,9 +18,10 @@
 
 #pragma once
 
+// TagData represents a record in table TAG_V1.
+
 #include "table/TagTable.h"
 
-// User-friendly representation of a record in table TAG_V1.
 struct TagData
 {
     int64    m_id;

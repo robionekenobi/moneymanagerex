@@ -18,10 +18,11 @@
 
 #pragma once
 
+// TrxLinkData represents a record in table TRANSLINK_V1.
+
 #include "_DataEnum.h"
 #include "table/TrxLinkTable.h"
 
-// User-friendly representation of a record in table TRANSLINK_V1.
 struct TrxLinkData
 {
     int64 m_id;

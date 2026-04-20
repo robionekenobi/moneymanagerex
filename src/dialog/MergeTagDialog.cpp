@@ -87,22 +87,37 @@ void MergeTagDialog::CreateControls()
     flagsV.Align(wxALIGN_LEFT).Border(wxALL, 5).Center();
     flagsExpand.Align(wxALIGN_LEFT).Border(wxALL, 5).Expand();
 
-    wxStaticText* headerText = new wxStaticText( this, wxID_STATIC
-        , _t("Merge Tags"));
-    wxStaticLine* lineTop = new wxStaticLine(this,wxID_STATIC
-        , wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
+    wxStaticText* headerText = new wxStaticText(this, wxID_STATIC,
+        _t("Merge Tags")
+    );
+    wxStaticLine* lineTop = new wxStaticLine(this, wxID_STATIC,
+        wxDefaultPosition, wxDefaultSize,
+        wxLI_HORIZONTAL
+    );
 
     choices_.Clear();
-    for (const auto& tag_d : TagModel::instance().find_all())
+    for (const auto& tag_d : TagModel::instance().find_data_a(
+        TableClause::ORDERBY(TagCol::s_primary_name)
+    )) {
         choices_.Add(tag_d.m_name);
-    cbSourceTag_ = new wxComboBox(this, wxID_REPLACE, "", wxDefaultPosition, wxDefaultSize, choices_);
+    }
+    cbSourceTag_ = new wxComboBox(this, wxID_REPLACE,
+        "",
+        wxDefaultPosition, wxDefaultSize,
+        choices_
+    );
     cbSourceTag_->SetMinSize(wxSize(200, -1));
 
-    cbDestTag_ = new wxComboBox(this, wxID_NEW, "", wxDefaultPosition, wxDefaultSize, choices_);
+    cbDestTag_ = new wxComboBox(this, wxID_NEW,
+        "",
+        wxDefaultPosition, wxDefaultSize,
+        choices_
+    );
     cbDestTag_->SetMinSize(wxSize(200, -1));
 
-    cbDeleteSourceTag_ = new wxCheckBox(this, wxID_ANY
-        , _t("&Delete source tag after merge"));
+    cbDeleteSourceTag_ = new wxCheckBox(this, wxID_ANY,
+        _t("&Delete source tag after merge")
+    );
 
     wxBoxSizer* topSizer = new wxBoxSizer(wxVERTICAL);
     this->SetSizer(topSizer);
@@ -154,22 +169,26 @@ void MergeTagDialog::OnOk(wxCommandEvent& WXUNUSED(event))
 {
     const auto& source_tag_name = cbSourceTag_->GetValue();
     const auto& destination_tag_name = cbDestTag_->GetValue();
-    const wxString& info = wxString::Format(_t("From %1$s to %2$s")
-        , source_tag_name
-        , destination_tag_name);
+    const wxString& info = wxString::Format(_t("From %1$s to %2$s"),
+        source_tag_name,
+        destination_tag_name
+    );
 
-    int ans = wxMessageBox(_t("Please Confirm:") + "\n" + info
-        , _t("Merge tags confirmation")
-        , wxOK | wxCANCEL | wxICON_INFORMATION);
+    int ans = wxMessageBox(
+        _t("Please Confirm:") + "\n" + info,
+        _t("Merge tags confirmation"),
+        wxOK | wxCANCEL | wxICON_INFORMATION
+    );
 
     if (ans != wxOK)
         return;
 
     TagLinkModel::instance().db_savepoint();
-    TagLinkModel::DataA gl_a = TagLinkModel::instance().find(
-        TagLinkCol::TAGID(sourceTagID_)
+    TagLinkModel::DataA gl_a = TagLinkModel::instance().find_data_a(
+        TagLinkCol::WHERE_TAGID(OP_EQ, sourceTagID_)
     );
-    for (auto& gl_d : gl_a) {
+    // CHECK: a tag link to destTagID_ may already exist
+    for (TagLinkData& gl_d : gl_a) {
         gl_d.m_tag_id = destTagID_;
     }
     TagLinkModel::instance().save_data_a(gl_a);
@@ -196,35 +215,42 @@ void MergeTagDialog::IsOkOk()
     if (dst_tag_n)
         destTagID_ = dst_tag_n->m_id;
 
-    int trxs_size = (sourceTagID_ < 0) ? 0 : TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(TrxModel::s_ref_type.key_n()),
-        TagLinkCol::TAGID(sourceTagID_)
-    ).size();
-    int split_size = (sourceTagID_ < 0) ? 0 : TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(TrxSplitModel::s_ref_type.key_n()),
-        TagLinkCol::TAGID(sourceTagID_)
-    ).size();
-    int bills_size = (sourceTagID_ < 0) ? 0 : TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(SchedModel::s_ref_type.key_n()),
-        TagLinkCol::TAGID(sourceTagID_)
-    ).size();
-    int bill_split_size = (sourceTagID_ < 0) ? 0 : TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(SchedSplitModel::s_ref_type.key_n()),
-        TagLinkCol::TAGID(sourceTagID_)
-    ).size();
+    int trx_c = (sourceTagID_ < 0)
+        ? 0
+        : TagLinkModel::instance().find_count(
+            TagLinkCol::WHERE_REFTYPE(OP_EQ, TrxModel::s_ref_type.key_n()),
+            TagLinkCol::WHERE_TAGID(OP_EQ, sourceTagID_)
+        );
+    int tp_c = (sourceTagID_ < 0)
+        ? 0
+        : TagLinkModel::instance().find_count(
+            TagLinkCol::WHERE_REFTYPE(OP_EQ, TrxSplitModel::s_ref_type.key_n()),
+            TagLinkCol::WHERE_TAGID(OP_EQ, sourceTagID_)
+        );
+    int sched_c = (sourceTagID_ < 0)
+        ? 0
+        : TagLinkModel::instance().find_count(
+            TagLinkCol::WHERE_REFTYPE(OP_EQ, SchedModel::s_ref_type.key_n()),
+            TagLinkCol::WHERE_TAGID(OP_EQ, sourceTagID_)
+        );
+    int qp_c = (sourceTagID_ < 0)
+        ? 0
+        : TagLinkModel::instance().find_count(
+            TagLinkCol::WHERE_REFTYPE(OP_EQ, SchedSplitModel::s_ref_type.key_n()),
+            TagLinkCol::WHERE_TAGID(OP_EQ, sourceTagID_)
+        );
 
     if (destTagID_ < 0 || sourceTagID_ < 0
         || destTagID_ == sourceTagID_
-        || trxs_size + split_size + bills_size + bill_split_size == 0) {
+        || trx_c + tp_c + sched_c + qp_c == 0) {
         e = false;
     }
 
     wxString msgStr = wxString()
-        << wxString::Format(_t("Records found in transactions: %i"), trxs_size) << "\n"
-        << wxString::Format(_t("Records found in split transactions: %i"), split_size) << "\n"
-        << wxString::Format(_t("Records found in scheduled transactions: %i"), bills_size) << "\n"
-        << wxString::Format(_t("Records found in scheduled split transactions: %i"), bill_split_size);
-
+        << wxString::Format(_t("Records found in transactions: %i"), trx_c) << "\n"
+        << wxString::Format(_t("Records found in split transactions: %i"), tp_c) << "\n"
+        << wxString::Format(_t("Records found in scheduled transactions: %i"), sched_c) << "\n"
+        << wxString::Format(_t("Records found in scheduled split transactions: %i"), qp_c);
     m_info->SetLabel(msgStr);
 
     wxButton* ok = wxStaticCast(FindWindow(wxID_OK), wxButton);

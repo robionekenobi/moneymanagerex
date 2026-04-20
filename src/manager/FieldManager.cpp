@@ -107,11 +107,12 @@ void FieldManager::fillControls()
 {
     fieldListBox_->DeleteAllItems();
 
-    FieldModel::DataA field_a = FieldModel::instance().find_all();
+    FieldModel::DataA field_a = FieldModel::instance().find_data_a(
+        TableClause::ORDERBY(FieldCol::NAME_DESCRIPTION)
+    );
     if (field_a.empty())
         return;
 
-    std::sort(field_a.begin(), field_a.end(), FieldData::SorterByDESCRIPTION());
     int64 firstInTheListID = -1;
     for (const auto& field_d : field_a) {
         if (firstInTheListID == -1)
@@ -154,7 +155,7 @@ void FieldManager::AddField()
 
 void FieldManager::EditField()
 {
-    FieldData *field_n = FieldModel::instance().unsafe_get_id_data_n(m_field_id);
+    FieldData *field_n = FieldModel::instance().unsafe_get_idN_data_n(m_field_id);
     if (!field_n)
         return;
 
@@ -166,7 +167,7 @@ void FieldManager::EditField()
 
 void FieldManager::DeleteField()
 {
-    const FieldData *field_n = FieldModel::instance().get_id_data_n(m_field_id);
+    const FieldData *field_n = FieldModel::instance().get_idN_data_n(m_field_id);
     if (!field_n)
         return;
 
@@ -176,6 +177,7 @@ void FieldManager::DeleteField()
         wxYES_NO | wxNO_DEFAULT | wxICON_ERROR
     );
     if (DeleteResponse == wxYES) {
+        FieldModel::instance().purge_id_dep(m_field_id);
         FieldModel::instance().purge_id(m_field_id);
         m_field_id = -1;
         fillControls();
@@ -184,7 +186,7 @@ void FieldManager::DeleteField()
 
 void FieldManager::UpdateField()
 {
-    const FieldData* field_n = FieldModel::instance().get_id_data_n(m_field_id);
+    const FieldData* field_n = FieldModel::instance().get_idN_data_n(m_field_id);
     if (!field_n)
         return;
 
@@ -227,9 +229,9 @@ void FieldManager::UpdateField()
             return;
     }
 
-    auto fv_a = FieldValueModel::instance().find(
-        FieldValueCol::FIELDID(m_field_id),
-        FieldValueCol::CONTENT(txtSearch)
+    FieldValueModel::DataA fv_a = FieldValueModel::instance().find_data_a(
+        FieldValueCol::WHERE_FIELDID(OP_EQ, m_field_id),
+        FieldValueCol::WHERE_CONTENT(OP_EQ, txtSearch)
     );
     for (auto& fv_d : fv_a) {
         fv_d.m_content = txtReplace;
@@ -269,7 +271,7 @@ void FieldManager::OnItemRightClick(wxDataViewEvent& event)
     wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, wxID_ANY) ;
     evt.SetEventObject( this );
 
-    const FieldData *field_n = FieldModel::instance().get_id_data_n(m_field_id);
+    const FieldData *field_n = FieldModel::instance().get_idN_data_n(m_field_id);
 
     wxMenu* mainMenu = new wxMenu;
     if (field_n)

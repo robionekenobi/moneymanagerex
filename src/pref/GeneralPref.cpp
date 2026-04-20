@@ -156,7 +156,7 @@ void GeneralPref::create()
         g_flagsH
     );
 
-    const CurrencyData* currency = CurrencyModel::instance().get_id_data_n(
+    const CurrencyData* currency = CurrencyModel::instance().get_idN_data_n(
         PrefModel::instance().getBaseCurrencyID()
     );
     wxString currName = currency ? currency->m_name : _t("Set Currency");

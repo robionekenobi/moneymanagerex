@@ -71,7 +71,7 @@ bool StockPanel::create(
     m_last_update = InfoModel::instance().getString("STOCKS_LAST_REFRESH_DATETIME", "");
     this->windowsFreezeThaw();
 
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(m_account_id);
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(m_account_id);
     if (account_n)
         m_currency_n = AccountModel::instance().get_data_currency_p(*account_n);
     else
@@ -251,9 +251,8 @@ int StockPanel::addStockTransaction(int selectedIndex)
     StockData* stock = &w_list->m_stock_a[selectedIndex];
     TrxShareDialog dlg(this, stock);
     int result = dlg.ShowModal();
-    if (result == wxID_OK)
-    {
-        w_list->doRefreshItems(dlg.m_stock_id);
+    if (result == wxID_OK) {
+        w_list->doRefreshItems(dlg.stock_id());
         updateExtraStocksData(selectedIndex);
     }
     return result;
@@ -347,7 +346,7 @@ void StockPanel::loadStockTransactions(wxListCtrl* listCtrl, wxString symbol, in
     }
 
     for (const auto& tl_d : tl_a) {
-        const TrxData* trx_n = TrxModel::instance().get_id_data_n(tl_d.m_trx_id);
+        const TrxData* trx_n = TrxModel::instance().get_idN_data_n(tl_d.m_trx_id);
         if (trx_n && !trx_n->is_deleted()) {
             trx_a.push_back(*trx_n);
         }
@@ -389,7 +388,7 @@ void StockPanel::bindListEvents(wxListCtrl* listCtrl)
 {
     listCtrl->Bind(wxEVT_LIST_ITEM_ACTIVATED, [listCtrl, this](wxListEvent& event) {
         long index = event.GetIndex();
-        TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(
+        TrxData* trx_n = TrxModel::instance().unsafe_get_idN_data_n(
             event.GetData()
         );
         if (!trx_n)
@@ -413,8 +412,8 @@ void StockPanel::bindListEvents(wxListCtrl* listCtrl)
         // Re-sort the list
         // FIXME: change type to int64
         listCtrl->SortItems([](wxIntPtr item1, wxIntPtr item2, wxIntPtr) -> int {
-            auto date1 = TrxModel::instance().get_id_data_n(item1)->m_datetime;
-            auto date2 = TrxModel::instance().get_id_data_n(item2)->m_datetime;
+            auto date1 = TrxModel::instance().get_idN_data_n(item1)->m_datetime;
+            auto date2 = TrxModel::instance().get_idN_data_n(item2)->m_datetime;
             return (date1 < date2) ? -1 : (date1 > date2) ? 1 : 0;
         }, 0);
     });
@@ -460,15 +459,17 @@ wxString StockPanel::getPanelTitle(const AccountData& account) const
 
 wxString StockPanel::buildPage() const
 {
-    const AccountData* account = AccountModel::instance().get_id_data_n(m_account_id);
+    const AccountData* account = AccountModel::instance().get_idN_data_n(m_account_id);
     return w_list->buildPage((account ? getPanelTitle(*account) : ""));
 }
 
 const wxString StockPanel::totalShares()
 {
     double total_shares = 0;
-    for (const auto& stock : StockModel::instance().find(StockCol::HELDAT(m_account_id))) {
-        total_shares += stock.m_num_shares;
+    for (const auto& stock_d : StockModel::instance().find_data_a(
+        StockCol::WHERE_HELDAT(OP_EQ, m_account_id))
+    ) {
+        total_shares += stock_d.m_num_shares;
     }
 
     int precision = (total_shares - static_cast<int>(total_shares) != 0) ? 4 : 0;
@@ -487,7 +488,7 @@ void StockPanel::updateHeader()
     wxString lbl;
 
     if (m_account_id > -1) {
-        const AccountData* account_n = AccountModel::instance().get_id_data_n(m_account_id);
+        const AccountData* account_n = AccountModel::instance().get_idN_data_n(m_account_id);
         if (account_n) {
             w_header_title->SetLabelText(getPanelTitle(*account_n));
 
@@ -596,14 +597,18 @@ bool StockPanel::onlineQuoteRefresh(wxString& msg)
     }
 
     std::map<wxString, double> symbols;
-    StockModel::DataA stock_a = StockModel::instance().find_all();
+    StockModel::DataA stock_a = StockModel::instance().find_data_a(
+        TableClause::ORDERBY(StockCol::s_primary_name)
+    );
     for (const auto& stock_d : stock_a) {
         const wxString symbol = stock_d.m_symbol.Upper();
         if (symbol.IsEmpty()) continue;
         symbols[symbol] = stock_d.m_purchase_value;
     }
 
-    w_refresh_btn->SetBitmapLabel(mmImage::bitmapBundle(mmImage::png::LED_YELLOW, mmImage::bitmapButtonSize));
+    w_refresh_btn->SetBitmapLabel(mmImage::bitmapBundle(
+        mmImage::png::LED_YELLOW, mmImage::bitmapButtonSize
+    ));
     w_details->SetLabelText(_tu("Connecting…"));
 
     std::map<wxString, double > stocks_data;
@@ -618,7 +623,9 @@ bool StockPanel::onlineQuoteRefresh(wxString& msg)
 
     StockHistoryModel::instance().db_savepoint();
     for (auto& stock_d : stock_a) {
-        std::map<wxString, double>::const_iterator it = stocks_data.find(stock_d.m_symbol.Upper());
+        std::map<wxString, double>::const_iterator it = stocks_data.find(
+            stock_d.m_symbol.Upper()
+        );
         if (it == stocks_data.end()) {
             nonYahooSymbols[stock_d.m_symbol.Upper()] = 0;
             continue;
@@ -705,10 +712,10 @@ void StockPanel::enableEditDeleteButtons(bool en)
 
 void StockPanel::call_dialog(int selectedIndex)
 {
-    StockData* stock = &w_list->m_stock_a[selectedIndex];
-    StockDialog dlg(this, stock, m_account_id);
+    StockData* stock_n = &w_list->m_stock_a[selectedIndex];
+    StockDialog dlg(this, stock_n, m_account_id);
     dlg.ShowModal();
-    w_list->doRefreshItems(dlg.m_stock_id);
+    w_list->doRefreshItems(dlg.stock_id());
 }
 
 void StockPanel::displayAccountDetails(int64 account_id)
@@ -717,7 +724,7 @@ void StockPanel::displayAccountDetails(int64 account_id)
     m_account_id = account_id;
 
     if (m_account_id > -1){
-        const AccountData* account_n = AccountModel::instance().get_id_data_n(m_account_id);
+        const AccountData* account_n = AccountModel::instance().get_idN_data_n(m_account_id);
         m_currency_n = AccountModel::instance().get_data_currency_p(*account_n);
     }
 

@@ -32,9 +32,7 @@ class BudgetModel : public TableFactory<BudgetTable, BudgetData>
 // -- static
 
 public:
-    static BudgetCol::PERIOD FREQUENCY(OP op, BudgetFreq freq) {
-        return BudgetCol::PERIOD(op, freq.key());
-    }
+    static auto WHERE_FREQUENCY(OP op, BudgetFreq freq) -> TableClauseV<wxString>;
 
 // -- constructor
 
@@ -45,6 +43,14 @@ public:
 
     static BudgetModel& instance(wxSQLite3Database* db);
     static BudgetModel& instance();
+
+// -- override
+
+public:
+    // override TableFactory
+    virtual bool purge_id(int64 id) override {
+        return unsafe_remove_id(id);
+    }
 
 // -- methods
 

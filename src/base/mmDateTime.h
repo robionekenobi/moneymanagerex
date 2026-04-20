@@ -39,14 +39,14 @@
 // mmDateTime::invalid() is not a valid mmDateTime.
 // See the comments on mmDate::invalid() in `mmDate.h`.
 //
-// An optional argument `withTime` is provided for convenience in a few methods.
+// An optional argument `useTime` is provided for convenience in a few methods.
 // When time is disabled in MMEX application, transactions datetime (TRANSDATE)
 // is stored in ISO datetime format, but the time part is not shown in GUI.
 // New transactions get a dummy time (12:00:00), however existing transactions
 // may have a non-default time (e.g., if they were created with time enabled).
 // The invisible time part of existing transactions shall be preserved in the
 // database, such that it re-appears in GUI when users enable time again.
-// `withTime` can be used to selectively get information with or without time.
+// `useTime` can be used to selectively get information with or without time.
 
 struct mmDateTime
 {
@@ -75,8 +75,8 @@ public:
     static mmDateTime invalid() {
         return mmDateTime(mmDate::invalid(), "", wxInvalidDateTime);
     }
-    static mmDateTime now(bool withTime = true) {
-        return withTime
+    static mmDateTime now(bool useTime = true) {
+        return useTime
             ? mmDateTime(wxDateTime::Now())
             : mmDateTime(mmDate::today());
     }
@@ -86,11 +86,14 @@ public:
 public:
     auto date() const -> const mmDate& { return m_date; }
     auto isoDate() const -> const wxString { return m_date.isoDate(); }
-    auto isoTime(bool withTime = true) const -> const wxString {
-        return withTime ? m_isoTime : "12:00:00";
+    auto isoTime(bool useTime = true) const -> const wxString {
+        return useTime ? m_isoTime : "12:00:00";
     }
-    auto isoDateTime(bool withTime = true) const -> const wxString {
-        return m_date.isoDate() + "T" + isoTime(withTime);
+    auto isoDateTime(bool useTime = true) const -> const wxString {
+        return m_date.isoDate() + "T" + isoTime(useTime);
+    }
+    auto withTime(bool useTime = true) const -> mmDateTime {
+        return useTime ? *this : mmDateTime(m_date);
     }
 
 private:
@@ -98,8 +101,8 @@ private:
     void cache_dateTime(wxDateTime dateTime);
 
 public:
-    auto dateTime(bool withTime = true) -> wxDateTime {
-        return withTime
+    auto dateTime(bool useTime = true) -> wxDateTime {
+        return useTime
             ? (c_dateTimeN.IsValid() ? c_dateTimeN : cache_dateTime())
             : m_date.dateTime();
     }
@@ -178,11 +181,11 @@ public:
 public:
     auto dateN() const -> const mmDateN& { return m_dateN; }
     auto isoDateN() const -> const wxString { return m_dateN.isoDateN(); }
-    auto isoTimeN(bool withTime = true) const -> const wxString {
-        return has_value() ? (withTime ? m_isoTimeN : "12:00:00") : "";
+    auto isoTimeN(bool useTime = true) const -> const wxString {
+        return has_value() ? (useTime ? m_isoTimeN : "12:00:00") : "";
     }
-    auto isoDateTimeN(bool withTime = true) const -> const wxString {
-        return has_value() ? m_dateN.isoDateN() + "T" + isoTimeN(withTime) : "";
+    auto isoDateTimeN(bool useTime = true) const -> const wxString {
+        return has_value() ? m_dateN.isoDateN() + "T" + isoTimeN(useTime) : "";
     }
 
 private:
@@ -190,8 +193,8 @@ private:
     void cache_dateTimeN(wxDateTime dateTimeN);
 
 public:
-    auto dateTimeN(bool withTime = true) -> wxDateTime {
-        return withTime
+    auto dateTimeN(bool useTime = true) -> wxDateTime {
+        return useTime
             ? (!has_value() || c_dateTimeN.IsValid()) ? c_dateTimeN : cache_dateTimeN()
             : m_dateN.dateTimeN();
     }

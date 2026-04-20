@@ -45,119 +45,19 @@ class TrxDialog : public wxDialog
     wxDECLARE_DYNAMIC_CLASS(TrxDialog);
     wxDECLARE_EVENT_TABLE();
 
-public:
-    TrxDialog() {}
-    virtual ~TrxDialog();
-
-    TrxDialog(
-        wxWindow* parent,
-        int64 account_id,
-        JournalKey journal_key,
-        bool duplicate = false,
-        TrxType type = TrxType(TrxType::e_withdrawal)
-    );
-
-    bool Create(
-        wxWindow* parent,
-        wxWindowID id = wxID_ANY,
-        const wxString& caption = _t("Transactions Dialog"),
-        const wxPoint& pos = wxDefaultPosition,
-        const wxSize& size = wxDefaultSize,
-        long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX,
-        const wxString& name = "Transactions Dialog"
-    );
-
-    void SetDialogTitle(const wxString& title);
-    int64 GetAccountID() { return m_journal_d.m_account_id; }
-    int64 GetToAccountID() { return m_journal_d.m_to_account_id_n; }
-    int64 GetTransactionID() { return m_journal_d.m_id; }
+// -- static
 
 private:
-    wxSharedPtr<FieldValueDialog> m_custom_fields;
-    void CreateControls();
-    void dataToControls();
-    bool ValidateData();
-    void SetEventHandlers();
-
-    void OnOk(wxCommandEvent& event);
-    void OnCancel(wxCommandEvent& event);
-    void OnMoreFields(wxCommandEvent& event);
-    void OnQuit(wxCloseEvent& event);
-    void OnCategs(wxCommandEvent& event);
-    void OnAttachments(wxCommandEvent& event);
-    void OnComboKey(wxKeyEvent& event);
-    void OnDpcKillFocus(wxFocusEvent& event);
-    void OnAutoTransNum(wxCommandEvent& event);
-    void OnFrequentUsedNotes(wxCommandEvent& event);
-    void OnNoteSelected(wxCommandEvent& event);
-    void OnTransTypeChanged(wxCommandEvent& event);
-    void OnPayeeChanged(wxCommandEvent& event);
-    void OnFocusChange(wxChildFocusEvent& event);
-    void OnTextEntered(wxCommandEvent& event);
-    void OnAdvanceChecked(wxCommandEvent& event);
-    void OnCalculator(wxCommandEvent& event);
-    void OnSwitch(wxCommandEvent& event);
-    void OnToday(wxCommandEvent& event);
-    void SetTooltips();
-    void SetCategoryForPayee(const PayeeData *payee = nullptr);
-
-private:
-    wxTextCtrl*         textNumber_       = nullptr;
-    mmTextCtrl*         m_textAmount      = nullptr;
-    mmTextCtrl*         toTextAmount_     = nullptr;
-    wxTextCtrl*         textNotes_        = nullptr;
-    wxBitmapButton*     bAttachments_     = nullptr;
-    mmColorButton*      bColours_         = nullptr;
-    wxStaticText*       account_label_    = nullptr;
-    wxStaticText*       categ_label_      = nullptr;
-    mmComboBoxAccount*  cbAccount_        = nullptr;
-    wxStaticText*       to_acc_label_     = nullptr;
-    mmComboBoxAccount*  cbToAccount_      = nullptr;
-    wxStaticText*       payee_label_      = nullptr;
-    mmComboBoxPayee*    cbPayee_          = nullptr;
-    mmComboBoxCategory* cbCategory_       = nullptr;
-    wxBitmapButton*     bSplit_           = nullptr;
-    wxBitmapButton*     bAuto             = nullptr;
-    wxCheckBox*         cAdvanced_        = nullptr;
-    wxButton*           m_button_cancel   = nullptr;
-    wxButton*           m_button_ok_new   = nullptr;
-    wxChoice*           choiceStatus_     = nullptr;
-    wxChoice*           transaction_type_ = nullptr;
-    mmDatePicker*       w_date_picker     = nullptr;
-    mmTagTextCtrl*      tagTextCtrl_      = nullptr;
-    wxBitmapButton*     bCalc_            = nullptr;
-    wxBitmapButton*     bSwitch_          = nullptr;
-    mmCalcPopup*        calcPopup_        = nullptr;
-    mmTextCtrl*         calcTarget_       = nullptr;
-
-    enum MODE { MODE_NEW = 0, MODE_DUP, MODE_EDIT };
-    MODE m_mode = MODE_EDIT;
-    bool m_transfer = false;
-    bool m_advanced = false;
-
-    int object_in_focus_ = wxID_ANY;
-    int64 m_account_id = -1;
-    wxString m_status;
-
-    Journal::Data m_journal_d;
-    std::vector<Split> m_local_splits;
-
-    std::vector<wxString> frequentNotes_;
-
-    bool skip_date_init_ = false;
-    bool skip_account_init_ = false;
-    bool skip_amount_init_ = false;
-    bool skip_payee_init_ = false;
-    bool skip_status_init_ = false;
-    bool skip_notes_init_ = false;
-    bool skip_category_init_ = false;
-    bool skip_tag_init_ = false;
-    bool skip_tooltips_init_ = false;
-    wxSize min_size_;
+    enum MODE
+    {
+        MODE_ADD = 0,
+        MODE_UPDATE,
+        MODE_ENTER,
+    };
 
     enum
     {
-        /* Transaction Dialog */
+        // Transaction Dialog
         ID_DIALOG_TRANS_TYPE = wxID_HIGHEST + 897,
         ID_DIALOG_TRANS_TEXTNUMBER,
         ID_DIALOG_TRANS_BUTTONDATE,
@@ -186,4 +86,134 @@ private:
         ID_BTN_OK_NEW,
         ID_CUSTOMFIELDS      // must be last in the list
     };
+
+private:
+    // Store used date between two invocations for save & new
+    static wxDateTime s_previousDate;
+
+// -- state
+
+private:
+    MODE m_mode = MODE_ADD;
+    Journal::Data m_journal_d;
+    bool m_advanced = false;
+    std::vector<Split> m_split_a;
+    std::vector<wxString> m_freq_notes_a;
+    bool m_altRefreshDone = false;
+
+    bool m_skip_date_init     = false;
+    bool m_skip_account_init  = false;
+    bool m_skip_amount_init   = false;
+    bool m_skip_payee_init    = false;
+    bool m_skip_status_init   = false;
+    bool m_skip_notes_init    = false;
+    bool m_skip_category_init = false;
+    bool m_skip_tag_init      = false;
+    bool m_skip_tooltips_init = false;
+
+    wxSize w_min_size;
+    int w_focus = wxID_ANY;
+    wxSharedPtr<FieldValueDialog> w_fv_dlg;
+
+    mmDatePicker*       w_date_picker      = nullptr;
+    wxChoice*           w_type_choice      = nullptr;
+    wxChoice*           w_status_choice    = nullptr;
+    wxStaticText*       w_account_label    = nullptr;
+    mmComboBoxAccount*  w_account_text     = nullptr;
+    wxStaticText*       w_to_account_label = nullptr;
+    mmComboBoxAccount*  w_to_account_text  = nullptr;
+    mmTextCtrl*         w_amount_text      = nullptr;
+    mmTextCtrl*         w_to_amount_text   = nullptr;
+    wxStaticText*       w_payee_label      = nullptr;
+    mmComboBoxPayee*    w_payee_text       = nullptr;
+    wxStaticText*       w_cat_label        = nullptr;
+    mmComboBoxCategory* w_cat_text         = nullptr;
+    wxCheckBox*         w_advanced_cb      = nullptr;
+    wxBitmapButton*     w_split_btn        = nullptr;
+    wxTextCtrl*         w_number_text      = nullptr;
+    wxTextCtrl*         w_notes_text       = nullptr;
+    mmTagTextCtrl*      w_tag_text         = nullptr;
+    wxBitmapButton*     w_att_btn          = nullptr;
+    mmColorButton*      w_color_btn        = nullptr;
+    wxBitmapButton*     w_auto_btn         = nullptr;
+    wxButton*           w_cancel_btn       = nullptr;
+    wxBitmapButton*     w_invert_btn       = nullptr;
+    wxBitmapButton*     w_calc_btn         = nullptr;
+    mmCalcPopup*        w_calc_popup       = nullptr;
+    mmTextCtrl*         w_calc_text        = nullptr;
+    //wxButton*         m_button_ok_new    = nullptr;
+
+//        MODE_NEW  => is_new()
+//        MODE_DUP  => is_dup() || is_enter()
+//        MODE_EDIT => is_edit()
+
+public:
+    bool is_new() { return (m_mode == MODE_ADD && m_journal_d.m_id <= 0); }
+    bool is_dup() { return (m_mode == MODE_ADD && m_journal_d.m_id > 0); }
+    bool is_edit() { return (m_mode == MODE_UPDATE); }
+    bool is_enter() { return (m_mode == MODE_ENTER); }
+    auto trx_id() const -> int64 { return m_journal_d.m_id; }
+    auto trx_account_id() const -> int64 { return m_journal_d.m_account_id; }
+    auto trx_to_account_id() const -> int64 { return m_journal_d.m_to_account_id_n; }
+
+// -- constructor
+
+public:
+    TrxDialog() {}
+    virtual ~TrxDialog();
+
+    TrxDialog(
+        wxWindow* parent_win,
+        JournalKey journal_key,
+        bool duplicate = false,
+        int64 account_id = -1,
+        TrxType type = TrxType(TrxType::e_withdrawal)
+    );
+
+private:
+    bool create(
+        wxWindow* parent_win,
+        wxWindowID win_id = wxID_ANY,
+        const wxString& caption = _t("Transactions Dialog"),
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX,
+        const wxString& name = "Transactions Dialog"
+    );
+    void createControls();
+    void dataToControls();
+
+// -- methods
+
+public:
+    void setDialogTitle(const wxString& title);
+
+private:
+    bool validateData();
+    void setEventHandlers();
+    void setTooltips();
+    void setCategoryForPayee(const PayeeData *payee = nullptr);
+
+// -- event handlers
+
+private:
+    void onOk(                wxCommandEvent&    event);
+    void onCancel(            wxCommandEvent&    event);
+    void onMoreFields(        wxCommandEvent&    event);
+    void onQuit(              wxCloseEvent&      event);
+    void onCategs(            wxCommandEvent&    event);
+    void onAttachments(       wxCommandEvent&    event);
+    void onComboKey(          wxKeyEvent&        event);
+    void onDpcKillFocus(      wxFocusEvent&      event);
+    void onAutoTransNum(      wxCommandEvent&    event);
+    void onFrequentUsedNotes( wxCommandEvent&    event);
+    void onNoteSelected(      wxCommandEvent&    event);
+    void onTransTypeChanged(  wxCommandEvent&    event);
+    void onPayeeChanged(      wxCommandEvent&    event);
+    void onFocusChange(       wxChildFocusEvent& event);
+    void onTextEntered(       wxCommandEvent&    event);
+    void onAdvanceChecked(    wxCommandEvent&    event);
+    void onCalculator(        wxCommandEvent&    event);
+    void onSwitch(            wxCommandEvent&    event);
+    void onToday(             wxCommandEvent&    event);
 };

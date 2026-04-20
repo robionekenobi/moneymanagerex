@@ -223,35 +223,44 @@ const wxFileName mmPath::getPathUserRaw(EUserFile f, bool create)
     return fname;
 }
 
-// This function transforms mnemonic paths to real one
-// For example %USERPROFILE%\MyBudget will be transformed to C:\Users\James\MyBudget
+// This function substitutes symbolic paths and ensures a path separator at the end.
+// For example "%USERPROFILE%\MyBudget" will be transformed to "C:\Users\James\MyBudget\"
 const wxString mmPath::getPathAttachment(const wxString& folder)
 {
     if (folder == wxEmptyString)
         return wxEmptyString;
 
-    wxString path = folder;
     const wxString sep = wxFileName::GetPathSeparator();
     const wxString lastDBPath = SettingModel::instance().getLastDbPath();
-    const wxString& lastDBFolder = wxFileName::FileName(lastDBPath).GetPath() + sep;
-    const wxString& userFolder = mmPath::getUserDir(false).GetPath() + sep;
+    const wxString& lastDBFolder = wxFileName::FileName(lastDBPath).GetPath();
+    const wxString& userFolder = mmPath::getUserDir(false).GetPath();
 
-    if (folder.StartsWith(ATTACHMENTS_FOLDER_USERPROFILE, &path))
+    wxString path;
+    if (folder.StartsWith(ATTACHMENTS_FOLDER_USERPROFILE, &path)) {
         path.Prepend(wxGetHomeDir() + sep);
-    else if (folder.StartsWith(ATTACHMENTS_FOLDER_DOCUMENTS, &path))
+    }
+    else if (folder.StartsWith(ATTACHMENTS_FOLDER_DOCUMENTS, &path)) {
         path.Prepend(wxStandardPaths::Get().GetDocumentsDir() + sep);
-    else if (folder.StartsWith(ATTACHMENTS_FOLDER_DATABASE, &path))
-        path.Prepend(lastDBFolder);
-    else if (folder.StartsWith(ATTACHMENTS_FOLDER_APPDATA, &path))
-        path.Prepend(userFolder);
+    }
+    else if (folder.StartsWith(ATTACHMENTS_FOLDER_DATABASE, &path)) {
+        path.Prepend(lastDBFolder + sep);
+    }
+    else if (folder.StartsWith(ATTACHMENTS_FOLDER_APPDATA, &path)) {
+        path.Prepend(userFolder + sep);
+    } else {
+        path = folder;
+    }
 
-    if (path.Last() != sep)
+    if (path.Last() != sep) {
         path.Append(sep);
-    if (InfoModel::instance().getBool("ATTACHMENTSSUBFOLDER", true))
+    }
+
+    if (InfoModel::instance().getBool("ATTACHMENTSSUBFOLDER", true)) {
         path += wxString::Format("MMEX_%s_Attachments%s",
             wxFileName::FileName(lastDBPath).GetName(),
             sep
         );
+    }
 
     return path;
 }

@@ -76,7 +76,7 @@ mmQIFImportDialog::mmQIFImportDialog(
 {
     decimal_ = CurrencyModel::instance().get_base_data_n()->m_decimal_point;
     payeeIsNotes_ = false;
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(account_id);
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(account_id);
     if (account_n)
         m_accountNameStr = account_n->m_name;
 
@@ -812,7 +812,7 @@ void mmQIFImportDialog::refreshTabs(int tabs)
                 ? acc.second.at(QIF_ID_AccountType) : "";
 
             if (account) {
-                const CurrencyData *currency_n = CurrencyModel::instance().get_id_data_n(account->m_currency_id);
+                const CurrencyData *currency_n = CurrencyModel::instance().get_idN_data_n(account->m_currency_id);
                 if (currency_n && currency_n->m_symbol == currencySymbol)
                     status = _t("OK");
                 else
@@ -1020,10 +1020,9 @@ void mmQIFImportDialog::compilePayeeRegEx() {
         return;
 
     // only look at payees that have a match pattern set
-    PayeeModel::DataA payee_a = PayeeModel::instance().find(
-        PayeeCol::PATTERN(OP_NEN, "")
-    );
-    for (const auto& payee_d : payee_a) {
+    for (const auto& payee_d : PayeeModel::instance().find_data_a(
+        PayeeCol::WHERE_PATTERN(OP_NEN, "")
+    )) {
         Document json_doc;
         if (json_doc.Parse(payee_d.m_pattern.utf8_str()).HasParseError()) {
             continue;
@@ -1148,10 +1147,10 @@ void mmQIFImportDialog::OnOk(wxCommandEvent& WXUNUSED(event))
                 if (dateToCheckBox_->IsChecked() && strDate > end_date)
                     continue;
 
-                AccountData* account = AccountModel::instance().unsafe_get_id_data_n(
+                AccountData* account = AccountModel::instance().unsafe_get_idN_data_n(
                     trx_d.m_account_id
                 );
-                AccountData* toAccount = AccountModel::instance().unsafe_get_id_data_n(
+                AccountData* toAccount = AccountModel::instance().unsafe_get_idN_data_n(
                     trx_d.m_to_account_id_n
                 );
 
@@ -1186,7 +1185,7 @@ void mmQIFImportDialog::OnOk(wxCommandEvent& WXUNUSED(event))
                             TagData new_tag_d = TagData();
                             new_tag_d.m_name = tagname;
                             TagModel::instance().add_data_n(new_tag_d);
-                            tag_n = TagModel::instance().get_id_data_n(new_tag_d.m_id);
+                            tag_n = TagModel::instance().get_idN_data_n(new_tag_d.m_id);
                         }
                         TagLinkData gl_d = TagLinkData();
                         gl_d.m_tag_id   = tag_n->m_id;
@@ -1234,17 +1233,17 @@ void mmQIFImportDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         for (auto& trx_d : trx_a) {
             if (!trx_d.is_transfer())
                 continue;
-            const auto data = TrxModel::instance().find(
-                TrxModel::DATE(            OP_EQ, trx_d.m_date()),
-                TrxModel::TYPE(            OP_EQ, TrxType(TrxType::e_transfer)),
-                TrxCol::ACCOUNTID(         OP_EQ, trx_d.m_account_id),
-                TrxCol::TOACCOUNTID(       OP_EQ, trx_d.m_to_account_id_n),
-                TrxCol::TRANSAMOUNT(       OP_EQ, trx_d.m_amount),
-                TrxCol::TRANSACTIONNUMBER( OP_EQ, trx_d.m_number),
-                TrxCol::NOTES(             OP_EQ, trx_d.m_notes)
-            );
-            if (data.size() > 0)
+            if (TrxModel::instance().find_count(
+                TrxModel::WHERE_DATE(            OP_EQ, trx_d.m_date()),
+                TrxModel::WHERE_TYPE(            OP_EQ, TrxType(TrxType::e_transfer)),
+                TrxCol::WHERE_ACCOUNTID(         OP_EQ, trx_d.m_account_id),
+                TrxCol::WHERE_TOACCOUNTID(       OP_EQ, trx_d.m_to_account_id_n),
+                TrxCol::WHERE_TRANSAMOUNT(       OP_EQ, trx_d.m_amount),
+                TrxCol::WHERE_TRANSACTIONNUMBER( OP_EQ, trx_d.m_number),
+                TrxCol::WHERE_NOTES(             OP_EQ, trx_d.m_notes)
+            ) > 0) {
                 trx_d.m_status = TrxStatus(TrxStatus::e_duplicate);
+            }
         }
         // At this point all transactions and tags have been merged into single sets
         TagLinkModel::instance().db_savepoint();
@@ -1275,10 +1274,15 @@ void mmQIFImportDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         progressDlg.Destroy();
     }
     else {
-        sMsg = _t("Imported transactions discarded by user!"); //TODO: strange message may be _t("Import has discarded by user!")
+        // TODO: strange message may be _t("Import has discarded by user!")
+        sMsg = _t("Imported transactions discarded by user!");
     }
     save_file_name();
-    wxMessageDialog(this, sMsg, _t("Import from QIF file"), wxOK | wxICON_WARNING).ShowModal();
+    wxMessageDialog(this,
+        sMsg,
+        _t("Import from QIF file"),
+        wxOK | wxICON_WARNING
+    ).ShowModal();
     *log_field_ << sMsg << "\n";
 
     refreshTabs(ACC_TAB | PAYEE_TAB | CAT_TAB);
@@ -1553,7 +1557,7 @@ bool mmQIFImportDialog::completeTransaction(
                         TagData new_tag_d = TagData();
                         new_tag_d.m_name = tagname;
                         TagModel::instance().add_data_n(new_tag_d);
-                        tag_n = TagModel::instance().get_id_data_n(new_tag_d.m_id);
+                        tag_n = TagModel::instance().get_idN_data_n(new_tag_d.m_id);
                     }
                     TagLinkData gl_d = TagLinkData();
                     gl_d.m_tag_id   = tag_n->m_id;
@@ -1576,7 +1580,7 @@ bool mmQIFImportDialog::completeTransaction(
             : ""
         );
         if (categStr.empty()) {
-            const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(trx_n->m_payee_id_n);
+            const PayeeData* payee_n = PayeeModel::instance().get_idN_data_n(trx_n->m_payee_id_n);
             if (payee_n) {
                 trx_n->m_category_id_n = payee_n->m_category_id_n;
             }
@@ -1600,12 +1604,10 @@ bool mmQIFImportDialog::completeTransaction(
         // By transaction number
         if (dupMethod == 0) {
             if (!trx_n->m_number.empty()) {
-                const auto existing_transactions = TrxModel::instance().find(
-                    TrxCol::TRANSACTIONNUMBER(OP_EQ, trx_n->m_number),
-                    TrxModel::IS_DELETED(false)
-                );
-
-                isDuplicate = !existing_transactions.empty();
+                isDuplicate = (TrxModel::instance().find_count(
+                    TrxCol::WHERE_TRANSACTIONNUMBER(OP_EQ, trx_n->m_number),
+                    TrxModel::WHERE_IS_DELETED(false)
+                ) > 0);
             }
         }
         // By amount and date (exact or nearby)
@@ -1618,18 +1620,17 @@ bool mmQIFImportDialog::completeTransaction(
                 endDate.addDateSpan(wxDateSpan::Days(2));
             }
 
-            const auto potential_matches = TrxModel::instance().find(
-                TrxModel::DATE(OP_GE, startDate),
-                TrxModel::DATE(OP_LE, endDate),
-                TrxCol::TRANSAMOUNT(trx_n->m_amount),
-                TrxModel::IS_DELETED(false)
-            );
-
-            for (const auto& existingTrx : potential_matches) {
-                bool alreadyMatched = m_duplicateTransactions.find(existingTrx.m_id) != m_duplicateTransactions.end();
-                if (!alreadyMatched) {
+            for (const auto& existing_trx_d : TrxModel::instance().find_data_a(
+                TrxModel::WHERE_DATE(OP_GE, startDate),
+                TrxModel::WHERE_DATE(OP_LE, endDate),
+                TrxCol::WHERE_TRANSAMOUNT(OP_EQ, trx_n->m_amount),
+                TrxModel::WHERE_IS_DELETED(false)
+            )) {
+                if (m_duplicateTransactions.find(
+                    existing_trx_d.m_id
+                ) == m_duplicateTransactions.end()) {
                     isDuplicate = true;
-                    m_duplicateTransactions.insert(existingTrx.m_id);
+                    m_duplicateTransactions.insert(existing_trx_d.m_id);
                     break;
                 }
             }
@@ -1684,9 +1685,11 @@ int64 mmQIFImportDialog::getOrCreateAccounts()
                 ? ""
                 : item.second.at(QIF_ID_Description)
             );
-            for (const auto& curr : CurrencyModel::instance().find_all()) {
-                if (wxString::Format("[%s]", curr.m_symbol) == c) {
-                    new_account_d.m_currency_id = curr.m_id;
+            for (const auto& currency_d : CurrencyModel::instance().find_data_a(
+                TableClause::ORDERBY(CurrencyCol::s_primary_name)
+            )) {
+                if (wxString::Format("[%s]", currency_d.m_symbol) == c) {
+                    new_account_d.m_currency_id = currency_d.m_id;
                     break;
                 }
             }
@@ -1751,7 +1754,7 @@ void mmQIFImportDialog::getOrCreateCategories()
                     new_cat_d.m_name        = categStr;
                     new_cat_d.m_parent_id_n = parentID;
                     CategoryModel::instance().add_data_n(new_cat_d);
-                    cat_n = CategoryModel::instance().get_id_data_n(new_cat_d.m_id);
+                    cat_n = CategoryModel::instance().get_idN_data_n(new_cat_d.m_id);
                 }
                 temp.Add(categStr + wxString::Format(":%lld", parentID));
             }

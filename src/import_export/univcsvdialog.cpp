@@ -273,9 +273,9 @@ void mmUnivCSVDialog::CreateControls()
     wxString prefix = GetSettingsPrfix();
     prefix.Replace("%d", "");
     wxString init_preset_name;
-    for (const auto& setting_d : SettingModel::instance().find(
-        SettingCol::SETTINGNAME(OP_GE, prefix + "0"),
-        SettingCol::SETTINGNAME(OP_LT, prefix + "A")
+    for (const auto& setting_d : SettingModel::instance().find_data_a(
+        SettingCol::WHERE_SETTINGNAME(OP_GE, prefix + "0"),
+        SettingCol::WHERE_SETTINGNAME(OP_LT, prefix + "A")
     )) {
         Document json_doc;
         if (json_doc.Parse(setting_d.m_value.utf8_str()).HasParseError()) {
@@ -345,25 +345,23 @@ void mmUnivCSVDialog::CreateControls()
     for (const auto& it : CSVFieldName_)
         csvFieldCandicate_->Append(wxGetTranslation(it.second.first), new mmListBoxItem(it.first, it.second.first));
 
-    //Custom Fields
-    FieldModel::DataA field_a = FieldModel::instance().find(
-        FieldCol::REFTYPE(TrxModel::s_ref_type.key_n())
-    );
-    if (!field_a.empty()) {
-        std::sort(field_a.begin(), field_a.end(), FieldData::SorterByDESCRIPTION());
-        int customField = 1;    // Start of custom fields numbering
-        for (const FieldData& field_d : field_a) {
-            // Can't use an enum for the field index since there can be infinite custom fields
-            // Instead we offset the last enum by a custom field offset and store the custom field id
-            int csvField = UNIV_CSV_LAST + customField;
-            CSVFieldName_[csvField].first = field_d.m_description;
-            CSVFieldName_[csvField].second = field_d.m_id.GetValue();
-            csvFieldCandicate_->Append(
-                field_d.m_description,
-                new mmListBoxItem(csvField, field_d.m_description)
-            );
-            customField++;
-        }
+    // Custom Fields
+    int customField = 1;
+    for (const FieldData& field_d : FieldModel::instance().find_data_a(
+        FieldCol::WHERE_REFTYPE(OP_EQ, TrxModel::s_ref_type.key_n()),
+        TableClause::ORDERBY(FieldCol::NAME_DESCRIPTION)
+    )) {
+        // Start of custom fields numbering
+        // Can't use an enum for the field index since there can be infinite custom fields
+        // Instead we offset the last enum by a custom field offset and store the custom field id
+        int csvField = UNIV_CSV_LAST + customField;
+        CSVFieldName_[csvField].first = field_d.m_description;
+        CSVFieldName_[csvField].second = field_d.m_id.GetValue();
+        csvFieldCandicate_->Append(
+            field_d.m_description,
+            new mmListBoxItem(csvField, field_d.m_description)
+        );
+        customField++;
     }
 
     //Add Remove Area
@@ -816,7 +814,7 @@ void mmUnivCSVDialog::SetSettings(const wxString &json_data)
     if (json_data.empty()) {
         m_choice_preset_name->SetSelection(-1);
         if (m_account_id > 0) {
-            const AccountData* account = AccountModel::instance().get_id_data_n(m_account_id);
+            const AccountData* account = AccountModel::instance().get_idN_data_n(m_account_id);
             if (account)
                 m_choice_account_->SetStringSelection(account->m_name);
         }
@@ -862,7 +860,7 @@ void mmUnivCSVDialog::SetSettings(const wxString &json_data)
     // Account
     wxString an;
     if (m_account_id > -1) {
-        const AccountData* account = AccountModel::instance().get_id_data_n(m_account_id);
+        const AccountData* account = AccountModel::instance().get_idN_data_n(m_account_id);
         if (account)
             an = account->m_name;
         else
@@ -1371,7 +1369,7 @@ bool mmUnivCSVDialog::validateData(tran_holder & holder, wxString& message)
         for (auto& cfdata : holder.customFieldData)
             is_valid &= validateCustomFieldData(cfdata.first, cfdata.second, message);
 
-    const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(holder.PayeeID);
+    const PayeeData* payee_n = PayeeModel::instance().get_idN_data_n(holder.PayeeID);
     if (!payee_n) {
         const PayeeData* unknown_n = PayeeModel::instance().get_name_data_n(_t("Unknown"));
         if (!unknown_n) {
@@ -1531,8 +1529,8 @@ void mmUnivCSVDialog::OnImport(wxCommandEvent& WXUNUSED(event))
         }
 
         wxDateTime trx_datetime = holder.Date;
-        const AccountData* account2 = AccountModel::instance().get_id_data_n(accountID_);
-        const AccountData* toAccount = AccountModel::instance().get_id_data_n(holder.ToAccountID);
+        const AccountData* account2 = AccountModel::instance().get_idN_data_n(accountID_);
+        const AccountData* toAccount = AccountModel::instance().get_idN_data_n(holder.ToAccountID);
         if ((mmDate(trx_datetime) < account2->m_open_date) ||
             (toAccount && (mmDate(trx_datetime) < toAccount->m_open_date))
         ) {
@@ -1741,14 +1739,14 @@ void mmUnivCSVDialog::OnExport(wxCommandEvent& WXUNUSED(event))
     //If the user wants to export transactions
     if (m_exportStocksCheckBox->GetValue() == false) {
         // Write transactions to file.
-        TrxModel::DataA trx_a = TrxModel::instance().find_or(
-            TrxCol::ACCOUNTID(fromAccountID),
-            TrxCol::TOACCOUNTID(fromAccountID)
-        );
-        std::sort(trx_a.begin(), trx_a.end());
-        std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTime());
-
-        for (TrxData& trx_d : trx_a) {
+        for (TrxData& trx_d : TrxModel::instance().find_data_a(
+            TableClause::BEGIN_OR(),
+                TrxCol::WHERE_ACCOUNTID(OP_EQ, fromAccountID),
+                TrxCol::WHERE_TOACCOUNTID(OP_EQ, fromAccountID),
+            TableClause::END(),
+            TableClause::ORDERBY(TrxCol::NAME_TRANSDATE),
+            TableClause::ORDERBY(TrxCol::NAME_TRANSID)
+        )) {
             if (!trx_d.is_valid())
                 continue;
 
@@ -1775,7 +1773,7 @@ void mmUnivCSVDialog::OnExport(wxCommandEvent& WXUNUSED(event))
                 ) || !m_haveDatesCheckBox->IsChecked()) {
                     pTxFile->AddNewLine();
 
-                    const CategoryData* category = CategoryModel::instance().get_id_data_n(
+                    const CategoryData* category = CategoryModel::instance().get_idN_data_n(
                         tp_d.m_category_id
                     );
 
@@ -1869,7 +1867,7 @@ void mmUnivCSVDialog::OnExport(wxCommandEvent& WXUNUSED(event))
                                 );
                                 if (fv_n) {
                                     // format date fields
-                                    const FieldData* field_n = FieldModel::instance().get_id_data_n(fv_n->m_field_id);
+                                    const FieldData* field_n = FieldModel::instance().get_idN_data_n(fv_n->m_field_id);
                                     if (field_n->m_type_n.id_n() == FieldTypeN::e_date)
                                         entry = mmGetDateTimeForDisplay(fv_n->m_content, date_format_);
                                     else
@@ -1886,17 +1884,16 @@ void mmUnivCSVDialog::OnExport(wxCommandEvent& WXUNUSED(event))
             }
         }
     }
-    else //Else if the user wants to export stocks
-    {
-        StockModel::DataA stock_a = StockModel::instance().find(
-            StockCol::HELDAT(fromAccountID)
-        );
-        std::sort(stock_a.begin(), stock_a.end());
-        std::stable_sort(stock_a.begin(), stock_a.end(), StockData::SorterBySTOCKID());
-
-        const AccountData* account = AccountModel::instance().get_id_data_n(fromAccountID);
-        for (StockData& stock_d : stock_a) {
-            //If the transaction happened between the dates that the user selected or if the user selected to export all the transactions regardless of date then the row is added to the preview
+    // Else if the user wants to export stocks
+    else {
+        const AccountData* account = AccountModel::instance().get_idN_data_n(fromAccountID);
+        for (StockData& stock_d : StockModel::instance().find_data_a(
+            StockCol::WHERE_HELDAT(OP_EQ, fromAccountID),
+            TableClause::ORDERBY(StockCol::NAME_STOCKID)
+        )) {
+            // If the transaction happened between the dates that the user selected,
+            // or if the user selected to export all the transactions regardless of date,
+            // then the row is added to the preview
             if (stock_d.m_purchase_date.dateTime().IsBetween(
                 m_date_picker_start->GetValue(),
                 m_date_picker_end->GetValue()
@@ -2129,17 +2126,20 @@ void mmUnivCSVDialog::update_preview()
 
         //If the user wants to export transactions
         if (m_exportStocksCheckBox->GetValue() == false) {
-            TrxModel::DataA trx_a = TrxModel::instance().find_or(
-                TrxCol::ACCOUNTID(from_account_id),
-                TrxCol::TOACCOUNTID(from_account_id)
-            );
-            std::sort(trx_a.begin(), trx_a.end());
-            std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTime());
-            for (TrxData& trx_d : trx_a) {
+            for (TrxData& trx_d : TrxModel::instance().find_data_a(
+                TableClause::BEGIN_OR(),
+                    TrxCol::WHERE_ACCOUNTID(OP_EQ, from_account_id),
+                    TrxCol::WHERE_TOACCOUNTID(OP_EQ, from_account_id),
+                TableClause::END(),
+                TableClause::ORDERBY(TrxCol::NAME_TRANSDATE),
+                TableClause::ORDERBY(TrxCol::NAME_TRANSID)
+            )) {
                 if (!trx_d.is_valid())
                     continue;
 
-                //If the transaction happened between the dates that the user selected or if the user selected to export all the transactions regardless of date then the row is added to the preview
+                // If the transaction happened between the dates that the user selected
+                // or if the user selected to export all the transactions regardless of date
+                // then the row is added to the preview
                 if (trx_d.m_datetime.dateTime().IsBetween(
                     m_date_picker_start->GetValue(),
                     m_date_picker_end->GetValue()
@@ -2165,7 +2165,7 @@ void mmUnivCSVDialog::update_preview()
                         buf.Printf("%d", row + 1);
                         m_list_ctrl_->SetItem(itemIndex, col, buf);
                         m_list_ctrl_->SetItemData(itemIndex, row);
-                        const CategoryData* category = CategoryModel::instance().get_id_data_n(tp_d.m_category_id);
+                        const CategoryData* category = CategoryModel::instance().get_idN_data_n(tp_d.m_category_id);
 
                         const CurrencyData* currency = AccountModel::instance().get_data_currency_p(*from_account_n);
 
@@ -2250,7 +2250,7 @@ void mmUnivCSVDialog::update_preview()
                                     const FieldValueData* fv_n = FieldValueModel::instance().get_key_data_n(CSVFieldName_[it].second, TrxModel::s_ref_type, trx_d.m_id);
                                     if (fv_n) {
                                         // Format date fields
-                                        const FieldData* field_n = FieldModel::instance().get_id_data_n(fv_n->m_field_id);
+                                        const FieldData* field_n = FieldModel::instance().get_idN_data_n(fv_n->m_field_id);
                                         if (field_n->m_type_n.id_n() == FieldTypeN::e_date)
                                             text << inQuotes(mmGetDateTimeForDisplay(fv_n->m_content, date_format_), delimit);
                                         else
@@ -2283,18 +2283,15 @@ void mmUnivCSVDialog::update_preview()
                 },
                 0);
         }
-        else //Else if the user wants to export stocks
-        {
-            StockModel::DataA stock_a = StockModel::instance().find(
-                StockCol::HELDAT(from_account_id)
-            );
-            std::sort(stock_a.begin(), stock_a.end());
-            std::stable_sort(stock_a.begin(), stock_a.end(), StockData::SorterBySTOCKID());
-
-            const AccountData* account = AccountModel::instance().get_id_data_n(
+        // Else if the user wants to export stocks
+        else {
+            const AccountData* account = AccountModel::instance().get_idN_data_n(
                 from_account_id
             );
-            for (StockData& stock_d : stock_a) {
+            for (StockData& stock_d : StockModel::instance().find_data_a(
+                StockCol::WHERE_HELDAT(OP_EQ, from_account_id),
+                TableClause::ORDERBY(StockCol::NAME_STOCKID)
+            )) {
                 // If the transaction happened between the dates that the user selected
                 // or if the user selected to export all the transactions regardless
                 // of date then the row is added to the preview
@@ -2564,11 +2561,11 @@ void mmUnivCSVDialog::OnButtonClearClick(wxCommandEvent& WXUNUSED(event))
             return;
         }
         wxString preset_id = m_preset_id[preset_name];
-        SettingModel::DataA setting_a = SettingModel::instance().find(
-            SettingCol::SETTINGNAME(preset_id)
-        );
-        if (setting_a.size() > 0)
-            SettingModel::instance().purge_id(setting_a[0].m_id);
+        for (int64 setting_id : SettingModel::instance().find_id_a(
+            SettingCol::WHERE_SETTINGNAME(OP_EQ, preset_id)
+        )) {
+            SettingModel::instance().purge_id(setting_id);
+        }
 
         // update default presets to remove any that reference the deleted item
         for (auto& member : m_acct_default_preset)
@@ -2727,10 +2724,9 @@ void mmUnivCSVDialog::compilePayeeRegEx() {
 
     payeeMatchPatterns_.clear();
     // only look at payees that have a match pattern set
-    PayeeModel::DataA payee_a = PayeeModel::instance().find(
-        PayeeCol::PATTERN(OP_NEN, "")
-    );
-    for (const auto& payee_d : payee_a) {
+    for (const auto& payee_d : PayeeModel::instance().find_data_a(
+        PayeeCol::WHERE_PATTERN(OP_NEN, "")
+    )) {
         Document json_doc;
         if (json_doc.Parse(payee_d.m_pattern.utf8_str()).HasParseError()) {
             continue;
@@ -2896,7 +2892,7 @@ void mmUnivCSVDialog::parseToken(int index, const wxString& orig_token, tran_hol
                     new_cat_d.m_name        = cat_name;
                     new_cat_d.m_parent_id_n = parentID;
                     CategoryModel::instance().add_data_n(new_cat_d);
-                    cat_n = CategoryModel::instance().get_id_data_n(new_cat_d.m_id);
+                    cat_n = CategoryModel::instance().get_idN_data_n(new_cat_d.m_id);
                 }
                 parentID = cat_n->m_id;
             }
@@ -2942,7 +2938,7 @@ void mmUnivCSVDialog::parseToken(int index, const wxString& orig_token, tran_hol
                 TagData new_tag_d = TagData();
                 new_tag_d.m_name = tag_name;
                 TagModel::instance().save_data_n(new_tag_d);
-                tag_n = TagModel::instance().get_id_data_n(new_tag_d.m_id);
+                tag_n = TagModel::instance().get_idN_data_n(new_tag_d.m_id);
             }
             // add the tagID to the transaction if it isn't already there
             if (std::find(holder.tagIDs.begin(), holder.tagIDs.end(),
@@ -3231,7 +3227,7 @@ bool mmUnivCSVDialog::validateCustomFieldData(
     const wxArrayString bool_false_array(4, bool_false);
 
     if (!value.IsEmpty()) {
-        const FieldData* field_n = FieldModel::instance().get_id_data_n(fieldId);
+        const FieldData* field_n = FieldModel::instance().get_idN_data_n(fieldId);
         wxString type_name = wxGetTranslation(field_n->m_type_n.name_n());
         switch (field_n->m_type_n.id_n()) {
         case FieldTypeN::e_integer:

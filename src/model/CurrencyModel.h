@@ -35,9 +35,7 @@ class CurrencyModel : public TableFactory<CurrencyTable, CurrencyData>
 // -- static
 
 public:
-    static CurrencyCol::CURRENCY_TYPE CURRENCY_TYPE(OP op, CurrencyType currency_type) {
-        return CurrencyCol::CURRENCY_TYPE(op, currency_type.key());
-    }
+    static auto WHERE_CURRENCY_TYPE(OP op, CurrencyType type) -> TableClauseV<wxString>;
 
 // -- constructor
 
@@ -53,11 +51,9 @@ public:
 // -- override
 
 public:
-    // TODO: add to virtual methods in TableFactory
-    int  find_id_dep_c(int64 currency_id);
-
     // override TableFactory
-    virtual bool purge_id(int64 currency_id) override;
+    virtual bool find_id_isUsed(int64 id, bool ignore_closed = false) override;
+    virtual bool purge_id(int64 id) override;
 
 // -- methods
 
@@ -76,13 +72,18 @@ public:
         double value, const Data* currency_n = nullptr, int precision = -1
     );
     const wxString toCurrency(
-        double value, const Data* currency_n = CurrencyModel::instance().get_base_data_n(), int precision = -1
+        double value,
+        const Data* currency_n = CurrencyModel::instance().get_base_data_n(),
+        int precision = -1
     );
     const wxString fromString2CLocale(
-        const wxString &s, const Data* currency_n = CurrencyModel::instance().get_base_data_n()
+        const wxString& s,
+        const Data* currency_n = CurrencyModel::instance().get_base_data_n()
     );
     bool fromString(
-        wxString s, double& val, const Data* currency_n = CurrencyModel::instance().get_base_data_n()
+        wxString s,
+        double& val,
+        const Data* currency_n = CurrencyModel::instance().get_base_data_n()
     );
 
     void resetBaseConversionRates();

@@ -18,9 +18,10 @@
 
 #pragma once
 
+// PayeeData represents a record in table PAYEE_V1.
+
 #include "table/PayeeTable.h"
 
-// User-friendly representation of a record in table PAYEE_V1.
 struct PayeeData
 {
     int64    m_id;

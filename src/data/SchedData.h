@@ -18,13 +18,15 @@
 
 #pragma once
 
+// SchedData represents a record in table BILLSDEPOSITS_V1.
+// m_repeat contains decoded information from columns REEPATS, NUMOCCURRENCES.
+
 #include "base/mmDate.h"
 #include "base/mmDateTime.h"
 #include "_DataEnum.h"
 #include "_Repeat.h"
 #include "table/SchedTable.h"
 
-// User-friendly representation of a record in table BILLSDEPOSITS_V1.
 struct SchedData
 {
     int64      m_id;

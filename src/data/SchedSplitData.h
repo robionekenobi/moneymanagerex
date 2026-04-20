@@ -18,9 +18,10 @@
 
 #pragma once
 
+// SchedSplitData represents a record in table BUDGETSPLITTRANSACTIONS_V1.
+
 #include "table/SchedSplitTable.h"
 
-// User-friendly representation of a record in table BUDGETSPLITTRANSACTIONS_V1.
 struct SchedSplitData
 {
     int64    m_id;

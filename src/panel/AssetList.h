@@ -30,6 +30,11 @@ class AssetList: public ListBase
 {
     friend class AssetPanel;
 
+    DECLARE_NO_COPY_CLASS(AssetList)
+    wxDECLARE_EVENT_TABLE();
+
+// -- static
+
 public:
     enum LIST_ID
     {
@@ -45,8 +50,6 @@ public:
     };
 
 private:
-    DECLARE_NO_COPY_CLASS(AssetList)
-    wxDECLARE_EVENT_TABLE();
     enum {
         MENU_TREEPOPUP_NEW = wxID_HIGHEST + 1200,
         MENU_TREEPOPUP_ADDTRANS,
@@ -60,12 +63,24 @@ private:
 
 private:
     static const std::vector<ListColumnInfo> LIST_INFO;
+
+// -- state
+
+private:
     long m_selected_row = -1;
 
     AssetPanel* w_panel = nullptr;
 
+// -- constructor
+
 public:
-    AssetList(AssetPanel* panel, wxWindow* parent_win, wxWindowID win_id = wxID_ANY);
+    AssetList(
+        AssetPanel* panel,
+        wxWindow* parent_win,
+        wxWindowID win_id = wxID_ANY
+    );
+
+// -- override
 
 private:
     // override ListBase
@@ -76,22 +91,28 @@ private:
     virtual auto OnGetItemText(long item, long col_nr) const -> wxString override;
     virtual int  OnGetItemImage(long item) const override;
 
-    void doRefreshItems(int64 trx_id = -1);
+// -- methods
+
+private:
+    void doRefreshItems(int64 asset_id = -1);
     bool editAsset(AssetData* asset_n);
 
-    void onNewAsset(wxCommandEvent& event);
-    void onEditAsset(wxCommandEvent& event);
-    void onDeleteAsset(wxCommandEvent& event);
-    void onDuplicateAsset(wxCommandEvent& event);
-    void onOrganizeAttachments(wxCommandEvent& event);
-    void onOpenAttachment(wxCommandEvent& event);
-    void onAddAssetTrans(wxCommandEvent& WXUNUSED(event));
-    void onViewAssetTrans(wxCommandEvent& WXUNUSED(event));
-    void onGotoAssetAccount(wxCommandEvent& WXUNUSED(event));
-    void onMouseRightClick(wxMouseEvent& event);
-    void onListLeftClick(wxMouseEvent& event);
-    void onListItemActivated(wxListEvent& event);
-    void onListKeyDown(wxListEvent& event);
-    void onListItemSelected(wxListEvent& event);
-    void onEndLabelEdit(wxListEvent& event);
+// -- event handlers
+
+private:
+    void onNewAsset(            wxCommandEvent& event);
+    void onEditAsset(           wxCommandEvent& event);
+    void onDeleteAsset(         wxCommandEvent& event);
+    void onDuplicateAsset(      wxCommandEvent& event);
+    void onOrganizeAttachments( wxCommandEvent& event);
+    void onOpenAttachment(      wxCommandEvent& event);
+    void onAddAssetTrans(       wxCommandEvent& WXUNUSED(event));
+    void onViewAssetTrans(      wxCommandEvent& WXUNUSED(event));
+    void onGotoAssetAccount(    wxCommandEvent& WXUNUSED(event));
+    void onMouseRightClick(     wxMouseEvent&   event);
+    void onListLeftClick(       wxMouseEvent&   event);
+    void onListItemActivated(   wxListEvent&    event);
+    void onListKeyDown(         wxListEvent&    event);
+    void onListItemSelected(    wxListEvent&    event);
+    void onEndLabelEdit(        wxListEvent&    event);
 };

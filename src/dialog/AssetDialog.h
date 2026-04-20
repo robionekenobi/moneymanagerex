@@ -32,6 +32,8 @@ class AssetDialog : public wxDialog
     wxDECLARE_DYNAMIC_CLASS(AssetDialog);
     wxDECLARE_EVENT_TABLE();
 
+// -- static
+
 private:
     enum
     {
@@ -43,74 +45,87 @@ private:
         IDC_NOTES,
     };
 
+// -- state
+
 private:
     AssetData* m_asset_n = nullptr;
-    AssetData m_asset_d;
-    const TrxLinkData* m_transfer_entry = nullptr;
-    TrxData* m_checking_entry = nullptr;
+    const TrxLinkData* m_tl_n = nullptr;
+    TrxData* m_trx_n = nullptr;
     PrefModel::COMPOUNDING_ID m_compounding = PrefModel::COMPOUNDING_ID_DAY;
-    wxString m_dialog_heading = _t("New Asset");
-    bool m_hidden_trans_entry = true;
+    bool m_show_trx_panel = false;
     bool m_asset_rich_text = true;
+    wxString m_dialog_heading = _t("New Asset");
 
-    wxChoice*       w_assetType            = nullptr;
-    wxTextCtrl*     w_assetName            = nullptr;
-    mmDatePicker*   w_date_picker          = nullptr;
-    wxTextCtrl*     w_notes                = nullptr;
-    mmTextCtrl*     w_value                = nullptr;
-    mmTextCtrl*     w_curr_val             = nullptr;
-    wxChoice*       w_valueChange          = nullptr;
-    wxStaticText*   w_compoundingLabel     = nullptr;
-    wxChoice*       w_compoundingChoice    = nullptr;
-    wxStaticText*   w_valueChangeRateLabel = nullptr;
-    mmTextCtrl*     w_valueChangeRate      = nullptr;
-    wxBitmapButton* w_attachments          = nullptr;
-    wxStaticBox*    w_transaction_frame    = nullptr;
-    TrxLinkDialog*  w_transaction_panel = nullptr;
+    wxChoice*       w_type_choice        = nullptr;
+    wxTextCtrl*     w_name_text          = nullptr;
+    mmDatePicker*   w_date_picker        = nullptr;
+    wxTextCtrl*     w_notes_text         = nullptr;
+    mmTextCtrl*     w_value_text         = nullptr;
+    mmTextCtrl*     m_current_value_text = nullptr;
+    wxChoice*       w_change_choice      = nullptr;
+    wxStaticText*   w_compounding_label  = nullptr;
+    wxChoice*       w_compounding_choice = nullptr;
+    wxStaticText*   w_rate_label         = nullptr;
+    mmTextCtrl*     w_rate_text          = nullptr;
+    wxBitmapButton* w_att_btn            = nullptr;
+    wxStaticBox*    w_tl_frame           = nullptr;
+    TrxLinkDialog*  w_tl_dlg             = nullptr;
+
+public:
+    auto asset_id() const -> int64 { return m_asset_n ? m_asset_n->m_id : -1; }
+
+// -- constructor
 
 public:
     AssetDialog() {};
     AssetDialog(
-        wxWindow *parent,
-        AssetData* asset,
-        bool trans_data = false
+        wxWindow* parent_win,
+        AssetData* asset_n,
+        bool show_trx_panel = false
     );
     AssetDialog(
-        wxWindow *parent,
-        const TrxLinkData* transfer_entry,
-        TrxData* checking_entry
+        wxWindow* parent_win,
+        const TrxLinkData* tl_n,
+        TrxData* trx_n
     );
 
-    void SetTransactionAccountName(const wxString& account_name);
-    void SetTransactionDate();
-    int64 asset_id() const { return m_asset_n ? m_asset_n->id() : -1; }
-
 private:
-    bool Create(
-        wxWindow* parent,
-        wxWindowID id,
+    bool create(
+        wxWindow* parent_win,
+        wxWindowID win_id,
         const wxString& caption,
         const wxPoint& pos = wxDefaultPosition,
         const wxSize& size = wxDefaultSize,
         long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX
     );
-    void CreateControls();
+    void createControls();
+    void dataToControls();
 
-    void OnOk(wxCommandEvent& event);
-    void OnCancel(wxCommandEvent& event);
-    void OnAttachments(wxCommandEvent& event);
+// -- methods
+
+public:
+    void setTransactionAccountName(const wxString& account_name);
+    void setTransactionDate();
+
+private:
+    void hideTransactionPanel();
     void enableDisableRate(bool en);
+    void createAssetAccount();
     double convertRate(
         int changeType,
         double xRate,
         int xCompounding,
         int yCompounding = PrefModel::COMPOUNDING_ID_DAY
     );
-    void OnChangeAppreciationType(wxCommandEvent& event);
-    void OnChangeCompounding(wxCommandEvent& event);
-    void dataToControls();
-    void changeFocus(wxChildFocusEvent& event);
-    void OnQuit(wxCloseEvent& event);
-    void CreateAssetAccount();
-    void HideTransactionPanel();
+
+// -- event handlers
+
+private:
+    void onOk(                     wxCommandEvent&    event);
+    void onCancel(                 wxCommandEvent&    event);
+    void onAttachments(            wxCommandEvent&    event);
+    void onChangeAppreciationType( wxCommandEvent&    event);
+    void onChangeCompounding(      wxCommandEvent&    event);
+    void onChangeFocus(            wxChildFocusEvent& event);
+    void onQuit(                   wxCloseEvent&      event);
 };

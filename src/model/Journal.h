@@ -26,28 +26,48 @@
 
 struct JournalKey
 {
-    int   m_repeat_id; // un-initialized: -1 | realized: -1            | scheduled: > 0
-    int64 m_ref_id;    // un-initialized: -1 | realized: > 0 (TRANSID) | scheduled: > 0 (BDID)
+// -- state
 
-    JournalKey() : m_repeat_id(-1), m_ref_id(-1) {}
-    JournalKey(int repeat_id, int64 ref_id) :m_repeat_id(repeat_id), m_ref_id(ref_id) {}
+private:
+    //                 // | un-initialized | realized      | scheduled  |
+    //                 // |----------------+---------------+------------|
+    int   m_repeat_id; // | -1             | -1            | > 0        |
+    int64 m_ref_id;    // | -1             | > 0 (TRANSID) | > 0 (BDID) |
 
+public:
+    auto repeat_id() const -> int { return m_repeat_id; }
+    auto ref_id() const -> int64 { return m_ref_id; }
     bool is_initialized() const { return m_ref_id > 0; }
     bool is_realized() const { return m_repeat_id < 0 && m_ref_id > 0; }
     bool is_scheduled() const { return m_repeat_id > 0 && m_ref_id > 0; }
     auto ref_type() const -> RefTypeN {
         return is_scheduled() ? SchedModel::s_ref_type : TrxModel::s_ref_type;
     }
-    auto ref_id() const -> int64 { return m_ref_id; }
     auto rid() const -> int64 { return m_repeat_id < 0 ? m_ref_id : -1; }
     auto sid() const -> int64 { return m_repeat_id > 0 ? m_ref_id : -1; }
 
+// -- constructor
+
+public:
+    JournalKey() :
+        m_repeat_id(-1), m_ref_id(-1) {}
+    JournalKey(int repeat_id, int64 ref_id) :
+        m_repeat_id(repeat_id), m_ref_id(ref_id) {}
+
+// -- operator
+
+public:
     bool operator== (const JournalKey& other) const {
         return m_repeat_id == other.m_repeat_id && m_ref_id == other.m_ref_id;
     }
     bool operator< (const JournalKey& other) const {
-        return m_repeat_id < other.m_repeat_id || (
-            m_repeat_id == other.m_repeat_id && m_ref_id < other.m_ref_id
+        return (is_realized() && !other.is_realized()) || (
+            is_realized() == other.is_realized() && (
+                m_ref_id < other.m_ref_id || (
+                    m_ref_id == other.m_ref_id &&
+                    m_repeat_id < other.m_repeat_id
+                )
+            )
         );
     }
 };
@@ -69,7 +89,7 @@ public:
         ~Data();
 
         JournalKey key() const {
-            return JournalKey{m_repeat_id, m_repeat_id > 0 ? m_sched_id : m_id};
+            return JournalKey(m_repeat_id, m_repeat_id > 0 ? m_sched_id : m_id);
         }
     };
     typedef std::vector<Data> DataA;
@@ -115,16 +135,7 @@ public:
     { 
         bool operator()(const DataExt& x, const DataExt& y)
         {
-            JournalKey x_key = x.key();
-            JournalKey y_key = y.key();
-            return (x_key.is_realized() && !y_key.is_realized()) || (
-                x_key.is_realized() == y_key.is_realized() && (
-                    x_key.m_ref_id < y_key.m_ref_id || (
-                        x_key.m_ref_id == y_key.m_ref_id &&
-                        x_key.m_repeat_id < y_key.m_repeat_id
-                    )
-                )
-            );
+            return x.key() < y.key();
         }
     };
 

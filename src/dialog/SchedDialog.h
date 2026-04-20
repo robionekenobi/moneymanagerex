@@ -45,6 +45,16 @@ class SchedDialog : public wxDialog
     wxDECLARE_DYNAMIC_CLASS(SchedDialog);
     wxDECLARE_EVENT_TABLE();
 
+// -- static
+
+public:
+    enum MODE
+    {
+        MODE_ADD = 0,
+        MODE_UPDATE,
+        MODE_ENTER,
+    };
+
 private:
     enum
     {
@@ -87,27 +97,25 @@ private:
     };
 
 private:
-    const wxString payeeWithdrawalTip_ = _t("Specify where the transaction is going to");
-    const wxString payeeDepositTip_    = _t("Specify where the transaction is coming from");
-    const wxString payeeTransferTip_   = _t("Specify which account the transfer is going to");
-    const wxString amountNormalTip_    = _t("Specify the amount for this transaction");
-    const wxString amountTransferTip_  = _t("Specify the amount to be transferred");
+    const wxString s_payeeWithdrawalTip = _t("Specify where the transaction is going to");
+    const wxString s_amountNormalTip    = _t("Specify the amount for this transaction");
+    const wxString s_amountTransferTip  = _t("Specify the amount to be transferred");
+
+// -- state
 
 private:
+    MODE m_mode;
     SchedData m_sched_d = SchedData();
+    int64 m_sched_id;
     std::vector<Split> m_split_a;
     wxArrayInt64 m_tag_id_a;
-    int64 m_sched_id;
     bool m_is_transfer = false;
-    bool m_is_new = false;
-    bool m_is_duplicate = false;
-    bool m_enter = false;
     bool m_mode_suggested = false;
     bool m_mode_automated = false;
     bool m_advanced = false;
     std::vector<wxString> m_frequent_note_a;
 
-    wxSharedPtr<FieldValueDialog> m_custom_fields;
+    wxSharedPtr<FieldValueDialog> w_fv_dialog;
     int                 w_focus             = wxID_ANY;
     wxSize              w_min_size;
     wxBitmapButton*     w_calc_btn          = nullptr;
@@ -141,17 +149,25 @@ private:
     mmTagTextCtrl*      w_tag_text          = nullptr;
 
 public:
-    SchedDialog();
-    SchedDialog(wxWindow* parent, int64 bdD, bool duplicate, bool enterOccur);
-    ~SchedDialog();
+    bool is_new() { return (m_mode == MODE_ADD && m_sched_d.m_id <= 0); }
+    bool is_dup() { return (m_mode == MODE_ADD && m_sched_d.m_id > 0); }
+    bool is_edit() { return (m_mode == MODE_UPDATE); }
+    bool is_enter() { return (m_mode == MODE_ENTER); }
+    auto sched_id() -> int64 { return m_sched_id; }
+
+// -- constructor
 
 public:
-    int64 GetTransID() { return m_sched_id; }
-    void SetDialogHeader(const wxString& header);
-    void SetDialogParameters(int64 trx_id);
+    SchedDialog() {}
+    SchedDialog(
+        wxWindow* parent_win,
+        MODE mode,
+        int64 sched_id_n
+    );
+    ~SchedDialog();
 
 private:
-    bool Create(
+    bool create(
         wxWindow* parent,
         wxWindowID id = wxID_ANY,
         const wxString& caption = _t("New Scheduled Transaction"),
@@ -160,43 +176,47 @@ private:
         long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX,
         const wxString& name = "Scheduled Transaction Dialog"
     );
-
-    void CreateControls();
-
-    // utility functions
-    void OnQuit(wxCloseEvent& event);
-    void OnOk(wxCommandEvent& event);
-    void OnCancel(wxCommandEvent& event);
-    void OnCategs(wxCommandEvent& event);
-    void OnPayee(wxCommandEvent& event);
-    void OnTypeChanged(wxCommandEvent& event);
-    void OnAttachments(wxCommandEvent& event);
-    void OnComboKey(wxKeyEvent& event);
-
+    void createControls();
     void dataToControls();
-    void updateControlsForTransType();
-    void OnAccountUpdated(wxCommandEvent& event);
-    void OnAutoExecutionUserAckChecked(wxCommandEvent& event);
-    void OnAutoExecutionSilentChecked(wxCommandEvent& event);
-    void OnFocusChange(wxChildFocusEvent& event);
-    void SetAmountCurrencies(int64 accountID, int64 toAccountID);
-    void OnCalculator(wxCommandEvent& event);
+
+// -- methods
+
+public:
+    void setDialogHeader(const wxString& header);
+    void setDialogParameters(int64 trx_id);
 
 private:
+    auto getRepeatFreq() -> RepeatFreq;
+    void updateControlsForTransType();
+    void setAmountCurrencies(int64 account_id, int64 to_account_id);
     void setTooltips();
     void setCategoryLabel();
-    void OnAdvanceChecked(wxCommandEvent& event);
-    void SetTransferControls(bool transfers = false);
-    void SetAdvancedTransferControls(bool advanced = false);
-    void SetSplitControls(bool split = false);
-    void OnFrequentUsedNotes(wxCommandEvent& event);
-    void OnNoteSelected(wxCommandEvent& event);
-
-    void OnRepeatTypeChanged(wxCommandEvent& event);
-    void OnsetPrevOrNextRepeatDate(wxCommandEvent& event);
+    void setTransferControls(bool is_transfer = false);
+    void setAdvancedTransferControls(bool advanced = false);
+    void setSplitControls(bool split = false);
     void setRepeatDetails();
-    RepeatFreq getRepeatFreq();
-    void OnMoreFields(wxCommandEvent& event);
-
     void activateSplitTransactionsDlg();
+
+// -- event handlers
+
+private:
+    void onQuit(                        wxCloseEvent&      event);
+    void onOk(                          wxCommandEvent&    event);
+    void onCancel(                      wxCommandEvent&    event);
+    void onCategs(                      wxCommandEvent&    event);
+    void onPayee(                       wxCommandEvent&    event);
+    void onTypeChanged(                 wxCommandEvent&    event);
+    void onAttachments(                 wxCommandEvent&    event);
+    void onComboKey(                    wxKeyEvent&        event);
+    void onAccountUpdated(              wxCommandEvent&    event);
+    void onAutoExecutionUserAckChecked( wxCommandEvent&    event);
+    void onAutoExecutionSilentChecked(  wxCommandEvent&    event);
+    void onFocusChange(                 wxChildFocusEvent& event);
+    void onCalculator(                  wxCommandEvent&    event);
+    void onAdvanceChecked(              wxCommandEvent&    event);
+    void onFrequentUsedNotes(           wxCommandEvent&    event);
+    void onNoteSelected(                wxCommandEvent&    event);
+    void onRepeatTypeChanged(           wxCommandEvent&    event);
+    void onsetPrevOrNextRepeatDate(     wxCommandEvent&    event);
+    void onMoreFields(                  wxCommandEvent&    event);
 };

@@ -77,7 +77,7 @@ AccountDialog::AccountDialog(AccountData* account, wxWindow* parent) :
 {
     m_images = NavTreeIconImages::instance().getList();
     m_currencyID = m_account_n->m_currency_id;
-    [[maybe_unused]] const CurrencyData* currency = CurrencyModel::instance().get_id_data_n(m_currencyID);
+    [[maybe_unused]] const CurrencyData* currency = CurrencyModel::instance().get_idN_data_n(m_currencyID);
     wxASSERT(currency);
 
     this->SetFont(parent->GetFont());
@@ -402,7 +402,7 @@ void AccountDialog::OnAccountStatus(wxCommandEvent& /*event*/)
 void AccountDialog::OnCurrency(wxCommandEvent& /*event*/)
 {
     if (CurrencyChoiceDialog::Execute(this, m_currencyID)) {
-        const CurrencyData* currency = CurrencyModel::instance().get_id_data_n(m_currencyID);
+        const CurrencyData* currency = CurrencyModel::instance().get_idN_data_n(m_currencyID);
         wxButton* bn = static_cast<wxButton*>(FindWindow(ID_DIALOG_NEWACCT_BUTTON_CURRENCY));
         bn->SetLabelText(currency->m_name);
 
@@ -480,17 +480,24 @@ void AccountDialog::OnImageButton(wxCommandEvent& /*event*/)
 
 void AccountDialog::OnDefaultImage(wxCommandEvent& WXUNUSED(event))
 {
-    auto& data = InfoModel::instance().find(InfoCol::INFONAME(wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id)));
-    for (const auto& rec : data) {
-        InfoModel::instance().unsafe_remove_id(rec.id());
+    const wxString info_name = wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id);
+    for (int64 info_id : InfoModel::instance().find_id_a(
+        InfoCol::WHERE_INFONAME(OP_EQ, info_name)
+    )) {
+        InfoModel::instance().unsafe_remove_id(info_id);
     }
-    m_bitmapButtons->SetBitmap(m_images.at(PrefModel::instance().AccountImageId(m_account_n->m_id, true)));
+    m_bitmapButtons->SetBitmap(m_images.at(
+        PrefModel::instance().AccountImageId(m_account_n->m_id, true)
+    ));
 }
 
 void AccountDialog::OnCustomImage(wxCommandEvent& event)
 {
     int image_id = event.GetId() - wxID_HIGHEST;
-    InfoModel::instance().saveInt(wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id), image_id);
+    InfoModel::instance().saveInt(
+        wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id),
+        image_id
+    );
 
     m_bitmapButtons->SetBitmap(m_images.at(image_id));
 }
@@ -499,14 +506,19 @@ void AccountDialog::OnFavIconImage(wxCommandEvent& event)
 {
     int image_id = event.GetId() - wxID_HIGHEST;
     std::map<int, wxString> indexMap = NavTreeIconImages::instance().getIndexMap();
-    InfoModel::instance().saveString(wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id), "CI:" + indexMap[image_id]);
+    InfoModel::instance().saveString(
+        wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id),
+        "CI:" + indexMap[image_id]
+    );
 
     m_bitmapButtons->SetBitmap(m_images.at(image_id));
 }
 
 void AccountDialog::OnLoadFavIconImage(wxCommandEvent& WXUNUSED(event))
 {
-    wxTextCtrl* website_ctrl = static_cast<wxTextCtrl*>(FindWindow(ID_DIALOG_NEWACCT_TEXTCTRL_WEBSITE));
+    wxTextCtrl* website_ctrl = static_cast<wxTextCtrl*>(
+        FindWindow(ID_DIALOG_NEWACCT_TEXTCTRL_WEBSITE)
+    );
     wxString url = website_ctrl->GetValue();
     wxString serverName = iconExtractServerName(url);
     wxFileName resDir = mmPath::getPathUserRaw(mmPath::USERICONS, true);
@@ -516,21 +528,31 @@ void AccountDialog::OnLoadFavIconImage(wxCommandEvent& WXUNUSED(event))
         std::string ext;
         if (iconDownloadFavicon(website_ctrl->GetValue(), iconFileName, ext)) {
             iconSetButtonIconFromFile(m_bitmapButtons, iconFileName);
-            InfoModel::instance().saveString(wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id), "CI:" + serverName + ext);
+            InfoModel::instance().saveString(
+                wxString::Format("ACC_IMAGE_ID_%lld", m_account_n->m_id),
+                "CI:" + serverName + ext
+            );
             m_images = NavTreeIconImages::instance().getList();
             NavTreeIconImages::instance().setChanged();
         }
         else {
-            wxMessageBox( wxString::Format(_t("Fav icon could not be loaded from '%s'"), website_ctrl->GetValue()), _t("Favorite icon download"), wxICON_INFORMATION);
+            wxMessageBox(
+                wxString::Format(_t("Fav icon could not be loaded from '%s'"),
+                    website_ctrl->GetValue()
+                ),
+                _t("Favorite icon download"),
+                wxICON_INFORMATION
+            );
         }
     }
 }
 
 void AccountDialog::OnChangeFocus(wxChildFocusEvent& event)
 {
-    wxWindow *w = event.GetWindow();
+    wxWindow* w = event.GetWindow();
     int oject_in_focus = 0;
-    if (w) oject_in_focus = w->GetId();
+    if (w)
+        oject_in_focus = w->GetId();
 
     wxTextCtrl* textCtrl = static_cast<wxTextCtrl*>(
         FindWindow(ID_DIALOG_NEWACCT_TEXTCTRL_ACCESSINFO)
@@ -564,7 +586,7 @@ void AccountDialog::OnOk(wxCommandEvent& /*event*/)
             return mmErrorDialogs::MessageInvalid(this, _t("Account Name "));
     }
 
-    const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(m_currencyID);
+    const CurrencyData* currency_n = CurrencyModel::instance().get_idN_data_n(m_currencyID);
     if (!currency_n)
         return mmErrorDialogs::MessageInvalid(this, _t("Currency"));
 
@@ -604,44 +626,42 @@ void AccountDialog::OnOk(wxCommandEvent& /*event*/)
             _t("Invalid Date")
         );
     if (m_account_n) {
-        bool valid_open_date_trx1 = TrxModel::instance().find(
-            TrxCol::TRANSDATE(OP_LT, open_date.isoStart()),
-            TrxCol::ACCOUNTID(OP_EQ, m_account_n->m_id)
-        ).empty();
-        bool valid_open_date_trx2 = TrxModel::instance().find(
-            TrxCol::TRANSDATE(OP_LT, open_date.isoStart()),
-            TrxCol::TOACCOUNTID(OP_EQ, m_account_n->m_id)
-        ).empty();
-        if (!valid_open_date_trx1 || !valid_open_date_trx2)
+        if (TrxModel::instance().find_count(
+            TrxCol::WHERE_TRANSDATE(OP_LT, open_date.isoStart()),
+            TableClause::BEGIN_OR(),
+                TrxCol::WHERE_ACCOUNTID(OP_EQ, m_account_n->m_id),
+                TrxCol::WHERE_TOACCOUNTID(OP_EQ, m_account_n->m_id),
+            TableClause::END()
+        ) > 0) {
             return mmErrorDialogs::ToolTip4Object(
                 m_initdate_ctrl,
                 _t("Transactions for this account already exist before this date"),
                 _t("Invalid Date")
             );
-        bool valid_open_date_stock = StockModel::instance().find(
-            StockCol::PURCHASEDATE(OP_LT, open_date.isoStart()),
-            StockCol::HELDAT(OP_EQ, m_account_n->m_id)
-        ).empty();
-        if (!valid_open_date_stock)
+        }
+        if (StockModel::instance().find_count(
+            StockCol::WHERE_PURCHASEDATE(OP_LT, open_date.isoStart()),
+            StockCol::WHERE_HELDAT(OP_EQ, m_account_n->m_id)
+        ) > 0) {
             return mmErrorDialogs::ToolTip4Object(
                 m_initdate_ctrl,
                 _t("Stock purchases for this account already exist before this date"),
                 _t("Invalid Date")
             );
-        bool valid_open_date_sched1 = SchedModel::instance().find(
-            SchedCol::TRANSDATE(OP_LT, open_date.isoStart()),
-            SchedCol::ACCOUNTID(OP_EQ, m_account_n->m_id)
-        ).empty();
-        bool valid_open_date_sched2 = SchedModel::instance().find(
-            SchedCol::TRANSDATE(OP_LT, open_date.isoStart()),
-            SchedCol::TOACCOUNTID(OP_EQ, m_account_n->m_id)
-        ).empty();
-        if (!valid_open_date_sched1 || !valid_open_date_sched2)
+        }
+        if (SchedModel::instance().find_count(
+            SchedCol::WHERE_TRANSDATE(OP_LT, open_date.isoStart()),
+            TableClause::BEGIN_OR(),
+                SchedCol::WHERE_ACCOUNTID(OP_EQ, m_account_n->m_id),
+                SchedCol::WHERE_TOACCOUNTID(OP_EQ, m_account_n->m_id),
+            TableClause::END()
+        ) > 0) {
             return mmErrorDialogs::ToolTip4Object(
                 m_initdate_ctrl,
                 _t("Scheduled transactions for this account are scheduled before this date."),
                 _t("Invalid Date")
             );
+        }
     }
 
     double open_balance = 0.0;

@@ -44,8 +44,11 @@ public:
 // -- override
 
 public:
-    // TODO: change to find_id_dep_c
-    bool is_used(int64 cat_id);
+    // override TableFactory
+    virtual bool find_id_isUsed(int64 id, bool ignore_deleted = false) override;
+    virtual bool purge_id(int64 id) override {
+        return unsafe_remove_id(id);
+    }
 
 // -- methods
 

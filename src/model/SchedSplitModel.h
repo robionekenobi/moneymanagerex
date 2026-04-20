@@ -48,11 +48,13 @@ public:
 
 public:
     // override TableFactory
-    virtual bool purge_id(int64 qp_id) override;
+    virtual bool purge_id(int64 id) override;
 
 // -- methods
 
 public:
+    bool purge_schedId_all(const int64 sched_id);
+
     auto get_data_amount(const DataA& qp_a) -> double;
     auto find_id_gl_a(int64 qp_id) -> const TagLinkModel::DataA;
     auto find_all_mSchedId() -> std::map<int64, DataA>;

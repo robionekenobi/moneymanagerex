@@ -157,7 +157,9 @@ wxString mmReportBudgetingPerformance::getHTMLText()
 
                 bool budgetDeductMonthly = PrefModel::instance().getBudgetDeductMonthly();
                 // pull categories from DB and store
-                for (CategoryData category : CategoryModel::instance().find_all(CategoryCol::COL_ID_CATEGNAME, false)) {
+                for (CategoryData category : CategoryModel::instance().find_data_a(
+                    TableClause::ORDERBY(CategoryCol::NAME_CATEGNAME, true)
+                )) {
                     categ_children[category.m_parent_id_n].push_back(category);
                 }
 

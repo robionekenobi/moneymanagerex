@@ -42,27 +42,36 @@ BudgetPeriodModel& BudgetPeriodModel::instance()
 
 bool BudgetPeriodModel::purge_id(int64 bp_id)
 {
-    for (const BudgetData& budget_d : BudgetModel::instance().find(
-        BudgetCol::BUDGETYEARID(bp_id)
-    ))
-        BudgetModel::instance().purge_id(budget_d.m_period_id);
-    return unsafe_remove_id(bp_id);
+    bool ok = true;
+    db_savepoint();
+
+    for (int64 budget_id : BudgetModel::instance().find_id_a(
+        BudgetCol::WHERE_BUDGETYEARID(OP_EQ, bp_id)
+    )) {
+        ok = ok && BudgetModel::instance().purge_id(budget_id);
+    }
+
+    ok = ok && unsafe_remove_id(bp_id);
+
+    db_release_savepoint();
+    return ok;
 }
 
 // -- methods
 
 const wxString BudgetPeriodModel::get_id_name_n(int64 bp_id)
 {
-    const Data* bp_n = get_id_data_n(bp_id);
+    const Data* bp_n = get_idN_data_n(bp_id);
     return bp_n ? bp_n->m_name : "";
 }
 
 int64 BudgetPeriodModel::get_name_id_n(const wxString& bp_name)
 {
     // TODO: lookup bp_name in cache
-    for (const auto& bp_d : find_all()) {
-        if (bp_d.m_name == bp_name)
-            return bp_d.m_id;
+    for (int64 bp_id : find_id_a(
+        Col::WHERE_BUDGETYEARNAME(OP_EQ, bp_name)
+    )) {
+        return bp_id;
     }
     return -1;
 }

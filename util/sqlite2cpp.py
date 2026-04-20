@@ -896,17 +896,18 @@ void %s::ensure_data()
 
 #pragma once
 
+// %s represents a record in table %s.
+
 #include "table/%s.h"
 #include "table/%s.h"
-''' % (ct, base_basename, ct)
+''' % (ct, cd, dt, base_basename, ct)
 
         # }}}
         # {{{ struct ${Table}Data ...
 
         code += '''
-// User-friendly representation of a record in table %s.
 struct %s
-{''' % (dt, cd)
+{''' % cd
 
         # }}}
         # {{{ member variables

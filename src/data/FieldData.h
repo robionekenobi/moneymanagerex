@@ -18,10 +18,11 @@
 
 #pragma once
 
+// FieldData represents a record in table CUSTOMFIELD_V1.
+
 #include "_DataEnum.h"
 #include "table/FieldTable.h"
 
-// User-friendly representation of a record in table CUSTOMFIELD_V1.
 struct FieldData
 {
     int64      m_id;

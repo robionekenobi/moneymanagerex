@@ -60,11 +60,15 @@ public:
 
 public:
     // override TableFactory
-    virtual bool purge_id(int64 field_id) override;
+    virtual bool find_id_isUsed(int64 id, bool ignore_deleted = false) override;
+    virtual bool purge_id(int64 id) override;
 
 // -- methods
 
-    auto find_id_value_a(const int64 FieldID) -> wxArrayString;
+public:
+    bool purge_id_dep(int64 field_id);
+
+    auto find_id_value_a(const int64 field_id) -> wxArrayString;
     auto get_udfc_data_n(RefTypeN ref_type, const wxString& udfc) -> const Data*;
     auto get_udfc_id_n(RefTypeN ref_type, const wxString& udfc) -> int64;
     auto get_udfc_name_n(RefTypeN ref_type, const wxString& udfc) -> const wxString;

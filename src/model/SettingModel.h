@@ -39,6 +39,14 @@ public:
     static SettingModel& instance(wxSQLite3Database* db);
     static SettingModel& instance();
 
+// -- override
+
+public:
+    // override TableFactory
+    virtual bool purge_id(int64 id) override {
+        return unsafe_remove_id(id);
+    }
+
 // -- methods
 
 public:

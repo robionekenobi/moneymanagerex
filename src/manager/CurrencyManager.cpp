@@ -331,15 +331,17 @@ void CurrencyManager::onOk(wxCommandEvent& WXUNUSED(event))
     if (name.empty())
         return mmErrorDialogs::InvalidName(w_name);
 
-    const wxString code = w_code->GetValue().Trim();
-    if (code.empty())
+    const wxString symbol = w_code->GetValue().Trim();
+    if (symbol.empty())
         return mmErrorDialogs::InvalidName(w_code);
 
-    const auto currency_code = CurrencyModel::instance().find(
-        CurrencyCol::CURRENCY_SYMBOL(code)
-    );
-    if (!currency_code.empty() && m_currency_n->m_id == -1)
+    if (m_currency_n->m_id == -1 &&
+        CurrencyModel::instance().find_count(
+            CurrencyCol::WHERE_CURRENCY_SYMBOL(OP_EQ, symbol)
+        ) > 0
+    ) {
         return mmErrorDialogs::InvalidSymbol(w_code, true);
+    }
 
     if (m_currency_n->m_scale > 1 &&
         m_currency_n->m_group_separator == m_currency_n->m_decimal_point

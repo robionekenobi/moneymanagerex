@@ -61,6 +61,7 @@ int64 TableBase::newId()
     return (ticks * 1000) + randomSuffix;
 }
 
+// This is a helper function used in the implementation of variadic select_query().
 // Build a select query from the input clauses args and append it into query.
 // The placeholder indexes, to be used with wxSQLite3Statement::Bind(),
 // are appended into index_a. If index_a is initially empty and i=index_a[p],
@@ -78,7 +79,7 @@ void TableBase::select_query(
         wxString query;
         std::vector<int> index_a;
         bool is_empty = true;
-    } state_a[TableClause::CLAUSE_ID_size];
+    } state_a[TableClause::CLAUSE_ID_EMPTY];
 
     // stack of logical operators, used in WHERE and PAREN clauses
     std::vector<wxString> op_a;
@@ -88,6 +89,10 @@ void TableBase::select_query(
     int clause_i = 0;
     for (const TableClause* clause_n : clause_na) {
         const TableClause& clause = *clause_n;
+        if (clause.is_void()) {
+            clause_i++;
+            continue;
+        }
         State& state = state_a[TableClause::collate_id(clause.m_id)];
 
         switch (clause.m_id)
@@ -153,7 +158,7 @@ void TableBase::select_query(
     }
 
     // update query, index_a
-    for (int id = 0; id < TableClause::CLAUSE_ID_size; ++id) {
+    for (int id = 0; id < TableClause::CLAUSE_ID_EMPTY; ++id) {
         if (TableClause::collate_id(static_cast<TableClause::CLAUSE_ID>(id)) != id)
             continue;
 

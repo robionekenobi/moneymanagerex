@@ -154,7 +154,7 @@ void mmNewDatabaseWizardPage::OnCurrency(wxCommandEvent& /*event*/)
     while (true) {
         currencyID_ = PrefModel::instance().getBaseCurrencyID();
         CurrencyChoiceDialog::Execute(this, currencyID_);
-        const CurrencyData* currency = CurrencyModel::instance().get_id_data_n(currencyID_);
+        const CurrencyData* currency = CurrencyModel::instance().get_idN_data_n(currencyID_);
         if (currency) {
             itemButtonCurrency_->SetLabelText(wxGetTranslation(currency->m_name));
             currencyID_ = currency->m_id;

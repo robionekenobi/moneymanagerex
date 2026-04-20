@@ -28,6 +28,13 @@
 #include "CategoryModel.h"
 #include "PrefModel.h"
 
+// -- static
+
+TableClauseV<wxString> BudgetModel::WHERE_FREQUENCY(OP op, BudgetFreq freq)
+{
+    return BudgetCol::WHERE_PERIOD(op, freq.key());
+}
+
 // -- constructor
 
 // Initialize the global BudgetModel table.
@@ -57,13 +64,13 @@ void BudgetModel::getBudgetEntry(
     std::map<int64, wxString>& notes_mCatId
 ) {
     // initaialize category maps; set amount to zero
-    for (const auto& cat_d : CategoryModel::instance().find_all()) {
-        freq_mCatId[cat_d.m_id]   = BudgetFreq(BudgetFreq::e_none);
-        amount_mCatId[cat_d.m_id] = 0.0;
+    for (int64 cat_id : CategoryModel::instance().find_id_a()) {
+        freq_mCatId[cat_id]   = BudgetFreq(BudgetFreq::e_none);
+        amount_mCatId[cat_id] = 0.0;
     }
 
-    for (const auto& budget_d : find(
-        BudgetCol::BUDGETYEARID(bp_id)
+    for (const auto& budget_d : find_data_a(
+        BudgetCol::WHERE_BUDGETYEARID(OP_EQ, bp_id)
     )) {
         int64 cat_id = budget_d.m_category_id;
         freq_mCatId[cat_id]   = budget_d.m_freq;
@@ -77,14 +84,14 @@ void BudgetModel::getBudgetStats(
     mmDateRange* date_range,
     bool groupByMonth
 ) {
-    //Set std::map with zeros
-    for (const auto& cat_d : CategoryModel::instance().find_all()) {
+    // Set std::map with zeros
+    for (int64 cat_id : CategoryModel::instance().find_id_a()) {
         for (int month = 0; month < 12; month++) {
-            budgetStats[cat_d.m_id][month] = 0.0;
+            budgetStats[cat_id][month] = 0.0;
         }
     }
 
-    //Calculations
+    // Calculations
     const wxDateTime start_date(date_range->start_date());
     std::map<int64, double> monthlyBudgetValue;
     std::map<int64, double> yearlyBudgetValue;
@@ -93,16 +100,17 @@ void BudgetModel::getBudgetStats(
     std::map<int64, int> budgetedMonths;
     const wxString year = wxString::Format("%i", start_date.GetYear());
     int64 bp_id_n = BudgetPeriodModel::instance().get_name_id_n(year);
-    for (const Data& budget_d : find(
-        BudgetCol::BUDGETYEARID(bp_id_n)
+    for (const Data& budget_d : find_data_a(
+        BudgetCol::WHERE_BUDGETYEARID(OP_EQ, bp_id_n)
     )) {
-        int64 category_id = budget_d.m_category_id;
+        int64 cat_id = budget_d.m_category_id;
         // Determine the monhly budgeted amounts
-        monthlyBudgetValue[category_id] = budget_d.amount_per_month();
+        monthlyBudgetValue[cat_id] = budget_d.amount_per_month();
         // Determine the yearly budgeted amounts
-        yearlyBudgetValue[category_id] = budget_d.amount_per_year();
-        // Store the yearly budget to use in reporting. Monthly budgets are stored in index 0-11, so use index 12 for year
-        budgetStats[category_id][12] = yearlyBudgetValue[category_id];
+        yearlyBudgetValue[cat_id] = budget_d.amount_per_year();
+        // Store the yearly budget to use in reporting.
+        // Monthly budgets are stored in index 0-11, so use index 12 for year
+        budgetStats[cat_id][12] = yearlyBudgetValue[cat_id];
     }
     bool budgetOverride = PrefModel::instance().getBudgetOverride();
     bool budgetDeductMonthly = PrefModel::instance().getBudgetDeductMonthly();
@@ -111,17 +119,17 @@ void BudgetModel::getBudgetStats(
         bp_id_n = BudgetPeriodModel::instance().get_name_id_n(month_name);
 
         //fill with amount from monthly budgets first
-        for (const Data& budget_d : find(
-            BudgetCol::BUDGETYEARID(bp_id_n)
+        for (const Data& budget_d : find_data_a(
+            BudgetCol::WHERE_BUDGETYEARID(OP_EQ, bp_id_n)
         )) {
-            int64 category_id = budget_d.m_category_id;
-            std::pair<int, int64> month_categ = std::make_pair(month, category_id);
+            int64 cat_id = budget_d.m_category_id;
+            std::pair<int, int64> month_categ = std::make_pair(month, cat_id);
             if (!isBudgeted[month_categ]) {
                 isBudgeted[month_categ] = true;
-                budgetedMonths[category_id]++;
+                budgetedMonths[cat_id]++;
             }
-            budgetStats[category_id][month] = budget_d.amount_per_month();
-            yearDeduction[category_id] += budgetStats[category_id][month];
+            budgetStats[cat_id][month] = budget_d.amount_per_month();
+            yearDeduction[cat_id] += budgetStats[cat_id][month];
         }
     }
     // Now go month by month and add the yearly budget
@@ -152,8 +160,8 @@ void BudgetModel::getBudgetStats(
     }
     if (!groupByMonth) {
         std::map<int64, std::map<int,double> > yearlyBudgetStats;
-        for (const auto& category_d : CategoryModel::instance().find_all()) {
-            yearlyBudgetStats[category_d.m_id][0] = 0.0;
+        for (const auto& cat_d : CategoryModel::instance().find_data_a()) {
+            yearlyBudgetStats[cat_d.m_id][0] = 0.0;
         }
 
         for (const auto& cat : budgetStats)
@@ -184,8 +192,8 @@ void BudgetModel::copyBudgetYear(int64 dst_bp_id, int64 src_bp_id)
             int64 dst_month_id_n = BudgetPeriodModel::instance().get_name_id_n(dst_month_name);
             if (dst_month_id_n <= 0)
                 continue;
-            BudgetModel::DataA dst_budget_a = find(
-                BudgetCol::BUDGETYEARID(dst_month_id_n)
+            BudgetModel::DataA dst_budget_a = find_data_a(
+                BudgetCol::WHERE_BUDGETYEARID(OP_EQ, dst_month_id_n)
             );
             if (!dst_budget_a.empty())
                 budgetedMonths += 1;
@@ -196,8 +204,8 @@ void BudgetModel::copyBudgetYear(int64 dst_bp_id, int64 src_bp_id)
         }
     }
 
-    for (const Data& src_budget_d : find(
-        BudgetCol::BUDGETYEARID(src_bp_id)
+    for (const Data& src_budget_d : find_data_a(
+        BudgetCol::WHERE_BUDGETYEARID(OP_EQ, src_bp_id)
     )) {
         Data new_budget_d = Data();
         new_budget_d.clone_from(src_budget_d);

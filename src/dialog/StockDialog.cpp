@@ -29,10 +29,11 @@
 #include "base/_constants.h"
 #include "util/mmPath.h"
 #include "util/mmImage.h"
-#include "util/_util.h"
-#include "util/_simple.h"
+#include "util/mmAttachment.h"
 #include "util/mmTextCtrl.h"
 #include "util/mmCalcValidator.h"
+#include "util/_util.h"
+#include "util/_simple.h"
 
 #include "model/_all.h"
 
@@ -45,40 +46,37 @@ using namespace rapidjson;
 IMPLEMENT_DYNAMIC_CLASS(StockDialog, wxDialog)
 
 wxBEGIN_EVENT_TABLE(StockDialog, wxDialog)
-    EVT_CLOSE(                       StockDialog::OnQuit)
-    EVT_BUTTON(wxID_SAVE,            StockDialog::OnSave)
-    EVT_BUTTON(wxID_CANCEL,          StockDialog::OnCancel)
-    EVT_BUTTON(wxID_INDEX,           StockDialog::OnStockPriceButton)
-    EVT_BUTTON(wxID_FILE,            StockDialog::OnAttachments)
-    EVT_BUTTON(ID_BUTTON_IMPORT,     StockDialog::OnHistoryImportButton)
-    EVT_BUTTON(ID_BUTTON_DOWNLOAD,   StockDialog::OnHistoryDownloadButton)
-    EVT_BUTTON(wxID_ADD,             StockDialog::OnHistoryAddButton)
-    EVT_BUTTON(wxID_DELETE,          StockDialog::OnHistoryDeleteButton)
-    EVT_CHILD_FOCUS(                 StockDialog::OnFocusChange)
-    EVT_LIST_ITEM_SELECTED(wxID_ANY, StockDialog::OnListItemSelected)
+    EVT_CLOSE(                       StockDialog::onQuit)
+    EVT_BUTTON(wxID_SAVE,            StockDialog::onSave)
+    EVT_BUTTON(wxID_CANCEL,          StockDialog::onCancel)
+    EVT_BUTTON(wxID_INDEX,           StockDialog::onStockPriceButton)
+    EVT_BUTTON(wxID_FILE,            StockDialog::onAttachments)
+    EVT_BUTTON(ID_BUTTON_IMPORT,     StockDialog::onHistoryImportButton)
+    EVT_BUTTON(ID_BUTTON_DOWNLOAD,   StockDialog::onHistoryDownloadButton)
+    EVT_BUTTON(wxID_ADD,             StockDialog::onHistoryAddButton)
+    EVT_BUTTON(wxID_DELETE,          StockDialog::onHistoryDeleteButton)
+    EVT_CHILD_FOCUS(                 StockDialog::onFocusChange)
+    EVT_LIST_ITEM_SELECTED(wxID_ANY, StockDialog::onListItemSelected)
 wxEND_EVENT_TABLE()
 
-StockDialog::StockDialog( )
-{
-}
+// -- constructor
 
 StockDialog::StockDialog(
-    wxWindow* parent,
-    StockData* stock,
-    int64 accountID,
+    wxWindow* parent_win,
+    StockData* stock_n,
+    int64 account_id,
     const wxString& name
 ) :
-    m_stock_n(stock),
-    m_edit(stock ? true: false),
-    m_account_id(accountID)
+    m_stock_n(stock_n),
+    m_account_id(account_id)
 {
     long style = wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCLOSE_BOX;
-    Create(parent, wxID_ANY, "", wxDefaultPosition, wxSize(400, 300), style, name);
+    create(parent_win, wxID_ANY, "", wxDefaultPosition, wxSize(400, 300), style, name);
     mmThemeAutoColour(this);
 }
 
-bool StockDialog::Create(
-    wxWindow* parent,
+bool StockDialog::create(
+    wxWindow* parent_win,
     wxWindowID id,
     const wxString& caption,
     const wxPoint& pos,
@@ -87,103 +85,23 @@ bool StockDialog::Create(
     const wxString& name
 ) {
     SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS);
-    wxDialog::Create(parent, id, caption, pos, size, style, name);
+    wxDialog::Create(parent_win, id, caption, pos, size, style, name);
 
-    CreateControls();
+    createControls();
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
 
     SetIcon(mmPath::getProgramIcon());
 
-    if (m_edit) DataToControls();
-    UpdateControls();
+    if (m_stock_n)
+        dataToControls();
+    updateControls();
 
     Centre();
     return true;
 }
 
-void StockDialog::DataToControls()
-{
-    if (!m_stock_n)
-        return;
-
-    m_stock_id = m_stock_n->m_id;
-
-    w_name_text->SetValue(m_stock_n->m_name);
-    w_symbol_text->SetValue(m_stock_n->m_symbol);
-    w_notes_text->SetValue(m_stock_n->m_notes);
-    w_purchase_date_picker->setValue(m_stock_n->m_purchase_date.dateTime());
-
-    int precision = m_stock_n->m_num_shares == floor(m_stock_n->m_num_shares)
-        ? 0
-        : PrefModel::instance().getSharePrecision();
-    w_num_text->SetValue(m_stock_n->m_num_shares, precision);
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(m_stock_n->m_account_id_n);
-    const CurrencyData* currency_n = CurrencyModel::instance().get_base_data_n();
-    if (account_n)
-        currency_n = AccountModel::instance().get_data_currency_p(*account_n);
-    int currency_precision = currency_n->precision();
-    if (currency_precision < PrefModel::instance().getSharePrecision())
-        currency_precision = PrefModel::instance().getSharePrecision();
-    w_purchase_price_text->SetValue(m_stock_n->m_purchase_price, account_n, currency_precision);
-    w_history_price_text->SetValue(m_stock_n->m_current_price, account_n, currency_precision);
-    w_commission_text->SetValue(m_stock_n->m_commission, account_n, currency_precision);
-    w_current_price_text->SetValue(m_stock_n->m_current_price, account_n, currency_precision);
-
-    ShowStockHistory();
-}
-
-void StockDialog::UpdateControls()
-{
-    this->SetTitle(m_edit ? _t("Edit Stock Investment") : _t("New Stock Investment"));
-    if (m_account_id > -1) {  // do not use for overview
-        const AccountData* account_n = AccountModel::instance().get_id_data_n(m_account_id);
-        if (m_stock_n) {
-            w_value_label->SetLabelText(AccountModel::instance().value_number_currency(
-                *account_n,
-                m_stock_n->current_value()
-            ));
-        }
-    }
-    else {
-        w_value_label->SetLabelText(wxString::Format(wxT("%.2f"),
-            m_stock_n->m_current_price * m_stock_n->m_num_shares
-        ));
-    }
-
-    //Disable history buttons on new stocks
-
-    wxBitmapButton* buttonDownload = static_cast<wxBitmapButton*>(FindWindow(ID_BUTTON_DOWNLOAD));
-    buttonDownload->Enable(m_edit);
-    wxBitmapButton* buttonImport = static_cast<wxBitmapButton*>(FindWindow(ID_BUTTON_IMPORT));
-    buttonImport->Enable(m_edit);
-    wxBitmapButton* buttonDel = static_cast<wxBitmapButton*>(FindWindow(wxID_DELETE));
-    buttonDel->Enable(m_edit);
-    wxBitmapButton* buttonAdd = static_cast<wxBitmapButton*>(FindWindow(wxID_ADD));
-    buttonAdd->Enable(m_edit);
-
-    bool initial_shares = (TrxLinkModel::instance().find_stock_id_c(m_stock_id) == 0);
-    w_num_text->Enable(!m_edit || initial_shares);
-    w_purchase_date_picker->Enable(!m_edit || initial_shares);
-    w_purchase_price_text->Enable(!m_edit || initial_shares);
-    w_commission_text->Enable(!m_edit || initial_shares);
-
-    // Disable in stock overview:
-    w_name_text->Enable(m_account_id > -1);
-    w_symbol_text->Enable(m_account_id > -1);
-    w_current_price_text->Enable(m_account_id > -1);
-    w_notes_text->Enable(m_account_id > -1);
-
-    // Hide in stock overview:
-    w_date_label->Show(m_account_id > -1);
-    w_purchase_date_picker->Show(m_account_id > -1);
-    w_ok_btn->Show(m_account_id > -1);
-
-
-    w_symbol_text->SetValue(w_symbol_text->GetValue().Upper());
-}
-
-void StockDialog::CreateControls()
+void StockDialog::createControls()
 {
     bool initial_stock_transaction = true;
     if (m_stock_n) {
@@ -375,66 +293,235 @@ void StockDialog::CreateControls()
     w_ok_btn = new wxButton(this, wxID_SAVE, _t("&Save "));
     wxButton* itemButton30 = new wxButton(this, wxID_CANCEL, wxGetTranslation(g_CloseLabel));
 
-    if (m_edit) {
+    if (m_stock_n) {
         itemButton30->SetFocus();
     }
     buttonsOK_CANCEL_sizer->Add(w_ok_btn, g_flagsH);
     buttonsOK_CANCEL_sizer->Add(itemButton30, g_flagsH);
 }
 
-void StockDialog::OnQuit(wxCloseEvent& /*event*/)
+void StockDialog::dataToControls()
 {
-    if (!m_edit)
-        mmAttachmentManage::DeleteAllAttachments(StockModel::s_ref_type, 0);
+    if (!m_stock_n)
+        return;
+
+    w_name_text->SetValue(m_stock_n->m_name);
+    w_symbol_text->SetValue(m_stock_n->m_symbol);
+    w_notes_text->SetValue(m_stock_n->m_notes);
+    w_purchase_date_picker->setValue(m_stock_n->m_purchase_date.dateTime());
+
+    int precision = m_stock_n->m_num_shares == floor(m_stock_n->m_num_shares)
+        ? 0
+        : PrefModel::instance().getSharePrecision();
+    w_num_text->SetValue(m_stock_n->m_num_shares, precision);
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(
+        m_stock_n->m_account_id_n
+    );
+    const CurrencyData* currency_n = CurrencyModel::instance().get_base_data_n();
+    if (account_n)
+        currency_n = AccountModel::instance().get_data_currency_p(*account_n);
+    int currency_precision = currency_n->precision();
+    if (currency_precision < PrefModel::instance().getSharePrecision())
+        currency_precision = PrefModel::instance().getSharePrecision();
+    w_purchase_price_text->SetValue(m_stock_n->m_purchase_price, account_n, currency_precision);
+    w_history_price_text->SetValue(m_stock_n->m_current_price, account_n, currency_precision);
+    w_commission_text->SetValue(m_stock_n->m_commission, account_n, currency_precision);
+    w_current_price_text->SetValue(m_stock_n->m_current_price, account_n, currency_precision);
+
+    showStockHistory();
+}
+
+// -- methods
+
+void StockDialog::updateControls()
+{
+    this->SetTitle(m_stock_n
+        ? _t("Edit Stock Investment")
+        : _t("New Stock Investment")
+    );
+
+    // do not use for overview
+    if (m_stock_n && m_account_id > -1) {
+        const AccountData* account_n = AccountModel::instance().get_idN_data_n(
+            m_account_id
+        );
+        w_value_label->SetLabelText(AccountModel::instance().value_number_currency(
+            *account_n,
+            m_stock_n->current_value()
+        ));
+    }
+    else {
+        w_value_label->SetLabelText(wxString::Format(wxT("%.2f"),
+            m_stock_n->m_current_price * m_stock_n->m_num_shares
+        ));
+    }
+
+    // Disable history buttons on new stocks
+    bool is_new = !m_stock_n;
+    static_cast<wxBitmapButton*>(FindWindow(ID_BUTTON_DOWNLOAD))->Enable(!is_new);
+    static_cast<wxBitmapButton*>(FindWindow(ID_BUTTON_IMPORT))->Enable(!is_new);
+    static_cast<wxBitmapButton*>(FindWindow(wxID_DELETE))->Enable(!is_new);
+    static_cast<wxBitmapButton*>(FindWindow(wxID_ADD))->Enable(!is_new);
+
+    bool initial_shares = (TrxLinkModel::instance().find_stock_id_c(
+        m_stock_n->m_id
+    ) == 0);
+    w_num_text->Enable(is_new || initial_shares);
+    w_purchase_date_picker->Enable(is_new || initial_shares);
+    w_purchase_price_text->Enable(is_new || initial_shares);
+    w_commission_text->Enable(is_new || initial_shares);
+
+    // Disable in stock overview:
+    w_name_text->Enable(m_account_id > -1);
+    w_symbol_text->Enable(m_account_id > -1);
+    w_current_price_text->Enable(m_account_id > -1);
+    w_notes_text->Enable(m_account_id > -1);
+
+    // Hide in stock overview:
+    w_date_label->Show(m_account_id > -1);
+    w_purchase_date_picker->Show(m_account_id > -1);
+    w_ok_btn->Show(m_account_id > -1);
+
+
+    w_symbol_text->SetValue(w_symbol_text->GetValue().Upper());
+}
+
+void StockDialog::showStockHistory()
+{
+    w_price_list->DeleteAllItems();
+    if (m_stock_n->m_symbol.IsEmpty())
+        return;
+
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(
+        m_stock_n->m_account_id_n
+    );
+    StockHistoryModel::DataA sh_a = StockHistoryModel::instance().find_data_a(
+        StockHistoryCol::WHERE_SYMBOL(OP_EQ, m_stock_n->m_symbol),
+        TableClause::ORDERBY(StockHistoryCol::NAME_DATE, true),
+        TableClause::LIMIT(300)
+    );
+    if (sh_a.empty())
+        return;
+
+    size_t rows = sh_a.size() - 1;
+    for (size_t sh_i = 0; sh_i < sh_a.size(); ++sh_i ) {
+        StockHistoryData& sh_d = sh_a.at(sh_i);
+        wxListItem item;
+        item.SetId(static_cast<long>(sh_i));
+        item.SetData(reinterpret_cast<void*>(sh_d.m_id.GetValue()));
+        w_price_list->InsertItem(item);
+        const wxString disp_price = AccountModel::instance().value_number(
+            *account_n,
+            sh_d.m_price,
+            PrefModel::instance().getSharePrecision()
+        );
+        w_price_list->SetItem(static_cast<long>(sh_i), 0,
+            mmGetDateTimeForDisplay(sh_d.m_date.isoDate())
+        );
+        w_price_list->SetItem(static_cast<long>(sh_i), 1,
+            disp_price
+        );
+        if (sh_i != 0)
+            continue;
+        w_history_date_picker->setValue(sh_d.m_date.dateTime());
+        w_history_price_text->SetValue(disp_price);
+        w_current_price_text->SetValue(disp_price);
+        // if the latest share price is not the current stock price, update it.
+        if (m_stock_n->m_current_price != sh_d.m_price) {
+            StockModel::instance().update_symbol_current_price(
+                m_stock_n->m_symbol, sh_d.m_price
+            );
+            m_stock_n = StockModel::instance().unsafe_get_idN_data_n(m_stock_n->m_id);
+            w_value_label->SetLabelText(AccountModel::instance().value_number_currency(
+                *(AccountModel::instance().get_idN_data_n(m_stock_n->m_account_id_n)),
+                m_stock_n->current_value()
+            ));
+        }
+    }
+    w_price_list->RefreshItems(0, rows);
+}
+
+void StockDialog::createShareAccount(
+    const AccountData* account_n,
+    const wxString& name,
+    const wxString& openingDate
+) {
+    if (name.empty())
+        return;
+
+    AccountData new_account_d = AccountData();
+    new_account_d.m_name         = name;
+    new_account_d.m_type_        = mmNavigatorList::instance().getShareAccountStr();
+    new_account_d.m_currency_id  = account_n->m_currency_id;
+    new_account_d.m_open_date    = mmDate(openingDate);
+    new_account_d.m_open_balance = 0;
+    AccountModel::instance().add_data_n(new_account_d);
+
+    TrxShareDialog share_dialog(this, m_stock_n);
+    share_dialog.ShowModal();
+}
+
+// -- event handlers
+
+void StockDialog::onQuit(wxCloseEvent& /*event*/)
+{
+    // FIXME: Avoid premature clone of attachments.
+    if (!m_stock_n)
+        AttachmentModel::instance().purge_ref_all(StockModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 
-void StockDialog::OnCancel(wxCommandEvent& /*event*/)
+void StockDialog::onCancel(wxCommandEvent& /*event*/)
 {
-    if (m_stock_id <= 0)
-        mmAttachmentManage::DeleteAllAttachments(StockModel::s_ref_type, 0);
+    // FIXME: Avoid premature clone of attachments.
+    if (!m_stock_n)
+        AttachmentModel::instance().purge_ref_all(StockModel::s_ref_type, 0);
     EndModal(wxID_CANCEL);
 }
 
-void StockDialog::OnAttachments(wxCommandEvent& /*event*/)
+void StockDialog::onAttachments(wxCommandEvent& /*event*/)
 {
-    int64 ref_id = (m_stock_id > 0) ? m_stock_id : 0;
+    int64 ref_id = m_stock_n ? m_stock_n->m_id : 0;
     AttachmentDialog dlg(this, StockModel::s_ref_type, ref_id);
     dlg.ShowModal();
 }
 
-void StockDialog::OnStockPriceButton(wxCommandEvent& /*event*/)
+void StockDialog::onStockPriceButton(wxCommandEvent& /*event*/)
 {
-    const wxString stockSymbol = w_symbol_text->GetValue().Trim();
+    const wxString symbol = w_symbol_text->GetValue().Trim();
+    if (symbol.IsEmpty())
+        return;
 
-    if (!stockSymbol.IsEmpty())
-    {
-        const wxString& stockURL = InfoModel::instance().getString("STOCKURL", mmex::weblink::DefStockUrl);
-        const wxString& httpString = wxString::Format(stockURL, stockSymbol);
-        wxLaunchDefaultBrowser(httpString);
-    }
+    const wxString& stockURL = InfoModel::instance().getString(
+        "STOCKURL",
+        mmex::weblink::DefStockUrl
+    );
+    const wxString& httpString = wxString::Format(stockURL, symbol);
+    wxLaunchDefaultBrowser(httpString);
 }
 
-void StockDialog::OnSave(wxCommandEvent & /*event*/)
+void StockDialog::onSave(wxCommandEvent & /*event*/)
 {
     const auto itemCount = w_price_list->GetItemCount();
 
-    for (auto i = 0; i<itemCount; i++) {
+    for (auto i = 0; i < itemCount; ++i) {
         if (w_price_list->GetItemState(0, wxLIST_STATE_SELECTED) == wxLIST_STATE_SELECTED) {
             w_price_list->SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
             break;
         }
     }
 
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(m_account_id);
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(
+        m_account_id
+    );
     if (!account_n) {
         mmErrorDialogs::MessageInvalid(this, _t("Held At"));
         return;
     }
 
     // TODO unique
-    const wxString stockSymbol = w_symbol_text->GetValue();
-    if (stockSymbol.empty()) {
+    const wxString symbol = w_symbol_text->GetValue();
+    if (symbol.empty()) {
         mmErrorDialogs::MessageInvalid(this, _t("Symbol"));
         return;
     }
@@ -447,7 +534,7 @@ void StockDialog::OnSave(wxCommandEvent & /*event*/)
             _t("Invalid Date")
         );
 
-    const wxString stockName = w_name_text->GetValue();
+    const wxString name = w_name_text->GetValue();
     const wxString notes = w_notes_text->GetValue();
 
     double numShares = 0;
@@ -477,14 +564,15 @@ void StockDialog::OnSave(wxCommandEvent & /*event*/)
         ? m_stock_n->m_purchase_value
         : initPrice * numShares;
 
-    if (!m_stock_n) {
-        m_stock_d = StockData();
-        m_stock_n = &m_stock_d;
+    StockData new_stock_d = StockData();
+    bool is_new = !m_stock_n;
+    if (is_new) {
+        m_stock_n = &new_stock_d;
     }
 
     m_stock_n->m_account_id_n   = m_account_id;
-    m_stock_n->m_name           = stockName;
-    m_stock_n->m_symbol         = stockSymbol;
+    m_stock_n->m_name           = name;
+    m_stock_n->m_symbol         = symbol;
     m_stock_n->m_num_shares     = numShares;
     m_stock_n->m_purchase_date  = pdate;
     m_stock_n->m_purchase_price = initPrice;
@@ -493,16 +581,21 @@ void StockDialog::OnSave(wxCommandEvent & /*event*/)
     m_stock_n->m_commission     = commission;
     m_stock_n->m_notes          = notes;
     StockModel::instance().unsafe_save_data_n(m_stock_n);
-    m_stock_id = m_stock_n->id();
 
-    if (!m_edit) {
-        // FIXME
-        mmAttachmentManage::RelocateAllAttachments(
+    if (is_new) {
+        // m_stock_n points to new_stock_d; get a pointer into more persistent data.
+        m_stock_n = StockModel::instance().unsafe_get_idN_data_n(
+            m_stock_n->m_id
+        );
+
+        // FIXME: Avoid premature clone of attachments.
+        mmAttachment::relocate_ref_all(
             StockModel::s_ref_type, 0,
             StockModel::s_ref_type, m_stock_n->m_id
         );
-        TrxShareDialog share_dialog(this, m_stock_n);
-        share_dialog.ShowModal();
+
+        TrxShareDialog share_dlg(this, m_stock_n);
+        share_dlg.ShowModal();
     }
 
     StockHistoryModel::instance().save_record(
@@ -511,40 +604,19 @@ void StockDialog::OnSave(wxCommandEvent & /*event*/)
         m_stock_n->m_current_price,
         UpdateType(UpdateType::e_manual)
     );
-    ShowStockHistory();
+    showStockHistory();
 
-    m_edit = true;
-    UpdateControls();
+    updateControls();
 }
 
-void StockDialog::CreateShareAccount(
-    const AccountData* stock_account,
-    const wxString& name,
-    const wxString& openingDate
-) {
-    if (name.empty())
-        return;
-
-    AccountData new_account_d = AccountData();
-    new_account_d.m_name         = name;
-    new_account_d.m_type_        = mmNavigatorList::instance().getShareAccountStr();
-    new_account_d.m_currency_id  = stock_account->m_currency_id;
-    new_account_d.m_open_date    = mmDate(openingDate);
-    new_account_d.m_open_balance = 0;
-    AccountModel::instance().add_data_n(new_account_d);
-
-    TrxShareDialog share_dialog(this, m_stock_n);
-    share_dialog.ShowModal();
-}
-
-void StockDialog::OnListItemSelected(wxListEvent& event)
+void StockDialog::onListItemSelected(wxListEvent& event)
 {
     long selectedIndex = event.GetIndex();
     int64 histId = w_price_list->GetItemData(selectedIndex);
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(
         m_stock_n->m_account_id_n
     );
-    StockHistoryData* sh_n = StockHistoryModel::instance().unsafe_get_id_data_n(
+    StockHistoryData* sh_n = StockHistoryModel::instance().unsafe_get_idN_data_n(
         histId
     );
 
@@ -556,7 +628,7 @@ void StockDialog::OnListItemSelected(wxListEvent& event)
     }
 }
 
-void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
+void StockDialog::onHistoryImportButton(wxCommandEvent& /*event*/)
 {
     if (m_stock_n->m_symbol.IsEmpty())
         return;
@@ -580,7 +652,7 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
         nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_SMOOTH | wxPD_CAN_ABORT
     );
 
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(
         m_stock_n->m_account_id_n
     );
     const CurrencyData* currency_p = AccountModel::instance().get_data_currency_p(*account_n);
@@ -672,14 +744,14 @@ void StockDialog::OnHistoryImportButton(wxCommandEvent& /*event*/)
         for (auto& new_sh_d : new_sh_a)
             StockHistoryModel::instance().add_data_n(new_sh_d);
         // show the data
-        ShowStockHistory();
+        showStockHistory();
     }
     else {
         //TODO: and discard the database changes.
     }
 }
 
-void StockDialog::OnHistoryDownloadButton(wxCommandEvent& /*event*/)
+void StockDialog::onHistoryDownloadButton(wxCommandEvent& /*event*/)
 {
     if (m_stock_n->m_symbol.IsEmpty())
         return;
@@ -842,10 +914,10 @@ void StockDialog::OnHistoryDownloadButton(wxCommandEvent& /*event*/)
                 continue;
             float price = date_price.second;
 
-            if (StockHistoryModel::instance().find(
-                StockHistoryCol::SYMBOL(m_stock_n->m_symbol),
-                StockHistoryCol::DATE(date.isoDate())
-            ).empty() && price > 0) {
+            if (StockHistoryModel::instance().find_count(
+                StockHistoryCol::WHERE_SYMBOL(OP_EQ, m_stock_n->m_symbol),
+                StockHistoryCol::WHERE_DATE(OP_EQ, date.isoDate())
+            ) == 0 && price > 0) {
                 StockHistoryData new_sh_d = StockHistoryData();
                 new_sh_d.m_symbol      = m_stock_n->m_symbol;
                 new_sh_d.m_date        = date;
@@ -855,12 +927,12 @@ void StockDialog::OnHistoryDownloadButton(wxCommandEvent& /*event*/)
             }
         }
         StockHistoryModel::instance().db_release_savepoint();
-        return ShowStockHistory();
+        return showStockHistory();
     }
     mmErrorDialogs::MessageError(this, sOutput, _t("Stock History Error"));
 }
 
-void StockDialog::OnHistoryAddButton(wxCommandEvent& /*event*/)
+void StockDialog::onHistoryAddButton(wxCommandEvent& /*event*/)
 {
     if (m_stock_n->m_symbol.IsEmpty())
         return;
@@ -874,7 +946,7 @@ void StockDialog::OnHistoryAddButton(wxCommandEvent& /*event*/)
     wxString listStr;
     wxDateTime dt;
     double dPrice = 0.0;
-    const AccountData* account = AccountModel::instance().get_id_data_n(
+    const AccountData* account = AccountModel::instance().get_idN_data_n(
         m_stock_n->m_account_id_n
     );
     const CurrencyData* currency = AccountModel::instance().get_data_currency_p(*account);
@@ -921,7 +993,7 @@ void StockDialog::OnHistoryAddButton(wxCommandEvent& /*event*/)
     // changed the current price/value
     if (i == w_price_list->GetNextItem(-1)) {
         // refresh m_stock_n to get updated attributes
-        m_stock_n = StockModel::instance().unsafe_get_id_data_n(m_stock_n->m_id);
+        m_stock_n = StockModel::instance().unsafe_get_idN_data_n(m_stock_n->m_id);
         w_current_price_text->SetValue(AccountModel::instance().value_number(
             *account, m_stock_n->m_current_price, PrefModel::instance().getSharePrecision()
         ));
@@ -932,81 +1004,28 @@ void StockDialog::OnHistoryAddButton(wxCommandEvent& /*event*/)
     }
 }
 
-void StockDialog::OnHistoryDeleteButton(wxCommandEvent& /*event*/)
+void StockDialog::onHistoryDeleteButton(wxCommandEvent& /*event*/)
 {
     if (w_price_list->GetSelectedItemCount() <= 0)
         return;
 
-    long item = -1;
     StockHistoryModel::instance().db_savepoint();
+    long item = -1;
     for (;;) {
         item = w_price_list->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-
         if (item == -1)
             break;
-        StockHistoryModel::instance().purge_id(static_cast<int64>(w_price_list->GetItemData(item)));
+        StockHistoryModel::instance().purge_id(
+            static_cast<int64>(w_price_list->GetItemData(item))
+        );
     }
     StockHistoryModel::instance().db_release_savepoint();
-    ShowStockHistory();
+
+    showStockHistory();
 }
 
-void StockDialog::ShowStockHistory()
+void StockDialog::onFocusChange(wxChildFocusEvent& event)
 {
-    w_price_list->DeleteAllItems();
-    if (m_stock_n->m_symbol.IsEmpty())
-        return;
-
-    const AccountData* account = AccountModel::instance().get_id_data_n(
-        m_stock_n->m_account_id_n
-    );
-    StockHistoryModel::DataA sh_a = StockHistoryModel::instance().find(
-        StockHistoryCol::SYMBOL(m_stock_n->m_symbol)
-    );
-    std::stable_sort(sh_a.begin(), sh_a.end(), StockHistoryData::SorterByDATE());
-    std::reverse(sh_a.begin(), sh_a.end());
-    if (sh_a.size()>300)
-        sh_a.resize(300);
-    size_t rows = sh_a.size() - 1;
-    if (sh_a.empty())
-        return;
-
-    for (size_t sh_i = 0; sh_i < sh_a.size(); ++sh_i ) {
-        StockHistoryData& sh_d = sh_a.at(sh_i);
-        wxListItem item;
-        item.SetId(static_cast<long>(sh_i));
-        item.SetData(reinterpret_cast<void*>(sh_d.m_id.GetValue()));
-        w_price_list->InsertItem(item);
-        const wxString disp_price = AccountModel::instance().value_number(
-            *account, sh_d.m_price, PrefModel::instance().getSharePrecision()
-        );
-        w_price_list->SetItem(static_cast<long>(sh_i), 0,
-            mmGetDateTimeForDisplay(sh_d.m_date.isoDate())
-        );
-        w_price_list->SetItem(static_cast<long>(sh_i), 1,
-            disp_price
-        );
-        if (sh_i != 0)
-            continue;
-        w_history_date_picker->setValue(sh_d.m_date.dateTime());
-        w_history_price_text->SetValue(disp_price);
-        w_current_price_text->SetValue(disp_price);
-        // if the latest share price is not the current stock price, update it.
-        if (m_stock_n->m_current_price != sh_d.m_price) {
-            StockModel::instance().update_symbol_current_price(
-                m_stock_n->m_symbol, sh_d.m_price
-            );
-            m_stock_n = StockModel::instance().unsafe_get_id_data_n(m_stock_n->m_id);
-            w_value_label->SetLabelText(AccountModel::instance().value_number_currency(
-                *(AccountModel::instance().get_id_data_n(m_stock_n->m_account_id_n)),
-                m_stock_n->current_value()
-            ));
-        }
-    }
-    w_price_list->RefreshItems(0, rows);
-}
-
-void StockDialog::OnFocusChange(wxChildFocusEvent& event)
-{
-    UpdateControls();
+    updateControls();
     event.Skip();
 }

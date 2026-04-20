@@ -18,10 +18,11 @@
 
 #pragma once
 
+// BudgetData represents a record in table BUDGETTABLE_V1.
+
 #include "_DataEnum.h"
 #include "table/BudgetTable.h"
 
-// User-friendly representation of a record in table BUDGETTABLE_V1.
 struct BudgetData
 {
     int64      m_id;

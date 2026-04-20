@@ -29,9 +29,7 @@ class CurrencyHistoryModel : public TableFactory<CurrencyHistoryTable, CurrencyH
 // -- static
 
 public:
-    static CurrencyHistoryCol::CURRDATE DATE(OP op, const mmDate& date) {
-        return CurrencyHistoryCol::CURRDATE(op, date.isoDate());
-    }
+    static auto WHERE_DATE(OP op, const mmDate& date) -> TableClauseV<wxString>;
 
 // -- constructor
 
@@ -44,9 +42,20 @@ public:
     static CurrencyHistoryModel& instance(wxSQLite3Database* db);
     static CurrencyHistoryModel& instance();
 
+// -- override
+
+public:
+    // override TableFactory
+    virtual bool purge_id(int64 id) override {
+        return unsafe_remove_id(id);
+    }
+
 // -- methods
 
 public:
+    bool purge_currencyId_all(int64 currency_id);
+    bool purge_all();
+
     auto get_key_data_n(int64 currency_id, const mmDate& date) -> const Data*;
     auto get_id_date_rate(int64 currency_id, const mmDate& date = mmDate::today()) -> double;
     auto get_id_last_rate(int64 currency_id) -> double;
@@ -54,6 +63,4 @@ public:
     auto save_record(
         int64 currency_id, const mmDate& date, double price, UpdateType update_type
     ) -> int64;
-
-    void purge_all();
 };

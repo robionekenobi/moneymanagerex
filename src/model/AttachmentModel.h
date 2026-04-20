@@ -37,9 +37,18 @@ public:
     static AttachmentModel& instance(wxSQLite3Database* db);
     static AttachmentModel& instance();
 
+// -- override
+
+public:
+    // override TableFactory
+    virtual bool purge_id(int64 id) override;
+
 // -- methods
 
 public:
+    bool purge_ref_all(RefTypeN ref_type, const int64 ref_id);
+
+    auto get_data_file(const Data& att_d) -> const wxString;
     int  find_ref_c(RefTypeN ref_type, const int64 ref_id);
     auto find_ref_data_a(RefTypeN ref_type, const int64 ref_id) -> const DataA;
     int  find_ref_last_num(RefTypeN ref_type, const int64 ref_id);

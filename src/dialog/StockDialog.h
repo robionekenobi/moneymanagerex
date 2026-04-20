@@ -32,6 +32,8 @@ class StockDialog : public wxDialog
     wxDECLARE_DYNAMIC_CLASS(StockDialog);
     wxDECLARE_EVENT_TABLE();
 
+// -- static
+
 private:
     enum
     {
@@ -50,13 +52,10 @@ private:
         ID_BUTTON_DOWNLOAD
     };
 
-public:
-    int64 m_stock_id = -1;
+// -- state
 
 private:
     StockData* m_stock_n = nullptr;
-    StockData m_stock_d;
-    bool m_edit = false;
     int64 m_account_id = -1;
 
     wxTextCtrl*     w_name_text            = nullptr;
@@ -76,44 +75,56 @@ private:
     wxStaticText*   w_value_label          = nullptr;
 
 public:
-    StockDialog();
+    auto stock_id() const -> int64 { return m_stock_n ? m_stock_n->m_id : -1; }
+
+// -- constructor
+
+public:
+    StockDialog() {}
     StockDialog(
-        wxWindow* parent,
-        StockData* stock,
-        int64 accountID,
+        wxWindow* parent_win,
+        StockData* stock_n,
+        int64 account_id,
         const wxString& name = "StockDialog"
     );
 
-    bool Create(
-        wxWindow* parent, wxWindowID id,
+private:
+    bool create(
+        wxWindow* parent_win,
+        wxWindowID win_id,
         const wxString& caption,
         const wxPoint& pos,
         const wxSize& size,
         long style,
         const wxString& name = "StockDialog"
     );
+    void createControls();
+    void dataToControls();
+
+// methods
 
 private:
-    void OnQuit(wxCloseEvent& event);
-    void OnSave(wxCommandEvent &event);
-    void OnCancel(wxCommandEvent& event);
-    void OnAttachments(wxCommandEvent& event);
-    void OnStockPriceButton(wxCommandEvent& event);
-    void OnHistoryImportButton(wxCommandEvent& event);
-    void OnHistoryDownloadButton(wxCommandEvent& event);
-    void OnHistoryAddButton(wxCommandEvent& event);
-    void OnHistoryDeleteButton(wxCommandEvent& event);
-    void OnListItemSelected(wxListEvent& event);
-    void OnFocusChange(wxChildFocusEvent& event);
-
-    void CreateControls();
-    void UpdateControls();
-    void DataToControls();
-    void ShowStockHistory();
-    void CreateShareAccount(
+    void updateControls();
+    void showStockHistory();
+    void createShareAccount(
         const AccountData* stock_account,
         const wxString& name,
         const wxString& openingDate
     );
+
+// -- event handlers
+
+private:
+    void onQuit(                  wxCloseEvent&      event);
+    void onSave(                  wxCommandEvent&    event);
+    void onCancel(                wxCommandEvent&    event);
+    void onAttachments(           wxCommandEvent&    event);
+    void onStockPriceButton(      wxCommandEvent&    event);
+    void onHistoryImportButton(   wxCommandEvent&    event);
+    void onHistoryDownloadButton( wxCommandEvent&    event);
+    void onHistoryAddButton(      wxCommandEvent&    event);
+    void onHistoryDeleteButton(   wxCommandEvent&    event);
+    void onListItemSelected(      wxListEvent&       event);
+    void onFocusChange(           wxChildFocusEvent& event);
 };
 
