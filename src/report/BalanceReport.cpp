@@ -119,8 +119,12 @@ wxString BalanceReport::getHTMLText()
     GraphData gd;
     const bool view_accounts = (getGenericSelection() == 1);
     int acc_size = mmNavigatorList::instance().getNumberOfAccountTypes();
-    const auto account_data_a = AccountModel::instance().find_all();
-    const auto asset_data_a = AssetModel::instance().find_all();
+    const AccountModel::DataA account_a = AccountModel::instance().find_data_a(
+        TableClause::ORDERBY(AccountCol::s_primary_name)
+    );
+    const AssetModel::DataA asset_a = AssetModel::instance().find_data_a(
+        TableClause::ORDERBY(AssetCol::s_primary_name)
+    );
 
     std::vector<mmDate> end_date_a;
 
@@ -155,7 +159,7 @@ wxString BalanceReport::getHTMLText()
     std::vector<wxString> series_name_a;
 
     // Calculate the report date
-    for (const auto& account_d : account_data_a) {
+    for (const auto& account_d : account_a) {
         if (m_account_a && wxNOT_FOUND == m_account_a->Index(account_d.m_name))
             continue;
 
@@ -170,22 +174,19 @@ wxString BalanceReport::getHTMLText()
         m_account_balance_mDate_mId[account_d.m_id] = loadAccountBalance_mDate(account_d);
         if (AccountModel::type_id(account_d) != mmNavigatorItem::TYPE_ID_INVESTMENT)
             continue;
-        for (const auto& stock_d : StockModel::instance().find(
-            StockCol::HELDAT(account_d.m_id)
+        for (const auto& stock_d : StockModel::instance().find_data_a(
+            StockCol::WHERE_HELDAT(OP_EQ, account_d.m_id)
         )) {
             StockDataExt stock_dx = StockDataExt(stock_d);
-            stock_dx.m_hist_data_a = StockHistoryModel::instance().find(
-                StockHistoryCol::SYMBOL(stock_d.m_symbol)
+            stock_dx.m_hist_data_a = StockHistoryModel::instance().find_data_a(
+                StockHistoryCol::WHERE_SYMBOL(OP_EQ, stock_d.m_symbol),
+                TableClause::ORDERBY(StockHistoryCol::NAME_DATE, true)
             );
-            std::stable_sort(stock_dx.m_hist_data_a.begin(), stock_dx.m_hist_data_a.end(),
-                StockHistoryData::SorterByDATE()
-            );
-            std::reverse(stock_dx.m_hist_data_a.begin(), stock_dx.m_hist_data_a.end());
             m_stock_xa.push_back(stock_dx);
         }
     }
 
-    const bool include_asset_series = view_accounts && !asset_data_a.empty();
+    const bool include_asset_series = view_accounts && !asset_a.empty();
     if (include_asset_series)
         series_name_a.push_back(_t("Assets"));
 
@@ -241,7 +242,7 @@ wxString BalanceReport::getHTMLText()
         std::fill(balance_a.begin(), balance_a.end(), 0.0);
         int idx = 0;
         int type_idx;
-        for (const auto& account_d : account_data_a) {
+        for (const auto& account_d : account_a) {
             if (m_account_a && wxNOT_FOUND == m_account_a->Index(account_d.m_name))
                 continue;
 
@@ -273,7 +274,7 @@ wxString BalanceReport::getHTMLText()
         if (view_accounts) {
             if (include_asset_series) {
                 double asset_balance = 0.0;
-                for (const auto& asset_d : asset_data_a) {
+                for (const auto& asset_d : asset_a) {
                     double rate = getCurrencyDateRate(asset_d.m_currency_id_n, end_date);
                     asset_balance += AssetModel::instance().get_data_value_date(
                         asset_d, end_date
@@ -285,7 +286,7 @@ wxString BalanceReport::getHTMLText()
         else {
             type_idx = mmNavigatorList::instance().getAccountTypeIdx(mmNavigatorItem::TYPE_ID_ASSET);
             if (type_idx > -1) {
-                for (const auto& asset_d : asset_data_a) {
+                for (const auto& asset_d : asset_a) {
                     double rate = getCurrencyDateRate(asset_d.m_currency_id_n, end_date);
                     balance_a[type_idx] += AssetModel::instance().get_data_value_date(
                         asset_d, end_date

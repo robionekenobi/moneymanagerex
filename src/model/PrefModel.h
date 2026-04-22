@@ -21,6 +21,7 @@
 #pragma once
 
 #include "base/_defs.h"
+#include "data/_DataEnum.h"
 #include "util/mmDateRange2.h"
 #include "util/_primitive.h"
 
@@ -101,7 +102,7 @@ private:
     int m_trans_payee_none = PrefModel::NONE;              // TRANSACTION_PAYEE_NONE
     int m_trans_category_none = PrefModel::NONE;           // TRANSACTION_CATEGORY_NONE
     int m_trans_category_transfer_none = PrefModel::NONE;  // TRANSACTION_CATEGORY_TRANSFER_NONE
-    int m_trans_status_reconciled = PrefModel::NONE;       // TRANSACTION_STATUS_RECONCILED
+    TrxStatus m_trx_status = TrxStatus();               // TRANSACTION_STATUS_RECONCILED
     int m_trans_date_default = 0;                       // TRANSACTION_DATE_DEFAULT
     bool m_send_usage_stats = true;                     // SENDUSAGESTATS
     bool m_check_news = true;                           // CHECKNEWS
@@ -274,10 +275,10 @@ public:
     void saveTransCategoryTransferNone(const int value);
     int getTransCategoryTransferNone() const noexcept;
 
-    // m_trans_status_reconciled
-    void loadTransStatusReconciled();
-    void saveTransStatusReconciled(const int value);
-    int getTransStatusReconciled() const noexcept;
+    // m_trx_status
+    void loadTrxStatus();
+    void saveTrxStatus(const TrxStatus value);
+    auto getTrxStatus() const noexcept -> TrxStatus;
 
     // m_trans_date_default
     void loadTransDateDefault();
@@ -497,9 +498,9 @@ inline int PrefModel::getTransPayeeNone() const noexcept
     return m_trans_payee_none;
 }
 
-inline int PrefModel::getTransStatusReconciled() const noexcept
+inline TrxStatus PrefModel::getTrxStatus() const noexcept
 {
-    return m_trans_status_reconciled;
+    return m_trx_status;
 }
 
 inline int PrefModel::getTransDateDefault() const noexcept

@@ -47,7 +47,6 @@
 #include "dialog/SplitDialog.h"
 #include "dialog/TrxDialog.h"
 #include "dialog/AttachmentDialog.h"
-#include "dialog/AssetDialog.h"
 #include "dialog/SchedDialog.h"
 #include "dialog/TrxFilterDialog.h"
 #include "dialog/TrxShareDialog.h"
@@ -174,7 +173,7 @@ JournalPanel::JournalPanel(
 {
     if (isAccount()) {
         m_account_id = m_account_group_id;
-        m_account_n = AccountModel::instance().get_id_data_n(m_account_id);
+        m_account_n = AccountModel::instance().get_idN_data_n(m_account_id);
         m_currency_n = AccountModel::instance().get_data_currency_p(*m_account_n);
     }
     else if (isGroup()) {
@@ -468,7 +467,7 @@ void JournalPanel::loadAccount(int64 account_id)
     m_account_group_id = account_id;
     m_account_id = account_id;
     m_account_id_m = {};
-    m_account_n = AccountModel::instance().get_id_data_n(m_account_id);
+    m_account_n = AccountModel::instance().get_idN_data_n(m_account_id);
     m_currency_n = AccountModel::instance().get_data_currency_p(*m_account_n);
     m_use_account_specific_filter = PrefModel::instance().getUsePerAccountFilter();
 
@@ -717,7 +716,9 @@ void JournalPanel::filterList()
     if (m_scheduled_enable && m_scheduled_selected) {
         sched_a = m_account_n
             ? AccountModel::instance().find_id_sched_a(m_account_n->m_id)
-            : SchedModel::instance().find_all();
+            : SchedModel::instance().find_data_a(
+                TableClause::ORDERBY(SchedCol::s_primary_name)
+            );
         schedId_qpA_m = SchedSplitModel::instance().find_all_mSchedId();
         schedId_glA_m = TagLinkModel::instance().find_refType_mRefId(
             SchedModel::s_ref_type
@@ -1151,14 +1152,14 @@ void JournalPanel::updateExtraTransactionData(bool single, int repeat_id, bool f
 
         wxString notesStr = journal_dx.m_notes;
         if (journal_dx.m_repeat_id < 0) {
-            auto tp_a = TrxSplitModel::instance().find(
-                TrxSplitCol::TRANSID(journal_dx.m_id)
-            );
-            for (const auto& tp_d : tp_a)
+            for (const auto& tp_d : TrxSplitModel::instance().find_data_a(
+                TrxSplitCol::WHERE_TRANSID(OP_EQ, journal_dx.m_id)
+            )) {
                 if (!tp_d.m_notes.IsEmpty()) {
                     notesStr += notesStr.empty() ? "" : "\n";
                     notesStr += tp_d.m_notes;
                 }
+            }
             if (journal_dx.has_attachment()) {
                 for (const auto& att_d : AttachmentModel::instance().find_ref_data_a(
                     TrxModel::s_ref_type, journal_dx.m_id)
@@ -1169,14 +1170,14 @@ void JournalPanel::updateExtraTransactionData(bool single, int repeat_id, bool f
             }
         }
         else {
-            auto qp_a = SchedSplitModel::instance().find(
-                SchedSplitCol::TRANSID(journal_dx.m_sched_id)
-            );
-            for (const auto& qp_d : qp_a)
+            for (const auto& qp_d : SchedSplitModel::instance().find_data_a(
+                SchedSplitCol::WHERE_TRANSID(OP_EQ, journal_dx.m_sched_id)
+            )) {
                 if (!qp_d.m_notes.IsEmpty()) {
                     notesStr += notesStr.empty() ? "" : "\n";
                     notesStr += qp_d.m_notes;
                 }
+            }
             if (journal_dx.has_attachment()) {
                 for (const auto& att_d : AttachmentModel::instance().find_ref_data_a(
                     SchedModel::s_ref_type, journal_dx.m_sched_id)

@@ -18,10 +18,11 @@
 
 #pragma once
 
+// AttachmentData represents a record in table ATTACHMENT_V1.
+
 #include "_DataEnum.h"
 #include "table/AttachmentTable.h"
 
-// User-friendly representation of a record in table ATTACHMENT_V1.
 struct AttachmentData
 {
     int64    m_id;

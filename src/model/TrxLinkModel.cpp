@@ -57,12 +57,19 @@ TrxLinkModel& TrxLinkModel::instance()
 
 // -- methods
 
-// Remove all records associated with the Translink list
-void TrxLinkModel::purge_ref(RefTypeN ref_type, int64 ref_id)
+bool TrxLinkModel::purge_trxId_all(const int64 trx_id)
 {
-    for (const auto& tl_d : find_ref_data_a(ref_type, ref_id)) {
-        TrxModel::instance().purge_id(tl_d.m_trx_id);
+    bool ok = true;
+    db_savepoint();
+
+    for (int64 tl_id : find_id_a(
+        TrxLinkCol::WHERE_CHECKINGACCOUNTID(OP_EQ, trx_id)
+    )) {
+        ok = ok && purge_id(tl_id);
     }
+
+    db_release_savepoint();
+    return ok;
 }
 
 // Return the link record for the checking account
@@ -70,8 +77,13 @@ void TrxLinkModel::purge_ref(RefTypeN ref_type, int64 ref_id)
 //     select * from TRANSLINK_V1 where CHECKINGACCOUNTID = checking_id;
 const TrxLinkData* TrxLinkModel::get_trx_data_n(int64 trx_id)
 {
-    DataA tl_a = find(TrxLinkCol::CHECKINGACCOUNTID(trx_id));
-    return !tl_a.empty() ? get_id_data_n(tl_a[0].m_id) : nullptr;
+    for (int64 tl_id : find_id_a(
+        TrxLinkCol::WHERE_CHECKINGACCOUNTID(OP_EQ, trx_id)
+    )) {
+        return get_idN_data_n(tl_id);
+    }
+
+    return nullptr;
 }
 
 // Return a list of translink records for the associated foreign table type.
@@ -80,9 +92,9 @@ const TrxLinkData* TrxLinkModel::get_trx_data_n(int64 trx_id)
 //    select * from TRANSLINK_V1 where LINKTYPE = "Stock" AND LINKRECORDID = ref_id;
 TrxLinkModel::DataA TrxLinkModel::find_ref_data_a(RefTypeN ref_type, int64 ref_id)
 {
-    return find(
-        TrxLinkCol::LINKTYPE(ref_type.key_n()),
-        TrxLinkCol::LINKRECORDID(ref_id)
+    return find_data_a(
+        TrxLinkCol::WHERE_LINKTYPE(OP_EQ, ref_type.key_n()),
+        TrxLinkCol::WHERE_LINKRECORDID(OP_EQ, ref_id)
     );
 }
 
@@ -93,8 +105,8 @@ TrxLinkModel::DataA TrxLinkModel::find_ref_data_a(RefTypeN ref_type, int64 ref_i
 TrxLinkModel::DataA TrxLinkModel::find_symbol_data_a(const wxString stock_symbol)
 {
     DataA symbol_tl_a;
-    for (auto& stock_d : StockModel::instance().find(
-        StockCol::SYMBOL(stock_symbol)
+    for (auto& stock_d : StockModel::instance().find_data_a(
+        StockCol::WHERE_SYMBOL(OP_EQ, stock_symbol)
     )) {
         DataA stock_tl_a = find_ref_data_a(StockModel::s_ref_type, stock_d.m_id);
         symbol_tl_a.insert(symbol_tl_a.end(), stock_tl_a.begin(), stock_tl_a.end());
@@ -114,7 +126,7 @@ void TrxLinkModel::update_asset_value(AssetData* asset_n)
     );
     double new_value = 0;
     for (const auto& tl_d : tl_a) {
-        const TrxData* trx_n = TrxModel::instance().get_id_data_n(tl_d.m_trx_id);
+        const TrxData* trx_n = TrxModel::instance().get_idN_data_n(tl_d.m_trx_id);
         if (!trx_n || !trx_n->is_valid())
             continue;
 
@@ -154,11 +166,11 @@ void TrxLinkModel::save_record(
 
     // set the checking entry to recognise it as a foreign transaction
     // set the checking type as AS_INCOME_EXPENSE = 32701 or AS_TRANSFER
-    TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(trx_id);
+    TrxData* trx_n = TrxModel::instance().unsafe_get_idN_data_n(trx_id);
     // FIXME
     // trx_n->m_to_account_id_n = checking_type;
     TrxModel::instance().unsafe_save_trx_n(trx_n);
-    //TrxLinkModel::instance().get_id_data_n(new_tl_d.m_id);
+    //TrxLinkModel::instance().get_idN_data_n(new_tl_d.m_id);
 }
 
 // Create the translink record as Asset

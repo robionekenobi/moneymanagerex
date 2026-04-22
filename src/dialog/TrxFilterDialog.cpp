@@ -136,9 +136,8 @@ void TrxFilterDialog::mmDoInitVariables()
 {
     m_use_date_filter = isReportMode_; //|| PrefModel::instance().getUsePerAccountFilter();
 
-    m_custom_fields = new mmCustomDataTransaction(this,
-        TrxModel::s_ref_type,
-        0,
+    m_custom_fields = new FieldValueDialog(this,
+        TrxModel::s_ref_type, 0,
         ID_CUSTOMFIELDS + (isReportMode_ ? 100 : 0)
     );
 
@@ -165,8 +164,8 @@ void TrxFilterDialog::mmDoInitVariables()
     m_all_date_ranges.push_back(wxSharedPtr<mmDateRange>(new mmSinseCurrentFinancialYear()));
 
     m_account_name_a.clear();
-    for (const auto& account_d : AccountModel::instance().find(
-        AccountCol::ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_INVESTMENT))
+    for (const auto& account_d : AccountModel::instance().find_data_a(
+        AccountCol::WHERE_ACCOUNTTYPE(OP_NE, mmNavigatorList::instance().type_name(mmNavigatorItem::TYPE_ID_INVESTMENT))
     )) {
         m_account_name_a.push_back(account_d.m_name);
     }
@@ -224,11 +223,11 @@ void TrxFilterDialog::mmDoDataToControls(const wxString& json)
                 acc_name = wxString::FromUTF8(j_account[i].GetString());
                 wxLogDebug("%s", acc_name);
                 w_account_cb->SetValue(true);
-                for (const auto& a : AccountModel::instance().find(
-                    AccountCol::ACCOUNTNAME(acc_name)
+                for (const auto& account_d : AccountModel::instance().find_data_a(
+                    AccountCol::WHERE_ACCOUNTNAME(OP_EQ, acc_name)
                 )) {
-                    m_selected_accounts_id.push_back(a.m_id);
-                    baloon += (baloon.empty() ? "" : "\n") + a.m_name;
+                    m_selected_accounts_id.push_back(account_d.m_id);
+                    baloon += (baloon.empty() ? "" : "\n") + account_d.m_name;
                 }
             }
             if (m_selected_accounts_id.size() == 1)
@@ -386,7 +385,7 @@ void TrxFilterDialog::mmDoDataToControls(const wxString& json)
         for (rapidjson::SizeType i = 0; i < j_tags.Size(); i++) {
             if (j_tags[i].IsInt64()) {
                 // Retrieve TAGNAME from TAGID
-                const TagData* tag_n = TagModel::instance().get_id_data_n(int64(j_tags[i].GetInt64()));
+                const TagData* tag_n = TagModel::instance().get_idN_data_n(int64(j_tags[i].GetInt64()));
                 if (tag_n) {
                     s_tag.Append(tag_n->m_name + " ");
                 }
@@ -433,8 +432,8 @@ void TrxFilterDialog::mmDoDataToControls(const wxString& json)
     // Custom Fields
     bool is_custom_found = false;
     int field_index = 0;
-    for (const auto& field_d : FieldModel::instance().find(
-        FieldCol::REFTYPE(TrxModel::s_ref_type.key_n())
+    for (const auto& field_d : FieldModel::instance().find_data_a(
+        FieldCol::WHERE_REFTYPE(OP_EQ, TrxModel::s_ref_type.key_n())
     )) {
         const auto entry = wxString::Format("CUSTOM%lld", field_d.m_id);
         if (j_doc.HasMember(entry.c_str())) {
@@ -530,7 +529,7 @@ void TrxFilterDialog::mmDoInitSettingNameChoice(wxString sel) const
         }
     }
     else {
-        const AccountData* account_n = AccountModel::instance().get_id_data_n(accountID_);
+        const AccountData* account_n = AccountModel::instance().get_idN_data_n(accountID_);
         wxString account_name = account_n ? account_n->m_name : "";
         w_setting_choice->Append(account_name, new wxStringClientData(account_name));
         sel = "";
@@ -1011,25 +1010,22 @@ bool TrxFilterDialog::mmIsValuesCorrect() const
         wxRegEx pattern(value);
         if (pattern.IsValid()) {
             pattern.Compile("^(" + value + ")$", wxRE_ICASE | wxRE_ADVANCED);
-            PayeeModel::DataA payee_a = PayeeModel::instance().find_all();
-            for (const auto& payee_d : payee_a) {
+            for (const auto& payee_d : PayeeModel::instance().find_data_a()) {
                 if (pattern.Matches(payee_d.m_name)) {
                     ok = true;
                     break;
                 }
             }
-            if (ok == false) {
-                if (wxMessageBox(
-                    wxString::Format(
-                        _t("This name does not currently match any payees.\n"
-                            "Do you want to continue to use it?\n%s"
-                        ), value
-                    ),
-                    _t("Invalid value"),
-                    wxYES_NO | wxICON_INFORMATION
-                ) == wxNO) {
-                    return false;
-                }
+            if (ok == false && wxMessageBox(
+                wxString::Format(
+                    _t("This name does not currently match any payees.\n"
+                        "Do you want to continue to use it?\n%s"
+                    ), value
+                ),
+                _t("Invalid value"),
+                wxYES_NO | wxICON_INFORMATION
+            ) == wxNO) {
+                return false;
             }
         }
         else
@@ -1372,7 +1368,7 @@ void TrxFilterDialog::OnButtonClearClick(wxCommandEvent& /*event*/)
 
 bool TrxFilterDialog::mmIsPayeeMatches(int64 payeeID)
 {
-    const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(payeeID);
+    const PayeeData* payee_n = PayeeModel::instance().get_idN_data_n(payeeID);
     if (payee_n) {
         const wxString value = cbPayee_->mmGetPattern();
         if (!value.empty()) {
@@ -1419,12 +1415,12 @@ bool TrxFilterDialog::mmIsTagMatches(RefTypeN ref_type, int64 ref_id, bool merge
     if (ref_type == TrxSplitModel::s_ref_type)
         tag_name_id_m = TagLinkModel::instance().find_ref_mTagName(
             TrxModel::s_ref_type,
-            TrxSplitModel::instance().get_id_data_n(ref_id)->m_trx_id
+            TrxSplitModel::instance().get_idN_data_n(ref_id)->m_trx_id
         );
     else if (ref_type == SchedSplitModel::s_ref_type)
         tag_name_id_m = TagLinkModel::instance().find_ref_mTagName(
             SchedModel::s_ref_type,
-            SchedSplitModel::instance().get_id_data_n(ref_id)->m_sched_id
+            SchedSplitModel::instance().get_idN_data_n(ref_id)->m_sched_id
         );
 
     if (mergeSplitTags) {
@@ -1433,24 +1429,24 @@ bool TrxFilterDialog::mmIsTagMatches(RefTypeN ref_type, int64 ref_id, bool merge
         // to validate the split which gives it the wrong ref_type & ref_id
         if (ref_type == TrxModel::s_ref_type) {
             // Loop through checking splits and merge tags for each SPLITTRANSID
-            for (const auto& tp_d : TrxSplitModel::instance().find(
-                TrxSplitCol::TRANSID(ref_id)
+            for (int64 tp_id : TrxSplitModel::instance().find_id_a(
+                TrxSplitCol::WHERE_TRANSID(OP_EQ, ref_id)
             )) {
                 std::map<wxString, int64> splitTagnames =
                     TagLinkModel::instance().find_ref_mTagName(
-                        TrxSplitModel::s_ref_type, tp_d.m_id
+                        TrxSplitModel::s_ref_type, tp_id
                     );
                 tag_name_id_m.insert(splitTagnames.begin(), splitTagnames.end());
             }
         }
         else if (ref_type == SchedModel::s_ref_type) {
             // Loop through scheduled txn splits and merge tags for each SPLITTRANSID
-            for (const auto& qp_d : SchedSplitModel::instance().find(
-                SchedSplitCol::TRANSID(ref_id)
+            for (int64 qp_id : SchedSplitModel::instance().find_id_a(
+                SchedSplitCol::WHERE_TRANSID(OP_EQ, ref_id)
             )) {
                 std::map<wxString, int64> splitTagnames =
                     TagLinkModel::instance().find_ref_mTagName(
-                        SchedSplitModel::s_ref_type, qp_d.m_id
+                        SchedSplitModel::s_ref_type, qp_id
                     );
                 tag_name_id_m.insert(splitTagnames.begin(), splitTagnames.end());
             }
@@ -1671,7 +1667,7 @@ const wxString TrxFilterDialog::mmGetDescriptionToolTip() const
                 {
                     if (wxGetTranslation("Tags").IsSameAs(wxString::FromUTF8(itr->name.GetString())))
                     {
-                        value += (value.empty() ? "" : " ") + TagModel::instance().get_id_data_n(int64(valArray[i].GetInt64()))->m_name;
+                        value += (value.empty() ? "" : " ") + TagModel::instance().get_idN_data_n(int64(valArray[i].GetInt64()))->m_name;
                         // don't add a newline between tag operators
                         if (valArray.Size() > 1 && i < valArray.Size() - 2 && valArray[i + 1].GetType() == kStringType)
                             continue;
@@ -1775,7 +1771,7 @@ void TrxFilterDialog::mmGetDescription(mmHTMLBuilder& hb)
                     // wxLogDebug("%s", wxString::FromUTF8(itr->name.GetString()));
                     if (wxGetTranslation("Tags").IsSameAs(name))
                     {
-                        temp += (temp.empty() ? "" : (appendOperator ? " & " : " ")) + TagModel::instance().get_id_data_n(int64(a.GetInt64()))->m_name;
+                        temp += (temp.empty() ? "" : (appendOperator ? " & " : " ")) + TagModel::instance().get_idN_data_n(int64(a.GetInt64()))->m_name;
                         appendOperator = true;
                     }
                     else if (wxGetTranslation("Hide Columns").IsSameAs(name) &&
@@ -1844,7 +1840,7 @@ const wxString TrxFilterDialog::mmGetJsonSettings(bool i18n) const
         json_writer.Key((i18n ? _t("Account") : "ACCOUNT").utf8_str());
         json_writer.StartArray();
         for (const auto& acc : m_selected_accounts_id) {
-            const AccountData* a = AccountModel::instance().get_id_data_n(acc);
+            const AccountData* a = AccountModel::instance().get_idN_data_n(acc);
             json_writer.String(a->m_name.utf8_str());
         }
         json_writer.EndArray();
@@ -1987,7 +1983,7 @@ const wxString TrxFilterDialog::mmGetJsonSettings(bool i18n) const
     if (cf.size() > 0) {
         for (const auto& i : cf) {
             if (!i.second.empty()) {
-                const auto field_n = FieldModel::instance().get_id_data_n(i.first);
+                const auto field_n = FieldModel::instance().get_idN_data_n(i.first);
                 json_writer.Key(wxString::Format("CUSTOM%lld", field_n->m_id).utf8_str());
                 json_writer.String(i.second.utf8_str());
             }
@@ -2049,7 +2045,7 @@ void TrxFilterDialog::OnCategoryChange(wxEvent& event)
                 m_selected_categories_id.push_back(cat_fullname_id.second);
                 if (!mmIsCategorySubCatChecked())
                     continue;
-                const CategoryData* cat_n = CategoryModel::instance().get_id_data_n(cat_fullname_id.second);
+                const CategoryData* cat_n = CategoryModel::instance().get_idN_data_n(cat_fullname_id.second);
                 for (const auto& sub_d : CategoryModel::instance().find_data_subtree_a(*cat_n))
                     m_selected_categories_id.push_back(sub_d.m_id);
             }
@@ -2091,27 +2087,27 @@ bool TrxFilterDialog::mmIsAmountRangeMaxChecked() const
 
 bool TrxFilterDialog::mmIsCustomFieldChecked() const
 {
-    const auto cf = m_custom_fields->GetActiveCustomFields();
-    return (cf.size() > 0);
+    const auto cf_a = m_custom_fields->GetActiveCustomFields();
+    return (cf_a.size() > 0);
 }
 
 bool TrxFilterDialog::mmIsCustomFieldMatches(int64 trx_id) const
 {
-    const auto cf = m_custom_fields->GetActiveCustomFields();
+    const auto cf_a = m_custom_fields->GetActiveCustomFields();
     int matched = 0;
-    for (const auto& i : cf) {
-        for (const auto& fv_d : FieldValueModel::instance().find(
-            FieldValueModel::REFTYPEID(TrxModel::s_ref_type, trx_id)
-        )) {
-            if (i.first == fv_d.m_field_id) {
-                if (fv_d.m_content.Matches(i.second))
-                    matched += 1;
-                else
-                    return false;
-            }
+    for (const auto& fv_d : FieldValueModel::instance().find_data_a(
+        FieldValueModel::WHERE_REFTYPEID(TrxModel::s_ref_type, trx_id)
+    )) {
+        for (const auto& cf : cf_a) {
+            if (cf.first != fv_d.m_field_id)
+                continue;
+            if (fv_d.m_content.Matches(cf.second))
+                matched += 1;
+            else
+                return false;
         }
     }
-    return matched == static_cast<int>(cf.size());
+    return (matched == static_cast<int>(cf_a.size()));
 }
 
 int TrxFilterDialog::mmGetGroupBy() const
@@ -2284,7 +2280,7 @@ void TrxFilterDialog::OnAccountsButton(wxCommandEvent& WXUNUSED(event))
     wxArrayInt selected_items;
 
     for (const auto& account_id : m_selected_accounts_id) {
-        const AccountData* account_n = AccountModel::instance().get_id_data_n(account_id);
+        const AccountData* account_n = AccountModel::instance().get_idN_data_n(account_id);
         if (account_n && m_account_name_a.Index(account_n->m_name) != wxNOT_FOUND)
             selected_items.Add(m_account_name_a.Index(account_n->m_name));
     }
@@ -2311,7 +2307,7 @@ void TrxFilterDialog::OnAccountsButton(wxCommandEvent& WXUNUSED(event))
         bSelectedAccounts_->Disable();
     }
     else if (m_selected_accounts_id.size() == 1) {
-        const AccountData* account_n = AccountModel::instance().get_id_data_n(*m_selected_accounts_id.begin());
+        const AccountData* account_n = AccountModel::instance().get_idN_data_n(*m_selected_accounts_id.begin());
         if (account_n)
             bSelectedAccounts_->SetLabelText(account_n->m_name);
     }
@@ -2385,7 +2381,7 @@ void TrxFilterDialog::OnComboKey(wxKeyEvent& event)
                 if (dlg.getRefreshRequested())
                     cbPayee_->mmDoReInitialize();
                 int64 payee_id = dlg.getPayeeId();
-                const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(payee_id);
+                const PayeeData* payee_n = PayeeModel::instance().get_idN_data_n(payee_id);
                 if (payee_n) {
                     cbPayee_->ChangeValue(payee_n->m_name);
                     cbPayee_->SelectAll();

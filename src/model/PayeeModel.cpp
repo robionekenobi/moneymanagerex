@@ -20,6 +20,7 @@
  ********************************************************/
 
 #include "PayeeModel.h"
+
 #include "AttachmentModel.h"
 #include "TrxModel.h"
 #include "SchedModel.h"
@@ -51,41 +52,39 @@ PayeeModel& PayeeModel::instance()
 
 // -- override
 
-int PayeeModel::find_id_aux_c(int64 payee_id)
+bool PayeeModel::find_id_isUsed(int64 payee_id, bool ignore_deleted)
 {
-    return AttachmentModel::instance().find_ref_c(s_ref_type, payee_id);
-}
+    bool is_used = false;
 
-int PayeeModel::find_id_dep_c(int64 payee_id)
-{
-    // FIX (2026-03-01): Do not exclude deleted transactions. Deleted transactions
-    // are shown in a panel and they can be restored; they must have a valid payee id.
-    int dep_c = TrxModel::instance().find(
-        TrxCol::PAYEEID(payee_id)
-    ).size();
+    is_used = is_used || TrxModel::instance().find_count(
+        TrxCol::WHERE_PAYEEID(OP_EQ, payee_id),
+        TrxModel::WHERE_IGNORE_DELETED(ignore_deleted)
+    ) > 0;
 
-    dep_c += SchedModel::instance().find(
-        SchedCol::PAYEEID(payee_id)
-    ).size();
+    is_used = is_used || SchedModel::instance().find_count(
+        SchedCol::WHERE_PAYEEID(OP_EQ, payee_id)
+    ) > 0;
 
-    return dep_c;
+    return is_used;
 }
 
 bool PayeeModel::purge_id(int64 payee_id)
 {
-    if (PayeeModel::find_id_dep_c(payee_id) > 0)
-        return false;
+    bool ok = true;
+    db_savepoint();
 
-    // FIXME: remove AttachmentData owned by payee_id
+    ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, payee_id);
+    ok = ok && unsafe_remove_id(payee_id);
 
-    return unsafe_remove_id(payee_id);
+    db_release_savepoint();
+    return ok;
 }
 
 // -- methods
 
 const wxString PayeeModel::get_id_name(int64 payee_id)
 {
-    const Data* payee_n = get_id_data_n(payee_id);
+    const Data* payee_n = get_idN_data_n(payee_id);
     if (payee_n)
         return payee_n->m_name;
     else
@@ -94,20 +93,28 @@ const wxString PayeeModel::get_id_name(int64 payee_id)
 
 const PayeeData* PayeeModel::get_name_data_n(const wxString& name)
 {
-    const Data* payee_n = search_cache_n(PayeeCol::PAYEENAME(name));
+    const Data* payee_n = search_cache_n(
+        PayeeCol::PAYEENAME(name)
+    );
     if (payee_n)
         return payee_n;
 
-    DataA payee_a = find(PayeeCol::PAYEENAME(name));
-    if (!payee_a.empty())
-        payee_n = get_id_data_n(payee_a[0].m_id);
+    for (int64 payee_id : find_id_a(
+        PayeeCol::WHERE_PAYEENAME(OP_EQ, name)
+    )) {
+        payee_n = get_idN_data_n(payee_id);
+        break;
+    }
+
     return payee_n;
 }
 
 const wxArrayString PayeeModel::find_all_name_a()
 {
     wxArrayString name_a;
-    for (const auto& payee_d : find_all(Col::COL_ID_PAYEENAME)) {
+    for (const auto& payee_d : find_data_a(
+        TableClause::ORDERBY(Col::NAME_PAYEENAME)
+    )) {
         name_a.Add(payee_d.m_name);
     }
     return name_a;
@@ -116,7 +123,7 @@ const wxArrayString PayeeModel::find_all_name_a()
 const std::map<wxString, int64> PayeeModel::find_all_name_id_m(bool only_active)
 {
     std::map<wxString, int64> name_id_m;
-    for (const auto& payee_d : find_all()) {
+    for (const auto& payee_d : find_data_a()) {
         if (only_active && !payee_d.m_active)
             continue;
         name_id_m[payee_d.m_name] = payee_d.m_id;
@@ -127,10 +134,10 @@ const std::map<wxString, int64> PayeeModel::find_all_name_id_m(bool only_active)
 const std::set<int64> PayeeModel::find_used_id_m()
 {
     std::set<int64> used_id_m;
-    for (const auto& trx_d : TrxModel::instance().find_all()) {
+    for (const auto& trx_d : TrxModel::instance().find_data_a()) {
         used_id_m.insert(trx_d.m_payee_id_n);
     }
-    for (const auto& sched_d : SchedModel::instance().find_all()) {
+    for (const auto& sched_d : SchedModel::instance().find_data_a()) {
         used_id_m.insert(sched_d.m_payee_id_n);
     }
     return used_id_m;
@@ -142,7 +149,9 @@ const PayeeModel::DataA PayeeModel::find_pattern_data_a(
 ) {
     const wxString pattern_lower = pattern.Lower().Append("*");
     DataA payee_a;
-    for (const Data& payee_d : find_all(PayeeCol::COL_ID_PAYEENAME)) {
+    for (const Data& payee_d : find_data_a(
+        TableClause::ORDERBY(Col::NAME_PAYEENAME)
+    )) {
         if (only_active && !payee_d.m_active)
             continue;
         if (payee_d.m_name.Lower().Matches(pattern_lower)) {

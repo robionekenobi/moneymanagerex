@@ -18,6 +18,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "TrxModel.h"
+
 #include <queue>
 
 #include "util/_util.h"
@@ -30,9 +32,6 @@
 #include "TagModel.h"
 #include "TrxLinkModel.h"
 #include "TrxShareModel.h"
-#include "TrxModel.h"
-
-#include "dialog/AttachmentDialog.h"
 
 // -- static
 
@@ -51,19 +50,19 @@ TableClauseV<wxString> TrxModel::WHERE_DATE(OP op, const mmDate& date)
     return TrxCol::WHERE_TRANSDATE(op, bound);
 }
 
-TableClauseV<wxString> TrxModel::WHERE_TYPE(OP op, TrxType trx_type)
+TableClauseV<wxString> TrxModel::WHERE_TYPE(OP op, TrxType type)
 {
-    return TrxCol::WHERE_TRANSCODE(op, trx_type.key());
+    return TrxCol::WHERE_TRANSCODE(op, type.key());
 }
 
-TableClauseV<wxString> TrxModel::WHERE_STATUS(OP op, TrxStatus trx_status)
+TableClauseV<wxString> TrxModel::WHERE_STATUS(OP op, TrxStatus status)
 {
-    return TrxCol::WHERE_STATUS(op, trx_status.key());
+    return TrxCol::WHERE_STATUS(op, status.key());
 }
 
 TableClauseV<wxString> TrxModel::WHERE_IS_VOID(bool value)
 {
-    return TrxCol::WHERE_STATUS(value ? OP_EQ : OP_NE, TrxStatus(TrxStatus::e_void).key());
+    return TrxModel::WHERE_STATUS(value ? OP_EQ : OP_NE, TrxStatus(TrxStatus::e_void));
 }
 
 TableClauseV<wxString> TrxModel::WHERE_IS_DELETED(bool value)
@@ -87,37 +86,11 @@ TableClauseD TrxModel::WHERE_IS_VALID(bool value)
         );
 }
 
-TrxCol::TRANSDATE TrxModel::DATE(OP op, const mmDate& date)
+TableClauseD TrxModel::WHERE_IGNORE_DELETED(bool value)
 {
-    // OP_EQ and OP_NE should not be used for date comparisons.
-    // if needed, create an equivalent AND/OR combination of two other operators.
-    wxString bound =
-        (op == OP_GE || op == OP_LT)
-            ? date.isoStart()
-        : (op == OP_LE || op == OP_GT)
-            ? date.isoEnd()
-            : date.isoDate();
-    return TrxCol::TRANSDATE(op, bound);
-}
-
-TrxCol::TRANSCODE TrxModel::TYPE(OP op, TrxType trx_type)
-{
-    return TrxCol::TRANSCODE(op, trx_type.key());
-}
-
-TrxCol::STATUS TrxModel::STATUS(OP op, TrxStatus trx_status)
-{
-    return TrxCol::STATUS(op, trx_status.key());
-}
-
-TrxCol::STATUS TrxModel::IS_VOID(bool value)
-{
-    return TrxCol::STATUS(value ? OP_EQ : OP_NE, TrxStatus(TrxStatus::e_void).key());
-}
-
-TrxCol::DELETEDTIME TrxModel::IS_DELETED(bool value)
-{
-    return TrxCol::DELETEDTIME(value ? OP_NEN : OP_EQN, "");
+    return value
+        ? TableClause::eval(WHERE_IS_DELETED(false))
+        : TableClause::EMPTY();
 }
 
 void TrxModel::copy_from_trx(Data *this_n, const Data& other_d)
@@ -131,8 +104,8 @@ void TrxModel::copy_from_trx(Data *this_n, const Data& other_d)
     this_n->m_category_id_n   = other_d.m_category_id_n;
     this_n->m_amount          = other_d.m_amount;
     this_n->m_to_amount       = other_d.m_to_amount;
-    this_n->m_notes           = other_d.m_notes;
     this_n->m_number          = other_d.m_number;
+    this_n->m_notes           = other_d.m_notes;
     this_n->m_followup_id     = other_d.m_followup_id;
     this_n->m_color           = other_d.m_color;
 }
@@ -176,58 +149,64 @@ TrxModel& TrxModel::instance()
 
 bool TrxModel::purge_id(int64 trx_id)
 {
-    // TODO: remove all split at once
-    // TrxSplitModel::instance().purge_id(TrxSplitModel::instance().find(TrxSplitCol::TRANSID(trx_id)));
-    for (const auto& tp_d : TrxSplitModel::instance().find(
-        TrxSplitCol::TRANSID(trx_id)
-    )) {
-        TrxSplitModel::instance().purge_id(tp_d.m_id);
-    }
+    bool ok = true;
+    db_savepoint();
 
-    if (is_foreign(*instance().get_id_data_n(trx_id))) {
-        const TrxLinkData* tl_n = TrxLinkModel::instance().get_trx_data_n(trx_id);
-        if (tl_n) {
-            TrxShareModel::instance().purge_trxId(tl_n->m_trx_id);
-            TrxLinkModel::instance().purge_id(tl_n->m_id);
-            if (tl_n->m_ref_type == AssetModel::s_ref_type) {
-                AssetData* asset_n = AssetModel::instance().unsafe_get_id_data_n(tl_n->m_ref_id);
-                TrxLinkModel::instance().update_asset_value(asset_n);
-            }
-            else if (tl_n->m_ref_type == StockModel::s_ref_type) {
-                StockData* stock_n = StockModel::instance().unsafe_get_id_data_n(tl_n->m_ref_id);
-                StockModel::instance().update_data_position(stock_n);
-            }
+    ok = ok && TrxSplitModel::instance().purge_trxId_all(trx_id);
+    ok = ok && TrxShareModel::instance().purge_trxId_all(trx_id);
+
+    for (const TrxLinkData& tl_d : TrxLinkModel::instance().find_data_a(
+        TrxLinkCol::WHERE_CHECKINGACCOUNTID(OP_EQ, trx_id)
+    )) {
+        TrxLinkModel::instance().purge_id(tl_d.m_id);
+        if (tl_d.m_ref_type == AssetModel::s_ref_type) {
+            AssetData* asset_n = AssetModel::instance().unsafe_get_idN_data_n(
+                tl_d.m_ref_id
+            );
+            TrxLinkModel::instance().update_asset_value(asset_n);
+        }
+        else if (tl_d.m_ref_type == StockModel::s_ref_type) {
+            StockData* stock_n = StockModel::instance().unsafe_get_idN_data_n(
+                tl_d.m_ref_id
+            );
+            StockModel::instance().update_data_position(stock_n);
         }
     }
 
-    mmAttachmentManage::DeleteAllAttachments(TrxModel::s_ref_type, trx_id);
-    FieldValueModel::instance().purge_ref(s_ref_type, trx_id);
-    TagLinkModel::instance().purge_ref(s_ref_type, trx_id);
-    return unsafe_remove_id(trx_id);
+    ok = ok && TagLinkModel::instance().purge_ref_all(s_ref_type, trx_id);
+    ok = ok && FieldValueModel::instance().purge_ref_all(s_ref_type, trx_id);
+    ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, trx_id);
+    ok = ok && unsafe_remove_id(trx_id);
+
+    db_release_savepoint();
+    return ok;
 }
 
 // -- methods
 
 void TrxModel::save_timestamp(int64 trx_id)
 {
-    Data* trx_n = instance().unsafe_get_id_data_n(trx_id);
-    if (trx_n && trx_n->m_id == trx_id) {
+    Data* trx_n = unsafe_get_idN_data_n(trx_id);
+    if (trx_n) {
         trx_n->m_updated_utc_n = mmDateTime::now().fromLocalToUtc();
         unsafe_update_data_n(trx_n);
     }
 }
 
-void TrxModel::update_timestamp(Data& trx_d)
+void TrxModel::update_timestamp(Data& new_trx_d)
 {
+    bool skip = false;
     // get record from database bypassing the cache
-    TrxModel::DataA trx_a = TrxModel::instance().find(
-        TrxCol::TRANSID(trx_d.m_id)
-    );
-    if (trx_a.size() == 0 || (!trx_a[0].equals(&trx_d) &&
-        !trx_a[0].is_deleted() && !trx_d.is_deleted()
+    for (const TrxData& old_trx_d : TrxModel::instance().find_data_a(
+        TrxCol::WHERE_TRANSID(OP_EQ, new_trx_d.m_id)
     )) {
-        trx_d.m_updated_utc_n = mmDateTime::now().fromLocalToUtc();
+        skip = (
+            old_trx_d.equals(&new_trx_d) ||
+            old_trx_d.is_deleted() || new_trx_d.is_deleted()
+        );
     }
+    if (!skip)
+        new_trx_d.m_updated_utc_n = mmDateTime::now().fromLocalToUtc();
 }
 
 const TrxData* TrxModel::unsafe_save_trx_n(Data* trx_n)
@@ -260,30 +239,39 @@ bool TrxModel::save_trx_a(DataA& trx_a)
     return ok;
 }
 
+// This function is called by find_id_isUsed(), in the slow branch
+// (when ignore_deleted is true), to check if a trx_id is not deleted.
+std::size_t TrxModel::find_id_count(int64 trx_id, bool ignore_deleted)
+{
+    return TrxModel::instance().find_count(
+        TrxCol::WHERE_TRANSID(OP_EQ, trx_id),
+        TrxModel::WHERE_IGNORE_DELETED(ignore_deleted)
+    );
+}
+
 const TrxSplitModel::DataA TrxModel::find_id_tp_a(int64 trx_id)
 {
-    return TrxSplitModel::instance().find(
-        TrxSplitCol::TRANSID(trx_id)
+    return TrxSplitModel::instance().find_data_a(
+        TrxSplitCol::WHERE_TRANSID(OP_EQ, trx_id)
     );
 }
 
 const TagLinkModel::DataA TrxModel::find_id_gl_a(int64 trx_id)
 {
-    return TagLinkModel::instance().find(
-        TagLinkCol::REFTYPE(TrxModel::s_ref_type.key_n()),
-        TagLinkCol::REFID(trx_id)
+    return TagLinkModel::instance().find_data_a(
+        TagLinkCol::WHERE_REFTYPE(OP_EQ, TrxModel::s_ref_type.key_n()),
+        TagLinkCol::WHERE_REFID(OP_EQ, trx_id)
     );
 }
 
 const TrxModel::DataA TrxModel::find_all_aDateTimeId()
 {
-    DataA trx_a = TrxModel::instance().find_all();
-    // first sort by id, then stable sort by datetime or date only
-    std::sort(trx_a.begin(), trx_a.end());
+    // TODO: add ORDERBY (external sort may be faster)
+    DataA trx_a = TrxModel::instance().find_data_a();
     if (PrefModel::instance().getUseTransDateTime())
-        std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTime());
+        std::sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateTimeId());
     else
-        std::stable_sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDate());
+        std::sort(trx_a.begin(), trx_a.end(), TrxData::SorterByDateId());
     return trx_a;
 }
 
@@ -306,9 +294,11 @@ void TrxModel::getFrequentUsedNotes(std::vector<wxString>& frequentNotes, int64 
     frequentNotes.clear();
     size_t max = 20;
 
-    const auto trx_a = instance().find(
-        TrxCol::NOTES(OP_NEN, ""),
-        account_id > 0 ? TrxCol::ACCOUNTID(account_id) : TrxCol::ACCOUNTID(OP_NE, -1)
+    const auto trx_a = instance().find_data_a(
+        TrxCol::WHERE_NOTES(OP_NEN, ""),
+        account_id > 0
+            ? TrxCol::WHERE_ACCOUNTID(OP_EQ, account_id)
+            : TrxCol::WHERE_ACCOUNTID(OP_NE, -1)
     );
 
     // Count frequency
@@ -339,39 +329,47 @@ void TrxModel::getFrequentUsedNotes(std::vector<wxString>& frequentNotes, int64 
 
 void TrxModel::setEmptyData(Data& dst_trx_d, int64 account_id)
 {
-    dst_trx_d.m_id = -1;
-    dst_trx_d.m_payee_id_n = -1;
-    mmDateTime now_dateTime = mmDateTime::now();
-    mmDateTimeN max_dateTime = mmDateTimeN();
-    if (PrefModel::instance().getTransDateDefault() != PrefModel::NONE) {
-        for (const auto& trx_d : instance().find_or(
-            TrxCol::ACCOUNTID(account_id),
-            TrxCol::TOACCOUNTID(account_id)
+    bool useTime = PrefModel::instance().getUseTransDateTime();
+
+    mmDateTime dateTime = mmDateTime::now(useTime);
+    if (PrefModel::instance().getTransDateDefault() == PrefModel::LASTUSED) {
+        // TODO: use find_value(TableClause::MAX(TrxCol::NAME_TRANSDATE), ...)
+        for (const Data& trx_d : find_data_a(
+            TrxModel::WHERE_DATE(OP_LE, mmDate::today()),
+            TableClause::BEGIN_OR(),
+                TrxCol::WHERE_ACCOUNTID(OP_EQ, account_id),
+                TrxCol::WHERE_TOACCOUNTID(OP_EQ, account_id),
+            TableClause::END(),
+            TrxModel::WHERE_IS_DELETED(false),
+            TableClause::ORDERBY(TrxCol::NAME_TRANSDATE, true),
+            TableClause::LIMIT(1)
         )) {
-            if (trx_d.is_deleted() || trx_d.m_datetime > now_dateTime)
-                continue;
-            if (!max_dateTime.has_value() || max_dateTime.value() < trx_d.m_datetime) {
-                max_dateTime = trx_d.m_datetime;
-            }
+            dateTime = trx_d.m_datetime.withTime(useTime);
         }
     }
 
-    dst_trx_d.m_datetime      = max_dateTime.value_or(now_dateTime);
-    dst_trx_d.m_type          = TrxType(TrxType::e_withdrawal);
-    dst_trx_d.m_status        = TrxStatus(PrefModel::instance().getTransStatusReconciled());
-    dst_trx_d.m_account_id    = account_id;
-    dst_trx_d.m_category_id_n = -1;
-    dst_trx_d.m_amount        = 0;
-    dst_trx_d.m_to_amount     = 0;
-    dst_trx_d.m_number        = "";
-    dst_trx_d.m_followup_id   = -1;
-    dst_trx_d.m_color         = -1;
+    dst_trx_d.m_id              = -1;
+    dst_trx_d.m_datetime        = dateTime;
+    dst_trx_d.m_type            = TrxType();
+    dst_trx_d.m_status          = PrefModel::instance().getTrxStatus();
+    dst_trx_d.m_account_id      = account_id;
+    dst_trx_d.m_to_account_id_n = -1;
+    dst_trx_d.m_payee_id_n      = -1;
+    dst_trx_d.m_category_id_n   = -1;
+    dst_trx_d.m_amount          = 0.0;
+    dst_trx_d.m_to_amount       = 0.0;
+    dst_trx_d.m_number          = "";
+    dst_trx_d.m_notes           = "";
+    dst_trx_d.m_followup_id     = -1;
+    dst_trx_d.m_color           = -1;
 }
 
 bool TrxModel::is_locked(const Data& trx_d)
 {
     // FIXME: check if m_to_account_id_n is locked
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(trx_d.m_account_id);
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(
+        trx_d.m_account_id
+    );
     return account_n && account_n->is_locked_for(trx_d.m_date());
 }
 
@@ -403,11 +401,11 @@ TrxModel::DataExt::DataExt(
     m_account_w_id_n(-1), m_account_d_id_n(-1), m_amount_w(0), m_amount_d(0),
     SN(0), m_account_flow(0), m_account_balance(0)
 {
-    if (const auto it = trxId_tpA_m.find(this->id()); it != trxId_tpA_m.end())
-        m_tp_a = it->second;
+    if (const auto id_tpA = trxId_tpA_m.find(m_id); id_tpA != trxId_tpA_m.end())
+        m_tp_a = id_tpA->second;
 
-    if (const auto tag_it = trxId_glA_m.find(this->id()); tag_it != trxId_glA_m.end())
-        m_gl_a = tag_it->second;
+    if (const auto id_glA = trxId_glA_m.find(m_id); id_glA != trxId_glA_m.end())
+        m_gl_a = id_glA->second;
 
     fill_data();
 }
@@ -437,7 +435,7 @@ void TrxModel::DataExt::fill_data()
     if (!m_gl_a.empty()) {
         wxArrayString tag_name_a;
         for (const auto& gl_d : m_gl_a)
-            tag_name_a.Add(TagModel::instance().get_id_data_n(gl_d.m_tag_id)->m_name);
+            tag_name_a.Add(TagModel::instance().get_idN_data_n(gl_d.m_tag_id)->m_name);
         // Sort TAGNAMES
         tag_name_a.Sort(CaseInsensitiveCmp);
         for (const auto& tag_name : tag_name_a)
@@ -480,11 +478,10 @@ const wxString TrxModel::DataExt::get_currency_code(int64 account_id) const
         else
             account_id = this->m_to_account_id_n;
     }
-    const AccountData* account_n = AccountModel::instance().get_id_data_n(account_id);
+    const AccountData* account_n = AccountModel::instance().get_idN_data_n(account_id);
     int64 currency_id = account_n ? account_n->m_currency_id: -1;
-    const CurrencyData* curr = CurrencyModel::instance().get_id_data_n(currency_id);
-
-    return curr ? curr->m_symbol : "";
+    const CurrencyData* currency_n = CurrencyModel::instance().get_idN_data_n(currency_id);
+    return currency_n ? currency_n->m_symbol : "";
 }
 
 const wxString TrxModel::DataExt::get_account_name(int64 account_id) const
@@ -495,7 +492,7 @@ const wxString TrxModel::DataExt::get_account_name(int64 account_id) const
         return ACCOUNTNAME;
     }
     else {
-        const AccountData* account_n = AccountModel::instance().get_id_data_n(
+        const AccountData* account_n = AccountModel::instance().get_idN_data_n(
             m_to_account_id_n
         );
         return account_n ? account_n->m_name : "";

@@ -57,10 +57,18 @@ public:
     static TrxLinkModel& instance(wxSQLite3Database* db);
     static TrxLinkModel& instance();
 
+// -- override
+
+public:
+    // override TableFactory
+    virtual bool purge_id(int64 id) override {
+        return unsafe_remove_id(id);
+    }
+
 // -- methods
 
 public:
-    void purge_ref(RefTypeN ref_type, int64 ref_id);
+    bool purge_trxId_all(const int64 trx_id);
 
     auto get_trx_data_n(int64 trx_id) -> const Data*;
     auto find_ref_data_a(RefTypeN ref_type, int64 ref_id) -> DataA;

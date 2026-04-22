@@ -18,15 +18,17 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "SchedList.h"
+#include "SchedPanel.h"
+
 #include "base/_constants.h"
 #include "base/mmUserColor.h"
+#include "util/mmAttachment.h"
 #include "util/mmImage.h"
 #include "model/_all.h"
 
-#include "SchedPanel.h"
-
-#include "dialog/AttachmentDialog.h"
 #include "dialog/SchedDialog.h"
+#include "dialog/AttachmentDialog.h"
 
 enum
 {
@@ -260,9 +262,9 @@ void SchedList::OnListKeyDown(wxListEvent& event)
 
 void SchedList::onNewBDSeries(wxCommandEvent& /*event*/)
 {
-    SchedDialog dlg(this, 0, false, false);
+    SchedDialog dlg(this, SchedDialog::MODE_ADD, -1);
     if (dlg.ShowModal() == wxID_OK)
-        refreshVisualList(w_panel->initList(dlg.GetTransID()));
+        refreshVisualList(w_panel->initList(dlg.sched_id()));
 }
 
 void SchedList::onEditBDSeries(wxCommandEvent& /*event*/)
@@ -270,18 +272,19 @@ void SchedList::onEditBDSeries(wxCommandEvent& /*event*/)
     if (m_select_n == -1)
         return;
 
-    SchedDialog dlg(this, w_panel->m_sched_xa[m_select_n].m_id, false, false);
+    SchedDialog dlg(this, SchedDialog::MODE_UPDATE, w_panel->m_sched_xa[m_select_n].m_id);
     if (dlg.ShowModal() == wxID_OK)
-        refreshVisualList(w_panel->initList(dlg.GetTransID()));
+        refreshVisualList(w_panel->initList(dlg.sched_id()));
 }
 
 void SchedList::onDuplicateBDSeries(wxCommandEvent& /*event*/)
 {
-    if (m_select_n == -1) return;
+    if (m_select_n == -1)
+        return;
 
-    SchedDialog dlg(this, w_panel->m_sched_xa[m_select_n].m_id, true, false);
+    SchedDialog dlg(this, SchedDialog::MODE_ADD, w_panel->m_sched_xa[m_select_n].m_id);
     if (dlg.ShowModal() == wxID_OK)
-        refreshVisualList(w_panel->initList(dlg.GetTransID()));
+        refreshVisualList(w_panel->initList(dlg.sched_id()));
 }
 
 void SchedList::onDeleteBDSeries(wxCommandEvent& WXUNUSED(event))
@@ -296,14 +299,13 @@ void SchedList::onDeleteBDSeries(wxCommandEvent& WXUNUSED(event))
         _t("Confirm Deletion"),
         wxYES_NO | wxNO_DEFAULT | wxICON_ERROR
     );
-    if (msgDlg.ShowModal() == wxID_YES) {
-        int64 sched_id = w_panel->m_sched_xa[m_select_n].m_id;
-        SchedModel::instance().purge_id(sched_id);
-        mmAttachmentManage::DeleteAllAttachments(SchedModel::s_ref_type, sched_id);
-        FieldValueModel::instance().purge_ref(SchedModel::s_ref_type, sched_id);
-        w_panel->initList();
-        refreshVisualList(m_select_n);
-    }
+    if (msgDlg.ShowModal() != wxID_YES)
+        return;
+
+    int64 sched_id = w_panel->m_sched_xa[m_select_n].m_id;
+    SchedModel::instance().purge_id(sched_id);
+    w_panel->initList();
+    refreshVisualList(m_select_n);
 }
 
 void SchedList::onEnterBDTransaction(wxCommandEvent& /*event*/)
@@ -311,12 +313,12 @@ void SchedList::onEnterBDTransaction(wxCommandEvent& /*event*/)
     if (m_select_n == -1)
         return;
 
-    int64 id = w_panel->m_sched_xa[m_select_n].m_id;
-    SchedDialog dlg(this, id, false, true);
-    if ( dlg.ShowModal() == wxID_OK ) {
+    int64 sched_id = w_panel->m_sched_xa[m_select_n].m_id;
+    SchedDialog dlg(this, SchedDialog::MODE_ENTER, sched_id);
+    if (dlg.ShowModal() == wxID_OK ) {
         if (++m_select_n < long(w_panel->m_sched_xa.size()))
-            id = w_panel->m_sched_xa[m_select_n].m_id;
-        refreshVisualList(w_panel->initList(id));
+            sched_id = w_panel->m_sched_xa[m_select_n].m_id;
+        refreshVisualList(w_panel->initList(sched_id));
     }
 }
 
@@ -351,7 +353,7 @@ void SchedList::onOpenAttachment(wxCommandEvent& WXUNUSED(event))
         return;
 
     int64 ref_id = w_panel->m_sched_xa[m_select_n].m_id;
-    mmAttachmentManage::OpenAttachmentFromPanelIcon(this, SchedModel::s_ref_type, ref_id);
+    mmAttachment::openFromPanelIcon(this, SchedModel::s_ref_type, ref_id);
     refreshVisualList(w_panel->initList(ref_id));
 }
 
@@ -360,9 +362,9 @@ void SchedList::OnListItemActivated(wxListEvent& WXUNUSED(event))
     if (m_select_n == -1)
         return;
 
-    SchedDialog dlg(this, w_panel->m_sched_xa[m_select_n].m_id, false, false);
+    SchedDialog dlg(this, SchedDialog::MODE_UPDATE, w_panel->m_sched_xa[m_select_n].m_id);
     if (dlg.ShowModal() == wxID_OK)
-        refreshVisualList(w_panel->initList(dlg.GetTransID()));
+        refreshVisualList(w_panel->initList(dlg.sched_id()));
 }
 
 wxListItemAttr* SchedList::OnGetItemAttr(long item) const
@@ -420,7 +422,7 @@ void SchedList::OnSetUserColour(wxCommandEvent& event)
 
     SchedModel::instance().db_savepoint();
 
-    SchedData* sched_n = SchedModel::instance().unsafe_get_id_data_n(id);
+    SchedData* sched_n = SchedModel::instance().unsafe_get_idN_data_n(id);
     if (sched_n) {
         sched_n->m_color = user_color_id;
         SchedModel::instance().unsafe_update_data_n(sched_n);

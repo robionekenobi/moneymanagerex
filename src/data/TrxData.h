@@ -18,11 +18,12 @@
 
 #pragma once
 
+// TrxData represents a record in table CHECKINGACCOUNT_V1.
+
 #include "base/mmDateTime.h"
 #include "_DataEnum.h"
 #include "table/TrxTable.h"
 
-// User-friendly representation of a record in table CHECKINGACCOUNT_V1.
 struct TrxData
 {
     int64       m_id;

@@ -350,12 +350,13 @@ void GeneralReportManager::fillControls()
     m_rootItem = m_treeCtrl->AddRoot(_t("Reports"));
     m_selectedItemID = m_rootItem;
     m_treeCtrl->SetItemBold(m_rootItem, true);
-    auto report_a = ReportModel::instance().find_all();
-    std::sort(report_a.begin(), report_a.end(), ReportData::SorterByREPORTNAME());
-    std::stable_sort(report_a.begin(), report_a.end(), ReportData::SorterByGROUPNAME());
+
     wxTreeItemId group;
     wxString group_name;
-    for (const auto& report_d : report_a) {
+    for (const auto& report_d : ReportModel::instance().find_data_a(
+        TableClause::ORDERBY(ReportCol::NAME_GROUPNAME),
+        TableClause::ORDERBY(ReportCol::NAME_REPORTNAME)
+    )) {
         bool no_group = report_d.m_group_name.empty();
         if (group_name != report_d.m_group_name && !no_group) {
             group_name = report_d.m_group_name;
@@ -763,7 +764,7 @@ void GeneralReportManager::OnUpdateReport(wxCommandEvent& WXUNUSED(event))
     if (!iData) return;
 
     int64 id = iData->get_report_id();
-    ReportData* report_n = ReportModel::instance().unsafe_get_id_data_n(id);
+    ReportData* report_n = ReportModel::instance().unsafe_get_idN_data_n(id);
     if (!report_n)
         return;
 
@@ -802,7 +803,7 @@ void GeneralReportManager::OnRun(wxCommandEvent& WXUNUSED(event))
 
     int64 id = iData->get_report_id();
     m_selectedGroup = iData->get_group_name();
-    const ReportData* report_n = ReportModel::instance().get_id_data_n(id);
+    const ReportData* report_n = ReportModel::instance().get_idN_data_n(id);
     if (!report_n)
         return;
 
@@ -835,7 +836,7 @@ void GeneralReportManager::OnContextMenu(wxContextMenuEvent& event)
     m_treeCtrl->SelectItem(id);
     MyTreeItemData *iData = dynamic_cast<MyTreeItemData*>(m_treeCtrl->GetItemData(id));
     int64 report_id = iData ? iData->get_report_id() : -1;
-    const ReportData* report_n = ReportModel::instance().get_id_data_n(report_id);
+    const ReportData* report_n = ReportModel::instance().get_idN_data_n(report_id);
 
     wxMenu* samplesMenu = new wxMenu;
     samplesMenu->Append(ID_NEW_SAMPLE_ASSETS, _tu("Assets…"));
@@ -928,7 +929,7 @@ void GeneralReportManager::OnSelChanged(wxTreeEvent& event)
     int64 id = iData->get_report_id();
     m_selectedGroup = iData->get_group_name();
 
-    const ReportData* report_n = ReportModel::instance().get_id_data_n(id);
+    const ReportData* report_n = ReportModel::instance().get_idN_data_n(id);
     if (!report_n) {
         for (size_t n = editors_notebook->GetPageCount() - 1; n >= 1; n--)
             editors_notebook->DeletePage(n);
@@ -974,7 +975,7 @@ void GeneralReportManager::OnSelChanged(wxTreeEvent& event)
 
 void GeneralReportManager::renameReport(int64 id)
 {
-    ReportData * report_n = ReportModel::instance().unsafe_get_id_data_n(id);
+    ReportData * report_n = ReportModel::instance().unsafe_get_idN_data_n(id);
     if (!report_n)
         return;
 
@@ -985,9 +986,9 @@ void GeneralReportManager::renameReport(int64 id)
     );
     label.Trim();
 
-    if (ReportModel::instance().find(ReportCol::REPORTNAME(label)).empty()
-        && !label.empty()
-    ) {
+    if (ReportModel::instance().find_count(
+        ReportCol::WHERE_REPORTNAME(OP_EQ, label)
+    ) == 0 && !label.empty()) {
         report_n->m_name = label;
         ReportModel::instance().unsafe_update_data_n(report_n);
     }
@@ -996,7 +997,7 @@ void GeneralReportManager::renameReport(int64 id)
 #ifdef MMEX_USE_REPORT_SYNC
 bool GeneralReportManager::syncReport(int64 id)
 {
-    const ReportData * report_n = ReportModel::instance().get_id_data_n(id);
+    const ReportData * report_n = ReportModel::instance().get_idN_data_n(id);
     if (report_n) {
         wxString msg = wxString() << _("Pull Report Title:")
             << "\n"
@@ -1013,7 +1014,7 @@ bool GeneralReportManager::syncReport(int64 id)
 
 bool GeneralReportManager::deleteReport(int64 id)
 {
-    const ReportData* report_n = ReportModel::instance().get_id_data_n(id);
+    const ReportData* report_n = ReportModel::instance().get_idN_data_n(id);
     if (report_n) {
         wxString msg = wxString() << _t("Delete the Report Title:")
             << "\n\n"
@@ -1032,7 +1033,7 @@ bool GeneralReportManager::deleteReport(int64 id)
 
 void GeneralReportManager::changeReportState(int64 id)
 {
-    ReportData* report_n = ReportModel::instance().unsafe_get_id_data_n(id);
+    ReportData* report_n = ReportModel::instance().unsafe_get_idN_data_n(id);
     if (report_n) {
         report_n->m_active = !report_n->m_active;
         ReportModel::instance().unsafe_update_data_n(report_n);
@@ -1041,7 +1042,7 @@ void GeneralReportManager::changeReportState(int64 id)
 
 void GeneralReportManager::duplicateReport(int64 id)
 {
-    const ReportData* report_n = ReportModel::instance().get_id_data_n(id);
+    const ReportData* report_n = ReportModel::instance().get_idN_data_n(id);
     if (!report_n)
         return;
 
@@ -1052,9 +1053,9 @@ void GeneralReportManager::duplicateReport(int64 id)
     );
     label.Trim();
 
-    if (ReportModel::instance().find(
-        ReportCol::REPORTNAME(label)
-    ).empty() && !label.empty()) {
+    if (ReportModel::instance().find_count(
+        ReportCol::WHERE_REPORTNAME(OP_EQ, label)
+    ) == 0 && !label.empty()) {
         ReportData new_report_d = ReportData();
         new_report_d.m_group_name       = report_n->m_group_name;
         new_report_d.m_name             = label;
@@ -1070,7 +1071,7 @@ void GeneralReportManager::duplicateReport(int64 id)
 
 bool GeneralReportManager::changeReportGroup(int64 id, bool ungroup)
 {
-    ReportData * report_n = ReportModel::instance().unsafe_get_id_data_n(id);
+    ReportData * report_n = ReportModel::instance().unsafe_get_idN_data_n(id);
     if (report_n) {
         if (ungroup) {
             report_n->m_group_name = "";
@@ -1096,21 +1097,28 @@ bool GeneralReportManager::changeReportGroup(int64 id, bool ungroup)
     return false;
 }
 
-bool GeneralReportManager::renameReportGroup(const wxString& GroupName)
+bool GeneralReportManager::renameReportGroup(const wxString& group_name)
 {
-    mmDialogComboBoxAutocomplete dlg(this, _t("Enter or choose name for the new group"),
-        _t("Rename Group"), GroupName, ReportModel::instance().find_all_group_name_a());
+    mmDialogComboBoxAutocomplete dlg(this,
+        _t("Enter or choose name for the new group"),
+        _t("Rename Group"),
+        group_name,
+        ReportModel::instance().find_all_group_name_a()
+    );
 
-    if (dlg.ShowModal() == wxID_OK) {
-        const wxString groupName = dlg.getText();
-        auto report_a = ReportModel::instance().find(ReportCol::GROUPNAME(GroupName));
-        for (auto& report_d : report_a) {
-            report_d.m_group_name = groupName;
-        }
-        ReportModel::instance().save_data_a(report_a);
-        return true;
+    if (dlg.ShowModal() == wxID_OK)
+        return false;
+
+    const wxString new_name = dlg.getText();
+    auto report_a = ReportModel::instance().find_data_a(
+        ReportCol::WHERE_GROUPNAME(OP_EQ, group_name)
+    );
+    for (auto& report_d : report_a) {
+        report_d.m_group_name = new_name;
     }
-    return false;
+    ReportModel::instance().save_data_a(report_a);
+
+    return true;
 }
 
 void GeneralReportManager::OnMenuSelected(wxCommandEvent& event)
@@ -1197,19 +1205,26 @@ void GeneralReportManager::newReport(int sample)
     wxString report_name = wxString::Format(_t("New Report %s"), now.Format("%Y%m%d%H%M%S"));
 
     int max_attempts = 3;
-    for (int i = 0; i < max_attempts; i++)
-    {
-        report_name = wxGetTextFromUser(_t("Enter the name for the report")
-            , _t("General Report Manager"), report_name);
+    for (int i = 0; i < max_attempts; i++) {
+        report_name = wxGetTextFromUser(
+            _t("Enter the name for the report"),
+            _t("General Report Manager"),
+            report_name
+        );
 
+        // Canceled by user
         if (report_name.empty())
-            return; //Canceled by user
-        if (!report_name.empty() && ReportModel::instance().find(
-            ReportCol::REPORTNAME(report_name)
-        ).empty())
+            return;
+        if (!report_name.empty() && ReportModel::instance().find_count(
+            ReportCol::WHERE_REPORTNAME(OP_EQ, report_name)
+        ) == 0)
             break;
-        if (i == max_attempts - 1)
-            return mmErrorDialogs::MessageError(this, _t("A report with this name already exists"), _t("New Report"));
+        if (i == max_attempts - 1) {
+            return mmErrorDialogs::MessageError(this,
+                _t("A report with this name already exists"),
+                _t("New Report")
+            );
+        }
     }
 
     wxString sqlContent, luaContent, httContent, description;
@@ -1240,22 +1255,25 @@ void GeneralReportManager::newReport(int sample)
 
 void GeneralReportManager::OnExportReport(wxCommandEvent& WXUNUSED(event))
 {
-    MyTreeItemData* iData = dynamic_cast<MyTreeItemData*>(m_treeCtrl->GetItemData(m_selectedItemID));
-    if (!iData) return;
+    MyTreeItemData* iData = dynamic_cast<MyTreeItemData*>(
+        m_treeCtrl->GetItemData(m_selectedItemID)
+    );
+    if (!iData)
+        return;
 
-    int64 id = iData->get_report_id();
-    const ReportData* report_n = ReportModel::instance().get_id_data_n(id);
+    int64 report_id = iData->get_report_id();
+    const ReportData* report_n = ReportModel::instance().get_idN_data_n(report_id);
     if (!report_n)
         return;
 
     wxString file_name = report_n->m_name + ".grm";
-    wxFileDialog dlg(this
-        , _t("Choose file to Save As Report")
-        , wxEmptyString
-        , file_name
-        , _t("General Report Manager files (*.grm)")+"|*.grm|"+_t("ZIP files (*.zip)")+"|*.zip"
-        , wxFD_SAVE | wxFD_OVERWRITE_PROMPT
-        );
+    wxFileDialog dlg(this,
+        _t("Choose file to Save As Report"),
+        wxEmptyString,
+        file_name,
+        _t("General Report Manager files (*.grm)")+"|*.grm|"+_t("ZIP files (*.zip)")+"|*.zip",
+        wxFD_SAVE | wxFD_OVERWRITE_PROMPT
+    );
 
     if (dlg.ShowModal() != wxID_OK)
         return;
@@ -1307,45 +1325,40 @@ bool GeneralReportManager::getColumns(const wxString& sql, std::vector<std::pair
     wxSQLite3Statement stmt;
     wxSQLite3ResultSet q;
     int columnCount = 0;
-    try
-    {
+    try {
         stmt = this->m_db->PrepareStatement(sql);
         if (!stmt.IsReadOnly())
             return false;
         q = stmt.ExecuteQuery();
         columnCount = q.GetColumnCount();
     }
-    catch (const wxSQLite3Exception& /*e*/)
-    {
+    catch (const wxSQLite3Exception& /*e*/) {
         return false;
     }
 
-    for (int i = 0; i < columnCount; ++i)
-    {
+    for (int i = 0; i < columnCount; ++i) {
         colHeaders.emplace_back(q.GetColumnName(i), q.GetColumnType(i));
     }
     return true;
 }
 
-void GeneralReportManager::getSqlTableInfo(std::vector<std::pair<wxString, wxArrayString>> &sqlTableInfo)
-{
+void GeneralReportManager::getSqlTableInfo(
+    std::vector<std::pair<wxString, wxArrayString>> &sqlTableInfo
+) {
     const wxString sqlTables = "SELECT type, name FROM sqlite_master WHERE type = 'table' or type = 'view' ORDER BY type, name";
     sqlTableInfo.clear();
 
     // Get a list of the database tables
     wxSQLite3ResultSet qTables;
-    try
-    {
+    try {
         qTables = this->m_db->ExecuteQuery(sqlTables);
-        while (qTables.NextRow())
-        {
+        while (qTables.NextRow()) {
             const wxString table_name = qTables.GetAsString(1);
 
             // Get a list of the table columns
             const wxString& sql = wxString::Format("PRAGMA table_info(%s);", table_name);
             wxSQLite3ResultSet qColumns;
-            try
-            {
+            try {
                 qColumns = this->m_db->ExecuteQuery(sql);
                 wxArrayString column_names;
                 while (qColumns.NextRow())
@@ -1353,26 +1366,24 @@ void GeneralReportManager::getSqlTableInfo(std::vector<std::pair<wxString, wxArr
 
                 sqlTableInfo.emplace_back(table_name, column_names);
             }
-            catch (const wxSQLite3Exception &e)
-            {
+            catch (const wxSQLite3Exception &e) {
                 wxLogError("%s\n Exception \n%s", sql, e.GetMessage().utf8_str());
             }
         }
     }
-    catch (const wxSQLite3Exception &e)
-    {
+    catch (const wxSQLite3Exception &e) {
         wxLogError("SQL Exception: \n%s", e.GetMessage().utf8_str());
     }
 }
 
-bool GeneralReportManager::getSqlQuery(/*in*/ wxString& sql
-    , /*out*/ std::vector <std::vector <wxString> > &sqlQueryData
-    , wxString &SqlError)
-{
+bool GeneralReportManager::getSqlQuery(
+    /*in*/ wxString& sql,
+    /*out*/ std::vector <std::vector <wxString>>& sqlQueryData,
+    wxString& SqlError
+) {
     wxSQLite3ResultSet q;
     int columnCount = 0;
-    try
-    {
+    try {
         std::map <wxString, wxString> rep_params;
         ReportParam::prepare_sql(sql, rep_params);
         wxSQLite3Statement stmt = this->m_db->PrepareStatement(sql);
@@ -1381,16 +1392,14 @@ bool GeneralReportManager::getSqlQuery(/*in*/ wxString& sql
         q = stmt.ExecuteQuery();
         columnCount = q.GetColumnCount();
     }
-    catch (const wxSQLite3Exception& e)
-    {
+    catch (const wxSQLite3Exception& e) {
         SqlError = e.GetMessage();
         SqlError.Replace(" or missing database[1]:", "");
         return false;
     }
 
     sqlQueryData.clear();
-    while (q.NextRow())
-    {
+    while (q.NextRow()) {
         std::vector<wxString> row;
         for (int i = 0; i < columnCount; ++i)
             row.emplace_back(q.GetAsString(i));
@@ -1440,14 +1449,20 @@ const wxString GeneralReportManager::getTemplate(wxString& sql)
         }
     }
     wxString htt = HTT_CONTAINER;
-    return wxString::Format(formatHTML(htt), params, header.length() > 0 ? header.RemoveLast() : header, body.length() > 0 ? body.RemoveLast() : body, _t("created:"));
+    return wxString::Format(formatHTML(htt),
+        params,
+        header.length() > 0 ? header.RemoveLast() : header,
+        body.length() > 0 ? body.RemoveLast() : body,
+        _t("created:")
+    );
 }
 
 #if wxUSE_DRAG_AND_DROP
 void GeneralReportManager::OnBeginDrag(wxTreeEvent& (event))
 {
     wxTreeItemId selectedItem = event.GetItem();
-    if (!selectedItem) return;
+    if (!selectedItem)
+        return;
 
     wxTextDataObject data;
     data.SetText(m_dbView->GetItemText(selectedItem));
@@ -1612,7 +1627,11 @@ void GeneralReportManager::loadTreeIconState()
 #ifdef MMEX_USE_REPORT_SYNC
 void GeneralReportManager::OnSyncReportComplete(wxCommandEvent& WXUNUSED(event))
 {
-    wxMessageBox("Report sync completed successfully.", "Sync Complete", wxOK | wxICON_INFORMATION);
+    wxMessageBox(
+        "Report sync completed successfully.",
+        "Sync Complete",
+        wxOK | wxICON_INFORMATION
+    );
 }
 
 void GeneralReportManager::OnSyncFromGitHub(wxCommandEvent& WXUNUSED(event))
@@ -1620,8 +1639,7 @@ void GeneralReportManager::OnSyncFromGitHub(wxCommandEvent& WXUNUSED(event))
     wxString url = mmex::weblink::GeneralReport + "/v1/reports.json";
 
     wxString json_data;
-    if (http_get_data(url, json_data) != CURLE_OK)
-    {
+    if (http_get_data(url, json_data) != CURLE_OK) {
         wxLogError("Failed to fetch data from %s", url);
         return;
     }
@@ -1668,34 +1686,45 @@ void GeneralReportManager::OnSyncFromGitHub(wxCommandEvent& WXUNUSED(event))
         }
     }
 
-    wxMessageBox("Reports have been successfully synchronized and stored.", "Sync Successful", wxOK | wxICON_INFORMATION);
+    wxMessageBox(
+        "Reports have been successfully synchronized and stored.",
+        "Sync Successful",
+        wxOK | wxICON_INFORMATION
+    );
 }
 
-void GeneralReportManager::DownloadAndStoreReport(const wxString& groupName, const wxString& reportName, [[maybe_unused]] const wxString& reportPath)
-{
+void GeneralReportManager::DownloadAndStoreReport(
+    const wxString& groupName,
+    const wxString& reportName,
+    [[maybe_unused]] const wxString& reportPath
+) {
     wxString sql, lua, htt, txt;
 
     // Construct the full URL to fetch the SQL content
-    wxString sqlUrl = mmex::weblink::GeneralReport + "/" + "packages" + "/" + groupName + "/" + reportName + "/" + "sqlcontent.sql" ;
+    wxString sqlUrl = mmex::weblink::GeneralReport + "/" + "packages" + "/" +
+        groupName + "/" + reportName + "/" + "sqlcontent.sql";
     if (http_get_data(wxURI(sqlUrl).BuildURI(), sql) != CURLE_OK) {
         wxLogError("Failed to fetch SQL data from %s", sqlUrl);
         return;
     }
 
-    wxString luaUrl = mmex::weblink::GeneralReport + "/" + "packages" + "/" + groupName + "/" + reportName + "/" + "luacontent.lua";
+    wxString luaUrl = mmex::weblink::GeneralReport + "/" + "packages" + "/" +
+        groupName + "/" + reportName + "/" + "luacontent.lua";
     wxLogDebug(luaUrl);
     if (http_get_data(wxURI(luaUrl).BuildURI(), lua) != CURLE_OK) {
         wxLogError("Failed to fetch SQL data from %s", luaUrl);
         return;
     }
 
-    wxString httUrl = mmex::weblink::GeneralReport +  "/" + "packages" + "/" + groupName + "/" + reportName + "/" + "template.htt";
+    wxString httUrl = mmex::weblink::GeneralReport +  "/" + "packages" + "/" +
+        groupName + "/" + reportName + "/" + "template.htt";
     if (http_get_data(wxURI(httUrl).BuildURI(), htt) != CURLE_OK) {
         wxLogError("Failed to fetch SQL data from %s", httUrl);
         return;
     }
 
-    wxString txtUrl = mmex::weblink::GeneralReport + "/" + "packages" + "/" + groupName + "/" + reportName + "/" + "description.txt";
+    wxString txtUrl = mmex::weblink::GeneralReport + "/" + "packages" + "/" +
+        groupName + "/" + reportName + "/" + "description.txt";
     if (http_get_data(wxURI(txtUrl).BuildURI(), txt) != CURLE_OK) {
         wxLogError("Failed to fetch SQL data from %s", txtUrl);
         return;
@@ -1718,7 +1747,9 @@ void GeneralReportManager::DownloadAndStoreReport(const wxString& groupName, con
 void GeneralReportManager::OnSQLTreeRightClick(wxTreeEvent& event)
 {
     wxTreeItemId item = event.GetItem();
-    if (!item.IsOk()) return;
+    if (!item.IsOk())
+        return;
+
     wxMenu menu;
     menu.Append(ID_SQL_COPY, _t("Copy name"));
     menu.Append(ID_SQL_COPY_ALL, _t("Copy all column names"));
@@ -1734,16 +1765,18 @@ void GeneralReportManager::OnSQLTreeCopy(wxCommandEvent& event)
     wxString result;
     if (item.IsOk()) {
         int id = event.GetId();
-        switch(id) {
-            case ID_SQL_COPY:
-                result = m_dbView->GetItemText(item);
-                break;
-            case ID_SQL_COPY_ALL:
-                result = GetChildNamesAsCommaList(m_dbView, item);
-                break;
-            case ID_SQL_COPY_SELECT:
-                result = "SELECT " + GetChildNamesAsCommaList(m_dbView, item) + " FROM " + m_dbView->GetItemText(item);
-                break;
+        switch(id)
+        {
+        case ID_SQL_COPY:
+            result = m_dbView->GetItemText(item);
+            break;
+        case ID_SQL_COPY_ALL:
+            result = GetChildNamesAsCommaList(m_dbView, item);
+            break;
+        case ID_SQL_COPY_SELECT:
+            result = "SELECT " + GetChildNamesAsCommaList(m_dbView, item) +
+                " FROM " + m_dbView->GetItemText(item);
+            break;
         }
         if (!result.IsEmpty()) {
             if (wxTheClipboard->Open()) {

@@ -305,11 +305,11 @@ void OtherPref::SaveStocksUrl()
         InfoModel::instance().saveString("STOCKURL", stockURL);
     }
     else {
-        InfoModel::DataA info_a = InfoModel::instance().find(
-            InfoCol::INFONAME("STOCKURL")
-        );
-        if (!info_a.empty())
-            InfoModel::instance().purge_id(info_a[0].m_id);
+        for (int64 info_id : InfoModel::instance().find_id_a(
+            InfoCol::WHERE_INFONAME(OP_EQ, "STOCKURL")
+        )) {
+            InfoModel::instance().purge_id(info_id);
+        }
     }
 }
 

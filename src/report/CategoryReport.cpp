@@ -45,17 +45,17 @@ CategoryReport::~CategoryReport()
 double CategoryReport::AppendData(
     [[maybe_unused]] const std::vector<CategoryReport::data_holder>& data,
     std::map<int64, std::map<int, double>>& categoryStats,
-    const CategoryData* category_n,
+    const CategoryData* cat_n,
     int64 groupID,
     int level
 ) {
-    double amount = categoryStats[category_n->m_id][0];
+    double amount = categoryStats[cat_n->m_id][0];
     if (type_ == COME && amount < 0.0)
         amount = 0;
     if (type_ == GOES && amount > 0.0)
         amount = 0;
 
-    CategoryModel::DataA subcat_a = CategoryModel::instance().find_data_sub_a(*category_n);
+    CategoryModel::DataA subcat_a = CategoryModel::instance().find_data_sub_a(*cat_n);
     std::stable_sort(subcat_a.begin(), subcat_a.end(),
         CategoryData::SorterByCATEGNAME()
     );
@@ -65,14 +65,14 @@ double CategoryReport::AppendData(
         double amount_ = AppendData(data_, categoryStats, &subcat_d, groupID, level + 1);
         if (amount_ != 0)
             data_.insert(data_.begin(), {
-                category_n->m_id, subcat_d.m_id, category_n->m_name,
+                cat_n->m_id, subcat_d.m_id, cat_n->m_name,
                 amount_, groupID, level
             });
         subamount += amount_;
     }
     if (amount != 0 || subamount != 0)
         data_.insert(data_.begin(), {
-            category_n->m_id, -1, category_n->m_name,
+            cat_n->m_id, -1, cat_n->m_name,
             amount, groupID, level
         });
     return amount + subamount;
@@ -92,12 +92,10 @@ void CategoryReport::refreshData()
 
     data_holder line;
     int groupID = 0;
-    CategoryModel::DataA category_a = CategoryModel::instance().find(CategoryCol::PARENTID(-1));
-    std::stable_sort(category_a.begin(), category_a.end(),
-        CategoryData::SorterByCATEGNAME()
-    );
-    std::reverse(category_a.begin(), category_a.end());
-    for (const auto& cat_d : category_a) {
+    for (const auto& cat_d : CategoryModel::instance().find_data_a(
+        CategoryCol::WHERE_PARENTID(OP_EQ, -1),
+        TableClause::ORDERBY(CategoryCol::NAME_CATEGNAME, true)
+    )) {
         double amount = categoryStats[cat_d.m_id][0];
         if ((type_ == COME && amount < 0.0) ||
             (type_ == GOES && amount > 0.0)

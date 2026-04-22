@@ -96,6 +96,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     util/_simple.h
     util/_util.cpp
     util/_util.h
+    util/mmAttachment.cpp
+    util/mmAttachment.h
     util/mmCalcPopup.cpp
     util/mmCalcPopup.h
     util/mmCalcValidator.cpp
@@ -309,6 +311,8 @@ add_executable(${MMEX_EXE} WIN32 MACOSX_BUNDLE
     model/TrxSplitModel.h
     model/UsageModel.cpp
     model/UsageModel.h
+    model/_ModelAll.cpp
+    model/_ModelAll.h
     model/_all.h
 
     panel/AssetList.cpp

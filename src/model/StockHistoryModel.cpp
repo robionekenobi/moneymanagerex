@@ -20,6 +20,12 @@
 #include "StockModel.h"
 #include "StockHistoryModel.h"
 
+// -- static
+
+TableClauseV<wxString> StockHistoryModel::WHERE_DATE(OP op, const mmDate& date) {
+    return StockHistoryCol::WHERE_DATE(op, date.isoDate());
+}
+
 // -- constructor
 
 // Initialize the global StockHistoryModel table.
@@ -41,23 +47,39 @@ StockHistoryModel& StockHistoryModel::instance()
 
 // -- methods
 
+bool StockHistoryModel::purge_symbol_all(const wxString& symbol)
+{
+    bool ok = true;
+    db_savepoint();
+
+    for (int64 sh_id : find_id_a(
+        StockHistoryCol::WHERE_SYMBOL(OP_EQ, symbol)
+    )) {
+        ok = ok && purge_id(sh_id);
+    }
+
+    db_release_savepoint();
+    return ok;
+}
+
 const StockHistoryData* StockHistoryModel::get_key_data_n(
     const wxString& symbol,
     const mmDate& date
 ) {
     const Data* sh_n = search_cache_n(
         StockHistoryCol::SYMBOL(symbol),
-        StockHistoryModel::DATE(OP_EQ, date)
+        StockHistoryCol::DATE(OP_EQ, date.isoDate())
     );
     if (sh_n)
         return sh_n;
 
-    const DataA sh_a = this->find(
-        StockHistoryCol::SYMBOL(symbol),
-        StockHistoryModel::DATE(OP_EQ, date)
-    );
-    if (!sh_a.empty())
-        sh_n = get_id_data_n(sh_a[0].m_id);
+    for (int64 sh_id : find_id_a(
+        StockHistoryCol::WHERE_SYMBOL(OP_EQ, symbol),
+        StockHistoryModel::WHERE_DATE(OP_EQ, date)
+    )) {
+        sh_n = get_idN_data_n(sh_id);
+    }
+
     return sh_n;
 }
 
@@ -75,10 +97,10 @@ int64 StockHistoryModel::save_record(
     sh_d.m_price       = price;
     sh_d.m_update_type = update_type;
 
-    if (find(
-        StockHistoryCol::SYMBOL(symbol),
-        StockHistoryModel::DATE(OP_GT, date)
-    ).size() == 0) {
+    if (find_count(
+        StockHistoryCol::WHERE_SYMBOL(OP_EQ, symbol),
+        StockHistoryModel::WHERE_DATE(OP_GT, date)
+    ) == 0) {
         StockModel::instance().update_symbol_current_price(symbol, price);
     }
 

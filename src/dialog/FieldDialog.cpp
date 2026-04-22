@@ -125,11 +125,14 @@ void FieldDialog::CreateControls()
 
     itemFlexGridSizer6->Add(new wxStaticText(itemPanel5, wxID_STATIC, _t("Attribute of")), g_flagsH);
     m_itemReference = new wxChoice(itemPanel5, wxID_HIGHEST);
-    for (int type_id = 0; type_id < RefTypeN::size; ++type_id) {
-        if (RefTypeN::field_id_n(type_id) != type_id)
+    for (int ref_type_id = 0; ref_type_id < RefTypeN::size; ++ref_type_id) {
+        if (RefTypeN::field_id_n(ref_type_id) != ref_type_id)
             continue;
-        wxString name = RefTypeN(type_id).name_n();
-        m_itemReference->Append(wxGetTranslation(name), new wxStringClientData(name));
+        wxString ref_type_name = RefTypeN(ref_type_id).name_n();
+        m_itemReference->Append(
+            wxGetTranslation(ref_type_name),
+            new wxStringClientData(ref_type_name)
+        );
     }
     mmToolTip(m_itemReference, _t("Select the item that the custom field is associated with"));
     itemFlexGridSizer6->Add(m_itemReference, g_flagsExpand);
@@ -211,19 +214,23 @@ void FieldDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         return mmErrorDialogs::InvalidName(m_itemDescription);
     }
 
-    wxArrayString ArrChoices;
-    wxString Choices = m_itemChoices->GetValue();
-    wxStringTokenizer token(Choices, ";");
-    while (token.HasMoreTokens()) {
-        ArrChoices.Add(token.GetNextToken());
+    wxString choice_s = m_itemChoices->GetValue();
+    wxStringTokenizer tokenizer(choice_s, ";");
+    wxArrayString choice_a;
+    while (tokenizer.HasMoreTokens()) {
+        choice_a.Add(tokenizer.GetNextToken());
     }
 
     int itemType = m_itemType->GetSelection();
-    if (ArrChoices.IsEmpty() && (
+    if (choice_a.IsEmpty() && (
         itemType == FieldTypeN::e_single_choice ||
-        itemType == FieldTypeN::e_multi_choice)
-    ) {
-        return mmErrorDialogs::ToolTip4Object(m_itemChoices, _t("Empty value"), _t("Choices"));
+        itemType == FieldTypeN::e_multi_choice
+    )) {
+        return mmErrorDialogs::ToolTip4Object(
+            m_itemChoices,
+            _t("Empty value"),
+            _t("Choices")
+        );
     }
 
     if (!m_field_n) {
@@ -231,49 +238,41 @@ void FieldDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         m_field_n = &m_field_d;
     }
     else if (m_field_n->m_type_n.id_n() != m_itemType->GetSelection()) {
-        auto fv_a = FieldValueModel::instance().find(
-            FieldValueCol::FIELDID(m_field_n->m_id)
-        );
-        if (fv_a.size() > 0) {
-            int DeleteResponse = wxMessageBox(
+        if (FieldValueModel::instance().find_fieldId_c(m_field_n->m_id) > 0) {
+            int response = wxMessageBox(
                 _t("Changing field type will delete all content!") + "\n"
                     + _t("Do you want to continue?") << "\n",
                 _t("Custom Field Change"),
                 wxYES_NO | wxNO_DEFAULT | wxICON_ERROR
             );
-            if (DeleteResponse != wxYES)
+            if (response != wxYES)
                 return;
 
-            // CHECK: What is the intention behind removing and adding back all items?
-            // Is removal of CONTENT missing?
-            FieldValueModel::instance().db_savepoint();
-            for (auto& fv_d : fv_a) {
-                FieldValueModel::instance().purge_id(fv_d.m_id);
-            }
-            FieldValueModel::instance().save_data_a(fv_a);
-            FieldValueModel::instance().db_release_savepoint();
+            FieldValueModel::instance().purge_fieldId_all(m_field_n->m_id);
         }
     }
-    else if (FieldModel::getChoices(m_field_n->m_properties) != ArrChoices) {
-        auto fv_a = FieldValueModel::instance().find(
-            FieldValueCol::FIELDID(m_field_n->m_id)
-        );
-        if (fv_a.size() > 0) {
-            int DeleteResponse = wxMessageBox(
+    else if (FieldModel::getChoices(m_field_n->m_properties) != choice_a) {
+        std::vector<int64> fv_id_a;
+        for (const FieldValueData& fv_d : FieldValueModel::instance().find_data_a(
+            FieldValueCol::WHERE_FIELDID(OP_EQ, m_field_n->m_id)
+        )) {
+            if (choice_a.Index(fv_d.m_content) == wxNOT_FOUND)
+                fv_id_a.push_back(fv_d.m_id);
+        }
+        if (fv_id_a.size() > 0) {
+            int response = wxMessageBox(
                 _t("Modified choices available: ones removed will be cleaned!") + "\n"
                     + _t("Do you want to continue?") << "\n",
                 _t("Custom Field Change"),
                 wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION
             );
-            if (DeleteResponse != wxYES)
+            if (response != wxYES)
                 return;
 
             FieldValueModel::instance().db_savepoint();
-            for (auto& fv_d : fv_a) {
-                if (ArrChoices.Index(fv_d.m_content) == wxNOT_FOUND)
-                    FieldValueModel::instance().purge_id(fv_d.m_id);
+            for (int64 fv_id : fv_id_a) {
+                FieldValueModel::instance().purge_id(fv_id);
             }
-            FieldValueModel::instance().save_data_a(fv_a);
             FieldValueModel::instance().db_release_savepoint();
         }
     }
@@ -293,7 +292,7 @@ void FieldDialog::OnOk(wxCommandEvent& WXUNUSED(event))
         regexp,
         m_itemAutocomplete->GetValue(),
         m_itemDefault->GetValue(),
-        ArrChoices,
+        choice_a,
         m_itemDigitScale->GetValue(),
         m_itemUDFC->GetString(m_itemUDFC->GetSelection())
     );

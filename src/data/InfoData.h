@@ -18,9 +18,10 @@
 
 #pragma once
 
+// InfoData represents a record in table INFOTABLE_V1.
+
 #include "table/InfoTable.h"
 
-// User-friendly representation of a record in table INFOTABLE_V1.
 struct InfoData
 {
     int64    m_id;

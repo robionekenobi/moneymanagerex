@@ -18,10 +18,11 @@
 
 #pragma once
 
+// CurrencyData represents a record in table CURRENCYFORMATS_V1.
+
 #include "_DataEnum.h"
 #include "table/CurrencyTable.h"
 
-// User-friendly representation of a record in table CURRENCYFORMATS_V1.
 struct CurrencyData
 {
     int64        m_id;

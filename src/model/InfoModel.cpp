@@ -56,7 +56,9 @@ InfoModel& InfoModel::instance()
 // Returns true if key setting found
 bool InfoModel::contains(const wxString& key)
 {
-    return !find(InfoCol::INFONAME(key)).empty();
+    return (find_count(
+        InfoCol::WHERE_INFONAME(OP_EQ, key)
+    ) > 0);
 }
 
 // Raw (the raw value stored in Infotable is always string)
@@ -66,9 +68,12 @@ void InfoModel::saveRaw(const wxString& key, const wxString& newValue)
     const Data* info_n = search_cache_n(InfoCol::INFONAME(key));
     if (!info_n) {
         // not found in cache; search in db
-        DataA info_a = find(InfoCol::INFONAME(key));
-        if (!info_a.empty())
-            info_n = get_id_data_n(info_a[0].m_id);
+        for (int64 info_id : find_id_a(
+            InfoCol::WHERE_INFONAME(OP_EQ, key)
+        )) {
+            info_n = get_idN_data_n(info_id);
+            break;
+        }
     }
 
     Data info_d = info_n ? *info_n : Data();
@@ -84,10 +89,14 @@ wxString InfoModel::getRaw(const wxString& key, const wxString& defaultValue)
     const Data* info_n = search_cache_n(InfoCol::INFONAME(key));
     if (info_n)
         return info_n->m_value;
+
     // search in db
-    DataA info_a = find(InfoCol::INFONAME(key));
-    if (!info_a.empty())
-        return info_a[0].m_value;
+    for (const Data& info_d : find_data_a(
+        InfoCol::WHERE_INFONAME(OP_EQ, key)
+    )) {
+        return info_d.m_value;
+    }
+
     // not found
     return defaultValue;
 }
@@ -308,9 +317,11 @@ void InfoModel::prependArrayItem(const wxString& key, const wxString& value, int
 {
     const Data* info_n = search_cache_n(InfoCol::INFONAME(key));
     if (!info_n) {
-        DataA info_a = find(InfoCol::INFONAME(key));
-        if (!info_a.empty())
-            info_n = get_id_data_n(info_a[0].m_id);
+        for (int64 info_id : find_id_a(
+            InfoCol::WHERE_INFONAME(OP_EQ, key)
+        )) {
+            info_n = get_idN_data_n(info_id);
+        }
     }
 
     Data info_d = info_n ? *info_n : Data();
@@ -405,8 +416,10 @@ bool InfoModel::checkDBVersion()
 loop_t InfoModel::to_loop_t()
 {
     loop_t loop;
-    for (const auto &r: instance().find_all())
-        loop += r.to_html_row();
+    for (const auto& info_d : find_data_a(
+        TableClause::ORDERBY(InfoCol::s_primary_name)
+    ))
+        loop += info_d.to_html_row();
     return loop;
 }
 

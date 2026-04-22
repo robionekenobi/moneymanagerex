@@ -58,11 +58,14 @@ public:
 
 public:
     // override TableFactory
-    virtual bool purge_id(int64 tp_id) override;
+    virtual bool purge_id(int64 id) override;
 
 // -- methods
 
 public:
+    bool purge_trxId_all(const int64 trx_id);
+
+    auto find_id_count(int64 tp_id, bool ignore_deleted = false) -> std::size_t;
     auto find_id_gl_a(int64 tp_id) -> const TagLinkModel::DataA;
     auto find_all_mTrxId() -> std::map<int64, DataA>;
 

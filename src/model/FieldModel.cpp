@@ -205,34 +205,50 @@ FieldModel& FieldModel::instance()
 
 // -- override
 
-// Delete a field and all his data
+bool FieldModel::find_id_isUsed(int64 field_id, [[maybe_unused]] bool ignore_deleted)
+{
+    return FieldValueModel::instance().find_count(
+        FieldValueCol::WHERE_FIELDID(OP_EQ, field_id)
+    ) > 0;
+}
+
 bool FieldModel::purge_id(int64 field_id)
 {
-    db_savepoint();
-    for (const auto& fv_d : FieldValueModel::instance().find(
-        FieldValueCol::FIELDID(field_id)
-    )) {
-        FieldValueModel::instance().purge_id(fv_d.m_id);
-    }
-    db_release_savepoint();
-    return unsafe_remove_id(field_id);
+    bool ok = true;
+
+    ok = ok && unsafe_remove_id(field_id);
+
+    return ok;
 }
 
 // -- methods
 
+bool FieldModel::purge_id_dep(int64 field_id)
+{
+    bool ok = true;
+    db_savepoint();
+
+    for (int64 fv_id : FieldValueModel::instance().find_id_a(
+        FieldValueCol::WHERE_FIELDID(OP_EQ, field_id)
+    )) {
+        ok = ok && FieldValueModel::instance().purge_id(fv_id);
+    }
+
+    db_release_savepoint();
+    return ok;
+}
+
 // Return all values
-// CHECK: chenge wxArrayString to std::set<wxString>
+// TODO: change wxArrayString to std::set<wxString>
 wxArrayString FieldModel::find_id_value_a(const int64 field_id)
 {
     wxArrayString value_a;
     wxString prev_value;
 
-    FieldValueModel::DataA fv_a = FieldValueModel::instance().find(
-        FieldValueCol::FIELDID(field_id)
-    );
-    std::sort(fv_a.begin(), fv_a.end(), FieldValueData::SorterByCONTENT());
-
-    for (const auto& fv_d : fv_a) {
+    for (const FieldValueData& fv_d : FieldValueModel::instance().find_data_a(
+        FieldValueCol::WHERE_FIELDID(OP_EQ, field_id),
+        TableClause::ORDERBY(FieldValueCol::NAME_CONTENT)
+    )) {
         if (fv_d.m_content != prev_value) {
             value_a.Add(fv_d.m_content);
             prev_value = fv_d.m_content;
@@ -245,15 +261,15 @@ wxArrayString FieldModel::find_id_value_a(const int64 field_id)
 const FieldData* FieldModel::get_udfc_data_n(RefTypeN ref_type, const wxString& udfc)
 {
     Document json_doc;
-    for (const auto& field_d : find(
-        FieldCol::REFTYPE(ref_type.key_n())
+    for (const auto& field_d : find_data_a(
+        FieldCol::WHERE_REFTYPE(OP_EQ, ref_type.key_n())
     )) {
         if (!json_doc.Parse(field_d.m_properties.utf8_str()).HasParseError() &&
             json_doc.HasMember("UDFC") &&
             json_doc["UDFC"].IsString() &&
             json_doc["UDFC"].GetString() == udfc
         ) {
-            return get_id_data_n(field_d.m_id);
+            return get_idN_data_n(field_d.m_id);
         }
     }
     return nullptr;
@@ -297,8 +313,8 @@ const std::map<wxString, int64> FieldModel::get_all_ucfd_id_m(RefTypeN ref_type)
 const wxArrayString FieldModel::get_data_udfc_a(const FieldData* field_n)
 {
     wxArrayString udfc_a = UDFC_FIELDS();
-    for (const auto& field_d : FieldModel::instance().find(
-        FieldCol::REFTYPE(TrxModel::s_ref_type.key_n())
+    for (const auto& field_d : FieldModel::instance().find_data_a(
+        FieldCol::WHERE_REFTYPE(OP_EQ, TrxModel::s_ref_type.key_n())
     )) {
         const wxString udfc = FieldModel::getUDFC(field_d.m_properties);
         if (!udfc.empty() && udfc_a.Index(udfc) != wxNOT_FOUND) {

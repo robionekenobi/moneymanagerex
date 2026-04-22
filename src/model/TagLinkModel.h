@@ -37,10 +37,19 @@ public:
     static TagLinkModel& instance(wxSQLite3Database* db);
     static TagLinkModel& instance();
 
+// -- override
+
+public:
+    // override TableFactory
+    virtual bool purge_id(int64 id) override {
+        return unsafe_remove_id(id);
+    }
+
 // -- methods
 
 public:
-    void purge_ref(RefTypeN ref_type, int64 ref_id);
+    bool purge_ref_all(RefTypeN ref_type, int64 ref_id);
+
     int  update(RefTypeN ref_type, int64 ref_id, const DataA& src_gl_a);
 
     auto get_key_data_n(int64 tag_id, RefTypeN ref_type, int64 ref_id) -> const Data*;

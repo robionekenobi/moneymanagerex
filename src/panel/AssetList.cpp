@@ -19,16 +19,18 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
 
+#include "AssetList.h"
+#include "AssetPanel.h"
+
 #include "base/_defs.h"
 #include <wx/srchctrl.h>
 
 #include "base/_constants.h"
 #include "util/mmImage.h"
+#include "util/mmAttachment.h"
 #include "util/_simple.h"
 
 #include "model/_all.h"
-
-#include "AssetPanel.h"
 
 #include "dialog/AssetDialog.h"
 #include "dialog/AttachmentDialog.h"
@@ -189,21 +191,21 @@ void AssetList::onNewAsset(wxCommandEvent& /*event*/)
     }
 }
 
-void AssetList::doRefreshItems(int64 trx_id)
+void AssetList::doRefreshItems(int64 asset_id)
 {
-    int selectedIndex = w_panel->initVirtualListControl(trx_id);
+    int selectedIndex = w_panel->initVirtualListControl(asset_id);
 
     long cnt = static_cast<long>(w_panel->m_asset_a.size());
 
     if (selectedIndex >= cnt || selectedIndex < 0)
         selectedIndex = getSortAsc() ? cnt - 1 : 0;
 
-    if (cnt>0)
+    if (cnt > 0)
         RefreshItems(0, cnt > 0 ? --cnt : 0);
     else
         selectedIndex = -1;
 
-    if (selectedIndex >= 0 && cnt>0) {
+    if (selectedIndex >= 0 && cnt > 0) {
         SetItemState(selectedIndex, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
         SetItemState(selectedIndex, wxLIST_STATE_FOCUSED, wxLIST_STATE_FOCUSED);
         EnsureVisible(selectedIndex);
@@ -221,17 +223,16 @@ void AssetList::onDeleteAsset(wxCommandEvent& /*event*/)
         _t("Confirm Asset Deletion"),
         wxYES_NO | wxNO_DEFAULT | wxICON_ERROR
     );
+    if (msgDlg.ShowModal() != wxID_YES)
+        return;
 
-    if (msgDlg.ShowModal() == wxID_YES) {
-        const AssetData& asset = w_panel->m_asset_a[m_selected_row];
-        AssetModel::instance().purge_id(asset.m_id);
-        mmAttachmentManage::DeleteAllAttachments(AssetModel::s_ref_type, asset.m_id);
-        TrxLinkModel::instance().purge_ref(AssetModel::s_ref_type, asset.m_id);
+    int64 asset_id = w_panel->m_asset_a[m_selected_row].m_id;
+    AssetModel::instance().purge_id_dep(asset_id);
+    AssetModel::instance().purge_id(asset_id);
 
-        w_panel->initVirtualListControl();
-        m_selected_row = -1;
-        w_panel->updateExtraAssetData(m_selected_row);
-    }
+    w_panel->initVirtualListControl();
+    m_selected_row = -1;
+    w_panel->updateExtraAssetData(m_selected_row);
 }
 
 void AssetList::onEditAsset(wxCommandEvent& /*event*/)
@@ -298,7 +299,7 @@ void AssetList::onOpenAttachment(wxCommandEvent& /*event*/)
         return;
 
     int64 ref_id = w_panel->m_asset_a[m_selected_row].m_id;
-    mmAttachmentManage::OpenAttachmentFromPanelIcon(this, AssetModel::s_ref_type, ref_id);
+    mmAttachment::openFromPanelIcon(this, AssetModel::s_ref_type, ref_id);
     doRefreshItems(ref_id);
 }
 

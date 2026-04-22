@@ -18,11 +18,12 @@
 
 #pragma once
 
+// StockHistoryData represents a record in table STOCKHISTORY_V1.
+
 #include "base/mmDate.h"
 #include "_DataEnum.h"
 #include "table/StockHistoryTable.h"
 
-// User-friendly representation of a record in table STOCKHISTORY_V1.
 struct StockHistoryData
 {
     int64      m_id;

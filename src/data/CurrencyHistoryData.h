@@ -18,11 +18,12 @@
 
 #pragma once
 
+// CurrencyHistoryData represents a record in table CURRENCYHISTORY_V1.
+
 #include "base/mmDate.h"
 #include "_DataEnum.h"
 #include "table/CurrencyHistoryTable.h"
 
-// User-friendly representation of a record in table CURRENCYHISTORY_V1.
 struct CurrencyHistoryData
 {
     int64  m_id;

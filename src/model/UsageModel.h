@@ -17,6 +17,7 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ********************************************************/
+
 #pragma once
 
 #include "base/_defs.h"
@@ -44,6 +45,14 @@ public:
 public:
     static UsageModel& instance(wxSQLite3Database* db);
     static UsageModel& instance();
+
+// -- override
+
+public:
+    // override TableFactory
+    virtual bool purge_id(int64 id) override {
+        return unsafe_remove_id(id);
+    }
 
 // -- methods
 

@@ -40,10 +40,18 @@ public:
     static TrxShareModel& instance(wxSQLite3Database* db);
     static TrxShareModel& instance();
 
+// -- override
+
+public:
+    // override TableFactory
+    virtual bool purge_id(int64 id) override {
+        return unsafe_remove_id(id);
+    }
+
 // -- methods
 
 public:
-    void purge_trxId(const int64 trx_id);
+    bool purge_trxId_all(const int64 trx_id);
 
     auto get_trxId_id(const int64 trx_id) -> int64;
     auto unsafe_get_trxId_data_n(const int64 trx_id) -> Data*;

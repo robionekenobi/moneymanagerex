@@ -19,6 +19,7 @@
  ********************************************************/
 
 #include "StockModel.h"
+
 #include "StockHistoryModel.h"
 #include "TrxLinkModel.h"
 #include "TrxShareModel.h"
@@ -50,47 +51,83 @@ StockModel& StockModel::instance()
 
 // -- override
 
-// Remove the Data record from memory and the database.
-// Delete also all stock history
-bool StockModel::purge_id(int64 id)
+// FIXME
+bool StockModel::find_id_isUsed(int64 stock_id, [[maybe_unused]] bool ignore_deleted)
 {
-    const StockData *stock_n = get_id_data_n(id);
-    const auto& stock_a = find(
-        StockCol::SYMBOL(stock_n->m_symbol)
+    // FIXME: use ignore_deleted
+    return TrxLinkModel::instance().find_count(
+        TrxLinkCol::WHERE_LINKTYPE(OP_EQ, s_ref_type.key_n()),
+        TrxLinkCol::WHERE_LINKRECORDID(OP_EQ, stock_id)
     );
-    if (stock_a.size() == 1) {
-        db_savepoint();
-        for (const auto& sh_d : StockHistoryModel::instance().find(
-            StockHistoryCol::SYMBOL(stock_n->m_symbol)
-        ))
-            StockHistoryModel::instance().purge_id(sh_d.m_id);
-        db_release_savepoint();
+}
+
+bool StockModel::purge_id(int64 stock_id)
+{
+    bool ok = true;
+    db_savepoint();
+
+    const wxString symbol = get_id_symbol(stock_id);
+
+    ok = ok && AttachmentModel::instance().purge_ref_all(s_ref_type, stock_id);
+    ok = ok && unsafe_remove_id(stock_id);
+
+    if (find_count(
+        StockCol::WHERE_SYMBOL(OP_EQ, symbol)
+    ) == 0) {
+        ok = ok && StockHistoryModel::instance().purge_symbol_all(symbol);
     }
 
-    // FIXME: remove AttachmentData owned by id
-
-    return unsafe_remove_id(id);
+    db_release_savepoint();
+    return ok;
 }
 
 // -- methods
 
+bool StockModel::purge_id_dep(int64 stock_id)
+{
+    bool ok = true;
+    db_savepoint();
+
+    for (const TrxLinkData& tl_d : TrxLinkModel::instance().find_data_a(
+        TrxLinkCol::WHERE_LINKTYPE(OP_EQ, StockModel::s_ref_type.key_n()),
+        TrxLinkCol::WHERE_LINKRECORDID(OP_EQ, stock_id)
+    )) {
+        // Remove the link before the transaction,
+        // otherwise update_data_position() is called.
+        ok = ok && TrxLinkModel::instance().purge_id(tl_d.m_id);
+        // TODO: check if transaction is_foreign()
+        // TrxShareData records are removed together with the transaction
+        ok = ok && TrxModel::instance().purge_id(tl_d.m_trx_id);
+    }
+
+    db_release_savepoint();
+    return ok;
+}
+
 const wxString StockModel::get_id_name(int64 stock_id)
 {
-    const Data* stock_n = instance().get_id_data_n(stock_id);
+    const Data* stock_n = get_idN_data_n(stock_id);
     return stock_n ? stock_n->m_name : _t("Stock Error");
+}
+
+const wxString StockModel::get_id_symbol(int64 stock_id)
+{
+    const Data* stock_n = get_idN_data_n(stock_id);
+    return stock_n ? stock_n->m_symbol : "";
 }
 
 // Return the last price date of a given stock
 mmDate StockModel::find_last_hist_date(const Data& stock_d)
 {
     mmDate date = stock_d.m_purchase_date;
-    StockHistoryModel::DataA sh_a = StockHistoryModel::instance().find(
-        StockCol::SYMBOL(stock_d.m_symbol)
-    );
-
-    std::sort(sh_a.begin(), sh_a.end(), StockHistoryData::SorterByDATE());
-    if (!sh_a.empty())
-        date = sh_a.back().m_date;
+    for (const StockHistoryData& sh_d : StockHistoryModel::instance().find_data_a(
+        StockCol::WHERE_SYMBOL(OP_EQ, stock_d.m_symbol),
+        TableClause::ORDERBY(StockHistoryCol::NAME_DATE, true),
+        TableClause::LIMIT(1)
+    )) {
+        date = sh_d.m_date;
+        break;
+    }
 
     return date;
 }
@@ -100,18 +137,15 @@ double StockModel::calculate_account_balance(const AccountData& account_d, const
 {
     double balance = 0.0;
 
-    for (const Data& stock_d : find(
-        StockCol::HELDAT(account_d.m_id)
+    for (const Data& stock_d : find_data_a(
+        StockCol::WHERE_HELDAT(OP_EQ, account_d.m_id)
     )) {
-        StockHistoryModel::DataA sh_a = StockHistoryModel::instance().find(
-            StockCol::SYMBOL(stock_d.m_symbol)
-        );
-        std::stable_sort(sh_a.begin(), sh_a.end(), StockHistoryData::SorterByDATE());
-        std::reverse(sh_a.begin(), sh_a.end());
-
         mmDateN prev_date; double prev_price = 0.0;
         mmDateN next_date; //double next_price = 0.0;
-        for (const StockHistoryData& sh_d : sh_a) {
+        for (const StockHistoryData& sh_d : StockHistoryModel::instance().find_data_a(
+            StockCol::WHERE_SYMBOL(OP_EQ, stock_d.m_symbol),
+            TableClause::ORDERBY(StockHistoryCol::NAME_DATE, true)
+        )) {
             // stop if the exact date is found
             if (sh_d.m_date == date) {
                 prev_date = sh_d.m_date; prev_price = sh_d.m_price;
@@ -151,7 +185,7 @@ double StockModel::calculate_account_balance(const AccountData& account_d, const
             s_ref_type, stock_d.m_id
         );
         for (const TrxLinkModel::Data& tl_d : tl_a) {
-            const TrxData* trx_n = TrxModel::instance().get_id_data_n(
+            const TrxData* trx_n = TrxModel::instance().get_idN_data_n(
                 tl_d.m_trx_id
             );
             if (trx_n && trx_n->m_id > 0 &&
@@ -195,7 +229,7 @@ double StockModel::calculate_realized_gain(const Data& stock_d, bool to_base_cur
     for (const auto& tl_d : TrxLinkModel::instance().find_ref_data_a(
         s_ref_type, stock_d.m_id
     )) {
-        const TrxData* trx_n = TrxModel::instance().get_id_data_n(
+        const TrxData* trx_n = TrxModel::instance().get_idN_data_n(
             tl_d.m_trx_id
         );
         if (trx_n && trx_n->m_id > 0 &&
@@ -274,7 +308,7 @@ double StockModel::calculate_unrealiazed_gain(const Data& stock_d, bool to_base_
 
         TrxModel::DataA trx_a;
         for (const auto& tl_d : tl_a) {
-            const TrxData* trx_d = TrxModel::instance().get_id_data_n(
+            const TrxData* trx_d = TrxModel::instance().get_idN_data_n(
                 tl_d.m_trx_id
             );
             if (trx_d && trx_d->m_id > 0 &&
@@ -326,24 +360,23 @@ void StockModel::update_symbol_current_price(const wxString& symbol, double pric
 {
     double current_price = price;
     if (current_price == -1) {
-        StockHistoryModel::DataA sh_a = StockHistoryModel::instance().find(
-            StockHistoryCol::SYMBOL(symbol)
-        );
-        if (!sh_a.empty()) {
-            std::sort(sh_a.begin(), sh_a.end(), StockHistoryData::SorterByDATE());
-            current_price = sh_a.back().m_price;
+        for (const StockHistoryData& sh_d : StockHistoryModel::instance().find_data_a(
+            StockHistoryCol::WHERE_SYMBOL(OP_EQ, symbol),
+            TableClause::ORDERBY(StockHistoryCol::NAME_DATE, true),
+            TableClause::LIMIT(1)
+        )) {
+            current_price = sh_d.m_price;
+            break;
         }
     }
     if (current_price == -1)
         return;
 
-    for (const Data& stock_d : find(
-        StockCol::SYMBOL(symbol)
+    for (Data& stock_d : find_data_a(
+        StockCol::WHERE_SYMBOL(OP_EQ, symbol)
     )) {
-        // TODO: use stock_d directly
-        StockData* stock_n = unsafe_get_id_data_n(stock_d.m_id);
-        stock_n->m_current_price = current_price;
-        unsafe_update_data_n(stock_n);
+        stock_d.m_current_price = current_price;
+        update_data_n(stock_d);
     }
 }
 
@@ -363,7 +396,7 @@ void StockModel::update_data_position(StockData* stock_n)
     mmDate min_trx_date = mmDate::today();
     TrxModel::DataA trx_a;
     for (const auto& tl_d : tl_a) {
-        const TrxData* trx_n = TrxModel::instance().get_id_data_n(tl_d.m_trx_id);
+        const TrxData* trx_n = TrxModel::instance().get_idN_data_n(tl_d.m_trx_id);
         if (trx_n && trx_n->m_id > 0 && trx_n->is_valid()) {
             trx_a.push_back(*trx_n);
         }

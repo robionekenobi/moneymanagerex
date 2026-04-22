@@ -18,10 +18,11 @@
 
 #pragma once
 
+// StockData represents a record in table STOCK_V1.
+
 #include "base/mmDate.h"
 #include "table/StockTable.h"
 
-// User-friendly representation of a record in table STOCK_V1.
 struct StockData
 {
     int64    m_id;

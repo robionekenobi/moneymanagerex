@@ -30,6 +30,7 @@
 #include "util/mmImage.h"
 #include "util/mmDateShifter.h"
 #include "util/mmNavigatorList.h"
+#include "util/mmAttachment.h"
 #include "util/_util.h"
 #include "model/PrefModel.h"
 #include "model/TrxFilter.h"
@@ -318,8 +319,8 @@ void ReportPanel::createControls()
 
             int64 sel_id = m_rb->getDateSelection();
             wxString sel_name;
-            for (const auto& bp_d : BudgetPeriodModel::instance().find_all(
-                BudgetPeriodCol::COL_ID_BUDGETYEARNAME
+            for (const auto& bp_d : BudgetPeriodModel::instance().find_data_a(
+                TableClause::ORDERBY(BudgetPeriodCol::NAME_BUDGETYEARNAME)
             )) {
                 const wxString& name = bp_d.m_name;
 
@@ -401,13 +402,13 @@ void ReportPanel::createControls()
             itemBoxSizerHeader->Add(itemStaticTextH1, 0, wxALL | wxALIGN_CENTER_VERTICAL, 1);
             itemBoxSizerHeader->AddSpacer(5);
 
-            StockModel::DataA stock_a = StockModel::instance().find_all();
-            std::stable_sort(stock_a.begin(), stock_a.end(), StockData::SorterBySTOCKNAME());
-
             wxString prevSymbol = "";
             w_stocks_choice = new wxChoice(itemPanel3, ID_STOCK_CHOICE);
-            for (const StockModel::Data& stock_d : stock_a) {
-                const AccountModel::Data* account_n = AccountModel::instance().get_id_data_n(
+            for (const StockData& stock_d : StockModel::instance().find_data_a(
+                TableClause::ORDERBY(StockCol::NAME_STOCKNAME),
+                TableClause::ORDERBY(StockCol::NAME_STOCKID)
+            )) {
+                const AccountModel::Data* account_n = AccountModel::instance().get_idN_data_n(
                     stock_d.m_account_id_n
                 );
                 if (account_n->is_open()) {
@@ -801,7 +802,7 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
             std::vector<int64> sub_id_a;
             // include all sub categories
             if (sub_id == -2) {
-                const CategoryData* cat_n = CategoryModel::instance().get_id_data_n(cat_id);
+                const CategoryData* cat_n = CategoryModel::instance().get_idN_data_n(cat_id);
                 for (const auto& sub_d : CategoryModel::instance().find_data_subtree_a(*cat_n)) {
                     sub_id_a.push_back(sub_d.m_id);
                 }
@@ -823,9 +824,9 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
     else if (uri.StartsWith("trxid:", &sData)) {
         long long transID = -1;
         if (sData.ToLongLong(&transID)) {
-            const TrxData* trx_n = TrxModel::instance().get_id_data_n(transID);
+            const TrxData* trx_n = TrxModel::instance().get_idN_data_n(transID);
             if (trx_n && trx_n->m_id > -1) {
-                const AccountData* account_n = AccountModel::instance().get_id_data_n(
+                const AccountData* account_n = AccountModel::instance().get_idN_data_n(
                     trx_n->m_account_id
                 );
                 if (account_n) {
@@ -840,21 +841,19 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
     else if (uri.StartsWith("trx:", &sData)) {
         long long transId = -1;
         if (sData.ToLongLong(&transId)) {
-            TrxData* trx_n = TrxModel::instance().unsafe_get_id_data_n(transId);
+            TrxData* trx_n = TrxModel::instance().unsafe_get_idN_data_n(transId);
             if (trx_n && trx_n->m_id > -1) {
                 if (TrxModel::is_foreign(*trx_n)) {
                     const TrxLinkData* tl_n = TrxLinkModel::instance().get_trx_data_n(transId);
                     if (tl_n && tl_n->m_ref_type == StockModel::s_ref_type) {
-                        TrxLinkData tl_d = *tl_n;
-                        TrxShareDialog dlg(w_frame, &tl_d, trx_n);
+                        TrxShareDialog dlg(w_frame, tl_n, trx_n);
                         if (dlg.ShowModal() == wxID_OK) {
                             m_rb->getHTMLText();
                             saveReportText();
                         }
                     }
                     else if (tl_n && tl_n->m_ref_type == AssetModel::s_ref_type) {
-                        TrxLinkData tl_d = *tl_n;
-                        AssetDialog dlg(w_frame, &tl_d, trx_n);
+                        AssetDialog dlg(w_frame, tl_n, trx_n);
                         if (dlg.ShowModal() == wxID_OK) {
                             m_rb->getHTMLText();
                             saveReportText();
@@ -862,7 +861,7 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
                     }
                 }
                 else {
-                    TrxDialog dlg(w_frame, -1, JournalKey(-1, transId));
+                    TrxDialog dlg(w_frame, JournalKey(-1, transId));
                     if (dlg.ShowModal() != wxID_CANCEL) {
                         m_rb->getHTMLText();
                         saveReportText();
@@ -879,7 +878,7 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
         sData.AfterFirst('|').ToLongLong(&ref_id);
 
         if (ref_type.has_value() && ref_id > 0) {
-            mmAttachmentManage::OpenAttachmentFromPanelIcon(w_frame, ref_type, ref_id);
+            mmAttachment::openFromPanelIcon(w_frame, ref_type, ref_id);
             const auto name = getVFname4print("rep", getReportBase()->getHTMLText());
             w_browser->LoadURL(name);
         }
@@ -911,9 +910,9 @@ void ReportPanel::onNewWindow(wxWebViewEvent& evt)
         }
 
         //get model budget for yearID and cat_id
-        BudgetModel::DataA budget_a = BudgetModel::instance().find(
-            BudgetCol::BUDGETYEARID(bp_id_n),
-            BudgetCol::CATEGID(std::stoll(parms[2]))
+        BudgetModel::DataA budget_a = BudgetModel::instance().find_data_a(
+            BudgetCol::WHERE_BUDGETYEARID(OP_EQ, bp_id_n),
+            BudgetCol::WHERE_CATEGID(OP_EQ, std::stoll(parms[2]))
         );
 
         BudgetData budget_d;

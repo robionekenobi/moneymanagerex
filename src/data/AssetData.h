@@ -18,11 +18,12 @@
 
 #pragma once
 
+// AssetData represents a record in table ASSETS_V1.
+
 #include "base/mmDate.h"
 #include "_DataEnum.h"
 #include "table/AssetTable.h"
 
-// User-friendly representation of a record in table ASSETS_V1.
 struct AssetData
 {
     int64           m_id;

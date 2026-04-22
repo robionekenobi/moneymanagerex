@@ -18,9 +18,10 @@
 
 #pragma once
 
+// TrxShareData represents a record in table SHAREINFO_V1.
+
 #include "table/TrxShareTable.h"
 
-// User-friendly representation of a record in table SHAREINFO_V1.
 struct TrxShareData
 {
     int64    m_id;

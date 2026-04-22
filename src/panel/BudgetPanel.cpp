@@ -311,7 +311,7 @@ bool BudgetPanel::displayEntryAllowed(int64 cat_id, int64 subcat_id)
         is_visible = true;
 
     if (cat_id > 0) {
-        const CategoryData* cat_n = CategoryModel::instance().get_id_data_n(cat_id);
+        const CategoryData* cat_n = CategoryModel::instance().get_idN_data_n(cat_id);
         m_level_visible_mCatId[cat_id].second = is_visible;
         for (const auto& subcat_d : CategoryModel::instance().find_data_subtree_a(*cat_n)) {
             is_visible = is_visible || displayEntryAllowed(subcat_d.m_id, -1);
@@ -380,12 +380,12 @@ void BudgetPanel::initVirtualListControl()
         (evaluateTransfer ? &m_amount_mCatId : nullptr)
     );
 
-    //start with only the root categories
-    CategoryModel::DataA cat_a = CategoryModel::instance().find(
-        CategoryCol::PARENTID(-1)
-    );
-    std::stable_sort(cat_a.begin(), cat_a.end(), CategoryData::SorterByCATEGNAME());
-    for (const auto& cat_d : cat_a) {
+    // start with only the root categories
+
+    for (const CategoryData& cat_d : CategoryModel::instance().find_data_a(
+        CategoryCol::WHERE_PARENTID(OP_EQ, -1),
+        TableClause::ORDERBY(CategoryCol::NAME_CATEGNAME)
+    )) {
         m_level_visible_mCatId[cat_d.m_id].first = 0;
         double estimated = getEstimate(cat_d.m_id);
         if (estimated < 0)
@@ -547,14 +547,14 @@ wxString BudgetPanel::getItem(long item, int col_id)
     case BudgetList::LIST_ID_ICON:
         return " ";
     case BudgetList::LIST_ID_CATEGORY: {
-        const CategoryData* category_n = CategoryModel::instance().get_id_data_n(
+        const CategoryData* cat_n = CategoryModel::instance().get_idN_data_n(
             m_catId_subcatId_a[item].first > 0
                 ? m_catId_subcatId_a[item].first
                 : m_catId_subcatId_a[item].second
         );
-        if (category_n) {
-            wxString name = category_n->m_name;
-            for (int64 i = m_level_visible_mCatId[category_n->m_id].first; i > 0; i--) {
+        if (cat_n) {
+            wxString name = cat_n->m_name;
+            for (int64 i = m_level_visible_mCatId[cat_n->m_id].first; i > 0; i--) {
                 name.Prepend("    ");
             }
             return name;
@@ -663,9 +663,9 @@ void BudgetPanel::onListItemActivated(int item)
             ? m_catId_subcatId_a[item].second
             : m_catId_subcatId_a[item].first;
 
-    BudgetModel::DataA budget_a = BudgetModel::instance().find(
-        BudgetCol::BUDGETYEARID(getBudgetYearID()),
-        BudgetCol::CATEGID(subcat_id)
+    BudgetModel::DataA budget_a = BudgetModel::instance().find_data_a(
+        BudgetCol::WHERE_BUDGETYEARID(OP_EQ, getBudgetYearID()),
+        BudgetCol::WHERE_CATEGID(OP_EQ, subcat_id)
     );
 
     BudgetData budget_d = BudgetData();
@@ -677,8 +677,9 @@ void BudgetPanel::onListItemActivated(int item)
         budget_d.m_amount      = 0.0;
         BudgetModel::instance().add_data_n(budget_d);
     }
-    else
+    else {
         budget_d = budget_a[0];
+    }
 
     double estimate = getEstimate(subcat_id);
     double actual = m_amount_mMonth_mCatId[subcat_id][0];

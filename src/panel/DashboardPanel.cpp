@@ -135,7 +135,7 @@ void DashboardPanel::insertDataIntoTemplate()
 
     // Get curreny details to pass to report for Apexcharts
     int64 base_currency_id = PrefModel::instance().getBaseCurrencyID();
-    const CurrencyData* base_currency_n = CurrencyModel::instance().get_id_data_n(
+    const CurrencyData* base_currency_n = CurrencyModel::instance().get_idN_data_n(
         base_currency_id
     );
 

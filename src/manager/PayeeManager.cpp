@@ -207,9 +207,10 @@ void PayeeManager::OnOk(wxCommandEvent& /*event*/)
     if (name.IsEmpty())
         return mmErrorDialogs::ToolTip4Object(m_payeeName, _t("Invalid value"), _t("Payee"));
 
-    PayeeModel::DataA payees = PayeeModel::instance().find(PayeeCol::PAYEENAME(name));
-    if ((!m_payee_n && payees.empty())
-        || (m_payee_n && (payees.empty() || name.CmpNoCase(m_payee_n->m_name) == 0))
+    if ((m_payee_n && name.CmpNoCase(m_payee_n->m_name) == 0) ||
+        PayeeModel::instance().find_count(
+            PayeeCol::WHERE_PAYEENAME(OP_EQ, name)
+        ) == 0
     ) {
         if (!m_payee_n) {
             m_payee_d = PayeeData();
@@ -331,8 +332,7 @@ void PayeeManager::OnMoveDown(wxCommandEvent& /*event*/)
 
     // add the current working row (not always included in SelectedCells)
     int cursorRow = m_patternTable->GetGridCursorRow();
-    if (cursorRow < maxRow)
-    {
+    if (cursorRow < maxRow) {
         if (selectedRows.Index(cursorRow) == wxNOT_FOUND) selectedRows.Add(cursorRow);
         // the cursor will move down one cell if not already at the bottom
         m_patternTable->MoveCursorDown(false);
@@ -343,12 +343,17 @@ void PayeeManager::OnMoveDown(wxCommandEvent& /*event*/)
     for (int i = selectedRows.GetCount() - 1; i >= 0; i--) {
         // reselect the row (cleared by cursor move)
         m_patternTable->SelectRow(selectedRows[i], true);
-        // we only want to move the cell up if the row below is not selected (so that selected blocks stay in order)
+        // we only want to move the cell up if the row below is not selected
+        // (so that selected blocks stay in order)
         // and the cell isn't already in the last row
         if (selectedRows[i] < maxRow && selectedRows.Index(selectedRows[i] + 1) == wxNOT_FOUND) {
             // swap the cell contents with the cell below
             wxString swapString = m_patternTable->GetCellValue(selectedRows[i] + 1, 0);
-            m_patternTable->SetCellValue(selectedRows[i] + 1, 0, m_patternTable->GetCellValue(selectedRows[i], 0));
+            m_patternTable->SetCellValue(
+                selectedRows[i] + 1,
+                0,
+                m_patternTable->GetCellValue(selectedRows[i], 0)
+            );
             m_patternTable->SetCellValue(selectedRows[i], 0, swapString);
             // deselect old row & select row below
             m_patternTable->DeselectRow(selectedRows[i]);
@@ -369,11 +374,9 @@ void PayeeManager::OnMoveDown(wxCommandEvent& /*event*/)
 
 void PayeeManager::OnComboKey(wxKeyEvent& event)
 {
-    if ((event.GetKeyCode() == WXK_RETURN) && (event.GetId() == mmID_CATEGORY))
-    {
+    if ((event.GetKeyCode() == WXK_RETURN) && (event.GetId() == mmID_CATEGORY)) {
         auto category = m_category->GetValue();
-        if (category.empty())
-        {
+        if (category.empty()) {
             CategoryManager dlg(this, true, -1);
             dlg.ShowModal();
             if (dlg.getRefreshRequested())
@@ -400,10 +403,15 @@ void PayeeManager::OnPatternTableChanged(wxGridEvent& event)
     }
 
     // if text was entered in the last row, add a row
-    if (row == m_patternTable->GetNumberRows() - 1 && m_patternTable->GetCellValue(row, 0) != wxEmptyString)
+    if (row == m_patternTable->GetNumberRows() - 1 &&
+        m_patternTable->GetCellValue(row, 0) != wxEmptyString
+    )
         m_patternTable->AppendRows();
-    // if text was deleted from the second to last row, delete a row so only one blank row is at the bottom
-    else if (row == m_patternTable->GetNumberRows() - 2 && m_patternTable->GetCellValue(row, 0) == wxEmptyString)
+    // if text was deleted from the second to last row, delete a row
+    // so only one blank row is at the bottom
+    else if (row == m_patternTable->GetNumberRows() - 2 &&
+        m_patternTable->GetCellValue(row, 0) == wxEmptyString
+    )
         m_patternTable->DeleteRows(m_patternTable->GetNumberRows() - 1);
     ResizeDialog();
 }
@@ -543,12 +551,12 @@ void mmPayeeDialog::Create(wxWindow* parent, const wxString &name)
     SetIcon(mmPath::getProgramIcon());
 
     // Calculate payee usage
-    for (const auto& trx_d : TrxModel::instance().find_all()) {
-        if (!trx_d.is_deleted()) {
-            m_payeeUsage[trx_d.m_payee_id_n]++;
-        }
+    for (const auto& trx_d : TrxModel::instance().find_data_a(
+        TrxModel::WHERE_IS_DELETED(false)
+    )) {
+        m_payeeUsage[trx_d.m_payee_id_n]++;
     }
-    for (const auto& sched_d : SchedModel::instance().find_all()) {
+    for (const auto& sched_d : SchedModel::instance().find_data_a()) {
         m_payeeUsage[sched_d.m_payee_id_n]++;
     }
     fillControls();
@@ -743,7 +751,7 @@ void mmPayeeDialog::EditPayee()
         return;
 
     RowData* rdata = reinterpret_cast<RowData*>(payeeListBox_->GetItemData(sel));
-    PayeeData* payee_n = PayeeModel::instance().unsafe_get_id_data_n(rdata->payeeId);
+    PayeeData* payee_n = PayeeModel::instance().unsafe_get_idN_data_n(rdata->payeeId);
     PayeeManager dlg(this, payee_n);
     if (dlg.ShowModal() == wxID_OK) {
         rdata->active = payee_n->m_active;
@@ -762,8 +770,11 @@ void mmPayeeDialog::DeletePayee()
 {
     FindSelectedPayees();
     for (RowData* rdata : m_selectedItems) {
-        const PayeeData* payee_n = PayeeModel::instance().get_id_data_n(rdata->payeeId);
-        if (PayeeModel::instance().find_id_dep_c(rdata->payeeId) > 0) {
+        int64 payee_id = rdata->payeeId;
+        const PayeeData* payee_n = PayeeModel::instance().get_idN_data_n(
+            payee_id
+        );
+        if (PayeeModel::instance().find_id_isUsed(payee_id, true)) {
             wxString deletePayeeErrMsg = _t("Payee in use.");
             deletePayeeErrMsg
                 << "\n"
@@ -774,43 +785,40 @@ void mmPayeeDialog::DeletePayee()
                 << _t("Tip: Change all transactions using this Payee to another Payee"
                     " using the merge command:")
                 << "\n\n" << _tu("Tools → Merge → Payees");
-            wxMessageBox(deletePayeeErrMsg, _t("Payee Manager: Delete Error"), wxOK | wxICON_ERROR);
+            wxMessageBox(
+                deletePayeeErrMsg,
+                _t("Payee Manager: Delete Error"),
+                wxOK | wxICON_ERROR
+            );
             continue;
         }
-        TrxModel::DataA trx_a = TrxModel::instance().find(
-            TrxCol::PAYEEID(rdata->payeeId)
-        );
-        wxMessageDialog msgDlg(this,
-            _t("Deleted transactions exist which use this payee.") + "\n\n" +
-                _t("Deleting the payee will also automatically purge the associated deleted transactions.") + "\n\n" +
-                _t("Do you want to continue?"),
-            _t("Confirm Payee Deletion"),
-            wxYES_NO | wxNO_DEFAULT | wxICON_WARNING
-        );
-        if (trx_a.empty() || msgDlg.ShowModal() == wxID_YES) {
-            if (!trx_a.empty()) {
-                TrxModel::instance().db_savepoint();
-                TrxSplitModel::instance().db_savepoint();
-                AttachmentModel::instance().db_savepoint();
-                FieldValueModel::instance().db_savepoint();
 
-                for (auto& trx_d : trx_a) {
-                    FieldValueModel::instance().purge_ref(TrxModel::s_ref_type, trx_d.m_id);
-                    mmAttachmentManage::DeleteAllAttachments(TrxModel::s_ref_type, trx_d.m_id);
-                    TrxModel::instance().purge_id(trx_d.m_id);
-                }
+        // Payee may be used in deleted transactions.
+        std::vector<int64> deleted_trx_id_a = TrxModel::instance().find_id_a(
+            TrxCol::WHERE_PAYEEID(OP_EQ, payee_id)
+        );
 
-                FieldValueModel::instance().db_release_savepoint();
-                AttachmentModel::instance().db_release_savepoint();
-                TrxSplitModel::instance().db_release_savepoint();
-                TrxModel::instance().db_release_savepoint();
+        if (!deleted_trx_id_a.empty()) {
+            wxMessageDialog msgDlg(this,
+                _t("Deleted transactions exist which use this payee.") + "\n\n" +
+                    _t("Deleting the payee will also automatically purge the associated deleted transactions.") + "\n\n" +
+                    _t("Do you want to continue?"),
+                _t("Confirm Payee Deletion"),
+                wxYES_NO | wxNO_DEFAULT | wxICON_WARNING
+            );
+            if (msgDlg.ShowModal() != wxID_YES)
+                continue;
+
+            TrxModel::instance().db_savepoint();
+            for (int64 deleted_trx_id : deleted_trx_id_a) {
+                TrxModel::instance().purge_id(deleted_trx_id);
             }
-
-            PayeeModel::instance().purge_id(payee_n->m_id);
-            mmAttachmentManage::DeleteAllAttachments(PayeeModel::s_ref_type, payee_n->m_id);
-            refreshRequested_ = true;
-            fillControls();
+            TrxModel::instance().db_release_savepoint();
         }
+
+        PayeeModel::instance().purge_id(payee_id);
+        refreshRequested_ = true;
+        fillControls();
     }
 }
 
@@ -819,11 +827,11 @@ void mmPayeeDialog::DefineDefaultCategory()
     FindSelectedPayees();
     int nb = size(m_selectedItems);
     if (nb > 0) {
-        const PayeeData* sel_payee_n = PayeeModel::instance().get_id_data_n(m_selectedItems.front()->payeeId);
+        const PayeeData* sel_payee_n = PayeeModel::instance().get_idN_data_n(m_selectedItems.front()->payeeId);
         CategoryManager dlg(this, true, nb == 1 ? sel_payee_n->m_category_id_n : -1);
         if (dlg.ShowModal() == wxID_OK) {
             for (RowData* rdata : m_selectedItems) {
-                PayeeData* payee_n = PayeeModel::instance().unsafe_get_id_data_n(rdata->payeeId);
+                PayeeData* payee_n = PayeeModel::instance().unsafe_get_idN_data_n(rdata->payeeId);
                 payee_n->m_category_id_n = dlg.getCategId();
                 PayeeModel::instance().unsafe_update_data_n(payee_n);
                 mmWebApp::uploadPayee();
@@ -841,7 +849,7 @@ void mmPayeeDialog::RemoveDefaultCategory()
 {
     FindSelectedPayees();
     for (RowData* rdata : m_selectedItems) {
-        PayeeData* payee_n = PayeeModel::instance().unsafe_get_id_data_n(rdata->payeeId);
+        PayeeData* payee_n = PayeeModel::instance().unsafe_get_idN_data_n(rdata->payeeId);
         payee_n->m_category_id_n = -1;
         PayeeModel::instance().unsafe_update_data_n(payee_n);
         mmWebApp::uploadPayee();
@@ -932,7 +940,7 @@ void mmPayeeDialog::ToggleHide(long idx, bool state) {
     RowData* rdata = reinterpret_cast<RowData*>(payeeListBox_->GetItemData(idx));
     if (rdata->payeeId > -1) {
         rdata->active = state;
-        PayeeData *payee_n = PayeeModel::instance().unsafe_get_id_data_n(rdata->payeeId);
+        PayeeData *payee_n = PayeeModel::instance().unsafe_get_idN_data_n(rdata->payeeId);
         payee_n->m_active = state;
         PayeeModel::instance().unsafe_update_data_n(payee_n);
         payeeListBox_->SetItemTextColour(idx, state ? m_normalColor : m_hiddenColor);

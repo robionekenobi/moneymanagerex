@@ -49,17 +49,17 @@ UNUSED_mmComboBoxText::UNUSED_mmComboBoxText(
 void UNUSED_mmComboBoxText::setSelection(int& id)
 {
     if (m_is_payee) {
-        for (const auto& payee_d : PayeeModel::instance().find_all(
-            PayeeCol::COL_ID_PAYEENAME)
-        ) {
+        for (const auto& payee_d : PayeeModel::instance().find_data_a(
+            TableClause::ORDERBY(PayeeCol::NAME_PAYEENAME)
+        )) {
             if (payee_d.m_id == id)
                 this->ChangeValue(payee_d.m_name);
         }
     }
     else {
-        for (const auto &acc : AccountModel::instance().find_all(
-            AccountCol::COL_ID_ACCOUNTNAME)
-        ) {
+        for (const auto &acc : AccountModel::instance().find_data_a(
+            TableClause::ORDERBY(AccountCol::NAME_ACCOUNTNAME)
+        )) {
             if (acc.m_id == id)
                 this->ChangeValue(acc.m_name);
         }

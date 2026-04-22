@@ -42,8 +42,8 @@ mmChoiceKeyNameA AssetType::s_choice_a = mmChoiceKeyNameA({
 }, e_property, true );
 
 mmChoiceKeyNameA AssetStatus::s_choice_a = mmChoiceKeyNameA({
-    { e_closed, "Closed", _n("Closed") },
     { e_open,   "Open",   _n("Open") },
+    { e_closed, "Closed", _n("Closed") },
 }, e_open, true);
 
 mmChoiceKeyNameA AssetChange::s_choice_a = mmChoiceKeyNameA({

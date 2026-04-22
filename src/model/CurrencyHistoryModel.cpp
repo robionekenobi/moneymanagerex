@@ -21,6 +21,13 @@
 #include "CurrencyHistoryModel.h"
 #include "PrefModel.h"
 
+// -- static
+
+TableClauseV<wxString> CurrencyHistoryModel::WHERE_DATE(OP op, const mmDate& date)
+{
+    return CurrencyHistoryCol::WHERE_CURRDATE(op, date.isoDate());
+}
+
 // -- constructor
 
 // Initialize the global CurrencyHistoryModel table.
@@ -42,23 +49,54 @@ CurrencyHistoryModel& CurrencyHistoryModel::instance()
 
 // -- methods
 
+bool CurrencyHistoryModel::purge_currencyId_all(int64 currency_id)
+{
+    bool ok = true;
+    db_savepoint();
+
+    for (int64 uh_id : find_id_a(
+        CurrencyHistoryCol::WHERE_CURRENCYID(OP_EQ, currency_id)
+    )) {
+        ok = ok && purge_id(uh_id);
+    }
+
+    db_release_savepoint();
+    return ok;
+}
+
+// Clears the currency History table
+bool CurrencyHistoryModel::purge_all()
+{
+    bool ok = true;
+    db_savepoint();
+
+    for (int64 uh_id : find_id_a()) {
+        ok = ok && purge_id(uh_id);
+    }
+
+    db_release_savepoint();
+    return ok;
+}
+
 const CurrencyHistoryData* CurrencyHistoryModel::get_key_data_n(
     int64 currency_id,
     const mmDate& date
 ) {
     const Data* uh_n = search_cache_n(
         CurrencyHistoryCol::CURRENCYID(currency_id),
-        CurrencyHistoryModel::DATE(OP_EQ, date)
+        CurrencyHistoryCol::CURRDATE(OP_EQ, date.isoDate())
     );
     if (uh_n)
         return uh_n;
 
-    const DataA uh_a = find(
-        CurrencyHistoryCol::CURRENCYID(currency_id),
-        CurrencyHistoryModel::DATE(OP_EQ, date)
-    );
-    if (!uh_a.empty())
-        uh_n = get_id_data_n(uh_a[0].m_id);
+    for (int64 uh_id : find_id_a(
+        CurrencyHistoryCol::WHERE_CURRENCYID(OP_EQ, currency_id),
+        CurrencyHistoryModel::WHERE_DATE(OP_EQ, date)
+    )) {
+        uh_n = get_idN_data_n(uh_id);
+        break;
+    }
+
     return uh_n;
 }
 
@@ -69,45 +107,48 @@ double CurrencyHistoryModel::get_id_date_rate(int64 currency_id_n, const mmDate&
     )
         return 1.0;
 
-    const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(currency_id_n);
+    const CurrencyData* currency_n = CurrencyModel::instance().get_idN_data_n(currency_id_n);
     if (!PrefModel::instance().getUseCurrencyHistory())
         return currency_n->m_base_conv_rate;
 
-    const DataA uh_a = CurrencyHistoryModel::instance().find(
-        CurrencyHistoryCol::CURRENCYID(OP_EQ, currency_id_n),
-        CurrencyHistoryModel::DATE(OP_EQ, date)
-    );
-    if (!uh_a.empty()) {
-        // Rate found for specified day
-        return uh_a.back().m_base_conv_rate;
+    // Search for specified date
+    for (const Data& uh_d : CurrencyHistoryModel::instance().find_data_a(
+        CurrencyHistoryCol::WHERE_CURRENCYID(OP_EQ, currency_id_n),
+        CurrencyHistoryModel::WHERE_DATE(OP_EQ, date)
+    )) {
+        return uh_d.m_base_conv_rate;
     }
-    if (find(
-        CurrencyHistoryCol::CURRENCYID(currency_id_n)
-    ).empty()) {
+
+    if (find_count(
+        CurrencyHistoryCol::WHERE_CURRENCYID(OP_EQ, currency_id_n)
+    ) == 0) {
         return currency_n->m_base_conv_rate;
     }
 
-    // Rate not found for specified day, look at previous and next
-    // FIXME: sort by date
-    CurrencyHistoryModel::DataA prev_uh_a = find(
-        CurrencyHistoryCol::CURRENCYID(currency_id_n),
-        CurrencyHistoryModel::DATE(OP_LE, date)
+    // Rate not found for specified date, look at previous and next
+    CurrencyHistoryModel::DataA prev_uh_a = find_data_a(
+        CurrencyHistoryCol::WHERE_CURRENCYID(OP_EQ, currency_id_n),
+        CurrencyHistoryModel::WHERE_DATE(OP_LE, date),
+        TableClause::ORDERBY(CurrencyHistoryCol::NAME_CURRDATE, true),
+        TableClause::LIMIT(1)
     );
-    CurrencyHistoryModel::DataA next_uh_a = find(
-        CurrencyHistoryCol::CURRENCYID(currency_id_n),
-        CurrencyHistoryModel::DATE(OP_GE, date)
+    CurrencyHistoryModel::DataA next_uh_a = find_data_a(
+        CurrencyHistoryCol::WHERE_CURRENCYID(OP_EQ, currency_id_n),
+        CurrencyHistoryModel::WHERE_DATE(OP_GE, date),
+        TableClause::ORDERBY(CurrencyHistoryCol::NAME_CURRDATE, false),
+        TableClause::LIMIT(1)
     );
 
     if (!prev_uh_a.empty() && !next_uh_a.empty()) {
         mmDate date_copy = date;
-        int prev_days = date_copy.daysSince(prev_uh_a.back().m_date);
+        int prev_days = date_copy.daysSince(prev_uh_a[0].m_date);
         int next_days = date_copy.daysUntil(next_uh_a[0].m_date);
         return prev_days <= next_days
-            ? prev_uh_a.back().m_base_conv_rate
+            ? prev_uh_a[0].m_base_conv_rate
             : next_uh_a[0].m_base_conv_rate;
     }
     else if (!prev_uh_a.empty()) {
-        return prev_uh_a.back().m_base_conv_rate;
+        return prev_uh_a[0].m_base_conv_rate;
     }
     else if (!next_uh_a.empty()) {
         return next_uh_a[0].m_base_conv_rate;
@@ -119,22 +160,21 @@ double CurrencyHistoryModel::get_id_date_rate(int64 currency_id_n, const mmDate&
 // Return the last rate for specified currency
 double CurrencyHistoryModel::get_id_last_rate(int64 currency_id)
 {
-    if (!PrefModel::instance().getUseCurrencyHistory())
-        return CurrencyModel::instance().get_id_data_n(currency_id)->m_base_conv_rate;
-
-    DataA uh_a = find(
-        CurrencyHistoryCol::CURRENCYID(currency_id)
-    );
-    std::stable_sort(uh_a.begin(), uh_a.end(),
-        CurrencyHistoryData::SorterByCURRDATE()
-    );
-
-    if (!uh_a.empty())
-        return uh_a.back().m_base_conv_rate;
-    else {
-        const CurrencyData* currency_n = CurrencyModel::instance().get_id_data_n(currency_id);
-        return currency_n->m_base_conv_rate;
+    if (PrefModel::instance().getUseCurrencyHistory()) {
+        for (const Data& uh_d : find_data_a(
+            CurrencyHistoryCol::WHERE_CURRENCYID(OP_EQ, currency_id),
+            TableClause::ORDERBY(Col::NAME_CURRDATE, true),
+            TableClause::ORDERBY(Col::s_primary_name, true),
+            TableClause::LIMIT(1)
+        )) {
+            return uh_d.m_base_conv_rate;
+        }
     }
+
+    const CurrencyData* currency_n = CurrencyModel::instance().get_idN_data_n(
+        currency_id
+    );
+    return currency_n->m_base_conv_rate;
 }
 
 // Adds or updates an element in currency history
@@ -152,14 +192,4 @@ int64 CurrencyHistoryModel::save_record(
     uh_d.m_update_type    = update_type;
     save_data_n(uh_d);
     return uh_d.m_id;
-}
-
-// Clears the currency History table
-void CurrencyHistoryModel::purge_all()
-{
-    db_savepoint();
-    for (const auto& uh_d : find_all()) {
-        purge_id(uh_d.m_id);
-    }
-    db_release_savepoint();
 }

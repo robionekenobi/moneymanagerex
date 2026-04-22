@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "TrxFilter.h"
 
 #include "base/mmUserColor.h"
+#include "util/mmAttachment.h"
 #include "dialog/AttachmentDialog.h"
 #include "report/htmlbuilder.h"
 
@@ -130,9 +131,12 @@ wxString TrxFilter::getHTML()
     const auto trxId_glA_m = TagLinkModel::instance().find_refType_mRefId(
         TrxModel::s_ref_type
     );
-    //TODO: find should be faster
-    for (const auto& trx_d : TrxModel::instance().find_all()) {
-        if (!mmIsRecordMatches(trx_d, trxId_tpA_m)) continue;
+    // TODO: find should be faster
+    for (const auto& trx_d : TrxModel::instance().find_data_a(
+        TableClause::ORDERBY(TrxCol::s_primary_name)
+    )) {
+        if (!mmIsRecordMatches(trx_d, trxId_tpA_m))
+            continue;
         TrxModel::DataExt full_tran(trx_d, trxId_tpA_m, trxId_glA_m);
 
         full_tran.PAYEENAME = full_tran.real_payee_name(full_tran.m_account_id);
@@ -228,13 +232,15 @@ table {
         else
             hb.addTableCell(wxGetTranslation(trx_dx.m_type.name()));
 
-        const AccountData* acc = AccountModel::instance().get_id_data_n(
+        const AccountData* account_n = AccountModel::instance().get_idN_data_n(
             trx_dx.m_account_id
         );
-        if (acc) {
-            const CurrencyData* curr = AccountModel::instance().get_data_currency_p(*acc);
-            double flow = trx_dx.account_flow(acc->m_id);
-            hb.addCurrencyCell(flow, curr);
+        if (account_n) {
+            const CurrencyData* currency_p = AccountModel::instance().get_data_currency_p(
+                *account_n
+            );
+            double flow = trx_dx.account_flow(account_n->m_id);
+            hb.addCurrencyCell(flow, currency_p);
         }
         else {
             wxFAIL_MSG("account for transaction not found");
@@ -246,7 +252,7 @@ table {
         if (AttachmentModel::instance().find_ref_c(TrxModel::s_ref_type, trx_dx.m_id)) {
             AttachmentsLink = wxString::Format(R"(<a href = "attachment:%s|%lld" target="_blank">%s</a>)",
                 TrxModel::s_ref_type.key_n(), trx_dx.m_id,
-                mmAttachmentManage::GetAttachmentNoteSign());
+                mmAttachment::getMarker());
         }
 
         //Notes
