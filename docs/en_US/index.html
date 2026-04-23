@@ -692,37 +692,18 @@
         MMEX never modifies or overwrites existing backup files.
     </p>
 
-    <aside class="sticky notes">
-        MMEX cannot open <code>.bak</code> files directly.
-        To restore one, rename it to <code>dbname.mmb</code>.
-    </aside>
 
     <h4>How to Restore a Backup Safely</h4>
 
+
+    <aside class="sticky notes">
+        MMEX will not store the backup file name in the list of recently used file names.
+    </aside>
+
     <ol>
-        <li>Close MMEX.</li>
-        <li>Locate the folder containing the database and its backups.</li>
-
-        <li>
-            Rename the main database (<code>dbname.mmb</code>) to something like:<br>
-            <code>Last_dbname.mmb</code>
-            to avoid filename conflicts.
-        </li>
-
-        <li>
-            Make a copy of the backup you want to restore (right-click → copy → paste).
-        </li>
-
-        <li>
-            Rename the copied backup from:<br>
-            <code>dbname_start_YYYY-MM-DD.bak</code> or <code>dbname_update_YYYY-MM-DD.bak</code><br>
-            to:<br>
-            <code>dbname.mmb</code>
-        </li>
-
-        <li>
-            Open the renamed file using <kbd>File → Open Database…</kbd>.
-        </li>
+        <li>Open the backup file with <kbd>File → Open Database…</kbd> selecting either "MMEX Database Backup" file type or
+            if the file is encrypted "Encrypted MMEX Database Backup"</li>
+        <li>Store the file with <kbd>File → Save Database…</kbd> under the original / new name. </li>
     </ol>
 
     <aside class="sticky tips">

@@ -929,7 +929,7 @@ msgstr ""
 msgid "Choose database file to create"
 msgstr ""
 
-#: app/mmFrame.cpp:2657 app/mmFrame.cpp:2681 app/mmFrame.cpp:2727
+#: app/mmFrame.cpp:2657 app/mmFrame.cpp:2690 app/mmFrame.cpp:2727
 #: app/mmFrame.cpp:2912
 msgid "MMEX Database"
 msgstr ""
@@ -938,8 +938,16 @@ msgstr ""
 msgid "Choose database file to open"
 msgstr ""
 
-#: app/mmFrame.cpp:2681 app/mmFrame.cpp:2707 app/mmFrame.cpp:2912
+#: app/mmFrame.cpp:2690 app/mmFrame.cpp:2707 app/mmFrame.cpp:2912
 msgid "Encrypted MMEX Database"
+msgstr ""
+
+#: app/mmFrame.cpp:2691
+msgid "MMEX Database Backup"
+msgstr ""
+
+#: app/mmFrame.cpp:2692
+msgid "Encrypted MMEX Database Backup"
 msgstr ""
 
 #: app/mmFrame.cpp:2705

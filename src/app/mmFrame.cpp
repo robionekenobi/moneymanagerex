@@ -743,7 +743,9 @@ void mmFrame::saveSettings()
     SettingModel::instance().db_savepoint();
     if (!m_filename.IsEmpty()) {
         wxFileName fname(m_filename);
-        SettingModel::instance().saveString("LASTFILENAME", fname.GetFullPath());
+        if (fname.GetExt().Upper() != "BAK") {
+            SettingModel::instance().saveString("LASTFILENAME", fname.GetFullPath());
+        }
     }
     /* Aui Settings */
     SettingModel::instance().saveString("AUIPERSPECTIVE", m_mgr.SavePerspective());
@@ -2429,7 +2431,9 @@ bool mmFrame::createDataStore(const wxString& fileName, const wxString& pwd, boo
     wxFileName checkExt(fileName);
     wxString password;
     bool passwordCheckPassed = true;
-    if (checkExt.GetExt().Lower() == "emb" && wxFileName::FileExists(fileName)) {
+    if ((checkExt.GetExt().Lower() == "emb" ||
+        (checkExt.GetExt().Lower() == "bak" && (checkExt.GetName().Lower().Contains(".emb_update_") || checkExt.GetName().Lower().Contains(".emb_start_"))))
+        && wxFileName::FileExists(fileName)) {
         wxString password_message = wxString::Format(
             _t("Please enter password for Database\n\n%s"),
             fileName
@@ -2626,7 +2630,10 @@ bool mmFrame::openFile(const wxString& fileName, bool openingNew, const wxString
 {
     menuBar_->FindItem(MENU_CHANGE_ENCRYPT_PASSWORD)->Enable(false);
     if (createDataStore(fileName, password, openingNew)) {
-        m_recentFiles->AddFileToHistory(fileName);
+        wxFileName fname(fileName);
+        if (fname.GetExt().Upper() != "BAK") {
+            m_recentFiles->AddFileToHistory(fileName);
+        }
         menuEnableItems(true);
         menuPrintingEnable(false);
 
@@ -2687,13 +2694,16 @@ void mmFrame::OnNew(wxCommandEvent& /*event*/)
 }
 //----------------------------------------------------------------------------
 
-void mmFrame::OnOpen(wxCommandEvent& /*event*/)
+void mmFrame::OnOpen(wxCommandEvent& WXUNUSED(event))
 {
     autoRepeatTransactionsTimer_.Stop();
     wxString fileName = wxFileSelector(
         _t("Choose database file to open"),
-        wxEmptyString, wxEmptyString, wxEmptyString,
-        _t("MMEX Database") + " (*.mmb)|*.mmb|" + _t("Encrypted MMEX Database") + " (*.emb)|*.emb",
+        SettingModel::instance().getString("LAST_FILE_OPEN_PATH", wxEmptyString),
+        wxEmptyString, wxEmptyString,
+        _t("MMEX Database") + " (*.mmb)|*.mmb|" + _t("Encrypted MMEX Database") + " (*.emb)|*.emb|"
+        + _t("MMEX Database Backup") + " (*.mmb_update_*.bak;*.mmb_start_*.bak)|*.mmb_update_*.bak;*.mmb_start_*.bak|"
+        + _t("Encrypted MMEX Database Backup") + " (*.emb_update_*.bak;*.emb_start_*.bak)|*.emb_update_*.bak;*.emb_start_*.bak",
         wxFD_FILE_MUST_EXIST | wxFD_OPEN,
         this
     );
@@ -2701,6 +2711,7 @@ void mmFrame::OnOpen(wxCommandEvent& /*event*/)
     if (!fileName.empty()) {
         SetDatabaseFile(fileName);
         saveSettings();
+        SettingModel::instance().saveString("LAST_FILE_OPEN_PATH", wxFileName(fileName).GetPath());
         if (m_db) {
             autocleanDeletedTransactions();
             if (SettingModel::instance().getBool("REFRESH_STOCK_QUOTES_ON_OPEN", false) &&
@@ -2922,7 +2933,7 @@ void mmFrame::OnSaveAs(wxCommandEvent& /*event*/)
 
     wxFileDialog dlg(this,
         _t("Save database file as"),
-        wxEmptyString,
+        SettingModel::instance().getString("LAST_FILE_OPEN_PATH", wxEmptyString),
         wxEmptyString,
         _t("MMEX Database")+" (*.mmb)|*.mmb|"+_t("Encrypted MMEX Database")+" (*.emb)|*.emb",
         wxFD_SAVE | wxFD_OVERWRITE_PROMPT

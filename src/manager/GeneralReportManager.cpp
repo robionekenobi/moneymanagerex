@@ -333,7 +333,7 @@ bool GeneralReportManager::Create(wxWindow* parent
     CreateControls();
     fillControls();
     GetSizer()->Fit(this);
-    GetSizer()->SetSizeHints(this);
+    //GetSizer()->SetSizeHints(this);
     SetIcon(mmPath::getProgramIcon());
 
     m_images = NavTreeIconImages::instance().getList(PrefModel::instance().getToolbarIconSize());
