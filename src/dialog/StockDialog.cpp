@@ -634,11 +634,6 @@ void StockDialog::onHistoryImportButton(wxCommandEvent& /*event*/)
     if (m_stock_n->m_symbol.IsEmpty())
         return;
 
-    const wxString fileName = wxFileSelector(
-        _t("Choose CSV data file to import"),
-        wxEmptyString, wxEmptyString, wxEmptyString,
-        "*.csv", wxFD_FILE_MUST_EXIST
-    );
     wxString _fileName = "";
     const wxString stockSymbol = m_stock_n->m_symbol.Trim();
     if (!stockSymbol.IsEmpty())
@@ -652,9 +647,6 @@ void StockDialog::onHistoryImportButton(wxCommandEvent& /*event*/)
         {
             _fileName = wxFileSelector(_t("Choose CSV data file to import")
                 , wxEmptyString, wxEmptyString, wxEmptyString, "*.csv", wxFD_FILE_MUST_EXIST);
-        }
-        else
-        {
         }
     }
     const wxString fileName = _fileName;
@@ -730,12 +722,13 @@ void StockDialog::onHistoryImportButton(wxCommandEvent& /*event*/)
         new_sh_d.m_date        = mmDate(dateStr);
         new_sh_d.m_price       = price;
         new_sh_d.m_update_type = UpdateType(UpdateType::e_manual);
-        new_sh_a.push_back(new_sh_d);
+        //new_sh_a.push_back(new_sh_d);
 
-        if (rows.size()<10) {
-            dateStr <<  wxT ("  ") << priceStr;
+        if (rows.size() < 10)
+        {
+            dateStr << wxT("  ") << priceStr;
             rows.push_back(dateStr);
-
+        }
         // Check if entry exists
         const StockHistoryData* existing_sh_d = StockHistoryModel::instance().get_key_data_n(m_stock_n->m_symbol, dt.dateTime());
             
@@ -755,7 +748,7 @@ void StockDialog::onHistoryImportButton(wxCommandEvent& /*event*/)
 
         wxString cp = wxString::FromDouble(new_sh_d_.m_price, PrefModel::instance().getSharePrecision());
         wxString lp = wxString::FromDouble(price, PrefModel::instance().getSharePrecision());
-        if (new_sh_d_.m_id == -1 || (new_sh_d_.m_price != price && ((new_sh_d_.m_date == mmDate("") && dt > m_stock_n->m_purchase_date) ||
+        if (new_sh_d_.m_id == -1 || (cp != lp && ((new_sh_d_.m_date == mmDate("") && dt > m_stock_n->m_purchase_date) ||
                                                                     new_sh_d_.m_date > m_stock_n->m_purchase_date)))
         {
             if (rows.size() < 10)
@@ -763,10 +756,13 @@ void StockDialog::onHistoryImportButton(wxCommandEvent& /*event*/)
                 dateStr << wxT("  ") << priceStr;
                 rows.push_back(dateStr);
             }
-            countImported++;
         }
         else
+        {
+            rows.pop_back();
             new_sh_a.pop_back();
+            countImported--;
+        }
     }
 
     progressDlg->Destroy();
@@ -775,15 +771,24 @@ void StockDialog::onHistoryImportButton(wxCommandEvent& /*event*/)
     msg << "\n";
     msg << wxString::Format(_t("Total imported: %ld"), countImported);
     msg << "\n";
-    msg << _t("Date") << "              " << _t("Price");
-    msg << "\n";
+    if (countImported > 0)
+    {
+        msg << _t("Date") << "              " << _t("Price");
+        msg << "\n";
+    }
     for (std::vector<wxString>::const_iterator d = rows.begin(); d != rows.end(); ++d)
         msg << *d << "\n";
-    wxString confirmMsg = msg + _t("Please confirm saving");
+    wxString confirmMsg = msg;
+    long _style = wxOK | wxICON_INFORMATION;
+    if (countImported > 0)
+    {
+        confirmMsg += _t("Please confirm saving");
+        _style |= wxCANCEL;
+    }
     if (!canceledbyuser && wxMessageBox(
         confirmMsg,
         _t("Importing CSV"),
-        wxOK | wxCANCEL | wxICON_INFORMATION
+        _style
     ) == wxCANCEL) {
         canceledbyuser = true;
     }
@@ -796,10 +801,10 @@ void StockDialog::onHistoryImportButton(wxCommandEvent& /*event*/)
         // show the data
         showStockHistory();
 
-        StockHistoryModel::DataA histData = StockHistoryModel::instance().find(
-            StockHistoryCol::SYMBOL(m_stock_n->m_symbol)
-        );
-        std::stable_sort(histData.begin(), histData.end(), StockHistoryData::SorterByDATE());
+        StockHistoryModel::DataA histData = StockHistoryModel::instance().find_data_a(
+            StockHistoryCol::WHERE_SYMBOL(OP_EQ, m_stock_n->m_symbol), TableClause::ORDERBY(StockHistoryCol::NAME_DATE, false), TableClause::LIMIT(300));
+
+        //std::stable_sort(histData.begin(), histData.end(), StockHistoryData::SorterByDATE());
         wxString lp = wxString::FromDouble(histData.at(0).m_price, PrefModel::instance().getSharePrecision());
         wxString cp = wxString::FromDouble(m_stock_n->m_current_price, PrefModel::instance().getSharePrecision());
         std::reverse(histData.begin(), histData.end());
