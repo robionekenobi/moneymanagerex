@@ -722,13 +722,7 @@ void StockDialog::onHistoryImportButton(wxCommandEvent& /*event*/)
         new_sh_d.m_date        = mmDate(dateStr);
         new_sh_d.m_price       = price;
         new_sh_d.m_update_type = UpdateType(UpdateType::e_manual);
-        //new_sh_a.push_back(new_sh_d);
 
-        if (rows.size() < 10)
-        {
-            dateStr << wxT("  ") << priceStr;
-            rows.push_back(dateStr);
-        }
         // Check if entry exists
         const StockHistoryData* existing_sh_d = StockHistoryModel::instance().get_key_data_n(m_stock_n->m_symbol, dt.dateTime());
             
@@ -759,7 +753,6 @@ void StockDialog::onHistoryImportButton(wxCommandEvent& /*event*/)
         }
         else
         {
-            rows.pop_back();
             new_sh_a.pop_back();
             countImported--;
         }
@@ -802,12 +795,10 @@ void StockDialog::onHistoryImportButton(wxCommandEvent& /*event*/)
         showStockHistory();
 
         StockHistoryModel::DataA histData = StockHistoryModel::instance().find_data_a(
-            StockHistoryCol::WHERE_SYMBOL(OP_EQ, m_stock_n->m_symbol), TableClause::ORDERBY(StockHistoryCol::NAME_DATE, false), TableClause::LIMIT(300));
+            StockHistoryCol::WHERE_SYMBOL(OP_EQ, m_stock_n->m_symbol), TableClause::ORDERBY(StockHistoryCol::NAME_DATE, true), TableClause::LIMIT(300));
 
-        //std::stable_sort(histData.begin(), histData.end(), StockHistoryData::SorterByDATE());
         wxString lp = wxString::FromDouble(histData.at(0).m_price, PrefModel::instance().getSharePrecision());
         wxString cp = wxString::FromDouble(m_stock_n->m_current_price, PrefModel::instance().getSharePrecision());
-        std::reverse(histData.begin(), histData.end());
         if (lp != cp)
         {
             m_stock_n->m_current_price = histData.at(0).m_price;
