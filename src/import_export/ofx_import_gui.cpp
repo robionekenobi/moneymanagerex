@@ -1206,7 +1206,7 @@ void mmOFXImportDialog::OnImport(wxCommandEvent& /*event*/)
     account_id_ = tempAccountId;
 
     const AccountData* account_n = AccountModel::instance().get_idN_data_n(
-        static_cast<int>(account_id_.GetValue())
+        static_cast<int64>(account_id_.GetValue())
     );
     if (!account_n) {
         wxMessageBox(
