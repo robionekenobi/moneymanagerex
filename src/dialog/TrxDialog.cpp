@@ -1510,10 +1510,8 @@ void TrxDialog::onOk(wxCommandEvent& event)
     m_journal_d.m_id        = trx_n->m_id;
     m_journal_d.m_sched_id  = -1;
     m_journal_d.m_repeat_id = -1;
-    m_mode = MODE_UPDATE;
 
     EndModal((
-        !is_edit() &&
         (event.GetId() == ID_BTN_OK_NEW || wxGetKeyState(WXK_SHIFT))
     ) ? wxID_NEW : wxID_OK);
 }

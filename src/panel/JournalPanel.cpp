@@ -45,7 +45,6 @@
 
 #include "manager/DateRangeManager.h"
 #include "dialog/SplitDialog.h"
-#include "dialog/TrxDialog.h"
 #include "dialog/AttachmentDialog.h"
 #include "dialog/SchedDialog.h"
 #include "dialog/TrxFilterDialog.h"
