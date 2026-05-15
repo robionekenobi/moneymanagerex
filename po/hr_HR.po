@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moneymanagerex\n"
 "Report-Msgid-Bugs-To: developer@moneymanagerex.org\n"
-"POT-Creation-Date: 2026-04-27 22:39+0000\n"
-"PO-Revision-Date: 2026-05-01 02:12\n"
+"POT-Creation-Date: 2026-05-06 23:48+0000\n"
+"PO-Revision-Date: 2026-05-08 02:12\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Language: hr_HR\n"
@@ -217,7 +217,7 @@ msgstr ""
 
 #: app/mmFrame.cpp:1817
 msgid "&Navigator configuration…"
-msgstr ""
+msgstr "&Konfiguracija navigacije …"
 
 #: app/mmFrame.cpp:1818 app/mmFrame.cpp:2142
 msgid "T&heme Manager…"
@@ -348,7 +348,7 @@ msgstr "&Prikaži dioničke račune"
 
 #: app/mmFrame.cpp:1928
 msgid "Show/Hide Share Accounts in Navigator"
-msgstr ""
+msgstr "Prikaži/Sakrij dioničke račune u navigaciji"
 
 #: app/mmFrame.cpp:1934
 msgid "&Display Deleted Transactions"
@@ -356,7 +356,7 @@ msgstr "&Prikaži izbrisane transakcije"
 
 #: app/mmFrame.cpp:1935
 msgid "Show/Hide Deleted Transactions in Navigator"
-msgstr ""
+msgstr "Prikaži/Sakrij izbrisane transakcije u navigaciji"
 
 #: app/mmFrame.cpp:1941
 msgid "Budgets: As Financial &Years"
@@ -1411,7 +1411,7 @@ msgstr "Otvoreni"
 msgid "Closed"
 msgstr "Zatvoreni"
 
-#: base/_constants.cpp:209 panel/JournalPanel.cpp:148
+#: base/_constants.cpp:209 panel/JournalPanel.cpp:147
 #: util/mmNavigatorList.cpp:57
 msgid "Favorites"
 msgstr "Favoriti"
@@ -2190,7 +2190,7 @@ msgstr "Donji limit stanja računa. Postavi na nulu, ako ne želiš limit"
 msgid "Credit"
 msgstr "Kredit"
 
-#: dialog/AccountDialog.cpp:267 panel/JournalPanel.cpp:1008
+#: dialog/AccountDialog.cpp:267 panel/JournalPanel.cpp:1007
 msgid "Credit Limit:"
 msgstr "Kreditni limit:"
 
@@ -2491,7 +2491,7 @@ msgstr "&Otvoreni "
 #: dialog/AttachmentDialog.cpp:422 dialog/CurrencyChoiceDialog.cpp:574
 #: manager/CategoryManager.cpp:340 manager/FieldManager.cpp:281
 #: manager/PayeeManager.cpp:960 manager/TagManager.cpp:155
-#: panel/AssetPanel.cpp:182 panel/JournalPanel.cpp:363 panel/SchedPanel.cpp:163
+#: panel/AssetPanel.cpp:182 panel/JournalPanel.cpp:362 panel/SchedPanel.cpp:163
 #: panel/StockPanel.cpp:204
 msgid "&Edit "
 msgstr "&Uredi "
@@ -2581,7 +2581,7 @@ msgstr "Dodaj novi budžetski mjesec"
 #: dialog/BudgetYearDialog.cpp:107 dialog/CurrencyChoiceDialog.cpp:325
 #: dialog/StockDialog.cpp:278 manager/CategoryManager.cpp:344
 #: manager/TagManager.cpp:160 panel/AssetPanel.cpp:187
-#: panel/JournalPanel.cpp:355 panel/SchedPanel.cpp:173 panel/StockPanel.cpp:209
+#: panel/JournalPanel.cpp:354 panel/SchedPanel.cpp:173 panel/StockPanel.cpp:209
 msgid "&Delete "
 msgstr "&Izbriši "
 
@@ -2663,7 +2663,7 @@ msgstr "Prikaži sve, čak i nekorištene valute"
 
 #: dialog/CurrencyChoiceDialog.cpp:229 manager/CategoryManager.cpp:325
 #: manager/TagManager.cpp:140 panel/AssetPanel.cpp:203 panel/AssetPanel.cpp:205
-#: panel/JournalPanel.cpp:422
+#: panel/JournalPanel.cpp:421
 msgid "Search"
 msgstr "Traži"
 
@@ -3197,11 +3197,11 @@ msgstr "Potvrda sjedinjavanja oznaka"
 
 #: dialog/NavigatorDialog.cpp:48
 msgid "Navigator and account type configuration"
-msgstr ""
+msgstr "Konfiguracija navigacije i vrste računa"
 
 #: dialog/NavigatorDialog.cpp:57 dialog/NavigatorEditDialog.cpp:95
 msgid "Selection name"
-msgstr ""
+msgstr "Ime odabira"
 
 #: dialog/NavigatorDialog.cpp:69 dialog/ReconcileDialog.cpp:147
 #: manager/DateRangeManager.cpp:139
@@ -3215,23 +3215,23 @@ msgstr "&Novo"
 
 #: dialog/NavigatorDialog.cpp:88
 msgid "Re&store default names"
-msgstr ""
+msgstr "&Obnovi zadana imena"
 
 #: dialog/NavigatorDialog.cpp:92 dialog/NavigatorDialog.cpp:192
 msgid "Restore default names"
-msgstr ""
+msgstr "Obnovi zadana imena"
 
 #: dialog/NavigatorDialog.cpp:191
 msgid "Do you really want to restore the default names?"
-msgstr ""
+msgstr "Stvarno želiš obnoviti zadana imena?"
 
 #: dialog/NavigatorEditDialog.cpp:37
 msgid "Edit navigator entry"
-msgstr ""
+msgstr "Uredi unos navigacije"
 
 #: dialog/NavigatorEditDialog.cpp:37
 msgid "New account type"
-msgstr ""
+msgstr "Nova vrsta računa"
 
 #: dialog/NavigatorEditDialog.cpp:102 panel/ReportPanel.cpp:389
 msgid "Show"
@@ -3829,12 +3829,12 @@ msgstr "Tečajevi uvezeni iz CSV datoteke: "
 #: dialog/StockDialog.cpp:724 import_export/univcsvdialog.cpp:1606
 #, c-format
 msgid "Total lines: %ld"
-msgstr ""
+msgstr "Ukupno redaka: %ld"
 
 #: dialog/StockDialog.cpp:726
 #, c-format
 msgid "Total imported: %ld"
-msgstr ""
+msgstr "Ukupno uvezeno: %ld"
 
 #: dialog/StockDialog.cpp:732 import_export/univcsvdialog.cpp:1620
 msgid "Please confirm saving"
@@ -3914,11 +3914,11 @@ msgstr "Greška u povijesti vlasničkog udjela"
 
 #: dialog/ToolbarDialog.cpp:44
 msgid "Toolbar configuration"
-msgstr ""
+msgstr "Konfiguracija alatne trake"
 
 #: dialog/ToolbarDialog.cpp:76
 msgid "Insert &separator"
-msgstr ""
+msgstr "&Umetni znak razdvajanja"
 
 #: dialog/ToolbarDialog.cpp:78
 msgid "Insert a vertical separator line.\n"
@@ -3927,7 +3927,7 @@ msgstr ""
 
 #: dialog/ToolbarDialog.cpp:85
 msgid "Insert s&pace"
-msgstr ""
+msgstr "Umetni &razmak"
 
 #: dialog/ToolbarDialog.cpp:87
 msgid "Insert a fixed-size empty space.\n"
@@ -3946,26 +3946,26 @@ msgstr ""
 
 #: dialog/ToolbarDialog.cpp:146
 msgid "Spacer"
-msgstr ""
+msgstr "Razmak"
 
 #: dialog/TreeListDialog.cpp:74 manager/DateRangeManager.cpp:130
 msgid "&Top"
-msgstr ""
+msgstr "&Gore"
 
 #: dialog/TreeListDialog.cpp:94 manager/DateRangeManager.cpp:149
 msgid "&Bottom"
-msgstr ""
+msgstr "&Dolje"
 
 #: dialog/TreeListDialog.cpp:103 dialog/TreeListDialog.cpp:282
 msgid "&Restore defaults"
-msgstr ""
+msgstr "Ob%novi zadane vrijednosti"
 
 #: dialog/TreeListDialog.cpp:281
 msgid "Do you really want to restore the default values?\n\n"
 "All customization will be lost!"
 msgstr ""
 
-#: dialog/TrxDialog.cpp:216 panel/JournalPanel.cpp:360 pref/TrxPref.cpp:61
+#: dialog/TrxDialog.cpp:216 panel/JournalPanel.cpp:359 pref/TrxPref.cpp:61
 msgid "New Transaction"
 msgstr "Nova transakcija"
 
@@ -3983,7 +3983,7 @@ msgstr "Uredi transakciju"
 
 #: dialog/TrxDialog.cpp:260
 msgid "Set date to today (Ctrl+;)"
-msgstr ""
+msgstr "Postavi datum na danas (Ctrl+;)"
 
 #: dialog/TrxDialog.cpp:336
 msgid "Exchange to and from accounts"
@@ -4148,7 +4148,7 @@ msgid "Enter any string to find it in transaction notes."
 msgstr ""
 
 #: dialog/TrxFilterDialog.cpp:704 manager/PayeeManager.cpp:139
-#: panel/AssetPanel.cpp:209 panel/JournalPanel.cpp:426
+#: panel/AssetPanel.cpp:209 panel/JournalPanel.cpp:425
 msgid "Tip: Wildcard characters such as the question mark (?) and the asterisk (*) can be used in search criteria."
 msgstr ""
 
@@ -4161,7 +4161,7 @@ msgid "The asterisk (*) matches any number of characters, for example \"s*d\" fi
 msgstr ""
 
 #: dialog/TrxFilterDialog.cpp:707 manager/PayeeManager.cpp:143
-#: panel/JournalPanel.cpp:430
+#: panel/JournalPanel.cpp:429
 msgid "Use regex: to match using regular expressions."
 msgstr "Koristi regex: za poklapanje pomoću regularnih izraza."
 
@@ -4549,23 +4549,23 @@ msgstr ""
 
 #: import_export/ofx_import_gui.cpp:808
 msgid "&Insert Row"
-msgstr ""
+msgstr "&Umetni redak"
 
 #: import_export/ofx_import_gui.cpp:809
 msgid "&Delete Row"
-msgstr ""
+msgstr "&Izbriši redak"
 
 #: import_export/ofx_import_gui.cpp:815 import_export/ofx_import_gui.cpp:2014
 msgid "&OK"
-msgstr ""
+msgstr "&U redu"
 
 #: import_export/ofx_import_gui.cpp:924
 msgid "Import OFX file"
-msgstr ""
+msgstr "Uvezi OFX datoteku"
 
 #: import_export/ofx_import_gui.cpp:930
 msgid "&OFX File:"
-msgstr ""
+msgstr "&OFX Datoteka:"
 
 #: import_export/ofx_import_gui.cpp:932 import_export/qif_export.cpp:204
 #: import_export/qif_import_gui.cpp:157 import_export/univcsvdialog.cpp:233
@@ -4574,7 +4574,7 @@ msgstr "&Pregledaj…"
 
 #: import_export/ofx_import_gui.cpp:938
 msgid "&Account:"
-msgstr ""
+msgstr "&Račun:"
 
 #: import_export/ofx_import_gui.cpp:954
 msgid "Use &existing regex patterns to automatically match payees"
@@ -4663,26 +4663,26 @@ msgstr ""
 
 #: import_export/ofx_import_gui.cpp:1944
 msgid "Transaction Type"
-msgstr ""
+msgstr "Vrsta transakcije"
 
 #: import_export/ofx_import_gui.cpp:2068
 #, c-format
 msgid "%d hours"
-msgstr ""
+msgstr "%d h"
 
 #: import_export/ofx_import_gui.cpp:2074
 #, c-format
 msgid "%d minutes"
-msgstr ""
+msgstr "%d min"
 
 #: import_export/ofx_import_gui.cpp:2080
 #, c-format
 msgid "%d seconds"
-msgstr ""
+msgstr "%d s"
 
 #: import_export/ofx_import_gui.cpp:2084
 msgid "0 sec"
-msgstr ""
+msgstr "0 s"
 
 #: import_export/parsers.cpp:48 import_export/univcsvdialog.cpp:2626
 #: util/_simple.cpp:227
@@ -4874,15 +4874,15 @@ msgstr ""
 
 #: import_export/qif_import_gui.cpp:247
 msgid "Action"
-msgstr ""
+msgstr "Radnja"
 
 #: import_export/qif_import_gui.cpp:249
 msgid "Skip"
-msgstr ""
+msgstr "Preskoči"
 
 #: import_export/qif_import_gui.cpp:250
 msgid "Flag as duplicate"
-msgstr ""
+msgstr "Označi kao duplikat"
 
 #: import_export/qif_import_gui.cpp:280 import_export/univcsvdialog.cpp:628
 msgid "Data"
@@ -4907,7 +4907,7 @@ msgstr ""
 #: import_export/qif_import_gui.cpp:388 import_export/univcsvdialog.cpp:554
 #: manager/CurrencyManager.cpp:192
 msgid "Decimal Char:"
-msgstr ""
+msgstr "Decimalni znak:"
 
 #: import_export/qif_import_gui.cpp:468
 msgid "Scanning"
@@ -5163,7 +5163,7 @@ msgstr ""
 
 #: import_export/univcsvdialog.cpp:472
 msgid "Start Date:"
-msgstr ""
+msgstr "Datum početka:"
 
 #: import_export/univcsvdialog.cpp:478
 msgid "Specify the report start date"
@@ -5171,7 +5171,7 @@ msgstr ""
 
 #: import_export/univcsvdialog.cpp:486
 msgid "End Date:"
-msgstr ""
+msgstr "Datum završteka:"
 
 #: import_export/univcsvdialog.cpp:492
 msgid "Specify the report end date"
@@ -5343,12 +5343,12 @@ msgstr "Odbijeni redci:"
 #: import_export/univcsvdialog.cpp:1608
 #, c-format
 msgid "Lines selected to import: %ld"
-msgstr ""
+msgstr "Odabrani redci za uvoz: %ld"
 
 #: import_export/univcsvdialog.cpp:1610
 #, c-format
 msgid "Empty lines: %ld"
-msgstr ""
+msgstr "Prazni redci: %ld"
 
 #: import_export/univcsvdialog.cpp:1612
 #, c-format
@@ -5540,8 +5540,8 @@ msgstr "Transakcija nije preuzeta: pokušaj ponovo preuzeti transakcije"
 msgid "Attachment download error"
 msgstr "Greška u preuzimanju priloga"
 
-#: import_export/webapp.cpp:670 panel/JournalPanel.cpp:1165
-#: panel/JournalPanel.cpp:1183
+#: import_export/webapp.cpp:670 panel/JournalPanel.cpp:1164
+#: panel/JournalPanel.cpp:1182
 msgid "Attachment"
 msgstr "Prilog"
 
@@ -5623,7 +5623,7 @@ msgid "Remove hidden setting from all categories"
 msgstr ""
 
 #: manager/CategoryManager.cpp:336 panel/AssetPanel.cpp:163
-#: panel/JournalPanel.cpp:359 panel/SchedPanel.cpp:159 panel/StockPanel.cpp:190
+#: panel/JournalPanel.cpp:358 panel/SchedPanel.cpp:159 panel/StockPanel.cpp:190
 msgid "&New "
 msgstr "&Nova "
 
@@ -5757,27 +5757,27 @@ msgstr ""
 
 #: manager/CategoryManager.cpp:832
 msgid "Show all categories"
-msgstr ""
+msgstr "Prikaži sve kategorije"
 
 #: manager/CategoryManager.cpp:849
 msgid "&Edit Category…"
-msgstr ""
+msgstr "&Uredi kategoriju …"
 
 #: manager/CategoryManager.cpp:851
 msgid "&Hide Selected Category"
-msgstr ""
+msgstr "&Sakrij odabranu kategoriju"
 
 #: manager/CategoryManager.cpp:852
 msgid "&Show Selected Category"
-msgstr ""
+msgstr "&Prikaži odabranu kategoriju"
 
 #: manager/CategoryManager.cpp:854
 msgid "&Remove Category"
-msgstr ""
+msgstr "&Ukloni kategoriju"
 
 #: manager/CategoryManager.cpp:856
 msgid "&New Category…"
-msgstr ""
+msgstr "&Nova kategorija …"
 
 #: manager/CurrencyManager.cpp:121
 msgid "Currency name"
@@ -5797,7 +5797,7 @@ msgstr "Oznaka valute"
 
 #: manager/CurrencyManager.cpp:174
 msgid "Symbol Location"
-msgstr ""
+msgstr "Mjesto simbola"
 
 #: manager/CurrencyManager.cpp:178
 msgid "Prefix"
@@ -5909,7 +5909,7 @@ msgstr ""
 msgid "Default date ranges"
 msgstr ""
 
-#: manager/DateRangeManager.h:62 panel/JournalPanel.cpp:1361
+#: manager/DateRangeManager.h:62 panel/JournalPanel.cpp:1360
 #: panel/ReportPanel.cpp:1095
 msgid "More date ranges…"
 msgstr ""
@@ -6090,7 +6090,7 @@ msgstr "Aktivno"
 
 #: manager/GeneralReportManager.cpp:856
 msgid "Show/Hide report in Navigator"
-msgstr ""
+msgstr "Prikaži/Sakrij izvještaj u navigaciji"
 
 #: manager/GeneralReportManager.cpp:860
 msgid "Delete Report…"
@@ -6157,19 +6157,19 @@ msgstr "Odaberi datoteku koju želiš spremi kao izvještaj pod"
 
 #: manager/GeneralReportManager.cpp:1443
 msgid "Parameters:"
-msgstr ""
+msgstr "Parametri:"
 
 #: manager/GeneralReportManager.cpp:1456
 msgid "created:"
-msgstr ""
+msgstr "stvoreno:"
 
 #: manager/GeneralReportManager.cpp:1754
 msgid "Copy name"
-msgstr ""
+msgstr "Kopiraj ime"
 
 #: manager/GeneralReportManager.cpp:1755
 msgid "Copy all column names"
-msgstr ""
+msgstr "Kopiraj sva imena stupaca"
 
 #: manager/GeneralReportManager.cpp:1756
 msgid "Copy as SQL SELECT"
@@ -6232,7 +6232,7 @@ msgstr "Unesi bilo koji niz za pokalapnje ovog primaoca pri uvozu.\n"
 "Uzorci se testiraju redoslijedom koji je ovdje unesen."
 
 #: manager/PayeeManager.cpp:142 panel/AssetPanel.cpp:212
-#: panel/JournalPanel.cpp:429
+#: panel/JournalPanel.cpp:428
 msgid "Use the asterisk (*) at the beginning to find any string in the middle of the sentence."
 msgstr ""
 
@@ -6246,19 +6246,19 @@ msgstr ""
 
 #: manager/PayeeManager.cpp:583
 msgid "Used"
-msgstr ""
+msgstr "Korišteno"
 
 #: manager/PayeeManager.cpp:600
 msgid "Show &hidden"
-msgstr ""
+msgstr "Prikaži &skrivene"
 
 #: manager/PayeeManager.cpp:603
 msgid "Show hidden payees"
-msgstr ""
+msgstr "Prikaži skrivene primaoce"
 
 #: manager/PayeeManager.cpp:609
 msgid "&Search"
-msgstr ""
+msgstr "&Traži"
 
 #: manager/PayeeManager.cpp:778
 msgid "Payee in use."
@@ -6294,11 +6294,11 @@ msgstr "Potvrdi brisanje primaoca"
 
 #: manager/PayeeManager.cpp:962
 msgid "&Hide Selected"
-msgstr ""
+msgstr "&Sakrij odabrane"
 
 #: manager/PayeeManager.cpp:963
 msgid "&Show Selected"
-msgstr ""
+msgstr "&Prikaži odabrane"
 
 #: manager/PayeeManager.cpp:969
 msgid "Define &Category"
@@ -6732,7 +6732,7 @@ msgstr "Prikaz imovinske transakcije"
 msgid "Delete Asset"
 msgstr "Izbriši imovinu"
 
-#: panel/AssetPanel.cpp:196 panel/JournalPanel.cpp:391 panel/SchedPanel.cpp:192
+#: panel/AssetPanel.cpp:196 panel/JournalPanel.cpp:390 panel/SchedPanel.cpp:192
 #: panel/StockPanel.cpp:223
 msgid "Open attachments"
 msgstr "Otvori prilog"
@@ -6741,11 +6741,11 @@ msgstr "Otvori prilog"
 msgid "Enter any string to find related assets"
 msgstr "Za pronalaženje povezane imovine, unesi bilo što"
 
-#: panel/AssetPanel.cpp:210 panel/JournalPanel.cpp:427
+#: panel/AssetPanel.cpp:210 panel/JournalPanel.cpp:426
 msgid "The question mark (?) is used to match a single character, for example \"s?t\" finds both \"sat\" and \"set\"."
 msgstr ""
 
-#: panel/AssetPanel.cpp:211 panel/JournalPanel.cpp:428
+#: panel/AssetPanel.cpp:211 panel/JournalPanel.cpp:427
 msgid "The asterisk (*) is used to match any number of characters, for example \"s*d\" finds both \"sad\" and \"started\"."
 msgstr ""
 
@@ -7273,7 +7273,7 @@ msgstr ""
 msgid "Scheduled transaction saved."
 msgstr "Terminirana transakcija je spremljena."
 
-#: panel/JournalList.cpp:2173 panel/JournalPanel.cpp:143
+#: panel/JournalList.cpp:2173 panel/JournalPanel.cpp:142
 #: util/mmNavigatorList.cpp:55
 msgid "All Transactions"
 msgstr "Sve transakcije"
@@ -7291,145 +7291,145 @@ msgstr ""
 msgid "Do you want to delete all the “%s” transactions shown?"
 msgstr ""
 
-#: panel/JournalPanel.cpp:145 util/mmNavigatorList.cpp:72
+#: panel/JournalPanel.cpp:144 util/mmNavigatorList.cpp:72
 msgid "Deleted Transactions"
 msgstr "Izbrisane transakcije"
 
-#: panel/JournalPanel.cpp:158
+#: panel/JournalPanel.cpp:157
 #, c-format
 msgid "Account View: %s"
 msgstr "Prikaz računa: %s"
 
-#: panel/JournalPanel.cpp:262
+#: panel/JournalPanel.cpp:261
 msgid "Filter…"
 msgstr ""
 
-#: panel/JournalPanel.cpp:274 panel/ReportPanel.cpp:450
+#: panel/JournalPanel.cpp:273 panel/ReportPanel.cpp:450
 #: panel/StockPanel.cpp:135
 msgid "Reset filter"
 msgstr "Resetiraj filtre"
 
-#: panel/JournalPanel.cpp:303
+#: panel/JournalPanel.cpp:302
 msgid "Reconcile"
 msgstr "Uskladi"
 
-#: panel/JournalPanel.cpp:356
+#: panel/JournalPanel.cpp:355
 msgid "Delete all selected transactions"
 msgstr "Izbriši sve odabrane transakcije"
 
-#: panel/JournalPanel.cpp:364
+#: panel/JournalPanel.cpp:363
 msgid "Edit all selected transactions"
 msgstr "Uredi sve odabrane transakcije"
 
-#: panel/JournalPanel.cpp:368 panel/SchedPanel.cpp:168
+#: panel/JournalPanel.cpp:367 panel/SchedPanel.cpp:168
 msgid "D&uplicate "
 msgstr "&Kopiraj "
 
-#: panel/JournalPanel.cpp:369
+#: panel/JournalPanel.cpp:368
 msgid "Duplicate selected transaction"
 msgstr "Kopiraj odabrane transakcije"
 
-#: panel/JournalPanel.cpp:376 panel/SchedPanel.cpp:178
+#: panel/JournalPanel.cpp:375 panel/SchedPanel.cpp:178
 msgid "Ente&r"
 msgstr "&Upiši"
 
-#: panel/JournalPanel.cpp:377 panel/SchedPanel.cpp:179
+#: panel/JournalPanel.cpp:376 panel/SchedPanel.cpp:179
 msgid "Enter Next Scheduled Transaction Occurrence"
 msgstr "Upiši sljedeći događaj terminirane transakcije"
 
-#: panel/JournalPanel.cpp:381 panel/SchedPanel.cpp:183
+#: panel/JournalPanel.cpp:380 panel/SchedPanel.cpp:183
 msgid "&Skip"
 msgstr "&Preskoči"
 
-#: panel/JournalPanel.cpp:382 panel/SchedPanel.cpp:184
+#: panel/JournalPanel.cpp:381 panel/SchedPanel.cpp:184
 msgid "Skip Next Scheduled Transaction Occurrence"
 msgstr "Preskoči sljedeći događaj terminirane transakcije"
 
-#: panel/JournalPanel.cpp:407
+#: panel/JournalPanel.cpp:406
 msgid "&Restore "
 msgstr "%Obnovi "
 
-#: panel/JournalPanel.cpp:408
+#: panel/JournalPanel.cpp:407
 msgid "Restore selected transaction"
 msgstr "Obnovi odabrane transakcije"
 
-#: panel/JournalPanel.cpp:425
+#: panel/JournalPanel.cpp:424
 msgid "Enter any string to find it in the nearest transaction data"
 msgstr "Upiši bilo koji niz znakova za pronalaženje podataka u najbližoj transakciji"
 
-#: panel/JournalPanel.cpp:443
+#: panel/JournalPanel.cpp:442
 msgid "Click to copy to clipboard"
 msgstr ""
 
-#: panel/JournalPanel.cpp:984
+#: panel/JournalPanel.cpp:983
 msgid "Account Bal: "
 msgstr "Saldo računa: "
 
-#: panel/JournalPanel.cpp:988
+#: panel/JournalPanel.cpp:987
 msgid "Reconciled Bal: "
 msgstr "Usklađeni saldo: "
 
-#: panel/JournalPanel.cpp:993
+#: panel/JournalPanel.cpp:992
 msgid "Diff: "
 msgstr "Razlika: "
 
-#: panel/JournalPanel.cpp:1000
+#: panel/JournalPanel.cpp:999
 msgid "Filtered Flow: "
 msgstr ""
 
-#: panel/JournalPanel.cpp:1021
+#: panel/JournalPanel.cpp:1020
 msgid "Market Value: "
 msgstr ""
 
-#: panel/JournalPanel.cpp:1028
+#: panel/JournalPanel.cpp:1027
 msgid "Invested: "
 msgstr ""
 
-#: panel/JournalPanel.cpp:1067 panel/JournalPanel.cpp:1075
+#: panel/JournalPanel.cpp:1066 panel/JournalPanel.cpp:1074
 #: panel/ReportPanel.cpp:693 panel/ReportPanel.cpp:701
 msgid "Date range"
 msgstr ""
 
-#: panel/JournalPanel.cpp:1114
+#: panel/JournalPanel.cpp:1113
 msgid "Click to show scheduled transactions. This feature works best with filter choices that extend into the future (e.g., Current Month)."
 msgstr "Klikni za prikaz terminiranih transakcija. Ova funkcija najbolje radi s odabirima filtera koji se protežu u budućnost (npr. tekući mjesec)."
 
-#: panel/JournalPanel.cpp:1114
+#: panel/JournalPanel.cpp:1113
 msgid "Scheduled transactions are not available, because the current filter ends in the past"
 msgstr "Terminirane transakcije nisu dostupne jer trenutačni filtar završava u prošlosti"
 
-#: panel/JournalPanel.cpp:1115
+#: panel/JournalPanel.cpp:1114
 msgid "Click to hide scheduled transactions."
 msgstr "Klikni za skrivanje terminiranih transakcija."
 
-#: panel/JournalPanel.cpp:1246
+#: panel/JournalPanel.cpp:1245
 #, c-format
 msgid "Transactions selected: %zu"
 msgstr "Odabrane transakcije: %zu"
 
-#: panel/JournalPanel.cpp:1249
+#: panel/JournalPanel.cpp:1248
 #, c-format
 msgid "Selected transactions total: %s"
 msgstr ""
 
-#: panel/JournalPanel.cpp:1254
+#: panel/JournalPanel.cpp:1253
 #, c-format
 msgid "Days between selected transactions: %d"
 msgstr "Dani između odabranih transakcija: %d"
 
-#: panel/JournalPanel.cpp:1368 panel/ReportPanel.cpp:1102
+#: panel/JournalPanel.cpp:1367 panel/ReportPanel.cpp:1102
 msgid "Edit date ranges…"
 msgstr ""
 
-#: panel/JournalPanel.cpp:1516
+#: panel/JournalPanel.cpp:1515
 msgid "&New Withdrawal…"
 msgstr "&Nova isplata …"
 
-#: panel/JournalPanel.cpp:1517
+#: panel/JournalPanel.cpp:1516
 msgid "&New Deposit…"
 msgstr "&Nova uplata …"
 
-#: panel/JournalPanel.cpp:1518
+#: panel/JournalPanel.cpp:1517
 msgid "&New Transfer…"
 msgstr "&Novi prijenos …"
 
@@ -8225,7 +8225,7 @@ msgstr ""
 
 #: pref/ViewPref.cpp:110
 msgid "Navigator and account types"
-msgstr ""
+msgstr "Navigacija i vrste računa"
 
 #: pref/ViewPref.cpp:114
 msgid "Show cash ledger for portfolios"
@@ -10040,7 +10040,7 @@ msgstr ""
 
 #: util/mmNavigatorList.cpp:59
 msgid "Bank Accounts"
-msgstr ""
+msgstr "Bankovni računi"
 
 #: util/mmNavigatorList.cpp:59
 msgid "Checking"
@@ -10048,39 +10048,39 @@ msgstr ""
 
 #: util/mmNavigatorList.cpp:60
 msgid "Credit Card"
-msgstr ""
+msgstr "Kreditna kartica"
 
 #: util/mmNavigatorList.cpp:60
 msgid "Credit Card Accounts"
-msgstr ""
+msgstr "Računi kreditnih kartica"
 
 #: util/mmNavigatorList.cpp:61
 msgid "Cash Accounts"
-msgstr ""
+msgstr "Gotovinski računi"
 
 #: util/mmNavigatorList.cpp:62
 msgid "Loan"
-msgstr ""
+msgstr "Zajam"
 
 #: util/mmNavigatorList.cpp:62
 msgid "Loan Accounts"
-msgstr ""
+msgstr "Zajmovni računi"
 
 #: util/mmNavigatorList.cpp:63
 msgid "Term"
-msgstr ""
+msgstr "Oročeno"
 
 #: util/mmNavigatorList.cpp:63
 msgid "Term Accounts"
-msgstr ""
+msgstr "Oročeni računi"
 
 #: util/mmNavigatorList.cpp:64
 msgid "Stock Portfolios"
-msgstr ""
+msgstr "Portfelji vlasničkih udjela"
 
 #: util/mmNavigatorList.cpp:65
 msgid "Share Accounts"
-msgstr ""
+msgstr "Dionički računi"
 
 #: util/mmTextCtrl.cpp:118
 msgid "Please enter a calculated value."

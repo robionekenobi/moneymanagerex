@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moneymanagerex\n"
 "Report-Msgid-Bugs-To: developer@moneymanagerex.org\n"
-"POT-Creation-Date: 2026-04-27 22:39+0000\n"
-"PO-Revision-Date: 2026-05-01 02:12\n"
+"POT-Creation-Date: 2026-05-06 23:48+0000\n"
+"PO-Revision-Date: 2026-05-08 02:12\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -1419,7 +1419,7 @@ msgstr "Aperti"
 msgid "Closed"
 msgstr "Chiusi"
 
-#: base/_constants.cpp:209 panel/JournalPanel.cpp:148
+#: base/_constants.cpp:209 panel/JournalPanel.cpp:147
 #: util/mmNavigatorList.cpp:57
 msgid "Favorites"
 msgstr "Preferiti"
@@ -2200,7 +2200,7 @@ msgstr "Saldo minimo del conto. Zero per disabilitare"
 msgid "Credit"
 msgstr "Credito"
 
-#: dialog/AccountDialog.cpp:267 panel/JournalPanel.cpp:1008
+#: dialog/AccountDialog.cpp:267 panel/JournalPanel.cpp:1007
 msgid "Credit Limit:"
 msgstr "Limite Di Credito:"
 
@@ -2501,7 +2501,7 @@ msgstr "&Apri "
 #: dialog/AttachmentDialog.cpp:422 dialog/CurrencyChoiceDialog.cpp:574
 #: manager/CategoryManager.cpp:340 manager/FieldManager.cpp:281
 #: manager/PayeeManager.cpp:960 manager/TagManager.cpp:155
-#: panel/AssetPanel.cpp:182 panel/JournalPanel.cpp:363 panel/SchedPanel.cpp:163
+#: panel/AssetPanel.cpp:182 panel/JournalPanel.cpp:362 panel/SchedPanel.cpp:163
 #: panel/StockPanel.cpp:204
 msgid "&Edit "
 msgstr "&Modifica "
@@ -2591,7 +2591,7 @@ msgstr "Inserisci un nuovo budget mensile"
 #: dialog/BudgetYearDialog.cpp:107 dialog/CurrencyChoiceDialog.cpp:325
 #: dialog/StockDialog.cpp:278 manager/CategoryManager.cpp:344
 #: manager/TagManager.cpp:160 panel/AssetPanel.cpp:187
-#: panel/JournalPanel.cpp:355 panel/SchedPanel.cpp:173 panel/StockPanel.cpp:209
+#: panel/JournalPanel.cpp:354 panel/SchedPanel.cpp:173 panel/StockPanel.cpp:209
 msgid "&Delete "
 msgstr "&Elimina "
 
@@ -2673,7 +2673,7 @@ msgstr "Mostra tutte, comprese le valute non utilizzate"
 
 #: dialog/CurrencyChoiceDialog.cpp:229 manager/CategoryManager.cpp:325
 #: manager/TagManager.cpp:140 panel/AssetPanel.cpp:203 panel/AssetPanel.cpp:205
-#: panel/JournalPanel.cpp:422
+#: panel/JournalPanel.cpp:421
 msgid "Search"
 msgstr "Cerca"
 
@@ -3982,7 +3982,7 @@ msgid "Do you really want to restore the default values?\n\n"
 msgstr "Vuoi davvero ripristinare i valori predefiniti?\n\n"
 "Tutte le personalizzazioni andranno perse!"
 
-#: dialog/TrxDialog.cpp:216 panel/JournalPanel.cpp:360 pref/TrxPref.cpp:61
+#: dialog/TrxDialog.cpp:216 panel/JournalPanel.cpp:359 pref/TrxPref.cpp:61
 msgid "New Transaction"
 msgstr "Nuova Transazione"
 
@@ -4165,7 +4165,7 @@ msgid "Enter any string to find it in transaction notes."
 msgstr "Inserisci una stringa per cercarla nelle note delle transazioni."
 
 #: dialog/TrxFilterDialog.cpp:704 manager/PayeeManager.cpp:139
-#: panel/AssetPanel.cpp:209 panel/JournalPanel.cpp:426
+#: panel/AssetPanel.cpp:209 panel/JournalPanel.cpp:425
 msgid "Tip: Wildcard characters such as the question mark (?) and the asterisk (*) can be used in search criteria."
 msgstr "Suggerimento: caratteri jolly come il punto interrogativo (?) e l'asterisco (*) possono essere utilizzati nei criteri di ricerca."
 
@@ -4178,7 +4178,7 @@ msgid "The asterisk (*) matches any number of characters, for example \"s*d\" fi
 msgstr "L'asterisco (*) corrisponde a qualsiasi numero di caratteri, ad esempio \"d*o\" trova sia \"denaro\" che \"deposito\"."
 
 #: dialog/TrxFilterDialog.cpp:707 manager/PayeeManager.cpp:143
-#: panel/JournalPanel.cpp:430
+#: panel/JournalPanel.cpp:429
 msgid "Use regex: to match using regular expressions."
 msgstr "Usa regex: per filtrare usando espressioni regolari."
 
@@ -5562,8 +5562,8 @@ msgstr "Transazione non scaricata: prova a riscaricare le transazioni"
 msgid "Attachment download error"
 msgstr "Errore download allegato"
 
-#: import_export/webapp.cpp:670 panel/JournalPanel.cpp:1165
-#: panel/JournalPanel.cpp:1183
+#: import_export/webapp.cpp:670 panel/JournalPanel.cpp:1164
+#: panel/JournalPanel.cpp:1182
 msgid "Attachment"
 msgstr "Allegato"
 
@@ -5645,7 +5645,7 @@ msgid "Remove hidden setting from all categories"
 msgstr "Rimuovi l’impostazione nascosta da tutte le categorie"
 
 #: manager/CategoryManager.cpp:336 panel/AssetPanel.cpp:163
-#: panel/JournalPanel.cpp:359 panel/SchedPanel.cpp:159 panel/StockPanel.cpp:190
+#: panel/JournalPanel.cpp:358 panel/SchedPanel.cpp:159 panel/StockPanel.cpp:190
 msgid "&New "
 msgstr "&Nuovo "
 
@@ -5937,7 +5937,7 @@ msgstr "Vuoi davvero ripristinare gli intervalli predefiniti?\n\n"
 msgid "Default date ranges"
 msgstr "Intervallo di date predefinite"
 
-#: manager/DateRangeManager.h:62 panel/JournalPanel.cpp:1361
+#: manager/DateRangeManager.h:62 panel/JournalPanel.cpp:1360
 #: panel/ReportPanel.cpp:1095
 msgid "More date ranges…"
 msgstr "Più intervalli di date…"
@@ -6261,7 +6261,7 @@ msgstr "Inserisci una stringa qualsiasi per abbinare questo beneficiario all'imp
 "Gli schemi vengono testati nell'ordine in cui sono stati inseriti."
 
 #: manager/PayeeManager.cpp:142 panel/AssetPanel.cpp:212
-#: panel/JournalPanel.cpp:429
+#: panel/JournalPanel.cpp:428
 msgid "Use the asterisk (*) at the beginning to find any string in the middle of the sentence."
 msgstr "Usa l'asterisco (*) all'inizio per trovare qualsiasi stringa nel mezzo della frase."
 
@@ -6761,7 +6761,7 @@ msgstr "Mostra Transazioni sui Cespiti"
 msgid "Delete Asset"
 msgstr "Elimina Cespite"
 
-#: panel/AssetPanel.cpp:196 panel/JournalPanel.cpp:391 panel/SchedPanel.cpp:192
+#: panel/AssetPanel.cpp:196 panel/JournalPanel.cpp:390 panel/SchedPanel.cpp:192
 #: panel/StockPanel.cpp:223
 msgid "Open attachments"
 msgstr "Apri allegati"
@@ -6770,11 +6770,11 @@ msgstr "Apri allegati"
 msgid "Enter any string to find related assets"
 msgstr "Inserire un testo per trovare i relativi cespiti"
 
-#: panel/AssetPanel.cpp:210 panel/JournalPanel.cpp:427
+#: panel/AssetPanel.cpp:210 panel/JournalPanel.cpp:426
 msgid "The question mark (?) is used to match a single character, for example \"s?t\" finds both \"sat\" and \"set\"."
 msgstr "Il punto interrogativo (?) serve a rappresentare un singolo carattere; ad esempio \"s?t\" trova sia \"sat\" sia \"set\"."
 
-#: panel/AssetPanel.cpp:211 panel/JournalPanel.cpp:428
+#: panel/AssetPanel.cpp:211 panel/JournalPanel.cpp:427
 msgid "The asterisk (*) is used to match any number of characters, for example \"s*d\" finds both \"sad\" and \"started\"."
 msgstr "L'asterisco (*) corrisponde a qualsiasi sequenza di caratteri, ad esempio \"d*o\" trova sia \"denaro\" che \"deposito\"."
 
@@ -7292,7 +7292,7 @@ msgstr "Impossibile spostare alcune transazioni."
 msgid "Scheduled transaction saved."
 msgstr "Transazione pianificata salvata."
 
-#: panel/JournalList.cpp:2173 panel/JournalPanel.cpp:143
+#: panel/JournalList.cpp:2173 panel/JournalPanel.cpp:142
 #: util/mmNavigatorList.cpp:55
 msgid "All Transactions"
 msgstr "Tutte le Transazioni"
@@ -7310,145 +7310,145 @@ msgstr "Vuoi eliminare permanentemente tutte le transazioni mostrate?"
 msgid "Do you want to delete all the “%s” transactions shown?"
 msgstr "Vuoi eliminare tutte le \"%s\" transazioni visualizzate?"
 
-#: panel/JournalPanel.cpp:145 util/mmNavigatorList.cpp:72
+#: panel/JournalPanel.cpp:144 util/mmNavigatorList.cpp:72
 msgid "Deleted Transactions"
 msgstr "Transazioni Eliminate"
 
-#: panel/JournalPanel.cpp:158
+#: panel/JournalPanel.cpp:157
 #, c-format
 msgid "Account View: %s"
 msgstr "Vista del Conto: %s"
 
-#: panel/JournalPanel.cpp:262
+#: panel/JournalPanel.cpp:261
 msgid "Filter…"
 msgstr "Filtro…"
 
-#: panel/JournalPanel.cpp:274 panel/ReportPanel.cpp:450
+#: panel/JournalPanel.cpp:273 panel/ReportPanel.cpp:450
 #: panel/StockPanel.cpp:135
 msgid "Reset filter"
 msgstr "Reimposta filtro"
 
-#: panel/JournalPanel.cpp:303
+#: panel/JournalPanel.cpp:302
 msgid "Reconcile"
 msgstr "Riconcilia"
 
-#: panel/JournalPanel.cpp:356
+#: panel/JournalPanel.cpp:355
 msgid "Delete all selected transactions"
 msgstr "Elimina tutte le transazioni selezionate"
 
-#: panel/JournalPanel.cpp:364
+#: panel/JournalPanel.cpp:363
 msgid "Edit all selected transactions"
 msgstr "Modifica tutte le transazioni selezionate"
 
-#: panel/JournalPanel.cpp:368 panel/SchedPanel.cpp:168
+#: panel/JournalPanel.cpp:367 panel/SchedPanel.cpp:168
 msgid "D&uplicate "
 msgstr "D&uplica "
 
-#: panel/JournalPanel.cpp:369
+#: panel/JournalPanel.cpp:368
 msgid "Duplicate selected transaction"
 msgstr "Duplica Transazione selezionata"
 
-#: panel/JournalPanel.cpp:376 panel/SchedPanel.cpp:178
+#: panel/JournalPanel.cpp:375 panel/SchedPanel.cpp:178
 msgid "Ente&r"
 msgstr "Invi&o"
 
-#: panel/JournalPanel.cpp:377 panel/SchedPanel.cpp:179
+#: panel/JournalPanel.cpp:376 panel/SchedPanel.cpp:179
 msgid "Enter Next Scheduled Transaction Occurrence"
 msgstr "Inserire la prossima scadenza di Transazione Pianificata"
 
-#: panel/JournalPanel.cpp:381 panel/SchedPanel.cpp:183
+#: panel/JournalPanel.cpp:380 panel/SchedPanel.cpp:183
 msgid "&Skip"
 msgstr "&Salta"
 
-#: panel/JournalPanel.cpp:382 panel/SchedPanel.cpp:184
+#: panel/JournalPanel.cpp:381 panel/SchedPanel.cpp:184
 msgid "Skip Next Scheduled Transaction Occurrence"
 msgstr "Salta la prossima Scadenza della Transazione Pianificata"
 
-#: panel/JournalPanel.cpp:407
+#: panel/JournalPanel.cpp:406
 msgid "&Restore "
 msgstr "&Ripristina "
 
-#: panel/JournalPanel.cpp:408
+#: panel/JournalPanel.cpp:407
 msgid "Restore selected transaction"
 msgstr "Ripristina la Transazione selezionata"
 
-#: panel/JournalPanel.cpp:425
+#: panel/JournalPanel.cpp:424
 msgid "Enter any string to find it in the nearest transaction data"
 msgstr "Inserisci qualsiasi stringa per trovarla nei dati di transazione più vicini"
 
-#: panel/JournalPanel.cpp:443
+#: panel/JournalPanel.cpp:442
 msgid "Click to copy to clipboard"
 msgstr "Clicca per copiare negli appunti"
 
-#: panel/JournalPanel.cpp:984
+#: panel/JournalPanel.cpp:983
 msgid "Account Bal: "
 msgstr "Saldo del Conto: "
 
-#: panel/JournalPanel.cpp:988
+#: panel/JournalPanel.cpp:987
 msgid "Reconciled Bal: "
 msgstr "Saldo Riconciliato: "
 
-#: panel/JournalPanel.cpp:993
+#: panel/JournalPanel.cpp:992
 msgid "Diff: "
 msgstr "Differenza: "
 
-#: panel/JournalPanel.cpp:1000
+#: panel/JournalPanel.cpp:999
 msgid "Filtered Flow: "
 msgstr "Flusso Filtrato: "
 
-#: panel/JournalPanel.cpp:1021
+#: panel/JournalPanel.cpp:1020
 msgid "Market Value: "
 msgstr "Valore Di Mercato: "
 
-#: panel/JournalPanel.cpp:1028
+#: panel/JournalPanel.cpp:1027
 msgid "Invested: "
 msgstr "Investito: "
 
-#: panel/JournalPanel.cpp:1067 panel/JournalPanel.cpp:1075
+#: panel/JournalPanel.cpp:1066 panel/JournalPanel.cpp:1074
 #: panel/ReportPanel.cpp:693 panel/ReportPanel.cpp:701
 msgid "Date range"
 msgstr "Intervallo di date"
 
-#: panel/JournalPanel.cpp:1114
+#: panel/JournalPanel.cpp:1113
 msgid "Click to show scheduled transactions. This feature works best with filter choices that extend into the future (e.g., Current Month)."
 msgstr "Clicca per visualizzare le transazioni pianificate. Questa funzione risulta particolarmente utile con le opzioni di filtro che si estendono nel futuro (ad esempio, Mese corrente)."
 
-#: panel/JournalPanel.cpp:1114
+#: panel/JournalPanel.cpp:1113
 msgid "Scheduled transactions are not available, because the current filter ends in the past"
 msgstr "Le transazioni pianificate non sono disponibili, perché il filtro corrente termina nel passato"
 
-#: panel/JournalPanel.cpp:1115
+#: panel/JournalPanel.cpp:1114
 msgid "Click to hide scheduled transactions."
 msgstr "Clicca per nascondere le transazioni pianificate."
 
-#: panel/JournalPanel.cpp:1246
+#: panel/JournalPanel.cpp:1245
 #, c-format
 msgid "Transactions selected: %zu"
 msgstr "Transazioni selezionate: %zu"
 
-#: panel/JournalPanel.cpp:1249
+#: panel/JournalPanel.cpp:1248
 #, c-format
 msgid "Selected transactions total: %s"
 msgstr "Totale transazioni selezionate: %s"
 
-#: panel/JournalPanel.cpp:1254
+#: panel/JournalPanel.cpp:1253
 #, c-format
 msgid "Days between selected transactions: %d"
 msgstr "Giorni tra le transazioni selezionate: %d"
 
-#: panel/JournalPanel.cpp:1368 panel/ReportPanel.cpp:1102
+#: panel/JournalPanel.cpp:1367 panel/ReportPanel.cpp:1102
 msgid "Edit date ranges…"
 msgstr "Modifica intervallo di date…"
 
-#: panel/JournalPanel.cpp:1516
+#: panel/JournalPanel.cpp:1515
 msgid "&New Withdrawal…"
 msgstr "&Nuovo Prelievo…"
 
-#: panel/JournalPanel.cpp:1517
+#: panel/JournalPanel.cpp:1516
 msgid "&New Deposit…"
 msgstr "&Nuovo Deposito…"
 
-#: panel/JournalPanel.cpp:1518
+#: panel/JournalPanel.cpp:1517
 msgid "&New Transfer…"
 msgstr "&Nuovo trasferimento…"
 
