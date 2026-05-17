@@ -555,6 +555,7 @@ void ReconcileDialog::processRightClick(wxListCtrl* list, long item)
     else {
         newTransaction();
     }
+    UpdateAll();
 }
 
 void ReconcileDialog::OnListKeyDown(wxKeyEvent& event)
@@ -738,6 +739,7 @@ void ReconcileDialog::OnEdit(wxCommandEvent& WXUNUSED(event))
     if (list) {
         long item = list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
         editTransaction(list, item);
+        UpdateAll();
     }
 }
 

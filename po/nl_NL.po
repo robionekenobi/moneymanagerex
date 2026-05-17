@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: moneymanagerex\n"
 "Report-Msgid-Bugs-To: developer@moneymanagerex.org\n"
 "POT-Creation-Date: 2026-05-06 23:48+0000\n"
-"PO-Revision-Date: 2026-05-08 02:12\n"
+"PO-Revision-Date: 2026-05-15 02:26\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Language: nl_NL\n"
@@ -3988,7 +3988,7 @@ msgstr "Dupliceer Transactie"
 
 #: dialog/TrxDialog.cpp:218
 msgid "Enter Transaction"
-msgstr ""
+msgstr "Transactie invoeren"
 
 #: dialog/TrxDialog.cpp:219
 msgid "Edit Transaction"
@@ -8353,7 +8353,7 @@ msgstr "Zeer groot (48 px)"
 
 #: report/BalanceReport.cpp:41 report/BalanceReport.cpp:42
 msgid "Account Types"
-msgstr ""
+msgstr "Rekening Typen"
 
 #: report/BalanceReport.cpp:133
 #, c-format
@@ -9871,7 +9871,7 @@ msgstr "Openen bijlage mislukt"
 
 #: util/mmAttachment.cpp:97
 msgid "Destination file already exists:"
-msgstr ""
+msgstr "Doelbestand bestaat al:"
 
 #: util/mmAttachment.cpp:101
 msgid "File already found in attachments"
@@ -9883,7 +9883,7 @@ msgstr "Bestand niet gevonden in bijlagen. Gelieve te verwijderen of te hernoeme
 
 #: util/mmAttachment.cpp:105
 msgid "Destination file already exists"
-msgstr ""
+msgstr "Doelbestand bestaat al"
 
 #: util/mmAttachment.cpp:132
 msgid "Attachment not found:"
@@ -9899,7 +9899,7 @@ msgstr "Verwijderen bijlage mislukt"
 
 #: util/mmAttachment.cpp:148
 msgid "ATTACHMENTSFOLDER not configured:"
-msgstr ""
+msgstr "ATTACHMENTSFOLDER niet geconfigureerd:"
 
 #: util/mmColorButton.cpp:56 util/mmColorButton.cpp:80
 msgid "&Without color"

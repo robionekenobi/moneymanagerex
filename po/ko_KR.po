@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: moneymanagerex\n"
 "Report-Msgid-Bugs-To: developer@moneymanagerex.org\n"
 "POT-Creation-Date: 2026-05-06 23:48+0000\n"
-"PO-Revision-Date: 2026-05-08 02:12\n"
+"PO-Revision-Date: 2026-05-15 02:26\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Language: ko_KR\n"
@@ -7187,7 +7187,7 @@ msgstr "후속조치(&F)"
 
 #: panel/JournalList.cpp:1636
 msgid "D&uplicate"
-msgstr "복제(&U)"
+msgstr "중복(&U)"
 
 #: panel/JournalList.cpp:1639
 msgid "Mar&k as"
