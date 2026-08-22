@@ -718,16 +718,13 @@ void StockDialog::onHistoryImportButton(wxCommandEvent& /*event*/)
             continue;
 
         StockHistoryData new_sh_d = StockHistoryData();
-        new_sh_d.m_symbol      = m_stock_n->m_symbol;
-        new_sh_d.m_date        = mmDate(dateStr);
-        new_sh_d.m_price       = price;
-        new_sh_d.m_update_type = UpdateType(UpdateType::e_manual);
 
         // Check if entry exists
         const StockHistoryData* existing_sh_d = StockHistoryModel::instance().get_key_data_n(m_stock_n->m_symbol, dt.dateTime());
             
         // Create a new data object (not pointer)
-        if (existing_sh_d) {
+        if (existing_sh_d != nullptr)
+        {
             // Copy from existing
             new_sh_d_ = *existing_sh_d;
         }
@@ -737,10 +734,10 @@ void StockDialog::onHistoryImportButton(wxCommandEvent& /*event*/)
         new_sh_d_.m_symbol = m_stock_n->m_symbol;
         new_sh_d_.m_date = dt;
         new_sh_d_.m_price = price;
-        new_sh_d_.m_update_type = 2;
+        new_sh_d_.m_update_type = UpdateType(UpdateType::e_manual);
         new_sh_a.push_back(new_sh_d_);
 
-        wxString cp = wxString::FromDouble(new_sh_d_.m_price, PrefModel::instance().getSharePrecision());
+        wxString cp = wxString::FromDouble(existing_sh_d ? existing_sh_d->m_price : 0.0, PrefModel::instance().getSharePrecision());
         wxString lp = wxString::FromDouble(price, PrefModel::instance().getSharePrecision());
         if (new_sh_d_.m_id == -1 || (cp != lp && ((new_sh_d_.m_date == mmDate("") && dt > m_stock_n->m_purchase_date) ||
                                                                     new_sh_d_.m_date > m_stock_n->m_purchase_date)))
@@ -790,7 +787,15 @@ void StockDialog::onHistoryImportButton(wxCommandEvent& /*event*/)
     if (!canceledbyuser) {
         // we need to save them to the database.
         for (auto& new_sh_d : new_sh_a)
-            StockHistoryModel::instance().add_data_n(new_sh_d);
+        {
+            const StockHistoryData* existing_sh_d = StockHistoryModel::instance().get_key_data_n(new_sh_d.m_symbol, new_sh_d.m_date.dateTime());
+
+            if (existing_sh_d != nullptr)
+                StockHistoryModel::instance().update_data_n(new_sh_d);
+            else
+                StockHistoryModel::instance().add_data_n(new_sh_d);
+        }
+
         // show the data
         showStockHistory();
 
