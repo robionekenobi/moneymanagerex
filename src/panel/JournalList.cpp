@@ -1233,9 +1233,9 @@ void JournalList::showTrxDialog(JournalKey journal_key, bool duplicate, TrxType 
 // should continue as these keys may be processed by the operating system.
 void JournalList::onChar(wxKeyEvent& event)
 {
-
     int key = event.GetKeyCode();
-    if (key == WXK_ALT ||
+    if (event.HasAnyModifiers() ||
+        key == WXK_ALT ||
         key == WXK_COMMAND ||
         key == WXK_UP ||
         key == WXK_DOWN ||
@@ -1264,12 +1264,6 @@ void JournalList::onChar(wxKeyEvent& event)
         event.Skip();
     }
 }
-
-/*void JournalList::onListLeftClick(wxMouseEvent& event)
-{
-    //wxLogDebug("onListLeftClick: %i selected", GetSelectedItemCount());
-    event.Skip();
-}*/
 
 void JournalList::onMouseRightClick(wxMouseEvent& event)
 {
@@ -1644,25 +1638,39 @@ void JournalList::onListItemActivated(wxListEvent& /*event*/)
     AddPendingEvent(evt);
 }
 
-void JournalList::onListItemSelected(wxListEvent&)
+void JournalList::updateSelectionSummary()
 {
-    //wxLogDebug("onListItemSelected: %i selected", GetSelectedItemCount());
+#ifdef __WXMAC__
+    // The generic virtual list sends FOCUSED before updating a Shift selection,
+    // without a subsequent SELECTED event. Coalesce notifications until it finishes.
+    if (m_selection_update_pending)
+        return;
+    m_selection_update_pending = true;
+    // Queue on this control so destruction also discards the pending callback.
+    CallAfter([this]() {
+        m_selection_update_pending = false;
+        setSelectKeyA();
+        setExtraTransactionData(GetSelectedItemCount() == 1);
+    });
+#else
     setSelectKeyA();
     setExtraTransactionData(GetSelectedItemCount() == 1);
+#endif
+}
+
+void JournalList::onListItemSelected(wxListEvent&)
+{
+    updateSelectionSummary();
 }
 
 void JournalList::onListItemDeSelected(wxListEvent&)
 {
-    //wxLogDebug("onListItemDeSelected: %i selected", GetSelectedItemCount());
-    setSelectKeyA();
-    setExtraTransactionData(GetSelectedItemCount() == 1);
+    updateSelectionSummary();
 }
 
 void JournalList::onListItemFocused(wxListEvent& WXUNUSED(event))
 {
-    //wxLogDebug("onListItemFocused: %i selected", GetSelectedItemCount());
-    setSelectKeyA();
-    setExtraTransactionData(GetSelectedItemCount() == 1);
+    updateSelectionSummary();
 }
 
 void JournalList::onListKeyDown(wxListEvent& event)
